@@ -1,0 +1,34 @@
+package com.quancheng.saluki.core.common;
+
+import java.util.regex.Pattern;
+
+import io.grpc.Attributes;
+
+public class SalukiConstants {
+
+    public static final Pattern                   COMMA_SPLIT_PATTERN           = Pattern.compile("\\s*[,]+\\s*");
+
+    public static final String                    INTERFACE_KEY                 = "interface";
+    public static final String                    GROUP_KEY                     = "group";
+    public static final String                    VERSION_KEY                   = "version";
+    public static final String                    DEFAULTGROUP                  = "Default";
+    public static final String                    DEFAULTVERSION                = "1.0.0";
+    public static final String                    LOCALHOST_KEY                 = "localhost";
+    public static final String                    ANYHOST_KEY                   = "anyhost";
+    public static final String                    ANYHOST_VALUE                 = "0.0.0.0";
+
+    public static final String                    REGISTRY_RETRY_PERIOD_KEY     = "retry.period";
+    public static final int                       DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
+    public static final String                    ENABLED_KEY                   = "enabled";
+    public static final String                    DISABLED_KEY                  = "disabled";
+
+    public final static String                    PATH_SEPARATOR                = "/";
+    public static final String                    PROVIDERS_CATEGORY            = "providers";
+    public static final String                    CONSUMERS_CATEGORY            = "consumers";
+
+    public static final String                    REGISTRY_PROTOCOL             = "registry";
+    public static final String                    DEFATULT_PROTOCOL             = "Grpc";
+
+    public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE       = Attributes.Key.of("subscribe");
+
+}
