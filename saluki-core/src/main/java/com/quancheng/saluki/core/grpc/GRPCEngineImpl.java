@@ -1,16 +1,19 @@
 package com.quancheng.saluki.core.grpc;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
+import com.quancheng.saluki.core.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.Attributes;
@@ -31,9 +34,11 @@ import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 public class GRPCEngineImpl implements GRPCEngine {
 
-    private final SalukiURL registryUrl;
+    private static final Logger log = LoggerFactory.getLogger(GRPCEngine.class);
 
-    private final Registry  registry;
+    private final SalukiURL     registryUrl;
+
+    private final Registry      registry;
 
     public GRPCEngineImpl(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
@@ -41,7 +46,7 @@ public class GRPCEngineImpl implements GRPCEngine {
     }
 
     @Override
-    public <T> ProtocolProxy<T> getProxy(SalukiURL refUrl) throws ClassNotFoundException {
+    public <T> ProtocolProxy<T> getProxy(SalukiURL refUrl) throws Exception {
         boolean isLocal = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, false);
         Channel channel;
         if (isLocal) {
@@ -81,46 +86,56 @@ public class GRPCEngineImpl implements GRPCEngine {
     }
 
     @Override
-    public Server getServer(Map<SalukiURL, Object> providerUrls, int port) {
+    public Server getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception {
         final ServerBuilder<?> serverBuilder = ServerBuilder.forPort(port);
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();
-            Object instance = entry.getValue();
+            Object protocolImpl = entry.getValue();
             // 如果是原生的grpc stub类
-            if (instance instanceof BindableService) {
-                BindableService bindableService = (BindableService) instance;
+            if (protocolImpl instanceof BindableService) {
+                BindableService bindableService = (BindableService) protocolImpl;
                 ServerServiceDefinition serviceDefinition = bindableService.bindService();
                 serverBuilder.addService(serviceDefinition);
+                log.info("'{}' service has been registered.", bindableService.getClass().getName());
             } else {
-                String serviceName = providerUrl.getServiceInterface();
-                Class<?> serviceClzz = null;
-                try {
-                    serviceClzz = Class.forName(serviceName);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException("The interface " + serviceName + " not find", e);
-                }
-                if (serviceClzz.isAssignableFrom(instance.getClass())) {
-                    ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
-                    List<Method> methods = ReflectUtil.findConcreteMethodsOnInterfaces(instance.getClass());
-                    for (Method method : methods) {
-                        MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = GrpcUtils.createMethodDescriptor(instance.getClass(),
-                                                                                                                                     method);
-                        serviceDefBuilder.addMethod(methodDescriptor,
-                                                    ServerCalls.asyncUnaryCall(new MethodInvokation(instance, method)));
-                    }
-                    serverBuilder.addService(serviceDefBuilder.build());
+                ServerServiceDefinition serviceDefinition = null;
+                // 如果是泛化调用，直接导出类本身
+                if (protocolImpl instanceof GenericService) {
+                    Class<?> protocolClass = protocolImpl.getClass();
+                    serviceDefinition = this.doExport(protocolClass, protocolImpl);
                 } else {
-                    throw new IllegalStateException("The stub implemention class " + serviceClzz.getName()
-                                                    + " not implement interface " + serviceName);
+                    Class<?> interfaceClass = ReflectUtil.name2class(providerUrl.getServiceInterface());
+                    if (interfaceClass.isAssignableFrom(protocolImpl.getClass())) {
+                        serviceDefinition = this.doExport(interfaceClass, protocolImpl);
+                    } else {
+                        throw new IllegalStateException("protocolClass " + interfaceClass.getName()
+                                                        + " is not implemented by protocolImpl which is of class "
+                                                        + protocolImpl.getClass());
+                    }
                 }
+                serverBuilder.addService(serviceDefinition);
             }
             registry.register(providerUrl);
         }
-        try {
-            return serverBuilder.build().start();
-        } catch (IOException e) {
-            throw new IllegalStateException("start server faield", e);
+        return serverBuilder.build();
+    }
+
+    private ServerServiceDefinition doExport(Class<?> protocolClass, Object protocolImpl) {
+        String serviceName = GrpcUtils.generateServiceName(protocolClass);
+        ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
+        List<Method> methods = ReflectUtil.findAllPublicMethods(protocolClass);
+        if (methods.isEmpty()) {
+            throw new IllegalStateException("protocolClass " + serviceName + " not have export method"
+                                            + protocolClass.getClass());
         }
+        for (Method method : methods) {
+            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = GrpcUtils.createMethodDescriptor(protocolClass,
+                                                                                                                         method);
+            serviceDefBuilder.addMethod(methodDescriptor,
+                                        ServerCalls.asyncUnaryCall(new MethodInvokation(protocolImpl, method)));
+        }
+        log.info("'{}' service has been registered.", serviceName);
+        return serviceDefBuilder.build();
     }
 
     private class MethodInvokation implements UnaryMethod<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> {

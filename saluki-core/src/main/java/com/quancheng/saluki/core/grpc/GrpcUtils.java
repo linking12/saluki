@@ -16,7 +16,11 @@ public class GrpcUtils {
                                                io.grpc.protobuf.ProtoUtils.marshaller(argsRep));
     }
 
-    private static String generateFullMethodName(Class<?> protocol, String methodName) {
+    public static String generateFullMethodName(Class<?> protocol, String methodName) {
         return io.grpc.MethodDescriptor.generateFullMethodName(protocol.getName(), methodName);
+    }
+
+    public static String generateServiceName(Class<?> protocol) {
+        return protocol.getName();
     }
 }
