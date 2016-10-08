@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Preconditions;
@@ -24,8 +23,6 @@ import io.grpc.Status;
 
 public class SalukiNameResolver extends NameResolver {
 
-    private final String    authority;
-
     private final Registry  registry;
 
     private final SalukiURL subscribeUrl;
@@ -36,31 +33,15 @@ public class SalukiNameResolver extends NameResolver {
     @GuardedBy("this")
     private Listener        listener;
 
-    public SalukiNameResolver(@Nullable String nsAuthority, String name, Attributes params){
-        URI nameUri = URI.create("//" + name);
-        authority = Preconditions.checkNotNull(nameUri.getAuthority(), "nameUri (%s) doesn't have an authority",
-                                               nameUri);
-        final String host = Preconditions.checkNotNull(nameUri.getHost(), "host");
-        final int port;
-        if (nameUri.getPort() == -1) {
-            Integer defaultPort = params.get(NameResolver.Factory.PARAMS_DEFAULT_PORT);
-            if (defaultPort != null) {
-                port = defaultPort;
-            } else {
-                throw new IllegalArgumentException("name '" + name
-                                                   + "' doesn't contain a port, and default port is not set in params");
-            }
-        } else {
-            port = nameUri.getPort();
-        }
-        SalukiURL registryUrl = new SalukiURL(SalukiConstants.REGISTRY_PROTOCOL, host, port);
+    public SalukiNameResolver(URI targetUri, Attributes params){
+        SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
         registry = RegistryProvider.asFactory().newRegistry(registryUrl);
         subscribeUrl = params.get(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE);
     }
 
     @Override
     public final String getServiceAuthority() {
-        return authority;
+        return null;
     }
 
     @Override

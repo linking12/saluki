@@ -29,6 +29,12 @@ public class SalukiConstants {
     public static final String                    REGISTRY_PROTOCOL             = "registry";
     public static final String                    DEFATULT_PROTOCOL             = "Grpc";
 
+    public static final int                       DEFAULT_TIMEOUT               = 1000;
+    public static final int                       DEFAULT_RPCTYPE               = 1;
+    public static final String                    RPCTYPE_KEY                   = "syc";
+    public static final String                    RPCTIMEOUT_KEY                = "timeout";
+    public static final String                    GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
+
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE       = Attributes.Key.of("subscribe");
 
 }
