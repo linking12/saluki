@@ -45,6 +45,7 @@ public class GRPCEngineImpl implements GRPCEngine {
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public <T> ProtocolProxy<T> getProxy(SalukiURL refUrl) throws Exception {
         boolean isLocal = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, false);
