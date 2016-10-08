@@ -40,7 +40,7 @@ public final class ProtocolProxy<T> {
         this.isGeneric = isGeneric;
     }
 
-    public T getProxy() {
+    public Object getProxy() {
         if (isGeneric) {
             return this.getJavaProxy();
         } else {
@@ -88,11 +88,11 @@ public final class ProtocolProxy<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private T getJavaProxy() {
-        T proxy;
+    private Object getJavaProxy() {
+        Object proxy;
         if (this.isGeneric) {
-            proxy = (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
-                                               new JavaProxyInvoker());
+            proxy = Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
+                                           new JavaProxyInvoker());
         } else {
             proxy = (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { protocolClzz },
                                                new JavaProxyInvoker());
@@ -104,12 +104,29 @@ public final class ProtocolProxy<T> {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (args.length > 1) {
-                throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                                   + args.length);
+            io.grpc.MethodDescriptor<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> methodDescriptor;
+            if (isGeneric && method.getName().equals("$invoke")) {
+                String protocol = (String) args[0];
+                String methodName = (String) args[1];
+                String[] parameterTypes = (String[]) args[2];
+                Object[] param = (Object[]) args[3];
+                if (parameterTypes.length != 2) {
+                    throw new IllegalArgumentException("generic call,the request and response type must be set "
+                                                       + parameterTypes + " length is " + args.length);
+                }
+                if (param.length > 1) {
+                    throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
+                                                       + param.length);
+                }
+                com.google.protobuf.GeneratedMessageV3[] paramType = concoctParamInstance(parameterTypes);
+                methodDescriptor = GrpcUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
+            } else {
+                if (args.length > 1) {
+                    throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
+                                                       + args.length);
+                }
+                methodDescriptor = GrpcUtils.createMethodDescriptor(protocol, method);
             }
-            io.grpc.MethodDescriptor<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> methodDescriptor = GrpcUtils.createMethodDescriptor(protocol,
-                                                                                                                                                                         method);
             ClientCall<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> newCall = channel.newCall(methodDescriptor,
                                                                                                                                  CallOptions.DEFAULT);
             com.google.protobuf.GeneratedMessageV3 arg = (com.google.protobuf.GeneratedMessageV3) args[0];
@@ -121,6 +138,27 @@ public final class ProtocolProxy<T> {
                 default:
                     return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
             }
+        }
+
+        private com.google.protobuf.GeneratedMessageV3[] concoctParamInstance(String[] parameterTypes) {
+            com.google.protobuf.GeneratedMessageV3[] paramInstance = new com.google.protobuf.GeneratedMessageV3[parameterTypes.length];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                String parameterTypeStr = parameterTypes[i];
+                try {
+                    Class<?> parameterType = ReflectUtil.name2class(parameterTypeStr);
+                    if (com.google.protobuf.GeneratedMessageV3.class.isAssignableFrom(parameterType)) {
+                        Object obj = ReflectUtil.classInstance(parameterType);
+                        paramInstance[i] = (com.google.protobuf.GeneratedMessageV3) obj;
+                    } else {
+                        throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3"
+                                                           + " but the type is " + parameterType);
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException("not found paramter in classpath, " + " but the type is "
+                                                       + parameterTypeStr);
+                }
+            }
+            return paramInstance;
         }
 
     }

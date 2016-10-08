@@ -13,6 +13,19 @@ public final class ReflectUtil {
     private ReflectUtil(){
     }
 
+    public static Object classInstance(Class cls) {
+        checkPackageAccess(cls);
+        try {
+            Constructor con = cls.getDeclaredConstructor();
+            con.setAccessible(true);
+            Object obj = con.newInstance();
+            return obj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static Object newMethodReq(Method method) {
         Class[] params = method.getParameterTypes();
         List<Object> objs = Lists.newArrayList();
