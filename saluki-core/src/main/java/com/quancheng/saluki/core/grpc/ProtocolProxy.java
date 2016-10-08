@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.quancheng.saluki.core.service.GenericService;
+import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.CallOptions;
@@ -17,38 +19,51 @@ import io.grpc.stub.ClientCalls;
 
 public final class ProtocolProxy<T> {
 
-    private final Class<T> protocol;
+    private final String      protocol;
 
-    private final Channel  channel;
+    private final Channel     channel;
 
-    private final int      callType;
+    private final int         callType;
 
-    private final int      rpcTimeout;
+    private final int         rpcTimeout;
 
-    public ProtocolProxy(String interfaceName, Channel channel, int rpcTimeout,
-                         int callType) throws ClassNotFoundException{
-        this.protocol = (Class<T>) Class.forName(interfaceName);
+    private final boolean     isGeneric;
+
+    private volatile Class<?> protocolClzz;
+
+    public ProtocolProxy(String protocol, Channel channel, int rpcTimeout, int callType,
+                         boolean isGeneric) throws ClassNotFoundException{
+        this.protocol = protocol;
         this.channel = channel;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
+        this.isGeneric = isGeneric;
     }
 
     public T getProxy() {
-        boolean isInterface = Modifier.isInterface(this.protocol.getModifiers());
-        if (isInterface) {
+        if (isGeneric) {
             return this.getJavaProxy();
         } else {
-            return this.getGrpcStub();
+            try {
+                protocolClzz = ReflectUtil.name2class(protocol);
+                boolean isInterface = Modifier.isInterface(protocolClzz.getModifiers());
+                if (isInterface) {
+                    return this.getJavaProxy();
+                } else {
+                    return this.getGrpcStub();
+                }
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("no class find in classpath", e);
+            }
         }
-
     }
 
     private T getGrpcStub() {
-        String clzName = this.protocol.getName();
+        String clzName = this.protocol;
         if (StringUtils.contains(clzName, "$")) {
             try {
                 String parentName = StringUtils.substringBefore(clzName, "$");
-                Class clzz = Class.forName(parentName);
+                Class<?> clzz = ReflectUtil.name2class(parentName);
                 Method method;
                 switch (callType) {
                     case 1:
@@ -61,6 +76,7 @@ public final class ProtocolProxy<T> {
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
                 }
+                @SuppressWarnings("unchecked")
                 T value = (T) method.invoke(null, channel);
                 return value;
             } catch (Exception e) {
@@ -71,9 +87,16 @@ public final class ProtocolProxy<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private T getJavaProxy() {
-        T proxy = (T) Proxy.newProxyInstance(protocol.getClassLoader(), new Class[] { protocol },
-                                             new JavaProxyInvoker());
+        T proxy;
+        if (this.isGeneric) {
+            proxy = (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
+                                               new JavaProxyInvoker());
+        } else {
+            proxy = (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { protocolClzz },
+                                               new JavaProxyInvoker());
+        }
         return proxy;
     }
 
