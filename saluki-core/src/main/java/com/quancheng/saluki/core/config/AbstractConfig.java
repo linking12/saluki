@@ -2,38 +2,64 @@ package com.quancheng.saluki.core.config;
 
 import java.io.Serializable;
 
+import com.google.common.base.Preconditions;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.GRPCEngine;
+import com.quancheng.saluki.core.grpc.GRPCEngineImpl;
 
 public class AbstractConfig implements Serializable {
 
-    private static final long serialVersionUID = 5736580957909744603L;
+    private static final long               serialVersionUID = 5736580957909744603L;
 
-    protected String          id;
+    // 注册配置名称
+    protected String                        registryName;
 
-    // 注册中心的配置列表
-    protected RegistryConfig  registryConfig;
+    // 注册中心地址
+    protected String                        registryAddress;
+
+    // 注册中心缺省端口
+    protected Integer                       registryPort;
 
     // 扩展配置点
-    protected ExtendConfig    extConfig;
+    protected ExtendConfig                  extConfig;
 
     // 应用名称
-    protected String          application;
+    protected String                        application;
 
     // 分组
-    protected String          group;
+    protected String                        group;
 
     // 服务版本
-    protected String          version;
+    protected String                        version;
 
     // 拦截器
-    protected String          interceptor;
+    protected String                        interceptor;
 
-    public RegistryConfig getRegistryConfig() {
-        return registryConfig;
+    protected transient volatile GRPCEngine grpcEngine;
+
+    public String getRegistryName() {
+        return registryName;
     }
 
-    public void setRegistryConfig(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
+    public void setRegistryName(String registryName) {
+        this.registryName = registryName;
+    }
+
+    public String getRegistryAddress() {
+        return registryAddress;
+    }
+
+    public void setRegistryAddress(String registryAddress) {
+        this.registryAddress = registryAddress;
+    }
+
+    public Integer getRegistryPort() {
+        return registryPort;
+    }
+
+    public void setRegistryPort(Integer registryPort) {
+        this.registryPort = registryPort;
     }
 
     public ExtendConfig getExtConfig() {
@@ -76,16 +102,14 @@ public class AbstractConfig implements Serializable {
         this.interceptor = interceptor;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    protected SalukiURL loadRegistryUrl() {
-        return null;
+    protected void loadRegistry() {
+        if (grpcEngine == null) {
+            Preconditions.checkNotNull(registryAddress, "registryAddress (%s) is not Null");
+            Preconditions.checkNotNull(registryPort, "registryPort (%s) is not Null");
+            String registryName = this.registryName != null ? this.registryName : SalukiConstants.REGISTRY_PROTOCOL;
+            SalukiURL registryUrl = new SalukiURL(registryName, this.registryAddress, this.registryPort);
+            grpcEngine = new GRPCEngineImpl(registryUrl);
+        }
     }
 
 }

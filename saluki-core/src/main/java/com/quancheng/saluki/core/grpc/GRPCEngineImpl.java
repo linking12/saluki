@@ -119,7 +119,7 @@ public class GRPCEngineImpl implements GRPCEngine {
             }
             registry.register(providerUrl);
         }
-        return serverBuilder.build();
+        return serverBuilder.build().start();
     }
 
     private ServerServiceDefinition doExport(Class<?> protocolClass, Object protocolImpl) {

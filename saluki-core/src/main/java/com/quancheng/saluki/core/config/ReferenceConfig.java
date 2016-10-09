@@ -4,38 +4,84 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.GRPCEngine;
-import com.quancheng.saluki.core.grpc.GRPCEngineImpl;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends AbstractConfig {
 
-    private static final long           serialVersionUID = -9023239057692247223L;
-
+    private static final long         serialVersionUID = -9023239057692247223L;
     // 接口类型
-    private String                      interfaceName;
+    private String                    interfaceName;
+
+    private Class<?>                  interfaceClass;
 
     // 是否使用泛接口
-    protected Boolean                   generic;
+    private Boolean                   generic;
 
     // 是否是injvm调用
-    protected Boolean                   injvm;
+    private Boolean                   injvm;
 
     // 是否异步
-    protected Boolean                   async;
+    private Boolean                   async;
 
     // 请求超时时间
-    protected Integer                   requestTimeout;
+    private Integer                   requestTimeout;
 
-    private transient volatile Object   ref;
-
-    private transient volatile Class<?> interfaceClass;
+    private transient volatile Object ref;
 
     public ReferenceConfig(){
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
+    public Class<?> getInterfaceClass() {
+        return interfaceClass;
+    }
+
+    public void setInterfaceClass(Class<?> interfaceClass) {
+        this.interfaceClass = interfaceClass;
+    }
+
+    public Boolean getGeneric() {
+        return generic;
+    }
+
+    public void setGeneric(Boolean generic) {
+        this.generic = generic;
+    }
+
+    public Boolean getInjvm() {
+        return injvm;
+    }
+
+    public void setInjvm(Boolean injvm) {
+        this.injvm = injvm;
+    }
+
+    public Boolean getAsync() {
+        return async;
+    }
+
+    public void setAsync(Boolean async) {
+        this.async = async;
+    }
+
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public void setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
     public synchronized Object get() {
@@ -47,20 +93,16 @@ public class ReferenceConfig extends AbstractConfig {
 
     private void init() {
         checkParam();
-        SalukiURL registryUrl = loadRegistryUrl();
-        GRPCEngine grpcEngin = new GRPCEngineImpl(registryUrl);
+        loadRegistry();
         try {
-            ref = grpcEngin.getProxy(buildRefUrl()).getProxy();
+            ref = grpcEngine.getProxy(buildRefUrl()).getProxy();
         } catch (Exception e) {
             throw new IllegalStateException("Create proxy failed ", e);
         }
-
     }
 
     private void checkParam() {
-        if (StringUtils.isBlank(this.interfaceName)) {
-            throw new IllegalStateException("<saluki:reference interface=\"\" /> interface not allow null!");
-        }
+        Preconditions.checkNotNull(interfaceName, "interfaceName (%s) is not Null");
         if (!this.generic) {
             try {
                 interfaceClass = ReflectUtil.name2class(interfaceName);
@@ -82,15 +124,15 @@ public class ReferenceConfig extends AbstractConfig {
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
         }
-        if (this.group == null) {
+        if (StringUtils.isBlank(this.group)) {
             if (this.application != null) {
                 params.put(SalukiConstants.GROUP_KEY, this.application);
             } else {
                 params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
             }
         }
-        if (this.version == null) {
-            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
+        if (StringUtils.isNotBlank(this.version)) {
+            params.put(SalukiConstants.VERSION_KEY, version);
         }
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
