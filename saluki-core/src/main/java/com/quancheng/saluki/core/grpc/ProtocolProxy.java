@@ -49,15 +49,18 @@ public final class ProtocolProxy<T> {
     }
 
     public Object getProxy() {
+        // 如果是泛化调用，用GenericService代替接口
         if (isGeneric) {
             return this.getJavaProxy();
         } else {
             try {
                 protocolClzz = ReflectUtil.name2class(protocol);
                 boolean isInterface = Modifier.isInterface(protocolClzz.getModifiers());
+                // 如果是接口的话，说明需要用动态代理
                 if (isInterface) {
                     return this.getJavaProxy();
-                } else {
+                } // 否则说明使用的是原生的grpc stub方式来调用
+                else {
                     return this.getGrpcStub();
                 }
             } catch (ClassNotFoundException e) {
