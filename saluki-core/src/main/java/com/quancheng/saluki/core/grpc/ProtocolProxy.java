@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
@@ -16,6 +17,7 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
+import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 
 public final class ProtocolProxy<T> {
@@ -110,31 +112,20 @@ public final class ProtocolProxy<T> {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            io.grpc.MethodDescriptor<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> methodDescriptor;
+            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = null;
             if (isGeneric && method.getName().equals("$invoke")) {
                 String protocol = (String) args[0];
                 String methodName = (String) args[1];
                 String[] parameterTypes = (String[]) args[2];
                 Object[] param = (Object[]) args[3];
-                if (parameterTypes.length != 2) {
-                    throw new IllegalArgumentException("generic call,the request and response type must be set "
-                                                       + parameterTypes + " length is " + args.length);
-                }
-                if (param.length > 1) {
-                    throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
-                                                       + param.length);
-                }
-                com.google.protobuf.GeneratedMessageV3[] paramType = concoctParamInstance(parameterTypes);
-                methodDescriptor = GrpcUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
+                methodDescriptor = this.buildGenericMethodDesc(protocol, methodName, parameterTypes, param);
             } else {
-                if (args.length > 1) {
-                    throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                                       + args.length);
-                }
-                methodDescriptor = GrpcUtils.createMethodDescriptor(protocol, method);
+                methodDescriptor = this.buildNormalMethodDesc(args, method);
             }
-            ClientCall<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> newCall = channelCallable.getGrpcChannel(protocol).newCall(methodDescriptor,
-                                                                                                                                                                  CallOptions.DEFAULT);
+            // 回调获取通道对象，此处有缓存，缓存1000个不同方法所对应的通道
+            Channel chanel = channelCallable.getGrpcChannel(protocol);
+            ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = chanel.newCall(methodDescriptor,
+                                                                                        CallOptions.DEFAULT);
             com.google.protobuf.GeneratedMessageV3 arg = (com.google.protobuf.GeneratedMessageV3) args[0];
             switch (callType) {
                 case SalukiConstants.RPCTYPE_ASYNC:
@@ -146,15 +137,43 @@ public final class ProtocolProxy<T> {
             }
         }
 
-        private com.google.protobuf.GeneratedMessageV3[] concoctParamInstance(String[] parameterTypes) {
-            com.google.protobuf.GeneratedMessageV3[] paramInstance = new com.google.protobuf.GeneratedMessageV3[parameterTypes.length];
+        // 构造动态代理的方法说明
+        private MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildNormalMethodDesc(Object[] args,
+                                                                                               Method method) {
+            if (args.length > 1) {
+                throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
+                                                   + args.length);
+            }
+            return GrpcUtils.createMethodDescriptor(protocol, method);
+
+        }
+
+        // 构造泛化调用的方法说明
+        private MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildGenericMethodDesc(String protocol,
+                                                                                                String methodName,
+                                                                                                String[] parameterTypes,
+                                                                                                Object[] param) {
+            if (parameterTypes.length != 2) {
+                throw new IllegalArgumentException("generic call,the request and response type must be set "
+                                                   + parameterTypes + " length is " + parameterTypes.length);
+            }
+            if (param.length > 1) {
+                throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
+                                                   + param.length);
+            }
+            GeneratedMessageV3[] paramType = concoctParamInstance(parameterTypes);
+            return GrpcUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
+        }
+
+        private GeneratedMessageV3[] concoctParamInstance(String[] parameterTypes) {
+            GeneratedMessageV3[] paramInstance = new GeneratedMessageV3[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {
                 String parameterTypeStr = parameterTypes[i];
                 try {
                     Class<?> parameterType = ReflectUtil.name2class(parameterTypeStr);
-                    if (com.google.protobuf.GeneratedMessageV3.class.isAssignableFrom(parameterType)) {
+                    if (GeneratedMessageV3.class.isAssignableFrom(parameterType)) {
                         Object obj = ReflectUtil.classInstance(parameterType);
-                        paramInstance[i] = (com.google.protobuf.GeneratedMessageV3) obj;
+                        paramInstance[i] = (GeneratedMessageV3) obj;
                     } else {
                         throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3"
                                                            + " but the type is " + parameterType);
