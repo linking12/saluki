@@ -59,7 +59,7 @@ public class GRPCEngineImpl implements GRPCEngine {
         /**
          * 使用回调函数来实现Channel的延迟加载:如果是原生的stub，延迟加载是不起作用的，只有使用代理的情况下，才起作用
          */
-        GrpcChannelCallable channelCallBack = new GrpcChannelCallable() {
+        ProtocolProxy.ChannelCallable channelCallable = new ProtocolProxy.ChannelCallable() {
 
             @Override
             public Channel getGrpcChannel(String serviceInterface) {
@@ -89,7 +89,7 @@ public class GRPCEngineImpl implements GRPCEngine {
         int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
         int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
         boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
-        return new ProtocolProxy(refUrl.getServiceInterface(), channelCallBack, rpcTimeOut, rpcType, isGeneric);
+        return new ProtocolProxy(refUrl.getServiceInterface(), channelCallable, rpcTimeOut, rpcType, isGeneric);
     }
 
     private NameResolver.Factory buildNameResolverFactory(SalukiURL refUrl) {

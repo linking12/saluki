@@ -14,27 +14,33 @@ import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.stub.ClientCalls;
 
 public final class ProtocolProxy<T> {
 
-    private final String              protocol;
+    private final String          protocol;
 
-    private final GrpcChannelCallable channelCallable;
+    private final ChannelCallable channelCallable;
 
-    private final int                 callType;
+    private final int             callType;
 
-    private final int                 rpcTimeout;
+    private final int             rpcTimeout;
 
-    private final boolean             isGeneric;
+    private final boolean         isGeneric;
 
-    private volatile Class<?>         protocolClzz;
+    private volatile Class<?>     protocolClzz;
 
-    public ProtocolProxy(String protocol, GrpcChannelCallable channelCallBack, int rpcTimeout, int callType,
+    public static interface ChannelCallable {
+
+        public Channel getGrpcChannel(String serviceInterface);
+    }
+
+    public ProtocolProxy(String protocol, ChannelCallable channelCallable, int rpcTimeout, int callType,
                          boolean isGeneric) throws ClassNotFoundException{
         this.protocol = protocol;
-        this.channelCallable = channelCallBack;
+        this.channelCallable = channelCallable;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
         this.isGeneric = isGeneric;
@@ -160,7 +166,5 @@ public final class ProtocolProxy<T> {
             }
             return paramInstance;
         }
-
     }
-
 }
