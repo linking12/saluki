@@ -56,6 +56,9 @@ public class GRPCEngineImpl implements GRPCEngine {
     @Override
     public <T> ProtocolProxy<T> getProxy(SalukiURL refUrl) throws Exception {
         boolean isLocal = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, false);
+        /**
+         * 使用回调函数来实现Channel的延迟加载:如果是原生的stub，延迟加载是不起作用的，只有使用代理的情况下，才起作用
+         */
         GrpcChannelCallable channelCallBack = new GrpcChannelCallable() {
 
             @Override
