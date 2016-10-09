@@ -2,6 +2,8 @@ package com.quancheng.saluki.core.config;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
@@ -12,6 +14,7 @@ public class ServiceConfig extends AbstractConfig {
 
     private static final long   serialVersionUID = -4275752504314752426L;
 
+    // 服务暴露端口
     private int                 port;
 
     // 是否使用泛接口
@@ -23,12 +26,13 @@ public class ServiceConfig extends AbstractConfig {
     private Map<String, Object> refs             = Maps.newConcurrentMap();
 
     // 添加需要暴露的服务
-    public void addRef(String path, Object refParam) {
-        Object ref = refs.get(path);
+    public void addRef(String interfaceName, Object refParam) {
+        Object ref = refs.get(interfaceName);
         if (ref != null) {
-            throw new IllegalStateException(String.format("service has exported,Name is %s instance is %s", path, ref));
+            throw new IllegalStateException(String.format("service has exported,Name is %s instance is %s",
+                                                          interfaceName, ref));
         } else {
-            refs.put(path, refParam);
+            refs.put(interfaceName, refParam);
         }
     }
 
@@ -42,6 +46,23 @@ public class ServiceConfig extends AbstractConfig {
             Object protocolImpl = entry.getValue();
             checkParam(path, protocolImpl);
             Map<String, String> params = Maps.newHashMap();
+            if (StringUtils.isBlank(this.group)) {
+                if (this.application != null) {
+                    params.put(SalukiConstants.GROUP_KEY, this.application);
+                } else {
+                    params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
+                }
+            } else {
+                params.put(SalukiConstants.GROUP_KEY, this.group);
+            }
+            if (StringUtils.isNotBlank(this.version)) {
+                params.put(SalukiConstants.VERSION_KEY, version);
+            } else {
+                params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
+            }
+            if (this.generic) {
+                params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
+            }
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), port,
                                                   path, params);
             providerUrls.put(providerUrl, protocolImpl);
@@ -72,7 +93,7 @@ public class ServiceConfig extends AbstractConfig {
         if (path == null) {
             throw new IllegalStateException("ref not allow null!");
         }
-        if (!this.generic && this.grpcStub) {
+        if (!this.generic && !this.grpcStub) {
             try {
                 Class<?> interfaceClass = ReflectUtil.name2class(path);
                 if (!interfaceClass.isAssignableFrom(instance.getClass())) {

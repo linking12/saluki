@@ -14,9 +14,10 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 public class ReferenceConfig extends AbstractConfig {
 
     private static final long         serialVersionUID = -9023239057692247223L;
-    // 接口类型
+    // 接口名
     private String                    interfaceName;
 
+    // 接口类型
     private Class<?>                  interfaceClass;
 
     // 是否使用泛接口
@@ -124,8 +125,10 @@ public class ReferenceConfig extends AbstractConfig {
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
         }
-        if (StringUtils.isBlank(this.group)) {
-            if (this.application != null) {
+        if (StringUtils.isNotBlank(this.group)) {
+            params.put(SalukiConstants.GROUP_KEY, this.group);
+        } else {
+            if (StringUtils.isNotBlank(this.application)) {
                 params.put(SalukiConstants.GROUP_KEY, this.application);
             } else {
                 params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
@@ -133,6 +136,8 @@ public class ReferenceConfig extends AbstractConfig {
         }
         if (StringUtils.isNotBlank(this.version)) {
             params.put(SalukiConstants.VERSION_KEY, version);
+        } else {
+            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
         }
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());

@@ -130,8 +130,10 @@ public class GRPCEngineImpl implements GRPCEngine {
                 log.info("'{}' service has been registered.", bindableService.getClass().getName());
             } else {
                 ServerServiceDefinition serviceDefinition = null;
-                // 如果是泛化调用，直接导出类本身
-                if (protocolImpl instanceof GenericService) {
+                // 如果是泛化导出，直接导出类本身
+                boolean isGeneric = providerUrl.getParameter(SalukiConstants.GENERIC_KEY,
+                                                             SalukiConstants.DEFAULT_GENERIC);
+                if (isGeneric) {
                     Class<?> protocolClass = protocolImpl.getClass();
                     serviceDefinition = this.doExport(protocolClass, protocolImpl);
                 } else {
