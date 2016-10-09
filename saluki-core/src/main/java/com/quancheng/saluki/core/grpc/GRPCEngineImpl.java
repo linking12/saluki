@@ -57,7 +57,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                            .nameResolverFactory(buildNameResolverFactory(refUrl))//
                                            .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
         }
-        int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.DEFAULT_RPCTYPE);
+        int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
         int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
         boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         return new ProtocolProxy(refUrl.getServiceInterface(), channel, rpcTimeOut, rpcType, isGeneric);

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -66,10 +67,10 @@ public final class ProtocolProxy<T> {
                 Class<?> clzz = ReflectUtil.name2class(parentName);
                 Method method;
                 switch (callType) {
-                    case 1:
+                    case SalukiConstants.RPCTYPE_ASYNC:
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
-                    case 2:
+                    case SalukiConstants.RPCTYPE_BLOCKING:
                         method = clzz.getMethod("newBlockingStub", io.grpc.Channel.class);
                         break;
                     default:
@@ -131,9 +132,9 @@ public final class ProtocolProxy<T> {
                                                                                                                                  CallOptions.DEFAULT);
             com.google.protobuf.GeneratedMessageV3 arg = (com.google.protobuf.GeneratedMessageV3) args[0];
             switch (callType) {
-                case 1:
+                case SalukiConstants.RPCTYPE_ASYNC:
                     return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
-                case 2:
+                case SalukiConstants.RPCTYPE_BLOCKING:
                     return ClientCalls.blockingUnaryCall(newCall, arg);
                 default:
                     return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
