@@ -14,28 +14,27 @@ import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.CallOptions;
-import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.stub.ClientCalls;
 
 public final class ProtocolProxy<T> {
 
-    private final String      protocol;
+    private final String              protocol;
 
-    private final Channel     channel;
+    private final GrpcChannelCallable channelCallable;
 
-    private final int         callType;
+    private final int                 callType;
 
-    private final int         rpcTimeout;
+    private final int                 rpcTimeout;
 
-    private final boolean     isGeneric;
+    private final boolean             isGeneric;
 
-    private volatile Class<?> protocolClzz;
+    private volatile Class<?>         protocolClzz;
 
-    public ProtocolProxy(String protocol, Channel channel, int rpcTimeout, int callType,
+    public ProtocolProxy(String protocol, GrpcChannelCallable channelCallBack, int rpcTimeout, int callType,
                          boolean isGeneric) throws ClassNotFoundException{
         this.protocol = protocol;
-        this.channel = channel;
+        this.channelCallable = channelCallBack;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
         this.isGeneric = isGeneric;
@@ -78,7 +77,7 @@ public final class ProtocolProxy<T> {
                         break;
                 }
                 @SuppressWarnings("unchecked")
-                T value = (T) method.invoke(null, channel);
+                T value = (T) method.invoke(null, channelCallable.getGrpcChannel(clzName));
                 return value;
             } catch (Exception e) {
                 throw new IllegalArgumentException("stub definition not correct，do not edit proto generat file", e);
@@ -128,8 +127,8 @@ public final class ProtocolProxy<T> {
                 }
                 methodDescriptor = GrpcUtils.createMethodDescriptor(protocol, method);
             }
-            ClientCall<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> newCall = channel.newCall(methodDescriptor,
-                                                                                                                                 CallOptions.DEFAULT);
+            ClientCall<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> newCall = channelCallable.getGrpcChannel(protocol).newCall(methodDescriptor,
+                                                                                                                                                                  CallOptions.DEFAULT);
             com.google.protobuf.GeneratedMessageV3 arg = (com.google.protobuf.GeneratedMessageV3) args[0];
             switch (callType) {
                 case SalukiConstants.RPCTYPE_ASYNC:
