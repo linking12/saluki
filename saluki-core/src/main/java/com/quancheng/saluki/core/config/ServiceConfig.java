@@ -13,6 +13,7 @@ public class ServiceConfig extends AbstractConfig {
     private static final long   serialVersionUID = -4275752504314752426L;
 
     private int                 port;
+
     // 是否使用泛接口
     private Boolean             generic;
 
