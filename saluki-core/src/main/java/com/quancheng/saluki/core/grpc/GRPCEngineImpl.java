@@ -17,7 +17,6 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
-import com.quancheng.saluki.core.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.Attributes;
@@ -31,6 +30,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
+import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.ServerCalls;
 import io.grpc.stub.ServerCalls.UnaryMethod;
 import io.grpc.stub.StreamObserver;
@@ -118,18 +118,20 @@ public class GRPCEngineImpl implements GRPCEngine {
 
     @Override
     public Server getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception {
-        final ServerBuilder<?> serverBuilder = ServerBuilder.forPort(port);
+        final ServerBuilder<?> remoteServer = ServerBuilder.forPort(port);
+        final InProcessServerBuilder injvmServer = InProcessServerBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS);
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();
             Object protocolImpl = entry.getValue();
+            ServerServiceDefinition serviceDefinition = null;
             // 如果是原生的grpc stub类
             if (protocolImpl instanceof BindableService) {
                 BindableService bindableService = (BindableService) protocolImpl;
-                ServerServiceDefinition serviceDefinition = bindableService.bindService();
-                serverBuilder.addService(serviceDefinition);
+                serviceDefinition = bindableService.bindService();
+                remoteServer.addService(serviceDefinition);
+                injvmServer.addService(serviceDefinition);
                 log.info("'{}' service has been registered.", bindableService.getClass().getName());
             } else {
-                ServerServiceDefinition serviceDefinition = null;
                 // 如果是泛化导出，直接导出类本身
                 boolean isGeneric = providerUrl.getParameter(SalukiConstants.GENERIC_KEY,
                                                              SalukiConstants.DEFAULT_GENERIC);
@@ -146,11 +148,13 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                         + protocolImpl.getClass());
                     }
                 }
-                serverBuilder.addService(serviceDefinition);
+                remoteServer.addService(serviceDefinition);
+                injvmServer.addService(serviceDefinition);
             }
             registry.register(providerUrl);
         }
-        return serverBuilder.build().start();
+        injvmServer.build().start();
+        return remoteServer.build().start();
     }
 
     private ServerServiceDefinition doExport(Class<?> protocolClass, Object protocolImpl) {
