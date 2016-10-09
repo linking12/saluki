@@ -1,9 +1,12 @@
 package com.quancheng.saluki.core.config;
 
-import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
+import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.GRPCEngine;
+import com.quancheng.saluki.core.grpc.GRPCEngineImpl;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
@@ -16,6 +19,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     // 接口代理类引用
     private transient volatile T       ref;
+
+    private transient GRPCEngine       grpcEngin;
 
     private transient volatile boolean initialized;
 
@@ -43,20 +48,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<saluki:reference interface=\"\" /> interface not allow null!");
         }
         try {
-            interfaceClass = Class.forName(interfaceName, true, Thread.currentThread().getContextClassLoader());
+            interfaceClass = ReflectUtil.name2class(interfaceName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
         checkInterfaceAndMethods(interfaceClass, methods);
-        if (!getIsGrpc()) {
+        SalukiURL registryUrl = loadRegistryUrl();
+        grpcEngin = new GRPCEngineImpl(registryUrl);
+        Map<String, String> params = new HashMap<String, String>();
+        // SalukiURL refUrl = new SalukiURL(protocol.getName(), localIp, MotanConstants.DEFAULT_INT_VALUE,
+        // interfaceClass.getName(), params);
 
-        } else {
-
-        }
-    }
-
-    private T createProxy(Map<String, String> map) {
-        return null;
     }
 
 }

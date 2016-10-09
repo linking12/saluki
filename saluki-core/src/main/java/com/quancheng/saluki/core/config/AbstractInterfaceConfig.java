@@ -6,41 +6,41 @@ import com.quancheng.saluki.core.common.SalukiURL;
 
 public class AbstractInterfaceConfig extends AbstractConfig {
 
-    private static final long      serialVersionUID = -356407161276575752L;
+    private static final long    serialVersionUID = -356407161276575752L;
 
     // 注册中心的配置列表
-    protected List<RegistryConfig> registries;
+    protected RegistryConfig     registryConfig;
 
     // 扩展配置点
-    protected ExtendConfig         extConfig;
+    protected ExtendConfig       extConfig;
 
     // 应用名称
-    protected String               application;
+    protected String             application;
 
     // 分组
-    protected String               group;
+    protected String             group;
 
     // 服务版本
-    protected String               version;
+    protected String             version;
 
     // 拦截器
-    protected String               interceptor;
+    protected String             interceptor;
 
     // 是否注册
-    protected Boolean              register;
+    protected Boolean            register;
 
     // 是原生Grpc方式还是代理方式
-    protected Boolean              isGrpc;
+    protected Boolean            isGrpc;
 
     // 方法配置
-    protected List<MethodConfig>   methods;
+    protected List<MethodConfig> methods;
 
-    public List<RegistryConfig> getRegistries() {
-        return registries;
+    public RegistryConfig getRegistryConfig() {
+        return registryConfig;
     }
 
-    public void setRegistries(List<RegistryConfig> registries) {
-        this.registries = registries;
+    public void setRegistryConfig(RegistryConfig registryConfig) {
+        this.registryConfig = registryConfig;
     }
 
     public ExtendConfig getExtConfig() {
@@ -107,7 +107,7 @@ public class AbstractInterfaceConfig extends AbstractConfig {
         this.methods = methods;
     }
 
-    protected List<SalukiURL> loadRegistryUrls() {
+    protected SalukiURL loadRegistryUrl() {
         return null;
     }
 
