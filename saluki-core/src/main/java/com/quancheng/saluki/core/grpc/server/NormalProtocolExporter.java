@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessageV3;
-import com.quancheng.saluki.core.grpc.GrpcUtils;
+import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.MethodDescriptor;
@@ -26,7 +26,7 @@ public class NormalProtocolExporter extends AbstractProtocolExporter {
     public ServerServiceDefinition doExport() {
         Class<?> protocolClass = getProtocolClass();
         Object protocolInstance = getProtocolImpl();
-        String serviceName = GrpcUtils.generateServiceName(protocolClass);
+        String serviceName = MethodDescriptorUtils.generateServiceName(protocolClass);
         ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
         List<Method> methods = ReflectUtil.findAllPublicMethods(protocolClass);
         if (methods.isEmpty()) {
@@ -34,7 +34,7 @@ public class NormalProtocolExporter extends AbstractProtocolExporter {
                                             + protocolClass.getClass());
         }
         for (Method method : methods) {
-            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = GrpcUtils.createMethodDescriptor(protocolClass,
+            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = MethodDescriptorUtils.createMethodDescriptor(protocolClass,
                                                                                                                          method);
             serviceDefBuilder.addMethod(methodDescriptor,
                                         ServerCalls.asyncUnaryCall(new MethodInvokation(protocolInstance, method)));

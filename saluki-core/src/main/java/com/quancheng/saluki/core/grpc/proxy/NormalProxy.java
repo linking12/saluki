@@ -5,7 +5,7 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.Callable;
 
 import com.google.protobuf.GeneratedMessageV3;
-import com.quancheng.saluki.core.grpc.GrpcUtils;
+import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 import io.grpc.Channel;
@@ -32,7 +32,7 @@ public class NormalProxy<T> extends AbstractProtocolProxy<T> {
             throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
                                                + args.length);
         }
-        return GrpcUtils.createMethodDescriptor(getProtocol(), method);
+        return MethodDescriptorUtils.createMethodDescriptor(getProtocol(), method);
     }
 
 }

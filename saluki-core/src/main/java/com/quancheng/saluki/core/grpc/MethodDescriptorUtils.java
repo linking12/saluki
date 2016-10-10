@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
-public class GrpcUtils {
+public class MethodDescriptorUtils {
 
     public static io.grpc.MethodDescriptor<com.google.protobuf.GeneratedMessageV3, com.google.protobuf.GeneratedMessageV3> createMethodDescriptor(Class<?> clzz,
                                                                                                                                                   Method method) {

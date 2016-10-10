@@ -3,7 +3,7 @@ package com.quancheng.saluki.core.registry;
 import java.lang.reflect.Method;
 
 import com.google.protobuf.GeneratedMessageV3;
-import com.quancheng.saluki.core.grpc.GrpcUtils;
+import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.MethodDescriptor;
@@ -66,7 +66,7 @@ public class MethodDescriptorFactory {
                                                    + parameterTypeStr);
             }
         }
-        return GrpcUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
+        return MethodDescriptorUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
     }
 
     private MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> getNormalMethodDesc(String protocol, Object[] args,
@@ -75,6 +75,6 @@ public class MethodDescriptorFactory {
             throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
                                                + args.length);
         }
-        return GrpcUtils.createMethodDescriptor(protocol, method);
+        return MethodDescriptorUtils.createMethodDescriptor(protocol, method);
     }
 }
