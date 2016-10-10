@@ -147,7 +147,7 @@ public final class ProtocolProxy<T> {
             Channel chanel = channelCallable.getGrpcChannel(protocol);
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = chanel.newCall(methodDescriptor,
                                                                                         CallOptions.DEFAULT);
-            com.google.protobuf.GeneratedMessageV3 arg = (com.google.protobuf.GeneratedMessageV3) args[0];
+            GeneratedMessageV3 arg = (GeneratedMessageV3) args[0];
             switch (callType) {
                 case SalukiConstants.RPCTYPE_ASYNC:
                     return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
