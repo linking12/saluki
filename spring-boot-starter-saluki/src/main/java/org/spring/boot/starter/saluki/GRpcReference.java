@@ -7,6 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.quancheng.saluki.core.common.SalukiConstants;
+
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,7 +23,6 @@ public @interface GRpcReference {
 
     boolean localProcess() default false;
 
-    // blocking async future
-    String callType() default "future";
+    int callType() default SalukiConstants.RPCTYPE_ASYNC;
 
 }
