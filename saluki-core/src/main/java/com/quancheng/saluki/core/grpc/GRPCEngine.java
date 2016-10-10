@@ -3,13 +3,12 @@ package com.quancheng.saluki.core.grpc;
 import java.util.Map;
 
 import com.quancheng.saluki.core.common.SalukiURL;
-
-import io.grpc.Server;
+import com.quancheng.saluki.core.grpc.server.SalukiServer;
 
 public interface GRPCEngine {
 
     Object getProxy(SalukiURL refUrl) throws Exception;
 
-    Server getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception;
+    SalukiServer getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception;
 
 }

@@ -23,6 +23,8 @@ public @interface GRpcReference {
 
     boolean localProcess() default false;
 
+    int requestTime() default SalukiConstants.DEFAULT_TIMEOUT;
+
     int callType() default SalukiConstants.RPCTYPE_ASYNC;
 
 }

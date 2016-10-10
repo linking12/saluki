@@ -8,9 +8,12 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.GRPCEngine;
 import com.quancheng.saluki.core.grpc.GRPCEngineImpl;
 
-public class AbstractConfig implements Serializable {
+public class BasicConfig implements Serializable {
 
     private static final long               serialVersionUID = 5736580957909744603L;
+
+    // 应用名称
+    protected String                        application;
 
     // 注册配置名称
     protected String                        registryName;
@@ -23,15 +26,6 @@ public class AbstractConfig implements Serializable {
 
     // 扩展配置点
     protected ExtendConfig                  extConfig;
-
-    // 应用名称
-    protected String                        application;
-
-    // 分组
-    protected String                        group;
-
-    // 服务版本
-    protected String                        version;
 
     // 拦截器
     protected String                        interceptor;
@@ -70,36 +64,20 @@ public class AbstractConfig implements Serializable {
         this.extConfig = extConfig;
     }
 
-    public String getApplication() {
-        return application;
-    }
-
-    public void setApplication(String application) {
-        this.application = application;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public String getInterceptor() {
         return interceptor;
     }
 
     public void setInterceptor(String interceptor) {
         this.interceptor = interceptor;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
     }
 
     protected void loadRegistry() {

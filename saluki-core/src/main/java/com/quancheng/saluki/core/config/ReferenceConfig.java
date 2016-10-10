@@ -11,9 +11,16 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
-public class ReferenceConfig extends AbstractConfig {
+public class ReferenceConfig extends BasicConfig {
 
     private static final long         serialVersionUID = -9023239057692247223L;
+
+    // 分组
+    protected String                  group;
+
+    // 服务版本
+    protected String                  version;
+
     // 接口名
     private String                    interfaceName;
 
@@ -83,6 +90,30 @@ public class ReferenceConfig extends AbstractConfig {
 
     public void setRequestTimeout(Integer requestTimeout) {
         this.requestTimeout = requestTimeout;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public synchronized Object get() {
