@@ -118,10 +118,10 @@ public class SalukiURL implements Serializable {
         }
         if (protocol.equals(SalukiConstants.DEFATULT_PROTOCOL)) {
             if (!parameters.containsKey(SalukiConstants.GROUP_KEY)) {
-                parameters.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
+                parameters.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
             }
             if (!parameters.containsKey(SalukiConstants.VERSION_KEY)) {
-                parameters.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
+                parameters.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
             }
         }
         this.parameters = Collections.unmodifiableMap(parameters);
@@ -789,12 +789,12 @@ public class SalukiURL implements Serializable {
     }
 
     public String getGroup() {
-        String group = getParameter(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
+        String group = getParameter(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
         return group;
     }
 
     public String getVersion() {
-        String group = getParameter(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
+        String group = getParameter(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
         return group;
     }
 

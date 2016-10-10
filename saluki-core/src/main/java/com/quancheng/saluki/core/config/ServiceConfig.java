@@ -50,7 +50,7 @@ public class ServiceConfig extends AbstractConfig {
                 if (this.application != null) {
                     params.put(SalukiConstants.GROUP_KEY, this.application);
                 } else {
-                    params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULTGROUP);
+                    params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
                 }
             } else {
                 params.put(SalukiConstants.GROUP_KEY, this.group);
@@ -58,7 +58,7 @@ public class ServiceConfig extends AbstractConfig {
             if (StringUtils.isNotBlank(this.version)) {
                 params.put(SalukiConstants.VERSION_KEY, version);
             } else {
-                params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULTVERSION);
+                params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
             }
             if (this.generic) {
                 params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());

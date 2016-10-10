@@ -13,8 +13,8 @@ public class SalukiConstants {
     public static final String                    GROUP_KEY                     = "group";
     public static final String                    VERSION_KEY                   = "version";
     public static final String                    RPCTIMEOUT_KEY                = "timeout";
-    public static final String                    DEFAULTGROUP                  = "Default";
-    public static final String                    DEFAULTVERSION                = "1.0.0";
+    public static final String                    DEFAULT_GROUP                 = "Default";
+    public static final String                    DEFAULT_VERSION               = "1.0.0";
     public static final String                    LOCALHOST_KEY                 = "localhost";
     public static final String                    ANYHOST_KEY                   = "anyhost";
     public static final String                    ANYHOST_VALUE                 = "0.0.0.0";
