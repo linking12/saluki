@@ -17,19 +17,22 @@ import io.grpc.BindableService;
 
 public class ServiceConfig extends BasicConfig {
 
-    private static final long    serialVersionUID = 1L;
+    private static final long               serialVersionUID = 1L;
 
     // 服务暴露端口
-    private int                  port;
+    private int                             port;
 
-    private Set<InterfaceConfig> serviceConigs    = Sets.newConcurrentHashSet();
+    // 服务接口
+    private Set<InterfaceConfig>            serviceConigs    = Sets.newConcurrentHashSet();
 
-    public int getPort() {
-        return port;
-    }
+    private transient volatile SalukiServer server;
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void destroy() {
+        server.shutDown();
     }
 
     public void addServiceConfig(String interfaceName, String group, String version, Object instance) {
@@ -84,6 +87,7 @@ public class ServiceConfig extends BasicConfig {
         }
         try {
             SalukiServer server = grpcEngine.getServer(providerUrls, port);
+            this.server = server;
             Thread awaitThread = new Thread() {
 
                 @Override

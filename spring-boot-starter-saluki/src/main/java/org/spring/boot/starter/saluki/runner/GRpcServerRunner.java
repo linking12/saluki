@@ -20,7 +20,6 @@ import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
-import com.quancheng.saluki.core.config.ReferenceConfig;
 import com.quancheng.saluki.core.config.ServiceConfig;
 
 @Order(value = 0)
@@ -34,52 +33,61 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
     @Autowired
     private AbstractApplicationContext applicationContext;
 
+    private ServiceConfig              serviceConfig;
+
     @Override
     public void run(String... args) throws Exception {
         log.info("Starting gRPC Server ...");
-
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        ServiceConfig serviceConfig = new ServiceConfig();
+        ServiceConfig serviceConfig = newServiceConfig();
         for (Object obj : getTypedBeansWithAnnotation(GRpcService.class)) {
             GRpcService gRpcServiceAnn = obj.getClass().getAnnotation(GRpcService.class);
             String interfaceName = gRpcServiceAnn.interfaceName();
             if (StringUtils.isBlank(interfaceName)) {
                 interfaceName = obj.getClass().getName();
             }
-            serviceConfig.addRef(interfaceName, obj);
+            serviceConfig.addServiceConfig(interfaceName, this.getGroup(gRpcServiceAnn),
+                                           this.getVersion(gRpcServiceAnn), obj);
         }
         serviceConfig.export();
     }
 
-    private void export(GRpcService service) {
+    @Override
+    public void destroy() throws Exception {
+        serviceConfig.destroy();
+        applicationContext.destroy();
+    }
+
+    private String getGroup(GRpcService service) {
         if (StringUtils.isNoneBlank(service.group())) {
-            referenceConfig.setGroup(service.group());
+            return service.group();
         } else {
-            String group = grpcProperties.getReferenceGroup();
+            String group = grpcProperties.getServiceGroup();
             Preconditions.checkState(StringUtils.isBlank(group), "Group can not be null", group);
-            referenceConfig.setGroup(group);
+            return group;
         }
-        if (StringUtils.isNoneBlank(reference.version())) {
-            referenceConfig.setVersion(reference.version());
+    }
+
+    private String getVersion(GRpcService service) {
+        if (StringUtils.isNoneBlank(service.version())) {
+            return service.version();
         } else {
-            String version = grpcProperties.getReferenceVersion();
+            String version = grpcProperties.getServcieVersion();
             Preconditions.checkState(StringUtils.isBlank(version), "Version can not be null", version);
-            referenceConfig.setVersion(version);
+            return version;
         }
-        String interfaceName = reference.interfaceName();
-        Preconditions.checkState(StringUtils.isBlank(interfaceName), "Version can not be null", interfaceName);
-        referenceConfig.setInterfaceName(interfaceName);
-        referenceConfig.setRegistryName("consul");
+    }
+
+    private ServiceConfig newServiceConfig() {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setRegistryName("consul");
         String registryAddress = grpcProperties.getConsulIp();
         Preconditions.checkState(StringUtils.isBlank(registryAddress), "RegistryAddress can not be null",
                                  registryAddress);
-        referenceConfig.setRegistryAddress(registryAddress);
+        serviceConfig.setRegistryAddress(registryAddress);
         int port = grpcProperties.getConsulPort();
-        Preconditions.checkState(port != 0, "RegistryAddress can not be zero", port);
-        referenceConfig.setRegistryPort(grpcProperties.getConsulPort());
+        Preconditions.checkState(port != 0, "RegistryPort can not be zero", port);
+        serviceConfig.setRegistryPort(grpcProperties.getConsulPort());
+        return serviceConfig;
     }
 
     private Collection<Object> getTypedBeansWithAnnotation(Class<? extends Annotation> annotationType) throws Exception {

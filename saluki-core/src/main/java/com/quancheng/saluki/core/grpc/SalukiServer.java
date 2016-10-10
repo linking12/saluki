@@ -16,4 +16,10 @@ public class SalukiServer {
         }
     }
 
+    public void shutDown() {
+        for (Server server : servers) {
+            server.shutdownNow();
+        }
+    }
+
 }
