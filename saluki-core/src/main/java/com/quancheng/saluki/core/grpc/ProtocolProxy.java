@@ -139,7 +139,7 @@ public final class ProtocolProxy<T> {
                 return proxy.equals(args[0]);
             }
 
-            GrpcMethodDescFactory factory = GrpcMethodDescFactory.getInstance();
+            MethodDescriptorFactory factory = MethodDescriptorFactory.getInstance();
             MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = factory.getMethodDesc(ProtocolProxy.this,
                                                                                                               method,
                                                                                                               args);

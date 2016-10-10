@@ -7,17 +7,17 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.MethodDescriptor;
 
-public class GrpcMethodDescFactory {
+public class MethodDescriptorFactory {
 
     private static class GrpcMethodDescFactoryHolder {
 
-        private static final GrpcMethodDescFactory INSTANCE = new GrpcMethodDescFactory();
+        private static final MethodDescriptorFactory INSTANCE = new MethodDescriptorFactory();
     }
 
-    private GrpcMethodDescFactory(){
+    private MethodDescriptorFactory(){
     }
 
-    public static final GrpcMethodDescFactory getInstance() {
+    public static final MethodDescriptorFactory getInstance() {
         return GrpcMethodDescFactoryHolder.INSTANCE;
     }
 
