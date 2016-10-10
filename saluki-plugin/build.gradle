@@ -1,0 +1,41 @@
+group "com.quancheng.gradle.plugins"
+version "1.0-SNAPSHOT"
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+jar {
+    baseName = 'salukirpc'
+}
+
+buildscript {
+    //  Include local repository
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        //classpath 'com.quancheng:grpc-plugin:1.0-SNAPSHOT'
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+
+dependencies {
+    compile gradleApi()
+    compile 'org.codehaus.groovy:groovy-all:2.4.4'
+}
+
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['src/main/groovy']
+        }
+    }
+}
+
+
+
