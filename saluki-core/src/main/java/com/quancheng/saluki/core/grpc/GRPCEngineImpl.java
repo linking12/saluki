@@ -5,16 +5,14 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.proxy.ProtocolProxyFactory;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -38,58 +36,36 @@ import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 public class GRPCEngineImpl implements GRPCEngine {
 
-    private static final Logger          log = LoggerFactory.getLogger(GRPCEngine.class);
+    private static final Logger log = LoggerFactory.getLogger(GRPCEngine.class);
 
-    private final SalukiURL              registryUrl;
+    private final SalukiURL     registryUrl;
 
-    private final Registry               registry;
-
-    private final Cache<String, Channel> channelCache;
+    private final Registry      registry;
 
     public GRPCEngineImpl(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-        channelCache = CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public <T> ProtocolProxy<T> getProxy(SalukiURL refUrl) throws Exception {
+    public Object getProxy(SalukiURL refUrl) throws Exception {
         boolean isLocal = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, false);
-        /**
-         * 使用回调函数来实现Channel的延迟加载:如果是原生的stub，延迟加载是不起作用的，只有使用代理的情况下，才起作用
-         */
-        ProtocolProxy.ChannelCallable channelCallable = new ProtocolProxy.ChannelCallable() {
+        Callable<Channel> channelCallable = new Callable<Channel>() {
 
             @Override
-            public Channel getGrpcChannel(String serviceInterface) {
-                try {
-                    return channelCache.get(serviceInterface, new Callable<Channel>() {
-
-                        @Override
-                        public Channel call() throws Exception {
-                            Channel channel;
-                            if (isLocal) {
-                                channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
-                            } else {
-                                channel = ManagedChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                               .nameResolverFactory(buildNameResolverFactory(refUrl))//
-                                                               .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
-                            }
-                            return channel;
-                        }
-
-                    });
-                } catch (ExecutionException e) {
-                    throw new IllegalStateException("fetch Channel failed", e);
+            public Channel call() throws Exception {
+                Channel channel;
+                if (isLocal) {
+                    channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
+                } else {
+                    channel = ManagedChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
+                                                   .nameResolverFactory(buildNameResolverFactory(refUrl))//
+                                                   .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
                 }
+                return channel;
             }
-
         };
-        int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
-        int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
-        boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
-        return new ProtocolProxy(refUrl.getServiceInterface(), channelCallable, rpcTimeOut, rpcType, isGeneric);
+        return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getProxy();
     }
 
     private NameResolver.Factory buildNameResolverFactory(SalukiURL refUrl) {

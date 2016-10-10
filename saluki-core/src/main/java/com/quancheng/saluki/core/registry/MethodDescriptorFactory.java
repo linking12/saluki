@@ -1,8 +1,9 @@
-package com.quancheng.saluki.core.grpc;
+package com.quancheng.saluki.core.registry;
 
 import java.lang.reflect.Method;
 
 import com.google.protobuf.GeneratedMessageV3;
+import com.quancheng.saluki.core.grpc.GrpcUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.MethodDescriptor;

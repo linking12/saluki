@@ -96,7 +96,7 @@ public class ReferenceConfig extends AbstractConfig {
         checkParam();
         loadRegistry();
         try {
-            ref = grpcEngine.getProxy(buildRefUrl()).getProxy();
+            ref = grpcEngine.getProxy(buildRefUrl());
         } catch (Exception e) {
             throw new IllegalStateException("Create proxy failed ", e);
         }

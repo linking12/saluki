@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.service;
+package com.quancheng.saluki.core.grpc.service;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

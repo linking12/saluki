@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc;
+package com.quancheng.saluki.core.registry;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.service.GenericService;
+import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 

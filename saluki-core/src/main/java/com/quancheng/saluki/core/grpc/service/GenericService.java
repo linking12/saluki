@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.service;
+package com.quancheng.saluki.core.grpc.service;
 
 public interface GenericService {
 
