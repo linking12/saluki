@@ -3,7 +3,6 @@ package com.quancheng.saluki.core.grpc;
 import java.util.Map;
 
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.server.SalukiServer;
 
 public interface GRPCEngine {
 

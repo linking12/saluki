@@ -7,7 +7,6 @@ import java.util.concurrent.Callable;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.proxy.ProtocolProxyFactory;
-import com.quancheng.saluki.core.grpc.server.SalukiServer;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporter;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
 import com.quancheng.saluki.core.registry.Registry;
