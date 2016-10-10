@@ -111,20 +111,38 @@ public final class ProtocolProxy<T> {
         return proxy;
     }
 
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public int getRpcTimeout() {
+        return rpcTimeout;
+    }
+
+    public boolean isGeneric() {
+        return isGeneric;
+    }
+
     private class JavaProxyInvoker implements InvocationHandler {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = null;
-            if (isGeneric && method.getName().equals("$invoke")) {
-                String protocol = (String) args[0];
-                String methodName = (String) args[1];
-                String[] parameterTypes = (String[]) args[2];
-                Object[] param = (Object[]) args[3];
-                methodDescriptor = this.buildGenericMethodDesc(protocol, methodName, parameterTypes, param);
-            } else {
-                methodDescriptor = this.buildNormalMethodDesc(args, method);
+            String methodName = method.getName();
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if ("toString".equals(methodName) && parameterTypes.length == 0) {
+                return proxy.toString();
             }
+            if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
+                return proxy.hashCode();
+            }
+            if ("equals".equals(methodName) && parameterTypes.length == 1) {
+                return proxy.equals(args[0]);
+            }
+
+            GrpcMethodDescFactory factory = GrpcMethodDescFactory.getInstance();
+            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = factory.getMethodDesc(ProtocolProxy.this,
+                                                                                                              method,
+                                                                                                              args);
             // 回调获取通道对象，此处有缓存，缓存1000个不同方法所对应的通道
             Channel chanel = channelCallable.getGrpcChannel(protocol);
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = chanel.newCall(methodDescriptor,
@@ -138,55 +156,6 @@ public final class ProtocolProxy<T> {
                 default:
                     return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
             }
-        }
-
-        // 构造动态代理的方法说明
-        private MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildNormalMethodDesc(Object[] args,
-                                                                                               Method method) {
-            if (args.length > 1) {
-                throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                                   + args.length);
-            }
-            return GrpcUtils.createMethodDescriptor(protocol, method);
-
-        }
-
-        // 构造泛化调用的方法说明
-        private MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildGenericMethodDesc(String protocol,
-                                                                                                String methodName,
-                                                                                                String[] parameterTypes,
-                                                                                                Object[] param) {
-            if (parameterTypes.length != 2) {
-                throw new IllegalArgumentException("generic call,the request and response type must be set "
-                                                   + parameterTypes + " length is " + parameterTypes.length);
-            }
-            if (param.length > 1) {
-                throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
-                                                   + param.length);
-            }
-            GeneratedMessageV3[] paramType = concoctParamInstance(parameterTypes);
-            return GrpcUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
-        }
-
-        private GeneratedMessageV3[] concoctParamInstance(String[] parameterTypes) {
-            GeneratedMessageV3[] paramInstance = new GeneratedMessageV3[parameterTypes.length];
-            for (int i = 0; i < parameterTypes.length; i++) {
-                String parameterTypeStr = parameterTypes[i];
-                try {
-                    Class<?> parameterType = ReflectUtil.name2class(parameterTypeStr);
-                    if (GeneratedMessageV3.class.isAssignableFrom(parameterType)) {
-                        Object obj = ReflectUtil.classInstance(parameterType);
-                        paramInstance[i] = (GeneratedMessageV3) obj;
-                    } else {
-                        throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3"
-                                                           + " but the type is " + parameterType);
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalArgumentException("not found paramter in classpath, " + " but the type is "
-                                                       + parameterTypeStr);
-                }
-            }
-            return paramInstance;
         }
     }
 }
