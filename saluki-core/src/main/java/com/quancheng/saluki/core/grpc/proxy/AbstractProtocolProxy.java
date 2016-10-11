@@ -69,10 +69,13 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             switch (callType) {
                 case SalukiConstants.RPCTYPE_ASYNC:
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                    break;
                 case SalukiConstants.RPCTYPE_BLOCKING:
                     response = ClientCalls.blockingUnaryCall(newCall, arg);
+                    break;
                 default:
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                    break;
             }
             Class<?> returnType = ReflectUtil.getTypeRep(method);
             return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
