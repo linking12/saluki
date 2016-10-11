@@ -18,6 +18,10 @@ public class DemoClientApp implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String name = "John";
         final GreeterOuterClass.HelloRequest helloRequest = GreeterOuterClass.HelloRequest.newBuilder().setName(name).build();
+        
+        com.quancheng.boot.starter.service.HelloRequest request = new   com.quancheng.boot.starter.service.HelloRequest();
+        request.setName("asdf");
+        
 
         final GreeterOuterClass.HelloReply reply = greetService.SayHello(helloRequest);
         System.out.println(reply);
