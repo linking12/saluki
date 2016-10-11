@@ -41,9 +41,20 @@ public abstract class AbstractProtocolExporter implements ProtocolExporter {
         @Override
         public void invoke(GeneratedMessageV3 request, StreamObserver<GeneratedMessageV3> responseObserver) {
             try {
-                Object request_ = MethodDescriptorUtils.convertPbModelToPojo(request, ReflectUtil.getTypedReq(method));
-                Object[] requestParams = new Object[] { request_ };
+                /**
+                 * 对入参进行转化，pb model --->pojo begin
+                 */
+                Class<?> requestType = ReflectUtil.getTypedReq(method);
+                Object req = MethodDescriptorUtils.convertPbModelToPojo(request, requestType);
+                /**
+                 * 对入参进行转化，pb model --->pojo end
+                 */
+                Object[] requestParams = new Object[] { req };
                 Object response = method.invoke(serviceToInvoke, requestParams);
+
+                /**
+                 * 对出参进行转化，pojo ---> pb model
+                 */
                 GeneratedMessageV3 returnObj = (GeneratedMessageV3) MethodDescriptorUtils.convertPojoToPbModel(response);
                 responseObserver.onNext(returnObj);
             } catch (Exception ex) {

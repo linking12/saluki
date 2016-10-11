@@ -60,8 +60,11 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             }
             GeneratedMessageV3 arg = null;
             Class<?> returnType = null;
+            /**
+             * 对入参进行转化，pojo--->pb model begin
+             */
             if (!isGeneric) {
-                // 动态代理覆盖传入的参数
+
                 args = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(args[0]) };
                 arg = (GeneratedMessageV3) args[0];
                 returnType = ReflectUtil.getTypeRep(method);
@@ -75,11 +78,12 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                 String requestType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[0]);
                 String responseType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[1]);
                 args[2] = new String[] { requestType, responseType };
-                // 泛化调用覆盖第四个参数
                 args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(((Object[]) args[3])[0]) };
                 arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
-
             }
+            /**
+             * 对入参进行转化，pojo--->pb model end
+             */
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
                                                                                                                     args),
                                                                                               CallOptions.DEFAULT);
@@ -95,6 +99,9 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
                     break;
             }
+            /**
+             * 对出参进行转化，pb model --->pojo 
+             */
             return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
         }
     }
