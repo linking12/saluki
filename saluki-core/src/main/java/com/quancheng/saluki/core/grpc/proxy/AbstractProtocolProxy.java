@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.plaf.basic.BasicScrollPaneUI.ViewportChangeHandler;
+
 import org.apache.commons.lang3.ObjectUtils;
 
 import com.google.common.cache.Cache;
@@ -13,6 +15,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.serializer.ProtobufSerializer;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -36,11 +40,12 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
 
     private final Cache<String, Channel> channelCache;
 
+    private final ProtobufSerializer     SERIALIZER = new ProtobufSerializer();
+
     protected class JavaProxyInvoker implements InvocationHandler {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
             String methodName = method.getName();
             Class<?>[] parameterTypes = method.getParameterTypes();
             if ("toString".equals(methodName) && parameterTypes.length == 0) {
@@ -52,19 +57,47 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             if ("equals".equals(methodName) && parameterTypes.length == 1) {
                 return proxy.equals(args[0]);
             }
+            GeneratedMessageV3 arg = null;
+            if (args.length == 1) {
+                // 动态代理覆盖传入的参数
+                args = new Object[] { convertPojoToPbModel(args[0]) };
+                arg = (GeneratedMessageV3) args[0];
+            } else if (args.length == 4) {
+                // 泛化调用覆盖第四个参数
+                args[3] = new Object[] { convertPojoToPbModel(((Object[]) args[3])[0]) };
+                arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
+            }
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
                                                                                                                     args),
                                                                                               CallOptions.DEFAULT);
-            GeneratedMessageV3 arg = (GeneratedMessageV3) args[0];
+            GeneratedMessageV3 response = null;
             switch (callType) {
                 case SalukiConstants.RPCTYPE_ASYNC:
-                    return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                    response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
                 case SalukiConstants.RPCTYPE_BLOCKING:
-                    return ClientCalls.blockingUnaryCall(newCall, arg);
+                    response = ClientCalls.blockingUnaryCall(newCall, arg);
                 default:
-                    return ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                    response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
             }
+            Class<?> returnType = method.getReturnType();
+            if (!GeneratedMessageV3.class.isAssignableFrom(returnType)) {
+                return SERIALIZER.fromProtobuf(response, returnType);
+            } else {
+                return response;
+            }
+        }
 
+        private Object convertPojoToPbModel(Object arg) {
+            if (!(arg instanceof GeneratedMessageV3)) {
+                try {
+                    GeneratedMessageV3 message = (GeneratedMessageV3) SERIALIZER.toProtobuf(arg);
+                    return message;
+                } catch (ProtobufException e) {
+                    throw new IllegalArgumentException(e.getMessage(), e);
+                }
+            } else {
+                return arg;
+            }
         }
 
     }

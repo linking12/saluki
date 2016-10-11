@@ -1,5 +1,6 @@
 package com.quancheng.saluki.core.utils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -24,6 +25,15 @@ public final class ReflectUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static Class<?> getTypedReq(Method method) {
+        Class[] params = method.getParameterTypes();
+        return params[0];
+    }
+
+    public static Class<?> getTypeRep(Method method) {
+        return method.getReturnType();
     }
 
     public static Object newMethodReq(Method method) {
@@ -55,6 +65,17 @@ public final class ReflectUtil {
             e.printStackTrace();
         }
         return obj;
+    }
+
+    public static Annotation findAnnotation(Class<?> target, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : target.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
     }
 
     public static List<Method> findAllPublicMethods(Class<?> clazz) {
