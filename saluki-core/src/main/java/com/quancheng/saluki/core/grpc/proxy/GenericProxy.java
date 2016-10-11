@@ -23,7 +23,7 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
     @Override
     public Object getProxy() {
         return Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
-                                      new JavaProxyInvoker());
+                                      new JavaProxyInvoker(true));
     }
 
     @Override
@@ -33,31 +33,18 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
         String methodName = (String) args[1];
         String[] parameterTypes = (String[]) args[2];
         Object[] param = (Object[]) args[3];
-        if (parameterTypes.length != 2) {
-            throw new IllegalArgumentException("generic call,the request and response type must be set "
-                                               + parameterTypes + " length is " + parameterTypes.length);
-        }
         if (param.length > 1) {
             throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
                                                + param.length);
         }
-        GeneratedMessageV3[] paramType = new GeneratedMessageV3[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            String parameterTypeStr = parameterTypes[i];
-            try {
-                Class<?> parameterType = ReflectUtil.name2class(parameterTypeStr);
-                if (GeneratedMessageV3.class.isAssignableFrom(parameterType)) {
-                    Object obj = ReflectUtil.classInstance(parameterType);
-                    paramType[i] = (GeneratedMessageV3) obj;
-                } else {
-                    throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3"
-                                                       + " but the type is " + parameterType);
-                }
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("not found paramter in classpath, " + " but the type is "
-                                                   + parameterTypeStr);
-            }
+        try {
+            Class<?> requestType = ReflectUtil.name2class(parameterTypes[0]);
+            Class<?> responseType = ReflectUtil.name2class(parameterTypes[1]);
+            com.google.protobuf.GeneratedMessageV3 argsReq = MethodDescriptorUtils.buildDefautInstance(requestType);
+            com.google.protobuf.GeneratedMessageV3 argsRep = MethodDescriptorUtils.buildDefautInstance(responseType);
+            return MethodDescriptorUtils.createMethodDescriptor(protocol, methodName, argsReq, argsRep);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3");
         }
-        return MethodDescriptorUtils.createMethodDescriptor(protocol, methodName, paramType[0], paramType[1]);
     }
 }

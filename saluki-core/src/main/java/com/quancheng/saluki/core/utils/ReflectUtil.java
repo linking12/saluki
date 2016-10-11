@@ -86,7 +86,12 @@ public final class ReflectUtil {
             boolean isToString = "toString".equals(methodName) && parameterTypes.length == 0;
             boolean isHashCode = "hashCode".equals(methodName) && parameterTypes.length == 0;
             boolean isEquals = "equals".equals(methodName) && parameterTypes.length == 1;
-            if (isToString || isHashCode || isEquals) {
+            boolean isnotify = "notify".equals(methodName) && parameterTypes.length == 0;
+            boolean isnotifyAll = "notifyAll".equals(methodName) && parameterTypes.length == 0;
+            boolean isgetClass = "getClass".equals(methodName) && parameterTypes.length == 0;
+            boolean iswait = "wait".equals(methodName) && (parameterTypes.length == 0 || parameterTypes.length == 1
+                                                           || parameterTypes.length == 2);
+            if (isToString || isHashCode || isEquals || isnotify || isnotifyAll || isgetClass || iswait) {
                 continue;
             }
             methods.add(method);

@@ -22,7 +22,7 @@ public class NormalProxy<T> extends AbstractProtocolProxy<T> {
     @Override
     public T getProxy() {
         return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { getProtocolClzz() },
-                                          new JavaProxyInvoker());
+                                          new JavaProxyInvoker(false));
     }
 
     @Override

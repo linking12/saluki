@@ -39,6 +39,12 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
 
     protected class JavaProxyInvoker implements InvocationHandler {
 
+        private boolean isGeneric;
+
+        public JavaProxyInvoker(boolean isGeneric){
+            this.isGeneric = isGeneric;
+        }
+
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             String methodName = method.getName();
@@ -53,14 +59,26 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                 return proxy.equals(args[0]);
             }
             GeneratedMessageV3 arg = null;
-            if (args.length == 1) {
+            Class<?> returnType = null;
+            if (!isGeneric) {
                 // 动态代理覆盖传入的参数
                 args = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(args[0]) };
                 arg = (GeneratedMessageV3) args[0];
-            } else if (args.length == 4) {
+                returnType = ReflectUtil.getTypeRep(method);
+            } else {
+                int length = ((String[]) args[2]).length;
+                if (length != 2) {
+                    throw new IllegalArgumentException("generic call request type and response type must transmit"
+                                                       + " but length is  " + length);
+                }
+                returnType = ReflectUtil.name2class(((String[]) args[2])[1]);
+                String requestType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[0]);
+                String responseType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[1]);
+                args[2] = new String[] { requestType, responseType };
                 // 泛化调用覆盖第四个参数
                 args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(((Object[]) args[3])[0]) };
                 arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
+
             }
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
                                                                                                                     args),
@@ -77,7 +95,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
                     break;
             }
-            Class<?> returnType = ReflectUtil.getTypeRep(method);
             return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
         }
     }

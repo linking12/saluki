@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import com.quancheng.boot.starter.saluki.GRpcReference;
 import com.quancheng.boot.starter.saluki.autoconfigure.GRpcProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
@@ -77,7 +78,16 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         referenceConfig.setInjvm(reference.localProcess());
         referenceConfig.setAsync(reference.callType() == 1 ? true : false);
         referenceConfig.setRequestTimeout(reference.requestTime());
-        referenceConfig.setGeneric(false);
+        try {
+            Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
+            if (!interfaceClass.isAssignableFrom(referenceClass)) {
+                referenceConfig.setGeneric(true);
+            } else {
+                referenceConfig.setGeneric(false);
+            }
+        } catch (ClassNotFoundException e) {
+            referenceConfig.setGeneric(false);
+        }
         Object value = referenceConfig.get();
         return value;
     }

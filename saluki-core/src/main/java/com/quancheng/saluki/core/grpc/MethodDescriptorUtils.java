@@ -39,7 +39,7 @@ public class MethodDescriptorUtils {
                                                io.grpc.protobuf.ProtoUtils.marshaller(argsRep));
     }
 
-    private static GeneratedMessageV3 buildDefautInstance(Class<?> type) {
+    public static GeneratedMessageV3 buildDefautInstance(Class<?> type) {
         if (!GeneratedMessageV3.class.isAssignableFrom(type)) {
             ProtobufEntity entity = (ProtobufEntity) ReflectUtil.findAnnotation(type, ProtobufEntity.class);
             Class<?> messageType = entity.value();
@@ -85,6 +85,22 @@ public class MethodDescriptorUtils {
         } else {
             return arg;
         }
+    }
+
+    public static String covertPojoTypeToPbModelType(String pojoType) {
+        try {
+            Class<?> parameterType = ReflectUtil.name2class(pojoType);
+            ProtobufEntity entity = (ProtobufEntity) ReflectUtil.findAnnotation(parameterType, ProtobufEntity.class);
+            Class<?> messageType = entity.value();
+            if (GeneratedMessageV3.class.isAssignableFrom(messageType)) {
+                return messageType.getName();
+            } else {
+                return pojoType;
+            }
+        } catch (ClassNotFoundException e) {
+            return pojoType;
+        }
+
     }
 
 }
