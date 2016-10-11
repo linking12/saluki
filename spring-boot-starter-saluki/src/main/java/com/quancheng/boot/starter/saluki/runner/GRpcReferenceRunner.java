@@ -54,30 +54,30 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
             referenceConfig.setGroup(reference.group());
         } else {
             String group = grpcProperties.getReferenceGroup();
-            Preconditions.checkState(StringUtils.isBlank(group), "Group can not be null", group);
+            Preconditions.checkNotNull(group, "Group can not be null", group);
             referenceConfig.setGroup(group);
         }
         if (StringUtils.isNoneBlank(reference.version())) {
             referenceConfig.setVersion(reference.version());
         } else {
             String version = grpcProperties.getReferenceVersion();
-            Preconditions.checkState(StringUtils.isBlank(version), "Version can not be null", version);
+            Preconditions.checkNotNull(version, "Version can not be null", version);
             referenceConfig.setVersion(version);
         }
         String interfaceName = reference.interfaceName();
-        Preconditions.checkState(StringUtils.isBlank(interfaceName), "Version can not be null", interfaceName);
+        Preconditions.checkNotNull(interfaceName, "interfaceName can not be null", interfaceName);
         referenceConfig.setInterfaceName(interfaceName);
         referenceConfig.setRegistryName("consul");
         String registryAddress = grpcProperties.getConsulIp();
-        Preconditions.checkState(StringUtils.isBlank(registryAddress), "RegistryAddress can not be null",
-                                 registryAddress);
+        Preconditions.checkNotNull(registryAddress, "RegistryAddress can not be null", registryAddress);
         referenceConfig.setRegistryAddress(registryAddress);
-        int port = grpcProperties.getConsulPort();
-        Preconditions.checkState(port != 0, "RegistryAddress can not be zero", port);
-        referenceConfig.setRegistryPort(grpcProperties.getConsulPort());
+        int registryPort = grpcProperties.getConsulPort();
+        Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
+        referenceConfig.setRegistryPort(registryPort);
         referenceConfig.setInjvm(reference.localProcess());
         referenceConfig.setAsync(reference.callType() == 1 ? true : false);
         referenceConfig.setRequestTimeout(reference.requestTime());
+        referenceConfig.setGeneric(false);
         Object value = referenceConfig.get();
         return value;
     }

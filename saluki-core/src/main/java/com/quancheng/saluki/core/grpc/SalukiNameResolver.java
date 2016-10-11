@@ -41,7 +41,7 @@ public class SalukiNameResolver extends NameResolver {
 
     @Override
     public final String getServiceAuthority() {
-        return null;
+        return "consulauthority";
     }
 
     @Override

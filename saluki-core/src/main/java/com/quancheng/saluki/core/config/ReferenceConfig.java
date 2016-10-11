@@ -149,12 +149,16 @@ public class ReferenceConfig extends BasicConfig {
         Map<String, String> params = Maps.newHashMap();
         if (this.injvm) {
             params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.TRUE.toString());
+        } else {
+            params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE.toString());
         }
         if (!this.async) {
             params.put(SalukiConstants.RPCTYPE_KEY, Integer.valueOf(SalukiConstants.RPCTYPE_ASYNC).toString());
         }
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
+        } else {
+            params.put(SalukiConstants.GENERIC_KEY, Boolean.FALSE.toString());
         }
         if (StringUtils.isNotBlank(this.group)) {
             params.put(SalukiConstants.GROUP_KEY, this.group);

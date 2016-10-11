@@ -156,7 +156,6 @@ public class ConsulRegistry extends FailbackRegistry {
         public void run() {
             while (true) {
                 try {
-                    sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
                     // 最新拉取的值
                     Map<String, List<SalukiURL>> groupNewUrls = lookupServiceUpdate(group);
                     if (groupNewUrls != null && !groupNewUrls.isEmpty()) {
@@ -185,6 +184,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
                         }
                     }
+                    sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
                 } catch (Throwable e) {
                     try {
                         Thread.sleep(2000);

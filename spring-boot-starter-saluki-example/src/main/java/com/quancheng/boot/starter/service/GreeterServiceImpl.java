@@ -6,7 +6,7 @@ import org.lognet.springboot.grpc.proto.GreeterOuterClass.HelloRequest;
 
 import com.quancheng.boot.starter.saluki.GRpcService;
 
-@GRpcService(interfaceName = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
+//@GRpcService(interfaceName = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
 public class GreeterServiceImpl implements GreeterService {
 
     @Override

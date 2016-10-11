@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
@@ -116,6 +117,9 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("subscribe listener == null");
         }
+        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
+                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
+        url = url.removeParameters(keys);
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
