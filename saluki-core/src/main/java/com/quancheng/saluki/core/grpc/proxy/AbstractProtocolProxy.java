@@ -12,9 +12,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
+import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
-import com.quancheng.saluki.serializer.ProtobufSerializer;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -38,8 +37,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
 
     private final Cache<String, Channel> channelCache;
 
-    private final ProtobufSerializer     SERIALIZER = new ProtobufSerializer();
-
     protected class JavaProxyInvoker implements InvocationHandler {
 
         @Override
@@ -58,11 +55,11 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             GeneratedMessageV3 arg = null;
             if (args.length == 1) {
                 // 动态代理覆盖传入的参数
-                args = new Object[] { convertPojoToPbModel(args[0]) };
+                args = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(args[0]) };
                 arg = (GeneratedMessageV3) args[0];
             } else if (args.length == 4) {
                 // 泛化调用覆盖第四个参数
-                args[3] = new Object[] { convertPojoToPbModel(((Object[]) args[3])[0]) };
+                args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(((Object[]) args[3])[0]) };
                 arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
             }
             ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
@@ -78,27 +75,8 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
             }
             Class<?> returnType = ReflectUtil.getTypeRep(method);
-            // 如果期望的结果非pb模型，转一下返回出去，这里对于泛化调用的话存在一些问题
-            if (!GeneratedMessageV3.class.isAssignableFrom(returnType)) {
-                return SERIALIZER.fromProtobuf(response, returnType);
-            } else {
-                return response;
-            }
+            return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
         }
-
-        private Object convertPojoToPbModel(Object arg) {
-            if (!(arg instanceof GeneratedMessageV3)) {
-                try {
-                    GeneratedMessageV3 message = (GeneratedMessageV3) SERIALIZER.toProtobuf(arg);
-                    return message;
-                } catch (ProtobufException e) {
-                    throw new IllegalArgumentException(e.getMessage(), e);
-                }
-            } else {
-                return arg;
-            }
-        }
-
     }
 
     protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
