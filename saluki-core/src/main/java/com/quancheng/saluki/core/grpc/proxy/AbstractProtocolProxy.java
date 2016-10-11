@@ -6,8 +6,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.plaf.basic.BasicScrollPaneUI.ViewportChangeHandler;
-
 import org.apache.commons.lang3.ObjectUtils;
 
 import com.google.common.cache.Cache;
@@ -79,7 +77,8 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                 default:
                     response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
             }
-            Class<?> returnType = method.getReturnType();
+            Class<?> returnType = ReflectUtil.getTypeRep(method);
+            // 如果期望的结果非pb模型，转一下返回出去，这里对于泛化调用的话存在一些问题
             if (!GeneratedMessageV3.class.isAssignableFrom(returnType)) {
                 return SERIALIZER.fromProtobuf(response, returnType);
             } else {
