@@ -28,10 +28,6 @@ public class NormalProxy<T> extends AbstractProtocolProxy<T> {
     @Override
     protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                              Object[] args) {
-        if (args.length > 1) {
-            throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                               + args.length);
-        }
         return MethodDescriptorUtils.createMethodDescriptor(getProtocol(), method);
     }
 

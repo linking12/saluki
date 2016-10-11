@@ -32,11 +32,6 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
         String protocol = (String) args[0];
         String methodName = (String) args[1];
         String[] parameterTypes = (String[]) args[2];
-        Object[] param = (Object[]) args[3];
-        if (param.length > 1) {
-            throw new IllegalArgumentException("grpc not support multiple args,args is " + param + " length is "
-                                               + param.length);
-        }
         try {
             Class<?> requestType = ReflectUtil.name2class(parameterTypes[0]);
             Class<?> responseType = ReflectUtil.name2class(parameterTypes[1]);
@@ -44,7 +39,7 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
             com.google.protobuf.GeneratedMessageV3 argsRep = MethodDescriptorUtils.buildDefautInstance(responseType);
             return MethodDescriptorUtils.createMethodDescriptor(protocol, methodName, argsReq, argsRep);
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("grpc paramter must instanceof com.google.protobuf.GeneratedMessageV3");
+            throw new IllegalArgumentException("grpc requestType and responseType must instanceof com.google.protobuf.GeneratedMessageV3");
         }
     }
 }

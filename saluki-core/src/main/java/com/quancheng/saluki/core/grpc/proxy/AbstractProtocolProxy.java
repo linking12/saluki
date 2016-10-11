@@ -64,7 +64,10 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
              * 对入参进行转化，pojo--->pb model begin
              */
             if (!isGeneric) {
-
+                if (args.length > 1) {
+                    throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
+                                                       + args.length);
+                }
                 args = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(args[0]) };
                 arg = (GeneratedMessageV3) args[0];
                 returnType = ReflectUtil.getTypeRep(method);
@@ -78,7 +81,12 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                 String requestType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[0]);
                 String responseType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[1]);
                 args[2] = new String[] { requestType, responseType };
-                args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(((Object[]) args[3])[0]) };
+                Object[] param = (Object[]) args[3];
+                if (param.length > 1) {
+                    throw new IllegalArgumentException("grpc call not support multiple args,args is " + param
+                                                       + " length is " + param.length);
+                }
+                args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(param[0]) };
                 arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
             }
             /**
@@ -100,7 +108,7 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
                     break;
             }
             /**
-             * 对出参进行转化，pb model --->pojo 
+             * 对出参进行转化，pb model --->pojo
              */
             return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
         }
