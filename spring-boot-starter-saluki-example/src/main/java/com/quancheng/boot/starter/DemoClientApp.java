@@ -17,13 +17,9 @@ public class DemoClientApp implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         String name = "John";
-        final GreeterOuterClass.HelloRequest helloRequest = GreeterOuterClass.HelloRequest.newBuilder().setName(name).build();
-        
-        com.quancheng.boot.starter.service.HelloRequest request = new   com.quancheng.boot.starter.service.HelloRequest();
-        request.setName("asdf");
-        
-
-        final GreeterOuterClass.HelloReply reply = greetService.SayHello(helloRequest);
+        com.quancheng.boot.starter.service.model.HelloRequest request = new com.quancheng.boot.starter.service.model.HelloRequest();
+        request.setName(name);
+        final com.quancheng.boot.starter.service.model.HelloReply reply = greetService.SayHello(request);
         System.out.println(reply);
     }
 
