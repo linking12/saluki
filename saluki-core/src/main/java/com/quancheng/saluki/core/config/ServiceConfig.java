@@ -43,6 +43,8 @@ public class ServiceConfig extends BasicConfig {
         interfaceConfig.setRef(instance);
         if (instance instanceof BindableService) {
             interfaceConfig.setGrpcStub(true);
+        } else {
+            interfaceConfig.setGrpcStub(false);
         }
         Set<String> instanceInterfaces = Sets.newHashSet();
         for (Class<?> clzz : instance.getClass().getInterfaces()) {
@@ -50,6 +52,8 @@ public class ServiceConfig extends BasicConfig {
         }
         if (!instanceInterfaces.contains(interfaceName)) {
             interfaceConfig.setGeneric(true);
+        }else{
+            interfaceConfig.setGeneric(false);
         }
         serviceConigs.add(interfaceConfig);
     }

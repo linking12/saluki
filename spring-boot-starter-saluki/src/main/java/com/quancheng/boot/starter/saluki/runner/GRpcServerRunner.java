@@ -81,12 +81,14 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setRegistryName("consul");
         String registryAddress = grpcProperties.getConsulIp();
-        Preconditions.checkState(StringUtils.isBlank(registryAddress), "RegistryAddress can not be null",
-                                 registryAddress);
+        Preconditions.checkNotNull(registryAddress, "RegistryAddress can not be null", registryAddress);
         serviceConfig.setRegistryAddress(registryAddress);
         int port = grpcProperties.getConsulPort();
         Preconditions.checkState(port != 0, "RegistryPort can not be zero", port);
         serviceConfig.setRegistryPort(grpcProperties.getConsulPort());
+        int serverPort = grpcProperties.getServerPort();
+        Preconditions.checkNotNull(serverPort, "ServerPort can not be null", serverPort);
+        serviceConfig.setPort(grpcProperties.getServerPort());
         return serviceConfig;
     }
 

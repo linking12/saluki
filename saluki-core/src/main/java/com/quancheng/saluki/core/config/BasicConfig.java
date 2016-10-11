@@ -82,8 +82,8 @@ public class BasicConfig implements Serializable {
 
     protected void loadRegistry() {
         if (grpcEngine == null) {
-            Preconditions.checkNotNull(registryAddress, "registryAddress (%s) is not Null");
-            Preconditions.checkNotNull(registryPort, "registryPort (%s) is not Null");
+            Preconditions.checkNotNull(registryAddress, "registryAddress  is not Null",registryAddress);
+            Preconditions.checkState(registryPort != 0, "RegistryPort can not be zero", registryPort);
             String registryName = this.registryName != null ? this.registryName : SalukiConstants.REGISTRY_PROTOCOL;
             SalukiURL registryUrl = new SalukiURL(registryName, this.registryAddress, this.registryPort);
             grpcEngine = new GRPCEngineImpl(registryUrl);
