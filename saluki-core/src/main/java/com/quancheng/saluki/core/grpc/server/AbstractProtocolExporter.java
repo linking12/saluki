@@ -3,6 +3,8 @@ package com.quancheng.saluki.core.grpc.server;
 import java.lang.reflect.Method;
 
 import com.google.protobuf.GeneratedMessageV3;
+import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.stub.StreamObserver;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -39,8 +41,10 @@ public abstract class AbstractProtocolExporter implements ProtocolExporter {
         @Override
         public void invoke(GeneratedMessageV3 request, StreamObserver<GeneratedMessageV3> responseObserver) {
             try {
-                Object[] requestParams = new Object[] { request };
-                GeneratedMessageV3 returnObj = (GeneratedMessageV3) method.invoke(serviceToInvoke, requestParams);
+                Object request_ = MethodDescriptorUtils.convertPbModelToPojo(request, ReflectUtil.getTypedReq(method));
+                Object[] requestParams = new Object[] { request_ };
+                Object response = method.invoke(serviceToInvoke, requestParams);
+                GeneratedMessageV3 returnObj = (GeneratedMessageV3) MethodDescriptorUtils.convertPojoToPbModel(response);
                 responseObserver.onNext(returnObj);
             } catch (Exception ex) {
                 responseObserver.onError(ex);
