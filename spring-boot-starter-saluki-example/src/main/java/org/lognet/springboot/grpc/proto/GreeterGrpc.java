@@ -27,7 +27,7 @@ public class GreeterGrpc {
 
   private GreeterGrpc() {}
 
-  public static final String SERVICE_NAME = "com.quancheng.saluki.core.grpc.GreeterService";
+  public static final String SERVICE_NAME = "com.quancheng.boot.starter.service.GreeterService";
 
   // Static method descriptors that strictly reflect the proto.
   @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/1901")
