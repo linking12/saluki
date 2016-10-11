@@ -46,6 +46,7 @@
 		<module>saluki-registry</module>
 		<module>spring-boot-starter-saluki</module>
 		<module>saluki-common</module>
+		<module>spring-boot-starter-saluki-example</module>
 	</modules>
 	<properties>
 		<java.source.jdk>1.8</java.source.jdk>
