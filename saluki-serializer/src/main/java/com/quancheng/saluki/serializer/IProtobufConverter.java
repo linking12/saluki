@@ -1,4 +1,3 @@
-
 package com.quancheng.saluki.serializer;
 
 import com.quancheng.saluki.serializer.exception.ProtobufAnnotationException;
