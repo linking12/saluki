@@ -1,4 +1,4 @@
-package org.spring.boot.starter.saluki.autoconfigure;
+package com.quancheng.boot.starter.saluki.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

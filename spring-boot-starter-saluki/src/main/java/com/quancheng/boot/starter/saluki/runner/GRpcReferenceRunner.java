@@ -1,16 +1,16 @@
-package org.spring.boot.starter.saluki.runner;
+package com.quancheng.boot.starter.saluki.runner;
 
 import java.lang.reflect.Field;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spring.boot.starter.saluki.GRpcReference;
-import org.spring.boot.starter.saluki.autoconfigure.GRpcProperties;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 
 import com.google.common.base.Preconditions;
+import com.quancheng.boot.starter.saluki.GRpcReference;
+import com.quancheng.boot.starter.saluki.autoconfigure.GRpcProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
 
 public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {

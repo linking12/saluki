@@ -1,4 +1,4 @@
-package org.spring.boot.starter.saluki.runner;
+package com.quancheng.boot.starter.saluki.runner;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -8,8 +8,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spring.boot.starter.saluki.GRpcService;
-import org.spring.boot.starter.saluki.autoconfigure.GRpcProperties;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -20,6 +18,8 @@ import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
+import com.quancheng.boot.starter.saluki.GRpcService;
+import com.quancheng.boot.starter.saluki.autoconfigure.GRpcProperties;
 import com.quancheng.saluki.core.config.ServiceConfig;
 
 @Order(value = 0)

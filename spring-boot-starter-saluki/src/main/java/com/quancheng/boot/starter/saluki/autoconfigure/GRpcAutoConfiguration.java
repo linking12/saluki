@@ -1,14 +1,15 @@
-package org.spring.boot.starter.saluki.autoconfigure;
+package com.quancheng.boot.starter.saluki.autoconfigure;
 
-import org.spring.boot.starter.saluki.GRpcService;
-import org.spring.boot.starter.saluki.runner.GRpcReferenceRunner;
-import org.spring.boot.starter.saluki.runner.GRpcServerRunner;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.quancheng.boot.starter.saluki.GRpcService;
+import com.quancheng.boot.starter.saluki.runner.GRpcReferenceRunner;
+import com.quancheng.boot.starter.saluki.runner.GRpcServerRunner;
 
 @Configuration
 @ConditionalOnProperty(prefix = "grpc", name = "consulIp")

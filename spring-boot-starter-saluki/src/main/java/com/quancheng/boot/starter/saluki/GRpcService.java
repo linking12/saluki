@@ -1,4 +1,4 @@
-package org.spring.boot.starter.saluki;
+package com.quancheng.boot.starter.saluki;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
