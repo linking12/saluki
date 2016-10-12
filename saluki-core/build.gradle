@@ -5,5 +5,5 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
-  compile project(':saluki-serializer')
+    compile project(':saluki-serializer')
 }

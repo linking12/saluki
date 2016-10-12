@@ -1,8 +1,7 @@
 allprojects  {
   apply plugin: 'maven'
-
   group = 'com.quancheng'
-version = '0.0.1-SNAPSHOT'
+  version = '0.0.1-SNAPSHOT'
 }
 
 subprojects {
@@ -13,11 +12,7 @@ subprojects {
   
   repositories {
     mavenLocal()
-    
     maven { url "http://repo.maven.apache.org/maven2" }
   }
-
-  
-  
   
 }

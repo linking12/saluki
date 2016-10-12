@@ -1,4 +1,4 @@
-package example
+package com.quancheng.saluki
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

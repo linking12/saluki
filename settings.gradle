@@ -1,16 +1,16 @@
 rootProject.name = 'saluki'
 include ':saluki-core'
+include ':saluki-serializer'
+include ':saluki-plugin'
 include ':saluki-registry:saluki-registry-consul'
 include ':saluki-registry:saluki-registry-etcd3'
-include ':saluki-registry'
 include ':spring-boot-starter-saluki'
-include ':saluki-serializer'
-include ':spring-boot-starter-saluki-example'
+
 
 project(':saluki-core').projectDir = "$rootDir/saluki-core" as File
+project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
+project(':saluki-plugin').projectDir = "$rootDir/saluki-plugin" as File
 project(':saluki-registry:saluki-registry-consul').projectDir = "$rootDir/saluki-registry/saluki-registry-consul" as File
 project(':saluki-registry:saluki-registry-etcd3').projectDir = "$rootDir/saluki-registry/saluki-registry-etcd3" as File
-project(':saluki-registry').projectDir = "$rootDir/saluki-registry" as File
 project(':spring-boot-starter-saluki').projectDir = "$rootDir/spring-boot-starter-saluki" as File
-project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
-project(':spring-boot-starter-saluki-example').projectDir = "$rootDir/spring-boot-starter-saluki-example" as File
+
