@@ -5,11 +5,14 @@ import java.util.concurrent.Callable;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.SalukiClassLoader;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.Channel;
 
 public class ProtocolProxyFactory {
+
+    private final SalukiClassLoader classLoader;
 
     private static class ProtocolProxyFactoryHolder {
 
@@ -17,6 +20,7 @@ public class ProtocolProxyFactory {
     }
 
     private ProtocolProxyFactory(){
+        classLoader = new SalukiClassLoader();
     }
 
     public static final ProtocolProxyFactory getInstance() {
@@ -36,7 +40,9 @@ public class ProtocolProxyFactory {
             throw new IllegalStateException("no class find in classpath", e);
         }
         if (isGeneric) {
-            return new GenericProxy(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+            GenericProxy genericProxy = new GenericProxy(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+            genericProxy.setSalukiClassLoader(classLoader);
+            return genericProxy;
         }
         if (isInterface) {
             return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
