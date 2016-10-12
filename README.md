@@ -82,7 +82,7 @@ grpc.consulPort=8500 //consul注册中心port
 * 服务消费端
 
 ```
- @GRpcReference(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
+ @SalukiReference(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
  private UserService userSerivce;
     
 ```
@@ -90,7 +90,7 @@ grpc.consulPort=8500 //consul注册中心port
 * 服务提供端
 
 ```
-@GRpcService(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
+@SalukiService(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
 public class GreeterServiceImpl implements GreeterService {
 
     @Override
