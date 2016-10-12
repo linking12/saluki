@@ -1,6 +1,0 @@
-
-description = ''
-dependencies {
-    compile project(':spring-boot-starter-saluki')
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.0.RELEASE'
-}
