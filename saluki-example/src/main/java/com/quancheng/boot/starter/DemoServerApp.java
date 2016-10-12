@@ -10,9 +10,8 @@ import com.quancheng.boot.starter.service.GreeterService;
 @SpringBootApplication
 public class DemoServerApp implements CommandLineRunner {
 
-    // @SalukiReference(interfaceName = "com.quancheng.boot.starter.service.GreeterService", group = "default", version
-    // = "1.0.0")
-    // private GreeterService greeterService;
+    @SalukiReference(interfaceName = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
+    private GreeterService greeterService;
 
     public static void main(String[] args) {
 
@@ -21,7 +20,7 @@ public class DemoServerApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // System.out.println(greeterService);
+        System.out.println(greeterService);
     }
 
 }
