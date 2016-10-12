@@ -1,4 +1,14 @@
-
+apply plugin: 'java'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
 description = 'spring-boot-starter-saluki'
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version:'1.4.0.RELEASE'
