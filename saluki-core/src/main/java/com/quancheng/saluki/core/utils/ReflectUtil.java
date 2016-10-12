@@ -81,22 +81,30 @@ public final class ReflectUtil {
     public static List<Method> findAllPublicMethods(Class<?> clazz) {
         List<Method> methods = Lists.newLinkedList();
         for (Method method : clazz.getMethods()) {
-            String methodName = method.getName();
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            boolean isToString = "toString".equals(methodName) && parameterTypes.length == 0;
-            boolean isHashCode = "hashCode".equals(methodName) && parameterTypes.length == 0;
-            boolean isEquals = "equals".equals(methodName) && parameterTypes.length == 1;
-            boolean isnotify = "notify".equals(methodName) && parameterTypes.length == 0;
-            boolean isnotifyAll = "notifyAll".equals(methodName) && parameterTypes.length == 0;
-            boolean isgetClass = "getClass".equals(methodName) && parameterTypes.length == 0;
-            boolean iswait = "wait".equals(methodName) && (parameterTypes.length == 0 || parameterTypes.length == 1
-                                                           || parameterTypes.length == 2);
-            if (isToString || isHashCode || isEquals || isnotify || isnotifyAll || isgetClass || iswait) {
+            if (neglectMethod(method)) {
                 continue;
             }
             methods.add(method);
         }
         return methods;
+    }
+
+    public static boolean neglectMethod(Method method) {
+        String methodName = method.getName();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        boolean isToString = "toString".equals(methodName) && parameterTypes.length == 0;
+        boolean isHashCode = "hashCode".equals(methodName) && parameterTypes.length == 0;
+        boolean isEquals = "equals".equals(methodName) && parameterTypes.length == 1;
+        boolean isnotify = "notify".equals(methodName) && parameterTypes.length == 0;
+        boolean isnotifyAll = "notifyAll".equals(methodName) && parameterTypes.length == 0;
+        boolean isgetClass = "getClass".equals(methodName) && parameterTypes.length == 0;
+        boolean iswait = "wait".equals(methodName)
+                         && (parameterTypes.length == 0 || parameterTypes.length == 1 || parameterTypes.length == 2);
+        if (isToString || isHashCode || isEquals || isnotify || isnotifyAll || isgetClass || iswait) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static void checkPackageAccess(Class clazz) {
