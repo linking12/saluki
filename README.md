@@ -20,7 +20,7 @@ compileJava.dependsOn generateProtoInterface
 generateProtoInterface.dependsOn generateProtoModel
 ```
 
-* 生成的接口及pojo如下所示
+* 根据protoc文件生成的接口及pojo如下所示
 
 ```
 //pojo
@@ -46,7 +46,7 @@ public class UserGetResponse
   //getter setter
 }
 
-
+//interface
 public abstract interface UserService
 {
   public abstract UserGetResponse get(UserGetRequest paramUserGetRequest);
