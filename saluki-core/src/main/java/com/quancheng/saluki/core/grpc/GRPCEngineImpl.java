@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
+import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
 import com.quancheng.saluki.core.grpc.proxy.ProtocolProxyFactory;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporter;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
@@ -14,9 +16,11 @@ import com.quancheng.saluki.core.registry.RegistryProvider;
 
 import io.grpc.Attributes;
 import io.grpc.Channel;
+import io.grpc.ClientInterceptors;
 import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.NameResolver;
+import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -49,6 +53,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                    .nameResolverFactory(buildNameResolverFactory(refUrl))//
                                                    .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
                 }
+                ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
                 return channel;
             }
         };
@@ -90,6 +95,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                                                                           protocolImpl);
 
             ServerServiceDefinition serviceDefinition = protocolExporter.doExport();
+            ServerInterceptors.intercept(serviceDefinition, new HeaderServerInterceptor());
             remoteServer.addService(serviceDefinition);
             injvmServer.addService(serviceDefinition);
             registry.register(providerUrl);
