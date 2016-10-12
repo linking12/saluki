@@ -50,13 +50,13 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             String methodName = method.getName();
             Class<?>[] parameterTypes = method.getParameterTypes();
             if ("toString".equals(methodName) && parameterTypes.length == 0) {
-                return protocol;
+                return AbstractProtocolProxy.this.toString();
             }
             if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-                return protocol.hashCode();
+                return AbstractProtocolProxy.this.hashCode();
             }
             if ("equals".equals(methodName) && parameterTypes.length == 1) {
-                return protocol.equals(args[0]);
+                return AbstractProtocolProxy.this.equals(args[0]);
             }
             GeneratedMessageV3 arg = null;
             Class<?> returnType = null;
