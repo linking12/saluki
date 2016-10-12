@@ -60,7 +60,6 @@ public abstract interface UserService
         gradle: compile 'com.quancheng:spring-boot-starter-saluki:0.0.1+
         
         maven:
-        
         <dependency>
 			<groupId>com.quancheng</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
