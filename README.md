@@ -62,6 +62,8 @@ public abstract interface UserService
 			<artifactId>spring-boot-starter-saluki</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		 compile 'com.quancheng:spring-boot-starter-saluki:0.0.1+
 ```
 
 * 添加Application.properties
