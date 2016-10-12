@@ -1,8 +1,0 @@
-stages:
-  - jar-build
-build_jar:
-  stage: jar-build
-  script:
-    - mvn deploy
-  only:
-    - master

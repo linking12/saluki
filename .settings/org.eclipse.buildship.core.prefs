@@ -1,8 +1,0 @@
-connection.arguments=
-connection.gradle.distribution=GRADLE_DISTRIBUTION(LOCAL_INSTALLATION(/Users/shimingliu/gradle-3.0))
-connection.java.home=/Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home
-connection.jvm.arguments=
-connection.project.dir=
-derived.resources=.gradle,build
-eclipse.preferences.version=1
-project.path=\:

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>saluki-registry-consul</name>
-	<comment>Project saluki-registry-consul created by Buildship.</comment>
+	<name>saluki-registry</name>
+	<comment>Project saluki-registry created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>
