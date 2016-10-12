@@ -166,18 +166,18 @@
 					</plugin>
 				</plugins>
 			</build>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>nexus</id>
-					<name>Nexus Snapshot</name>
-					<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
-				</snapshotRepository>
-				<repository>
-					<id>nexus</id>
-					<name>Nexus Release</name>
-					<url>http://repo.quancheng-ec.com/repository/maven-releases/</url>
-				</repository>
-			</distributionManagement>
 		</profile>
 	</profiles>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nexus</id>
+			<name>Nexus Snapshot</name>
+			<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>nexus</id>
+			<name>Nexus Release</name>
+			<url>http://repo.quancheng-ec.com/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
 </project>
