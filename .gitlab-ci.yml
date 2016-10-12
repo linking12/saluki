@@ -1,0 +1,8 @@
+stages:
+  - jar-build
+build_jar:
+  stage: jar-build
+  script:
+    - gradle uploadArchives
+  only:
+    - master
