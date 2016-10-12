@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 
-import io.grpc.ServerInterceptor;
-
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,10 +19,6 @@ import io.grpc.ServerInterceptor;
 public @interface GRpcService {
 
     String interfaceName() default "";
-
-    Class<? extends ServerInterceptor>[] interceptors() default {};
-
-    boolean applyGlobalInterceptors() default true;
 
     String group() default SalukiConstants.DEFAULT_GROUP;
 
