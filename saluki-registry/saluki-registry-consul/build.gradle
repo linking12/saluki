@@ -1,0 +1,9 @@
+
+description = 'saluki-registry-consul'
+dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
+    compile group: 'com.ecwid.consul', name: 'consul-api', version:'1.1.11'
+    compile group: 'com.google.guava', name: 'guava', version:'18.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+  providedCompile project(':saluki-core')
+}
