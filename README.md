@@ -82,7 +82,7 @@ grpc.consulPort=8500 //consul注册中心port
 
 ```
  @GRpcReference(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
-    private UserService userSerivce;
+ private UserService userSerivce;
     
 ```
 
