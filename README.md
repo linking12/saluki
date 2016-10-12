@@ -9,14 +9,14 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 
 # Quick Start
 
-* 1：首先使用saluki提供的插件根据protoc文件生成interface及pojo模型
-gradle
+* 首先使用saluki提供的gradle插件根据protoc文件生成interface及pojo模型
 
-```
+```使用Plugin
+classpath 'com.quancheng.gradle.plugins:salukirpc:1.0-SNAPSHOT'
+
 apply plugin: 'salukirpc'
 compileJava.dependsOn generateProtoInterface 
 generateProtoInterface.dependsOn generateProtoModel
-
 ```
 
 ```
