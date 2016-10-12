@@ -246,34 +246,4 @@ public class ConsulRegistry extends FailbackRegistry {
     private String toUrlPath(SalukiURL url) {
         return toCategoryPath(url) + SalukiConstants.PATH_SEPARATOR + SalukiURL.encode(url.toFullString());
     }
-
-    public static void main(String[] args) {
-        SalukiURL registyUrl = new SalukiURL(SalukiConstants.REGISTRY_PROTOCOL, "192.168.99.101", 8500);
-        // System.out.println(registyUrl.toFullString());
-        ConsulRegistry consul = new ConsulRegistry(registyUrl);
-        SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, "172.168.0.1", 12101,
-                                              "com.test.service");
-        providerUrl = providerUrl.addParameter(SalukiConstants.GROUP_KEY, "application");
-        providerUrl = providerUrl.addParameter(SalukiConstants.VERSION_KEY, "1.0.0");
-
-        String urlPath = consul.toUrlPath(providerUrl);
-        String splitFlag = SalukiConstants.PROVIDERS_CATEGORY;
-        String urlFullString = StringUtils.substringAfter(urlPath, splitFlag);
-        SalukiURL salukiUrl = SalukiURL.valueOf(SalukiURL.decode(urlFullString));
-        System.out.println(registyUrl.toJavaURI());
-        System.out.println(providerUrl.toJavaURI());
-        SocketAddress address = new InetSocketAddress(registyUrl.getHost(), registyUrl.getPort());
-        try {
-            URI uri = new URI(registyUrl.toString());
-
-            System.out.println(uri.getHost());
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        System.out.println(salukiUrl);
-
-    }
-
 }
