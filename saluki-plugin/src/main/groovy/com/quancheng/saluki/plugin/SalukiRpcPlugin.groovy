@@ -1,4 +1,4 @@
-package com.quancheng.saluki
+package com.quancheng.saluki.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

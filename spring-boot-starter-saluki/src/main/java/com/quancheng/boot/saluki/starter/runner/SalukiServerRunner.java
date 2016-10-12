@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter.saluki.runner;
+package com.quancheng.boot.saluki.starter.runner;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -18,17 +18,17 @@ import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
-import com.quancheng.boot.starter.saluki.GRpcService;
-import com.quancheng.boot.starter.saluki.autoconfigure.GRpcProperties;
+import com.quancheng.boot.saluki.starter.SalukiService;
+import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ServiceConfig;
 
 @Order(value = 0)
-public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
+public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
 
-    private static final Logger        log = LoggerFactory.getLogger(GRpcServerRunner.class);
+    private static final Logger        log = LoggerFactory.getLogger(SalukiServerRunner.class);
 
     @Autowired
-    private GRpcProperties             grpcProperties;
+    private SalukiProperties             grpcProperties;
 
     @Autowired
     private AbstractApplicationContext applicationContext;
@@ -39,8 +39,8 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
     public void run(String... args) throws Exception {
         log.info("Starting gRPC Server ...");
         ServiceConfig serviceConfig = newServiceConfig();
-        for (Object obj : getTypedBeansWithAnnotation(GRpcService.class)) {
-            GRpcService gRpcServiceAnn = obj.getClass().getAnnotation(GRpcService.class);
+        for (Object obj : getTypedBeansWithAnnotation(SalukiService.class)) {
+            SalukiService gRpcServiceAnn = obj.getClass().getAnnotation(SalukiService.class);
             String interfaceName = gRpcServiceAnn.interfaceName();
             if (StringUtils.isBlank(interfaceName)) {
                 interfaceName = obj.getClass().getName();
@@ -57,7 +57,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         applicationContext.destroy();
     }
 
-    private String getGroup(GRpcService service) {
+    private String getGroup(SalukiService service) {
         if (StringUtils.isNoneBlank(service.group())) {
             return service.group();
         } else {
@@ -67,7 +67,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         }
     }
 
-    private String getVersion(GRpcService service) {
+    private String getVersion(SalukiService service) {
         if (StringUtils.isNoneBlank(service.version())) {
             return service.version();
         } else {

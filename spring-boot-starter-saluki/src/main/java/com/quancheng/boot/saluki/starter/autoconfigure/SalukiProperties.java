@@ -1,9 +1,9 @@
-package com.quancheng.boot.starter.saluki.autoconfigure;
+package com.quancheng.boot.saluki.starter.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "grpc")
-public class GRpcProperties {
+public class SalukiProperties {
 
     private int    serverPort = 6565;
 

@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter.saluki.runner;
+package com.quancheng.boot.saluki.starter.runner;
 
 import java.lang.reflect.Field;
 
@@ -9,18 +9,18 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 
 import com.google.common.base.Preconditions;
-import com.quancheng.boot.starter.saluki.GRpcReference;
-import com.quancheng.boot.starter.saluki.autoconfigure.GRpcProperties;
+import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
-public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
+public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger  logger = LoggerFactory.getLogger(GRpcReferenceRunner.class);
+    private static final Logger  logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
-    private final GRpcProperties grpcProperties;
+    private final SalukiProperties grpcProperties;
 
-    public GRpcReferenceRunner(GRpcProperties grpcProperties){
+    public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
     }
 
@@ -30,7 +30,7 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         while (!Object.class.equals(searchType) && searchType != null) {
             Field[] fields = searchType.getDeclaredFields();
             for (Field field : fields) {
-                GRpcReference reference = field.getAnnotation(GRpcReference.class);
+                SalukiReference reference = field.getAnnotation(SalukiReference.class);
                 if (reference != null) {
                     Object value = refer(reference, field.getType());
                     try {
@@ -49,7 +49,7 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         return bean;
     }
 
-    private Object refer(GRpcReference reference, Class<?> referenceClass) {
+    private Object refer(SalukiReference reference, Class<?> referenceClass) {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         if (StringUtils.isNoneBlank(reference.group())) {
             referenceConfig.setGroup(reference.group());

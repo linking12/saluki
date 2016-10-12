@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.quancheng.boot.starter.saluki.autoconfigure.GRpcAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.quancheng.boot.saluki.starter.autoconfigure.SalukiAutoConfiguration
