@@ -101,3 +101,5 @@ public class GreeterServiceImpl implements GreeterService {
 }
 
 ```
+
+详细demo请看工程的example
