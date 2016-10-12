@@ -1,0 +1,8 @@
+/.settings/
+/saluki-core/
+/saluki-plugin/
+/saluki-registry/
+/saluki-serializer/
+/spring-boot-starter-saluki/
+/.DS_Store
+/.project
