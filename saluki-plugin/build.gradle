@@ -1,6 +1,16 @@
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/groovy'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
 
 description = 'saluki-plugin'
 
@@ -8,6 +18,5 @@ dependencies {
     compile gradleApi()
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
 }
-
 
 
