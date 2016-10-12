@@ -16,3 +16,8 @@
 /spring-boot-starter-saluki/.settings/
 /.DS_Store
 /.project
+/saluki-core/
+/saluki-plugin/
+/saluki-registry/
+/saluki-serializer/
+/spring-boot-starter-saluki/
