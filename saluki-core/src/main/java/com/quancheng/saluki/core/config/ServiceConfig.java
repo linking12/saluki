@@ -11,7 +11,6 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.SalukiServer;
 import com.quancheng.saluki.core.utils.NetUtils;
-import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.BindableService;
 
