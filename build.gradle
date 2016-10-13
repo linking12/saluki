@@ -6,15 +6,12 @@ allprojects  {
 
 subprojects {
   apply plugin: 'java'
+  apply plugin: 'groovy'
+  apply plugin: 'maven'
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
-  
-  repositories {
-    mavenLocal()
-    maven { url "http://repo.maven.apache.org/maven2" }
-  }
-  
+
   task sourcesJar(type: Jar) {
         classifier = 'sources'
         from sourceSets.main.allSource
