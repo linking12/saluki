@@ -25,16 +25,16 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     def java_outer_classname = ""
                     def massageName = ""
                     new File(file).eachLine { line, nb ->
-                        def java_package1 = line =~ /^option java_package = \"(.*)\"/
+                        def java_package1 = line =~ /^option\s+java_package\s*=\s*\"(.+)\"/
                         if (java_package1.size() > 0) {
                             packageName1 = java_package1[0][1]
                         }
-                        def java_outer_classname_filter = line =~ /^option java_outer_classname = \"(.*)\"/
+                        def java_outer_classname_filter = line =~ /^option\s+java_outer_classname\s*=\s*\"(.+)\"/
                         if (java_outer_classname_filter.size() > 0) {
                             java_outer_classname = java_outer_classname_filter[0][1]
                         }
 
-                        def param_filter = line =~ /^message (.*)\{/
+                        def param_filter = line =~ /^message\s+(.+)\{/
                         if (param_filter.size() > 0) {
                             massageName = packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim()
                             methodClassName.put(packageName1 + "." + param_filter[0][1].trim(), packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim())
@@ -49,11 +49,11 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     } else {
                         note << ""
                     }
-                    def java_package = line =~ /^option java_package = \"(.*)\"/
+                    def java_package = line =~ /^option\s+java_package\s*=\s*\"(.+)\"/
                     if (java_package.size() > 0) {
                         packageName = java_package[0][1]
                     }
-                    def service = line =~ /^service (.*) \{$/
+                    def service = line =~ /^service\s+(.+)\s*\{$/
                     if (service.size() > 0) {
                         if (packageName != "") {
                             path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + packageName.replaceAll("\\.", "/") + "/" + service[0][1] + ".java"
@@ -64,7 +64,8 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         serviceName << nb
                     }
 
-                    def method = line =~ /^\s*rpc (.*) \((.*)\) returns \((.*)\)/
+                    // lizhuliang, fix regex not match when lack of emptys
+                    def method = line =~ /^\s*rpc\s+(.+)\s*\((.+)\)\s*returns\s*\((.+)\)/
                     if (method.size() > 0) {
                         def methodNameList = []
                         methodNameList = method[0]
@@ -122,29 +123,29 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     def massageName = ""
                     def massageParamList = []
                     new File(file).eachLine { line, nb ->
-                        def java_package1 = line =~ /^option java_package = \"(.*)\"/
+                        def java_package1 = line =~ /^option\s+java_package\s*=\s*\"(.+)\"/
                         if (java_package1.size() > 0) {
                             packageName1 = java_package1[0][1]
                         }
 
-                        def java_outer_classname_filter = line =~ /^option java_outer_classname = \"(.*)\"/
+                        def java_outer_classname_filter = line =~ /^option\s+java_outer_classname\s*=\s*\"(.+)\"/
                         if (java_outer_classname_filter.size() > 0) {
                             java_outer_classname = java_outer_classname_filter[0][1]
                         }
 
-                        def param_filter = line =~ /^message (.*)\{/
+                        def param_filter = line =~ /^message\s+(.+)\{/
                         if (param_filter.size() > 0) {
                             massageName = packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim()
                             methodClassName.put(packageName1 + "." + param_filter[0][1].trim(), packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim())
                         }
-                        def massageParam = line =~ /^\s*(.*) (.*) =(.*)/
+                        def massageParam = line =~ /^\s*(repeated)?\s*(.+)\s+(.+)\s*=\s*(\d+)/
                         if (massageParam.size() > 0) {
                             if (massageName) {
                                 massageParamList.add(massageParam[0])
                             }
                         }
 
-                        def massageParamEnd = line =~ /^\}$/
+                        def massageParamEnd = line =~ /^\s*\}$/
                         if (massageParamEnd.size() > 0) {
                             if (massageName) {
                                 message.put(massageName, massageParamList)
@@ -248,7 +249,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
     List getImportFiles(file, project, files) {
         files.add(file)
         new File(file).eachLine { line, nb ->
-            def importFile = line =~ /^import \"(.*)\";$/
+            def importFile = line =~ /^import\s+\"(.+)\";$/
             if (importFile.size() > 0) {
                 getImportFiles(project.projectDir.path + "/src/main/proto/" + importFile[0][1], project, files)
             }
