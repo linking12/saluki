@@ -11,17 +11,17 @@ import io.grpc.stub.ServerCalls.UnaryMethod;
 
 public abstract class AbstractProtocolExporter implements ProtocolExporter {
 
-    private final Class<?> protocolClass;
+    private final Class<?> protocol;
 
     private final Object   protocolImpl;
 
-    public AbstractProtocolExporter(Class<?> protocolClass, Object protocolImpl){
-        this.protocolClass = protocolClass;
+    public AbstractProtocolExporter(Class<?> protocol, Object protocolImpl){
+        this.protocol = protocol;
         this.protocolImpl = protocolImpl;
     }
 
-    public Class<?> getProtocolClass() {
-        return protocolClass;
+    public Class<?> getProtocol() {
+        return protocol;
     }
 
     public Object getProtocolImpl() {

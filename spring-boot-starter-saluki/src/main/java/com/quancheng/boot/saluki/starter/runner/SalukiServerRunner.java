@@ -41,7 +41,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
         ServiceConfig serviceConfig = newServiceConfig();
         for (Object obj : getTypedBeansWithAnnotation(SalukiService.class)) {
             SalukiService gRpcServiceAnn = obj.getClass().getAnnotation(SalukiService.class);
-            String interfaceName = gRpcServiceAnn.interfaceName();
+            String interfaceName = gRpcServiceAnn.service();
             if (StringUtils.isBlank(interfaceName)) {
                 interfaceName = obj.getClass().getName();
             }

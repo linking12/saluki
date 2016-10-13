@@ -35,9 +35,9 @@ public class ServiceConfig extends BasicConfig {
         server.shutDown();
     }
 
-    public void addServiceConfig(String interfaceName, String group, String version, Object instance) {
+    public void addServiceConfig(String serviceName, String group, String version, Object instance) {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setInterfaceName(interfaceName);
+        interfaceConfig.setServiceName(serviceName);
         interfaceConfig.setGroup(group);
         interfaceConfig.setVersion(version);
         interfaceConfig.setRef(instance);
@@ -46,15 +46,6 @@ public class ServiceConfig extends BasicConfig {
         } else {
             interfaceConfig.setGrpcStub(false);
         }
-        Set<String> instanceInterfaces = Sets.newHashSet();
-        for (Class<?> clzz : instance.getClass().getInterfaces()) {
-            instanceInterfaces.add(clzz.getName());
-        }
-        if (!instanceInterfaces.contains(interfaceName)) {
-            interfaceConfig.setGeneric(true);
-        }else{
-            interfaceConfig.setGeneric(false);
-        }
         serviceConigs.add(interfaceConfig);
     }
 
@@ -62,9 +53,8 @@ public class ServiceConfig extends BasicConfig {
         loadRegistry();
         Map<SalukiURL, Object> providerUrls = Maps.newHashMap();
         for (InterfaceConfig config : serviceConigs) {
-            checkParam(config);
             // 服务名称
-            String path = config.getInterfaceName();
+            String protocol = config.getServiceName();
             // 服务引用
             Object protocolImpl = config.getRef();
             Map<String, String> params = Maps.newHashMap();
@@ -82,11 +72,8 @@ public class ServiceConfig extends BasicConfig {
             } else {
                 params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
             }
-            if (config.getGeneric()) {
-                params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
-            }
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), port,
-                                                  path, params);
+                                                  protocol, params);
             providerUrls.put(providerUrl, protocolImpl);
         }
         try {
@@ -108,21 +95,6 @@ public class ServiceConfig extends BasicConfig {
             awaitThread.start();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
-        }
-
-    }
-
-    private void checkParam(InterfaceConfig config) {
-        if (!config.getGeneric() && !config.getGrpcStub()) {
-            try {
-                Class<?> interfaceClass = ReflectUtil.name2class(config.getInterfaceName());
-                if (!interfaceClass.isAssignableFrom(config.getRef().getClass())) {
-                    throw new IllegalStateException("The class " + config.getRef().getClass().getName()
-                                                    + " unimplemented interface " + config.getInterfaceName() + "!");
-                }
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
         }
 
     }

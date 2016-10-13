@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc.server;
 
-import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
@@ -20,30 +19,23 @@ public class ProtocolExporterFactory {
         return ProtocolExporterFactoryHolder.INSTANCE;
     }
 
-    public ProtocolExporter getProtocolExporter(SalukiURL providerUrl, Object protocolinstance) {
+    public ProtocolExporter getProtocolExporter(SalukiURL providerUrl, Object protocolImpl) {
         ProtocolExporter protocolExporter;
-        if (protocolinstance instanceof BindableService) {
-            protocolExporter = new StubProtocolExporter(protocolinstance.getClass(), protocolinstance);
+        if (protocolImpl instanceof BindableService) {
+            protocolExporter = new StubProtocolExporter(protocolImpl.getClass(), protocolImpl);
         } else {
-            // 如果是泛化导出，直接导出类本身
-            boolean isGeneric = providerUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
-            Class<?> protocolClass;
-            if (isGeneric) {
-                protocolClass = protocolinstance.getClass();
-            } else {
-                try {
-                    protocolClass = ReflectUtil.name2class(providerUrl.getServiceInterface());
-                    if (!protocolClass.isAssignableFrom(protocolinstance.getClass())) {
-                        throw new IllegalStateException("protocolClass " + providerUrl.getServiceInterface()
-                                                        + " is not implemented by protocolImpl which is of class "
-                                                        + protocolinstance.getClass());
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-
+            Class<?> protocol;
+            try {
+                protocol = ReflectUtil.name2class(providerUrl.getServiceInterface());
+                if (!protocol.isAssignableFrom(protocolImpl.getClass())) {
+                    throw new IllegalStateException("protocolClass " + providerUrl.getServiceInterface()
+                                                    + " is not implemented by protocolImpl which is of class "
+                                                    + protocolImpl.getClass());
                 }
+            } catch (ClassNotFoundException e) {
+                protocol = protocolImpl.getClass();
             }
-            protocolExporter = new NormalProtocolExporter(protocolClass, protocolinstance);
+            protocolExporter = new NormalProtocolExporter(protocol, protocolImpl);
         }
         return protocolExporter;
     }

@@ -18,7 +18,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 @Service
 public @interface SalukiService {
 
-    String interfaceName() default "";
+    String service() default "";
 
     String group() default SalukiConstants.DEFAULT_GROUP;
 

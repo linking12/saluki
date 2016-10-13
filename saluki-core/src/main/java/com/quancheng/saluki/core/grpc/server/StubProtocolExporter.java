@@ -16,7 +16,7 @@ public class StubProtocolExporter extends AbstractProtocolExporter {
 
     @Override
     public ServerServiceDefinition doExport() {
-        Object obj = this.getProtocolImpl();
+        Object obj = getProtocolImpl();
         if (!(obj instanceof BindableService)) {
             throw new IllegalStateException(" Object is not io.grpc.BindableService,can not export " + obj);
         } else {

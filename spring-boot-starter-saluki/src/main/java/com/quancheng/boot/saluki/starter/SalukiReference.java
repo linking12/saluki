@@ -15,7 +15,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 @Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface SalukiReference {
 
-    String interfaceName() default "";
+    String service() default "";
 
     String group() default "";
 

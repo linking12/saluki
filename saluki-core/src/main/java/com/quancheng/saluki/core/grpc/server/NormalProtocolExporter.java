@@ -24,20 +24,20 @@ public class NormalProtocolExporter extends AbstractProtocolExporter {
 
     @Override
     public ServerServiceDefinition doExport() {
-        Class<?> protocolClass = getProtocolClass();
-        Object protocolInstance = getProtocolImpl();
-        String serviceName = MethodDescriptorUtils.generateServiceName(protocolClass);
+        Class<?> serivce = getProtocol();
+        Object serviceRef = getProtocolImpl();
+        String serviceName = MethodDescriptorUtils.generateServiceName(serivce);
         ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
-        List<Method> methods = ReflectUtil.findAllPublicMethods(protocolClass);
+        List<Method> methods = ReflectUtil.findAllPublicMethods(serivce);
         if (methods.isEmpty()) {
             throw new IllegalStateException("protocolClass " + serviceName + " not have export method"
-                                            + protocolClass.getClass());
+                                            + serivce.getClass());
         }
         for (Method method : methods) {
-            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = MethodDescriptorUtils.createMethodDescriptor(protocolClass,
-                                                                                                                         method);
+            MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDescriptor = MethodDescriptorUtils.createMethodDescriptor(serivce,
+                                                                                                                                     method);
             serviceDefBuilder.addMethod(methodDescriptor,
-                                        ServerCalls.asyncUnaryCall(new MethodInvokation(protocolInstance, method)));
+                                        ServerCalls.asyncUnaryCall(new MethodInvokation(serviceRef, method)));
         }
         log.info("'{}' service has been registered.", serviceName);
         return serviceDefBuilder.build();
