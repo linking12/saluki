@@ -2,6 +2,9 @@ package com.quancheng.saluki.core.grpc.interceptor;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
@@ -14,7 +17,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 
 public class HeaderServerInterceptor implements ServerInterceptor {
-
+    private static final Logger log = LoggerFactory.getLogger(HeaderServerInterceptor.class);
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, final Metadata headers,
                                                       ServerCallHandler<ReqT, RespT> next) {
@@ -44,6 +47,7 @@ public class HeaderServerInterceptor implements ServerInterceptor {
             }
 
         } catch (Throwable e) {
+            log.error(e.getMessage(),e);
         }
     }
 
