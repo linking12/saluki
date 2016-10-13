@@ -38,6 +38,7 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
                 }
+                @SuppressWarnings("unchecked")
                 T value = (T) method.invoke(null, getChannel());
                 return value;
             } catch (Exception e) {
