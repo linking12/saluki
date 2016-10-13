@@ -44,13 +44,17 @@ public class HeaderServerInterceptor implements ServerInterceptor {
         byte[] attachmentsBytes = headers.get(SalukiConstants.GRPC_CONTEXT_ATTACHMENTS);
         byte[] valuesByte = headers.get(SalukiConstants.GRPC_CONTEXT_VALUES);
         try {
-            Map<String, String> attachments = new Gson().fromJson(new String(attachmentsBytes), Map.class);
-            Map<String, Object> values = new Gson().fromJson(new String(valuesByte), Map.class);
-            RpcContext.getContext().setAttachments(attachments);
-
-            for (Map.Entry<String, Object> entry : values.entrySet()) {
-                RpcContext.getContext().set(entry.getKey(), entry.getValue());
+            if (attachmentsBytes != null) {
+                Map<String, String> attachments = new Gson().fromJson(new String(attachmentsBytes), Map.class);
+                RpcContext.getContext().setAttachments(attachments);
             }
+            if (valuesByte != null) {
+                Map<String, Object> values = new Gson().fromJson(new String(valuesByte), Map.class);
+                for (Map.Entry<String, Object> entry : values.entrySet()) {
+                    RpcContext.getContext().set(entry.getKey(), entry.getValue());
+                }
+            }
+
         } catch (Throwable e) {
         }
     }
