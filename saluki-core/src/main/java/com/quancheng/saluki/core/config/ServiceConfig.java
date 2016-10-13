@@ -58,18 +58,14 @@ public class ServiceConfig extends BasicConfig {
             Object protocolImpl = config.getRef();
             Map<String, String> params = Maps.newHashMap();
             if (StringUtils.isBlank(config.getGroup())) {
-                if (this.application != null) {
+                if (StringUtils.isNoneBlank(this.application)) {
                     params.put(SalukiConstants.GROUP_KEY, this.application);
-                } else {
-                    params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
                 }
             } else {
                 params.put(SalukiConstants.GROUP_KEY, config.getGroup());
             }
             if (StringUtils.isNotBlank(config.getVersion())) {
                 params.put(SalukiConstants.VERSION_KEY, config.getVersion());
-            } else {
-                params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
             }
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), port,
                                                   protocol, params);

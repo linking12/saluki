@@ -165,15 +165,17 @@ public class ReferenceConfig extends BasicConfig {
         } else {
             if (StringUtils.isNotBlank(this.application)) {
                 params.put(SalukiConstants.GROUP_KEY, this.application);
-            } else {
-                params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
             }
+//            else {
+//                params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
+//            }
         }
         if (StringUtils.isNotBlank(this.version)) {
             params.put(SalukiConstants.VERSION_KEY, version);
-        } else {
-            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
-        }
+        } 
+//        else {
+//            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
+//        }
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
         }
