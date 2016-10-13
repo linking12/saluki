@@ -1,7 +1,5 @@
 package com.quancheng.boot.starter.clientgenric;
 
-import org.lognet.springboot.grpc.proto.GreeterGrpc;
-import org.lognet.springboot.grpc.proto.GreeterOuterClass;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
