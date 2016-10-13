@@ -17,18 +17,6 @@ import io.grpc.MethodDescriptor;
 
 public class HeaderClientInterceptor implements ClientInterceptor {
 
-    private static class HeaderClientInterceptorHolder {
-
-        private static final HeaderClientInterceptor INSTANCE = new HeaderClientInterceptor();
-    }
-
-    private HeaderClientInterceptor(){
-    }
-
-    public static final HeaderClientInterceptor getInstance() {
-        return HeaderClientInterceptorHolder.INSTANCE;
-    }
-
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
                                                                CallOptions callOptions, Channel next) {

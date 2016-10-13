@@ -53,7 +53,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                    .nameResolverFactory(buildNameResolverFactory(refUrl))//
                                                    .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
                 }
-                return ClientInterceptors.intercept(channel, HeaderClientInterceptor.getInstance());
+                return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
             }
         };
         return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getProxy();
@@ -94,7 +94,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                                                                           protocolImpl);
 
             ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(protocolExporter.doExport(),
-                                                                                     HeaderServerInterceptor.getInstance());
+                                                                                     new HeaderServerInterceptor());
             remoteServer.addService(serviceDefinition);
             injvmServer.addService(serviceDefinition);
             registry.register(providerUrl);

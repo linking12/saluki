@@ -15,18 +15,6 @@ import io.grpc.ServerInterceptor;
 
 public class HeaderServerInterceptor implements ServerInterceptor {
 
-    private static class HeaderServerInterceptorHolder {
-
-        private static final HeaderServerInterceptor INSTANCE = new HeaderServerInterceptor();
-    }
-
-    private HeaderServerInterceptor(){
-    }
-
-    public static final HeaderServerInterceptor getInstance() {
-        return HeaderServerInterceptorHolder.INSTANCE;
-    }
-
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, final Metadata headers,
                                                       ServerCallHandler<ReqT, RespT> next) {
