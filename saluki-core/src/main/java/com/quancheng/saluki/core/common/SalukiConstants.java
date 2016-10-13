@@ -38,7 +38,7 @@ public class SalukiConstants {
     public static final int                       RPCTYPE_ASYNC                 = 1;
     public static final int                       RPCTYPE_BLOCKING              = 2;
 
-    public static final int                       DEFAULT_TIMEOUT               = 3;
+    public static final int                       DEFAULT_TIMEOUT               = 10;
     public static final boolean                   DEFAULT_GENERIC               = false;
     public static final String                    GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE       = Attributes.Key.of("subscribe");

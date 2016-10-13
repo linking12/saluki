@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.saluki.core.common.RpcContext;
 
 @SpringBootApplication
 public class DemoServerApp implements CommandLineRunner {
@@ -21,6 +22,7 @@ public class DemoServerApp implements CommandLineRunner {
     public void run(String... args) throws Exception {
         com.quancheng.boot.starter.model.HelloRequest request = new com.quancheng.boot.starter.model.HelloRequest();
         request.setName("joe");
+        RpcContext.getContext().set("123", "helloworld");
         com.quancheng.boot.starter.model.HelloReply reply = greeterService.SayHello(request);
         System.out.println(reply.getMessage());
     }
