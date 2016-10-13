@@ -9,7 +9,7 @@ import com.quancheng.boot.saluki.starter.SalukiReference;
 @SpringBootApplication
 public class DemoServerApp implements CommandLineRunner {
 
-    @SalukiReference(service = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version = "1.0.0")
     private GreeterService greeterService;
 
     public static void main(String[] args) {

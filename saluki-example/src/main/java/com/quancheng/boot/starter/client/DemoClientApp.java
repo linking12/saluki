@@ -11,7 +11,7 @@ import com.quancheng.boot.saluki.starter.SalukiReference;
 @SpringBootApplication
 public class DemoClientApp implements CommandLineRunner {
 
-    @SalukiReference(service = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version = "1.0.0")
     private GreeterGrpc.GreeterFutureStub greeterFutureStub;
 
     @Override

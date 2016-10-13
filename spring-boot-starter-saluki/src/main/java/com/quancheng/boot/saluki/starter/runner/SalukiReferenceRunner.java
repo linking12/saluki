@@ -80,19 +80,20 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         referenceConfig.setInjvm(reference.localProcess());
         referenceConfig.setAsync(reference.callType() == 1 ? true : false);
         referenceConfig.setRequestTimeout(reference.requestTime());
-        try {
-            Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
-            if (!interfaceClass.isAssignableFrom(referenceClass)) {
-                referenceConfig.setGeneric(true);
-            } else {
-                referenceConfig.setGeneric(false);
-            }
-        } catch (ClassNotFoundException e) {
-            referenceConfig.setGeneric(false);
-        }
         if (AbstractStub.class.isAssignableFrom(referenceClass)) {
             referenceConfig.setGrpcStub(true);
             referenceConfig.setInterfaceClass(referenceClass);
+        } else {
+            try {
+                Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
+                if (!interfaceClass.isAssignableFrom(referenceClass)) {
+                    referenceConfig.setGeneric(true);
+                } else {
+                    referenceConfig.setGeneric(false);
+                }
+            } catch (ClassNotFoundException e) {
+                referenceConfig.setGeneric(false);
+            }
         }
         Object value = referenceConfig.get();
         return value;
