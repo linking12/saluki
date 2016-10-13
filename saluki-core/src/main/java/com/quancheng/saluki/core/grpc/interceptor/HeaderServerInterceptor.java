@@ -46,6 +46,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
                 for (Map.Entry<String, Object> entry : values.entrySet()) {
                     RpcContext.getContext().set(entry.getKey(), entry.getValue());
                 }
+            } else {
+                log.info("==============================");
             }
 
         } catch (Throwable e) {
