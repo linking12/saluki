@@ -15,9 +15,6 @@ public class InterfaceConfig implements Serializable {
     // 接口名
     private String            serviceName;
 
-    // 是否是原生Grpc服务
-    private Boolean           grpcStub;
-
     // 引用的实现
     private Object            ref;
 
@@ -45,14 +42,6 @@ public class InterfaceConfig implements Serializable {
         this.serviceName = serviceName;
     }
 
-    public Boolean getGrpcStub() {
-        return grpcStub;
-    }
-
-    public void setGrpcStub(Boolean grpcStub) {
-        this.grpcStub = grpcStub;
-    }
-
     public Object getRef() {
         return ref;
     }
@@ -66,7 +55,6 @@ public class InterfaceConfig implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((group == null) ? 0 : group.hashCode());
-        result = prime * result + ((grpcStub == null) ? 0 : grpcStub.hashCode());
         result = prime * result + ((ref == null) ? 0 : ref.hashCode());
         result = prime * result + ((serviceName == null) ? 0 : serviceName.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
@@ -82,9 +70,6 @@ public class InterfaceConfig implements Serializable {
         if (group == null) {
             if (other.group != null) return false;
         } else if (!group.equals(other.group)) return false;
-        if (grpcStub == null) {
-            if (other.grpcStub != null) return false;
-        } else if (!grpcStub.equals(other.grpcStub)) return false;
         if (ref == null) {
             if (other.ref != null) return false;
         } else if (!ref.equals(other.ref)) return false;
@@ -99,8 +84,8 @@ public class InterfaceConfig implements Serializable {
 
     @Override
     public String toString() {
-        return "InterfaceConfig [group=" + group + ", version=" + version + ", serviceName=" + serviceName
-               + ", grpcStub=" + grpcStub + ", ref=" + ref + "]";
+        return "InterfaceConfig [group=" + group + ", version=" + version + ", serviceName=" + serviceName + ", ref="
+               + ref + "]";
     }
 
 }

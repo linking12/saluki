@@ -4,12 +4,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.utils.NetUtils;
-import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends BasicConfig {
 
@@ -32,6 +30,9 @@ public class ReferenceConfig extends BasicConfig {
 
     // 是否是injvm调用
     private Boolean                   injvm;
+
+    // 原生grpc stub调用
+    private Boolean                   grpcStub;
 
     // 是否异步
     private Boolean                   async;
@@ -112,6 +113,14 @@ public class ReferenceConfig extends BasicConfig {
         return version;
     }
 
+    public Boolean getGrpcStub() {
+        return grpcStub;
+    }
+
+    public void setGrpcStub(Boolean grpcStub) {
+        this.grpcStub = grpcStub;
+    }
+
     public void setVersion(String version) {
         this.version = version;
     }
@@ -124,25 +133,12 @@ public class ReferenceConfig extends BasicConfig {
     }
 
     private void init() {
-        checkParam();
         loadRegistry();
         try {
             ref = grpcEngine.getProxy(buildRefUrl());
         } catch (Exception e) {
             throw new IllegalStateException("Create proxy failed ", e);
         }
-    }
-
-    private void checkParam() {
-        Preconditions.checkNotNull(interfaceName, "interfaceName (%s) is not Null");
-        if (!this.generic && !this.injvm) {
-            try {
-                interfaceClass = ReflectUtil.name2class(interfaceName);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-
     }
 
     private SalukiURL buildRefUrl() {
@@ -155,6 +151,9 @@ public class ReferenceConfig extends BasicConfig {
         }
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
+        }
+        if (this.grpcStub) {
+            params.put(SalukiConstants.GRPC_STUB_KEY, Boolean.TRUE.toString());
         }
         if (StringUtils.isNotBlank(this.group)) {
             params.put(SalukiConstants.GROUP_KEY, this.group);

@@ -29,17 +29,18 @@ public class ProtocolProxyFactory {
         boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
         int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
-        boolean isLocalProcess = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE);
+        boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         String protocol = refUrl.getServiceInterface();
         if (isGeneric) {
             GenericProxy genericProxy = new GenericProxy(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
             genericProxy.setSalukiClassLoader(classLoader);
             return genericProxy;
-        }
-        if (isLocalProcess) {
-            return new StubObject<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
         } else {
-            return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+            if (stub) {
+                return new StubObject<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+            } else {
+                return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+            }
         }
     }
 }

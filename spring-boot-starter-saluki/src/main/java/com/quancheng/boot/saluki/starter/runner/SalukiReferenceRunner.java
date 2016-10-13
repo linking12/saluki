@@ -14,9 +14,11 @@ import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
+import io.grpc.stub.AbstractStub;
+
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger  logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger    logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
     private final SalukiProperties grpcProperties;
 
@@ -87,6 +89,9 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             }
         } catch (ClassNotFoundException e) {
             referenceConfig.setGeneric(false);
+        }
+        if (AbstractStub.class.isAssignableFrom(referenceClass)) {
+            referenceConfig.setGrpcStub(true);
         }
         Object value = referenceConfig.get();
         return value;

@@ -10,6 +10,7 @@ public class SalukiConstants {
     public static final Pattern                   COMMA_SPLIT_PATTERN           = Pattern.compile("\\s*[,]+\\s*");
 
     public static final String                    INTERFACE_KEY                 = "interface";
+    public static final String                    GRPC_STUB_KEY                 = "grpcstub";
     public static final String                    GENERIC_KEY                   = "generic";
     public static final String                    GROUP_KEY                     = "group";
     public static final String                    VERSION_KEY                   = "version";

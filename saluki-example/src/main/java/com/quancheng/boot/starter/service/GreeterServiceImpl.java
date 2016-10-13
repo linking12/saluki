@@ -2,7 +2,7 @@ package com.quancheng.boot.starter.service;
 
 import com.quancheng.boot.saluki.starter.SalukiService;
 
-@SalukiService(service = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
+//@SalukiService(service = "com.quancheng.boot.starter.service.GreeterService", group = "default", version = "1.0.0")
 public class GreeterServiceImpl implements GreeterService {
 
     @Override
