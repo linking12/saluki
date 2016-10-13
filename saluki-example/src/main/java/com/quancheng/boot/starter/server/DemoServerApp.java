@@ -19,7 +19,10 @@ public class DemoServerApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println(greeterService);
+        com.quancheng.boot.starter.model.HelloRequest request = new com.quancheng.boot.starter.model.HelloRequest();
+        request.setName("joe");
+        com.quancheng.boot.starter.model.HelloReply reply = greeterService.SayHello(request);
+        System.out.println(reply.getMessage());
     }
 
 }
