@@ -10,9 +10,6 @@ sourceSets {
          resources {
              srcDir 'src/main/resource' 
          }
-         groovy {
-             srcDir = 'src/main/groovy'
-         }
      }
  }
 
