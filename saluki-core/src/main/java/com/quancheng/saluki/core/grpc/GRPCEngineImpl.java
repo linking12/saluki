@@ -75,7 +75,6 @@ public class GRPCEngineImpl implements GRPCEngine {
             public String getDefaultScheme() {
                 return "consul";
             }
-
         };
     }
 
@@ -92,7 +91,6 @@ public class GRPCEngineImpl implements GRPCEngine {
             Object protocolImpl = entry.getValue();
             ProtocolExporter protocolExporter = ProtocolExporterFactory.getInstance().getProtocolExporter(providerUrl,
                                                                                                           protocolImpl);
-
             ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(protocolExporter.doExport(),
                                                                                      new HeaderServerInterceptor());
             remoteServer.addService(serviceDefinition);
