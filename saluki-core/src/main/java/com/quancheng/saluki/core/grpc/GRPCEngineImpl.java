@@ -20,6 +20,7 @@ import io.grpc.ClientInterceptors;
 import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.NameResolver;
+import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -53,7 +54,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                    .nameResolverFactory(buildNameResolverFactory(refUrl))//
                                                    .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
                 }
-                ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
+                ClientInterceptors.intercept(channel, HeaderClientInterceptor.getInstance());
                 return channel;
             }
         };
@@ -95,7 +96,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                                                                                                           protocolImpl);
 
             ServerServiceDefinition serviceDefinition = protocolExporter.doExport();
-            ServerInterceptors.intercept(serviceDefinition, new HeaderServerInterceptor());
+            ServerInterceptors.intercept(serviceDefinition, HeaderServerInterceptor.getInstance());
             remoteServer.addService(serviceDefinition);
             injvmServer.addService(serviceDefinition);
             registry.register(providerUrl);

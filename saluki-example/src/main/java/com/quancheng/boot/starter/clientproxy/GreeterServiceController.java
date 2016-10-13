@@ -17,9 +17,10 @@ public class GreeterServiceController {
 
     @RequestMapping
     public HelloReply view() {
-        RpcContext.getContext().set("123", "helloworld");
+
         com.quancheng.boot.starter.model.HelloRequest request = new com.quancheng.boot.starter.model.HelloRequest();
         request.setName("liushiming");
+        RpcContext.getContext().set("123", "helloworld");
         com.quancheng.boot.starter.model.HelloReply reply = greeterService.SayHello(request);
         return reply;
     }
