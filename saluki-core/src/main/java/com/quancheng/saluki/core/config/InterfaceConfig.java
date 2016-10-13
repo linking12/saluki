@@ -13,10 +13,7 @@ public class InterfaceConfig implements Serializable {
     private String            version;
 
     // 接口名
-    private String            interfaceName;
-
-    // 是否使用泛接口
-    private Boolean           generic;
+    private String            serviceName;
 
     // 是否是原生Grpc服务
     private Boolean           grpcStub;
@@ -40,20 +37,12 @@ public class InterfaceConfig implements Serializable {
         this.version = version;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    public Boolean getGeneric() {
-        return generic;
-    }
-
-    public void setGeneric(Boolean generic) {
-        this.generic = generic;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public Boolean getGrpcStub() {
@@ -76,11 +65,10 @@ public class InterfaceConfig implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((generic == null) ? 0 : generic.hashCode());
         result = prime * result + ((group == null) ? 0 : group.hashCode());
         result = prime * result + ((grpcStub == null) ? 0 : grpcStub.hashCode());
-        result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((ref == null) ? 0 : ref.hashCode());
+        result = prime * result + ((serviceName == null) ? 0 : serviceName.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
         return result;
     }
@@ -91,21 +79,18 @@ public class InterfaceConfig implements Serializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         InterfaceConfig other = (InterfaceConfig) obj;
-        if (generic == null) {
-            if (other.generic != null) return false;
-        } else if (!generic.equals(other.generic)) return false;
         if (group == null) {
             if (other.group != null) return false;
         } else if (!group.equals(other.group)) return false;
         if (grpcStub == null) {
             if (other.grpcStub != null) return false;
         } else if (!grpcStub.equals(other.grpcStub)) return false;
-        if (interfaceName == null) {
-            if (other.interfaceName != null) return false;
-        } else if (!interfaceName.equals(other.interfaceName)) return false;
         if (ref == null) {
             if (other.ref != null) return false;
         } else if (!ref.equals(other.ref)) return false;
+        if (serviceName == null) {
+            if (other.serviceName != null) return false;
+        } else if (!serviceName.equals(other.serviceName)) return false;
         if (version == null) {
             if (other.version != null) return false;
         } else if (!version.equals(other.version)) return false;
@@ -114,8 +99,8 @@ public class InterfaceConfig implements Serializable {
 
     @Override
     public String toString() {
-        return "InterfaceConfig [group=" + group + ", version=" + version + ", interfaceName=" + interfaceName
-               + ", generic=" + generic + ", grpcStub=" + grpcStub + ", ref=" + ref + "]";
+        return "InterfaceConfig [group=" + group + ", version=" + version + ", serviceName=" + serviceName
+               + ", grpcStub=" + grpcStub + ", ref=" + ref + "]";
     }
 
 }

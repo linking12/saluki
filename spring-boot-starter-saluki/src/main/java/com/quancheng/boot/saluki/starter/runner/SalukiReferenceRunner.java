@@ -65,7 +65,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             Preconditions.checkNotNull(version, "Version can not be null", version);
             referenceConfig.setVersion(version);
         }
-        String interfaceName = reference.interfaceName();
+        String interfaceName = reference.service();
         Preconditions.checkNotNull(interfaceName, "interfaceName can not be null", interfaceName);
         referenceConfig.setInterfaceName(interfaceName);
         referenceConfig.setRegistryName("consul");
