@@ -1,6 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
-
 sourceSets {
     main {
         java {
