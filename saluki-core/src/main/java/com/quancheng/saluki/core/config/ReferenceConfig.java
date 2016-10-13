@@ -135,7 +135,7 @@ public class ReferenceConfig extends BasicConfig {
 
     private void checkParam() {
         Preconditions.checkNotNull(interfaceName, "interfaceName (%s) is not Null");
-        if (!this.generic) {
+        if (!this.generic && !this.injvm) {
             try {
                 interfaceClass = ReflectUtil.name2class(interfaceName);
             } catch (ClassNotFoundException e) {
@@ -149,16 +149,12 @@ public class ReferenceConfig extends BasicConfig {
         Map<String, String> params = Maps.newHashMap();
         if (this.injvm) {
             params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.TRUE.toString());
-        } else {
-            params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE.toString());
         }
         if (!this.async) {
             params.put(SalukiConstants.RPCTYPE_KEY, Integer.valueOf(SalukiConstants.RPCTYPE_ASYNC).toString());
         }
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
-        } else {
-            params.put(SalukiConstants.GENERIC_KEY, Boolean.FALSE.toString());
         }
         if (StringUtils.isNotBlank(this.group)) {
             params.put(SalukiConstants.GROUP_KEY, this.group);
@@ -166,16 +162,10 @@ public class ReferenceConfig extends BasicConfig {
             if (StringUtils.isNotBlank(this.application)) {
                 params.put(SalukiConstants.GROUP_KEY, this.application);
             }
-//            else {
-//                params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
-//            }
         }
         if (StringUtils.isNotBlank(this.version)) {
             params.put(SalukiConstants.VERSION_KEY, version);
-        } 
-//        else {
-//            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
-//        }
+        }
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
         }

@@ -22,7 +22,7 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T getProxy() {
-        String protocol = getProtocol();
+        String protocol = getProtocolClzz().getName();
         if (StringUtils.contains(protocol, "$")) {
             try {
                 String parentName = StringUtils.substringBefore(protocol, "$");

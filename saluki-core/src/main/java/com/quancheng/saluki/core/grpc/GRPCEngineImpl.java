@@ -40,13 +40,13 @@ public class GRPCEngineImpl implements GRPCEngine {
 
     @Override
     public Object getProxy(SalukiURL refUrl) throws Exception {
-        boolean isLocal = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, false);
+        boolean isLocalProcess = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE);
         Callable<Channel> channelCallable = new Callable<Channel>() {
 
             @Override
             public Channel call() throws Exception {
                 Channel channel;
-                if (isLocal) {
+                if (isLocalProcess) {
                     channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
                 } else {
                     channel = ManagedChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
