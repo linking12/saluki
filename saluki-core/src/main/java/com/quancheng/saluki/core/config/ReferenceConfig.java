@@ -38,7 +38,7 @@ public class ReferenceConfig extends BasicConfig {
     private boolean                   async;
 
     // 请求超时时间
-    private Integer                   requestTimeout;
+    private int                       requestTimeout;
 
     private transient volatile Object ref;
 
@@ -166,9 +166,10 @@ public class ReferenceConfig extends BasicConfig {
             params.put(SalukiConstants.VERSION_KEY, version);
         }
         if (this.requestTimeout != 0) {
-            params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
+            params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
-        String interfaceName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
+        String interfaceClassName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
+        params.put(SalukiConstants.INTERFACECLASS_KEY, interfaceClassName);
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;

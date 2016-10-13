@@ -13,8 +13,9 @@ import io.grpc.MethodDescriptor;
 
 public class NormalProxy<T> extends AbstractProtocolProxy<T> {
 
-    public NormalProxy(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType){
-        super(protocol, channelCallable, rpcTimeout, callType);
+    public NormalProxy(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable, int rpcTimeout,
+                       int callType){
+        super(protocol, protocolClass, channelCallable, rpcTimeout, callType);
     }
 
     @SuppressWarnings("unchecked")

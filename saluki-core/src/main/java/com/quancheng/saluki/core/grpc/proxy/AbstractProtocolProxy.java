@@ -6,8 +6,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.ObjectUtils;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
@@ -115,12 +113,13 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
     protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                                       Object[] args);
 
-    public AbstractProtocolProxy(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType){
+    public AbstractProtocolProxy(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable,
+                                 int rpcTimeout, int callType){
         this.protocol = protocol;
         this.channelCallable = channelCallable;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
-        this.protocolClzz = ObjectUtils.defaultIfNull(buildClass(), null);
+        this.protocolClzz = protocolClass;
         this.channelCache = CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
@@ -155,13 +154,4 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
     public Cache<String, Channel> getChannelCache() {
         return channelCache;
     }
-
-    private Class<?> buildClass() {
-        try {
-            return ReflectUtil.name2class(protocol);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
 }

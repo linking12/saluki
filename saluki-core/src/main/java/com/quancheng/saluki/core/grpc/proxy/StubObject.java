@@ -14,8 +14,9 @@ import io.grpc.MethodDescriptor;
 
 public class StubObject<T> extends AbstractProtocolProxy<T> {
 
-    public StubObject(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType){
-        super(protocol, channelCallable, rpcTimeout, callType);
+    public StubObject(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable, int rpcTimeout,
+                      int callType){
+        super(protocol, protocolClass, channelCallable, rpcTimeout, callType);
     }
 
     @Override
