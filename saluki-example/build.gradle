@@ -1,5 +1,10 @@
 apply plugin: 'java'
 
+repositories {
+    jcenter()
+}
+
+
 dependencies {
       compile group: 'com.quancheng', name: 'spring-boot-starter-saluki', version:'0.0.1-SNAPSHOT'
       compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.0.RELEASE'
