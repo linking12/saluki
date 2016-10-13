@@ -26,16 +26,16 @@ public class ReferenceConfig extends BasicConfig {
     private Class<?>                  interfaceClass;
 
     // 是否使用泛接口
-    private Boolean                   generic;
+    private boolean                   generic;
 
     // 是否是injvm调用
-    private Boolean                   injvm;
+    private boolean                   injvm;
 
     // 原生grpc stub调用
-    private Boolean                   grpcStub;
+    private boolean                   grpcStub;
 
     // 是否异步
-    private Boolean                   async;
+    private boolean                   async;
 
     // 请求超时时间
     private Integer                   requestTimeout;
