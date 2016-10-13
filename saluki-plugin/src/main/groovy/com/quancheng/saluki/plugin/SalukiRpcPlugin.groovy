@@ -8,8 +8,8 @@ class SalukiRpcPlugin implements Plugin<Project> {
     void apply(Project project) {
 
         project.task('generateProtoInterface') << {
-            println("test")
-            println project.projectDir.path + ":项目path"
+            //println("test")
+            //println project.projectDir.path + ":项目path"
             def dir = new File(project.projectDir.path + "/src/main/proto")
             dir.traverse(type: FileType.FILES,
                     nameFilter: ~/.*\.proto/
@@ -112,7 +112,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
         }
 
         project.task('generateProtoModel') << {
-            println project.projectDir.path + ":项目path"
+            //println project.projectDir.path + ":项目path"
             def dir = new File(project.projectDir.path + "/src/main/proto")
 
             dir.traverse(type: FileType.FILES,
@@ -185,7 +185,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                             printWriter.write("@ProtobufEntity(" + messagepb[messageData.getKey()] + packageName[(packageName.size() - 1)] + ".class)\n")
                             printWriter.write('public class ' + packageName[(packageName.size() - 1)] + " { \n")
                             messageData.getValue().each { param ->
-                                println(param)
+                                //println(param)
                                 if (param[1].trim() == "string") {
                                     printParam("String", param[2], printWriter)
                                     printGet("String", param[2], printWriter)
