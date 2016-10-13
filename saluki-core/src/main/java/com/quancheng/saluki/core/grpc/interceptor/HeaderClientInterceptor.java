@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.grpc.server.ProtocolExporter;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
