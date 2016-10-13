@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
@@ -120,7 +121,12 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
         this.protocolClzz = protocolClass;
-        this.channelCache = CacheBuilder.newBuilder().maximumSize(1000).build();
+        this.channelCache = CacheBuilder.newBuilder()//
+                                        .refreshAfterWrite(5L, TimeUnit.SECONDS)//
+                                        .maximumSize(5000L)//
+                                        .softValues()//
+                                        .ticker(Ticker.systemTicker())//
+                                        .build();
     }
 
     public Channel getChannel() {
