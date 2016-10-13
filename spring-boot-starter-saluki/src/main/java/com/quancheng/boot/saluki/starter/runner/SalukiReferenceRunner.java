@@ -92,6 +92,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         }
         if (AbstractStub.class.isAssignableFrom(referenceClass)) {
             referenceConfig.setGrpcStub(true);
+            referenceConfig.setInterfaceClass(referenceClass);
         }
         Object value = referenceConfig.get();
         return value;

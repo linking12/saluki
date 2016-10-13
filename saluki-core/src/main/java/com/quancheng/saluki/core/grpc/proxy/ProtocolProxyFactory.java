@@ -37,9 +37,9 @@ public class ProtocolProxyFactory {
             return genericProxy;
         } else {
             if (stub) {
-                return new StubObject<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+                return new StubObject<Object>(protocol, channelCallable, rpcTimeOut, rpcType);
             } else {
-                return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
+                return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType);
             }
         }
     }

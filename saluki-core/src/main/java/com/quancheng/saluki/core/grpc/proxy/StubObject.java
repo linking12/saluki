@@ -14,12 +14,10 @@ import io.grpc.MethodDescriptor;
 
 public class StubObject<T> extends AbstractProtocolProxy<T> {
 
-    public StubObject(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType,
-                      boolean isGeneric){
-        super(protocol, channelCallable, rpcTimeout, callType, isGeneric);
+    public StubObject(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType){
+        super(protocol, channelCallable, rpcTimeout, callType);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T getProxy() {
         String protocol = getProtocolClzz().getName();

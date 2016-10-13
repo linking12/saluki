@@ -168,8 +168,7 @@ public class ReferenceConfig extends BasicConfig {
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
         }
-        String interfaceName = (interfaceClass != null
-                                && interfaceClass.getName() != null) ? interfaceClass.getName() : this.interfaceName;
+        String interfaceName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;

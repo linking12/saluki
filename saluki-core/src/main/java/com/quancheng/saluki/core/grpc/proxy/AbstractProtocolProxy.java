@@ -31,8 +31,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
 
     private final int                    rpcTimeout;
 
-    private final boolean                isGeneric;
-
     private final Class<?>               protocolClzz;
 
     private final Cache<String, Channel> channelCache;
@@ -117,13 +115,11 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
     protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                                       Object[] args);
 
-    public AbstractProtocolProxy(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType,
-                                 boolean isGeneric){
+    public AbstractProtocolProxy(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType){
         this.protocol = protocol;
         this.channelCallable = channelCallable;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
-        this.isGeneric = isGeneric;
         this.protocolClzz = ObjectUtils.defaultIfNull(buildClass(), null);
         this.channelCache = CacheBuilder.newBuilder().maximumSize(1000).build();
     }
@@ -152,10 +148,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
         return rpcTimeout;
     }
 
-    public boolean isGeneric() {
-        return isGeneric;
-    }
-
     public Class<?> getProtocolClzz() {
         return protocolClzz;
     }
@@ -165,15 +157,11 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
     }
 
     private Class<?> buildClass() {
-        Class<?> protocolClzz = null;
-        if (!this.isGeneric()) {
-            try {
-                protocolClzz = ReflectUtil.name2class(protocol);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+        try {
+            return ReflectUtil.name2class(protocol);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        return protocolClzz;
     }
 
 }

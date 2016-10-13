@@ -20,7 +20,7 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
 
     public GenericProxy(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType,
                         boolean isGeneric){
-        super(protocol, channelCallable, rpcTimeout, callType, isGeneric);
+        super(protocol, channelCallable, rpcTimeout, callType);
     }
 
     public void setSalukiClassLoader(SalukiClassLoader classLoader) {
