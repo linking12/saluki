@@ -1,5 +1,4 @@
 package com.quancheng.saluki.plugin
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import groovy.io.FileType
@@ -121,6 +120,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
             ) {
                 def message = [:]
                 def methodClassName = [:]
+                def messagepb = [:]
                 List files = getImportFiles(it.path, project, [])
                 files.reverse().each { file ->
                     def packageName1 = ""
@@ -154,6 +154,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         if (massageParamEnd.size() > 0) {
                             if (massageName) {
                                 message.put(massageName, massageParamList)
+                                messagepb.put(massageName,packageName1 + "." + java_outer_classname + ".")
                                 massageParamList = []
                                 massageName = ""
                             }
@@ -176,7 +177,12 @@ class SalukiRpcPlugin implements Plugin<Project> {
                             printWriter.write("package " + packageName[0..(packageName.size() - 2)].join(".") + ";")
                             printWriter.write('\n')
                             printWriter.write('\n')
+                            printWriter.write('import com.quancheng.saluki.serializer.ProtobufAttribute;\n')
+                            printWriter.write('import com.quancheng.saluki.serializer.ProtobufEntity;\n')
+                            //printWriter.write('import ' +messagepb[messageData.getKey()] + packageName[(packageName.size() - 1)]+';\n')
                             //printWriter.write("@ModelMapping(mapping = \""+packageName[0..(packageName.size()-2)].join(".")+"\")\n")
+                            printWriter.write('\n')
+                            printWriter.write("@ProtobufEntity(" + messagepb[messageData.getKey()] + packageName[(packageName.size() - 1)] + ".class)\n")
                             printWriter.write('public class ' + packageName[(packageName.size() - 1)] + " { \n")
                             messageData.getValue().each { param ->
                                 println(param)
@@ -263,6 +269,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
 
     void printParam(type, name, printWriter) {
         printWriter.write("\n")
+        printWriter.write("    @ProtobufAttribute\n")
         printWriter.write("    private " + type + " " + name + ";\n")
     }
 
