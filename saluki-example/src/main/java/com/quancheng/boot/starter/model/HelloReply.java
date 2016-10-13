@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter.service.model;
+package com.quancheng.boot.starter.model;
 
 import com.quancheng.saluki.serializer.ProtobufAttribute;
 import com.quancheng.saluki.serializer.ProtobufEntity;

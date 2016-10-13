@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter;
+package com.quancheng.boot.starter.client;
 
 import org.lognet.springboot.grpc.proto.GreeterGrpc;
 import org.lognet.springboot.grpc.proto.GreeterOuterClass;
