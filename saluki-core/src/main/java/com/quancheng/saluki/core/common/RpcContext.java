@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class RpcContext {
 
-    private static final ThreadLocal<RpcContext> LOCAL       = new InheritableThreadLocal<RpcContext>() {
+    private static final ThreadLocal<RpcContext> LOCAL       = new ThreadLocal<RpcContext>() {
 
                                                                  @Override
                                                                  protected RpcContext initialValue() {
