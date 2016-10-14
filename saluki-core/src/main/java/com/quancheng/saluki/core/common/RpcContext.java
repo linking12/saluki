@@ -31,7 +31,7 @@ public class RpcContext {
         return attachments.get(key);
     }
 
-    public RpcContext setAttachment(String key, String value) {
+    public synchronized RpcContext setAttachment(String key, String value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -65,7 +65,7 @@ public class RpcContext {
         return values;
     }
 
-    public RpcContext set(String key, Object value) {
+    public synchronized RpcContext set(String key, Object value) {
         if (value == null) {
             values.remove(key);
         } else {
