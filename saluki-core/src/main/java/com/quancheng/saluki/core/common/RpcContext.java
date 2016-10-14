@@ -13,7 +13,6 @@ public class RpcContext {
                                                                  }
                                                              };
     private final Map<String, String>            attachments = new HashMap<String, String>();
-
     private final Map<String, Object>            values      = new HashMap<String, Object>();
 
     public static RpcContext getContext() {

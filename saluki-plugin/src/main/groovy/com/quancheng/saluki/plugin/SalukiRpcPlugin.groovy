@@ -8,8 +8,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
     void apply(Project project) {
 
         project.task('generateProtoInterface') << {
-            println("test")
-            println project.projectDir.path + ":项目path"
             def dir = new File(project.projectDir.path + "/src/main/proto")
             dir.traverse(type: FileType.FILES,
                     nameFilter: ~/.*\.proto/
@@ -58,9 +56,9 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     def service = line =~ /^service\s+(.+)\s*\{$/
                     if (service.size() > 0) {
                         if (packageName != "") {
-                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/java/" + packageName.replaceAll("\\.", "/") + "/" + service[0][1] + ".java"
+                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + packageName.replaceAll("\\.", "/") + "/" + service[0][1] + ".java"
                         } else {
-                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/java/" + "/" + service[0][1] + ".java"
+                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + "/" + service[0][1] + ".java"
                         }
                         serviceName << service[0][1]
                         serviceName << nb
@@ -72,8 +70,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         def methodNameList = []
                         methodNameList = method[0]
                         methodNameList.add(nb)
-                        //println(methodNameList[3])
-                        //println("value:"+methodClassName[methodNameList[3]])
                         methodNameList[3] = methodClassName[methodNameList[3]]
                         methodNameList[2] = methodClassName[methodNameList[2]]
                         methodName << methodNameList
@@ -113,9 +109,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
         }
 
         project.task('generateProtoModel') << {
-            println project.projectDir.path + ":项目path"
             def dir = new File(project.projectDir.path + "/src/main/proto")
-
             dir.traverse(type: FileType.FILES,
                     nameFilter: ~/.*\.proto/
             ) {
@@ -166,11 +160,9 @@ class SalukiRpcPlugin implements Plugin<Project> {
                 }
                 if (message) {
                     message.each { messageData ->
-                        //println(messageData.getKey())
                         List packageName = messageData.getKey().split("\\.")
                         if (packageName.size() > 2) {
                             def str = packageName[0..(packageName.size() - 1)].join("/")
-                            //println(str)
                             def path = project.projectDir.getPath() + "/build/generated/source/proto/main/java/" + str + ".java"
                             def file = new File(path)
                             file.parentFile.mkdirs()
@@ -180,13 +172,10 @@ class SalukiRpcPlugin implements Plugin<Project> {
                             printWriter.write('\n')
                             printWriter.write('import com.quancheng.saluki.serializer.ProtobufAttribute;\n')
                             printWriter.write('import com.quancheng.saluki.serializer.ProtobufEntity;\n')
-                            //printWriter.write('import ' +messagepb[messageData.getKey()] + packageName[(packageName.size() - 1)]+';\n')
-                            //printWriter.write("@ModelMapping(mapping = \""+packageName[0..(packageName.size()-2)].join(".")+"\")\n")
                             printWriter.write('\n')
                             printWriter.write("@ProtobufEntity(" + messagepb[messageData.getKey()] + packageName[(packageName.size() - 1)] + ".class)\n")
                             printWriter.write('public class ' + packageName[(packageName.size() - 1)] + " { \n")
                             messageData.getValue().each { param ->
-                                println(param)
                                 if (param[1].trim() == "string") {
                                     printParam("String", param[2], printWriter)
                                     printGet("String", param[2], printWriter)

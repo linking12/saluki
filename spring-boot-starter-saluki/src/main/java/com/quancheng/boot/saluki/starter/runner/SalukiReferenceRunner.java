@@ -14,9 +14,11 @@ import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
+import io.grpc.stub.AbstractStub;
+
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger  logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger    logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
     private final SalukiProperties grpcProperties;
 
@@ -78,15 +80,20 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         referenceConfig.setInjvm(reference.localProcess());
         referenceConfig.setAsync(reference.callType() == 1 ? true : false);
         referenceConfig.setRequestTimeout(reference.requestTime());
-        try {
-            Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
-            if (!interfaceClass.isAssignableFrom(referenceClass)) {
-                referenceConfig.setGeneric(true);
-            } else {
+        if (AbstractStub.class.isAssignableFrom(referenceClass)) {
+            referenceConfig.setGrpcStub(true);
+            referenceConfig.setInterfaceClass(referenceClass);
+        } else {
+            try {
+                Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
+                if (!interfaceClass.isAssignableFrom(referenceClass)) {
+                    referenceConfig.setGeneric(true);
+                } else {
+                    referenceConfig.setGeneric(false);
+                }
+            } catch (ClassNotFoundException e) {
                 referenceConfig.setGeneric(false);
             }
-        } catch (ClassNotFoundException e) {
-            referenceConfig.setGeneric(false);
         }
         Object value = referenceConfig.get();
         return value;

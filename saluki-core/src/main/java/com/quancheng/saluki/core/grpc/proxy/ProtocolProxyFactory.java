@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc.proxy;
 
-import java.lang.reflect.Modifier;
 import java.util.concurrent.Callable;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
@@ -31,23 +30,27 @@ public class ProtocolProxyFactory {
         boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
         int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
+        boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         String protocol = refUrl.getServiceInterface();
-        Boolean isInterface = false;
+        String protocolClass = refUrl.getParameter(SalukiConstants.INTERFACECLASS_KEY, protocol);
         try {
-            Class<?> protocolClzz = ReflectUtil.name2class(protocol);
-            isInterface = Modifier.isInterface(protocolClzz.getModifiers());
+            Class<?> protocolClazz = ReflectUtil.name2class(protocolClass);
+            if (isGeneric) {
+                GenericProxy genericProxy = new GenericProxy(protocol, protocolClazz, channelCallable, rpcTimeOut,
+                                                             rpcType);
+                genericProxy.setSalukiClassLoader(classLoader);
+                return genericProxy;
+            } else {
+                if (stub) {
+                    return new StubObject<Object>(protocol, protocolClazz, channelCallable, rpcTimeOut, rpcType);
+                } else {
+                    return new NormalProxy<Object>(protocol, protocolClazz, channelCallable, rpcTimeOut, rpcType);
+                }
+            }
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("no class find in classpath", e);
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
-        if (isGeneric) {
-            GenericProxy genericProxy = new GenericProxy(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
-            genericProxy.setSalukiClassLoader(classLoader);
-            return genericProxy;
-        }
-        if (isInterface) {
-            return new NormalProxy<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
-        } else {
-            return new StubObject<Object>(protocol, channelCallable, rpcTimeOut, rpcType, isGeneric);
-        }
+
     }
+
 }

@@ -12,8 +12,6 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.SalukiServer;
 import com.quancheng.saluki.core.utils.NetUtils;
 
-import io.grpc.BindableService;
-
 public class ServiceConfig extends BasicConfig {
 
     private static final long               serialVersionUID = 1L;
@@ -40,11 +38,6 @@ public class ServiceConfig extends BasicConfig {
         interfaceConfig.setGroup(group);
         interfaceConfig.setVersion(version);
         interfaceConfig.setRef(instance);
-        if (instance instanceof BindableService) {
-            interfaceConfig.setGrpcStub(true);
-        } else {
-            interfaceConfig.setGrpcStub(false);
-        }
         serviceConigs.add(interfaceConfig);
     }
 
@@ -58,18 +51,14 @@ public class ServiceConfig extends BasicConfig {
             Object protocolImpl = config.getRef();
             Map<String, String> params = Maps.newHashMap();
             if (StringUtils.isBlank(config.getGroup())) {
-                if (this.application != null) {
+                if (StringUtils.isNoneBlank(this.application)) {
                     params.put(SalukiConstants.GROUP_KEY, this.application);
-                } else {
-                    params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
                 }
             } else {
                 params.put(SalukiConstants.GROUP_KEY, config.getGroup());
             }
             if (StringUtils.isNotBlank(config.getVersion())) {
                 params.put(SalukiConstants.VERSION_KEY, config.getVersion());
-            } else {
-                params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
             }
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), port,
                                                   protocol, params);

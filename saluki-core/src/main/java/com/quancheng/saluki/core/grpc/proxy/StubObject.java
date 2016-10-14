@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
@@ -14,15 +15,14 @@ import io.grpc.MethodDescriptor;
 
 public class StubObject<T> extends AbstractProtocolProxy<T> {
 
-    public StubObject(String protocol, Callable<Channel> channelCallable, int rpcTimeout, int callType,
-                      boolean isGeneric){
-        super(protocol, channelCallable, rpcTimeout, callType, isGeneric);
+    public StubObject(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable, int rpcTimeout,
+                      int callType){
+        super(protocol, protocolClass, channelCallable, rpcTimeout, callType);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T getProxy() {
-        String protocol = getProtocol();
+        String protocol = getProtocolClzz().getName();
         if (StringUtils.contains(protocol, "$")) {
             try {
                 String parentName = StringUtils.substringBefore(protocol, "$");
@@ -39,6 +39,7 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
                 }
+                @SuppressWarnings("unchecked")
                 T value = (T) method.invoke(null, getChannel());
                 return value;
             } catch (Exception e) {
@@ -52,6 +53,11 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
     @Override
     protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                              Object[] args) {
+        return null;
+    }
+
+    @Override
+    protected Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable {
         return null;
     }
 

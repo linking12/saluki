@@ -10,6 +10,8 @@ public class SalukiConstants {
     public static final Pattern                   COMMA_SPLIT_PATTERN           = Pattern.compile("\\s*[,]+\\s*");
 
     public static final String                    INTERFACE_KEY                 = "interface";
+    public static final String                    INTERFACECLASS_KEY            = "interfaceClass";
+    public static final String                    GRPC_STUB_KEY                 = "grpcstub";
     public static final String                    GENERIC_KEY                   = "generic";
     public static final String                    GROUP_KEY                     = "group";
     public static final String                    VERSION_KEY                   = "version";
@@ -36,7 +38,7 @@ public class SalukiConstants {
     public static final int                       RPCTYPE_ASYNC                 = 1;
     public static final int                       RPCTYPE_BLOCKING              = 2;
 
-    public static final int                       DEFAULT_TIMEOUT               = 1000;
+    public static final int                       DEFAULT_TIMEOUT               = 60;
     public static final boolean                   DEFAULT_GENERIC               = false;
     public static final String                    GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE       = Attributes.Key.of("subscribe");

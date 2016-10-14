@@ -1,20 +1,15 @@
-apply plugin: 'groovy'
-apply plugin: 'maven'
 apply plugin: 'java'
-
+apply plugin: 'groovy'
 sourceSets {
-     main {
-         java {
-             srcDir 'src/main/groovy'
-         }
-         resources {
-             srcDir 'src/main/resource' 
-         }
-         groovy {
-             srcDir = 'src/main/groovy'
-         }
-     }
- }
+    main {
+        java {
+            srcDir 'src/main/groovy'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
 
 description = 'saluki-plugin'
 

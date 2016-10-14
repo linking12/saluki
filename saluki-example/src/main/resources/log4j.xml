@@ -8,6 +8,13 @@
 			<param name="ConversionPattern" value="TTCCLayout"></param>
 		</layout>
 	</appender>
+	<appender name="file" class="org.apache.log4j.FileAppender">
+		<param name="File" value="/Users/shimingliu/Desktop/info.log"></param>
+		<param name="Threshold" value="info"></param>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss\} %-5p] [%t] {%c:%L}-%m%n"></param>
+		</layout>
+	</appender>
 
 
 	<!-- 定义全局的日志输出级别,但是在输出目的地的配置中配置的具体输出级别优先级高于全局定义的优先级。 如果在railyFile中定义<param 
@@ -15,6 +22,7 @@
 	<root>
 		<priority value="debug" />
 		<appender-ref ref="console" />
+		<appender-ref ref="file" />
 	</root>
 
 </log4j:configuration> 

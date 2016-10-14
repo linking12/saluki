@@ -4,12 +4,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.utils.NetUtils;
-import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends BasicConfig {
 
@@ -28,16 +26,19 @@ public class ReferenceConfig extends BasicConfig {
     private Class<?>                  interfaceClass;
 
     // 是否使用泛接口
-    private Boolean                   generic;
+    private boolean                   generic;
 
     // 是否是injvm调用
-    private Boolean                   injvm;
+    private boolean                   injvm;
+
+    // 原生grpc stub调用
+    private boolean                   grpcStub;
 
     // 是否异步
-    private Boolean                   async;
+    private boolean                   async;
 
     // 请求超时时间
-    private Integer                   requestTimeout;
+    private int                       requestTimeout;
 
     private transient volatile Object ref;
 
@@ -112,6 +113,14 @@ public class ReferenceConfig extends BasicConfig {
         return version;
     }
 
+    public Boolean getGrpcStub() {
+        return grpcStub;
+    }
+
+    public void setGrpcStub(Boolean grpcStub) {
+        this.grpcStub = grpcStub;
+    }
+
     public void setVersion(String version) {
         this.version = version;
     }
@@ -124,7 +133,6 @@ public class ReferenceConfig extends BasicConfig {
     }
 
     private void init() {
-        checkParam();
         loadRegistry();
         try {
             ref = grpcEngine.getProxy(buildRefUrl());
@@ -133,52 +141,35 @@ public class ReferenceConfig extends BasicConfig {
         }
     }
 
-    private void checkParam() {
-        Preconditions.checkNotNull(interfaceName, "interfaceName (%s) is not Null");
-        if (!this.generic) {
-            try {
-                interfaceClass = ReflectUtil.name2class(interfaceName);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-
-    }
-
     private SalukiURL buildRefUrl() {
         Map<String, String> params = Maps.newHashMap();
         if (this.injvm) {
             params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.TRUE.toString());
-        } else {
-            params.put(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE.toString());
         }
         if (!this.async) {
             params.put(SalukiConstants.RPCTYPE_KEY, Integer.valueOf(SalukiConstants.RPCTYPE_ASYNC).toString());
         }
         if (this.generic) {
             params.put(SalukiConstants.GENERIC_KEY, Boolean.TRUE.toString());
-        } else {
-            params.put(SalukiConstants.GENERIC_KEY, Boolean.FALSE.toString());
+        }
+        if (this.grpcStub) {
+            params.put(SalukiConstants.GRPC_STUB_KEY, Boolean.TRUE.toString());
         }
         if (StringUtils.isNotBlank(this.group)) {
             params.put(SalukiConstants.GROUP_KEY, this.group);
         } else {
             if (StringUtils.isNotBlank(this.application)) {
                 params.put(SalukiConstants.GROUP_KEY, this.application);
-            } else {
-                params.put(SalukiConstants.GROUP_KEY, SalukiConstants.DEFAULT_GROUP);
             }
         }
         if (StringUtils.isNotBlank(this.version)) {
             params.put(SalukiConstants.VERSION_KEY, version);
-        } else {
-            params.put(SalukiConstants.VERSION_KEY, SalukiConstants.DEFAULT_VERSION);
         }
         if (this.requestTimeout != 0) {
-            params.put(SalukiConstants.RPCTIMEOUT_KEY, this.requestTimeout.toString());
+            params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
-        String interfaceName = (interfaceClass != null
-                                && interfaceClass.getName() != null) ? interfaceClass.getName() : this.interfaceName;
+        String interfaceClassName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
+        params.put(SalukiConstants.INTERFACECLASS_KEY, interfaceClassName);
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;
