@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
@@ -52,6 +53,11 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
     @Override
     protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                              Object[] args) {
+        return null;
+    }
+
+    @Override
+    protected Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable {
         return null;
     }
 

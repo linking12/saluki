@@ -6,13 +6,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
-import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -36,12 +37,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
 
     protected class JavaProxyInvoker implements InvocationHandler {
 
-        private boolean isGeneric;
-
-        public JavaProxyInvoker(boolean isGeneric){
-            this.isGeneric = isGeneric;
-        }
-
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             String methodName = method.getName();
@@ -55,61 +50,33 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             if ("equals".equals(methodName) && parameterTypes.length == 1) {
                 return AbstractProtocolProxy.this.equals(args[0]);
             }
-            GeneratedMessageV3 arg = null;
-            Class<?> returnType = null;
-            /**
-             * 对入参进行转化，pojo--->pb model begin
-             */
-            if (!isGeneric) {
-                if (args.length > 1) {
-                    throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                                       + args.length);
+            try {
+                Pair<GeneratedMessageV3, Class<?>> pairParam = processParam(method, args);
+                GeneratedMessageV3 arg = pairParam.getLeft();
+                Class<?> returnType = pairParam.getRight();
+                ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
+                                                                                                                        args),
+                                                                                                  CallOptions.DEFAULT);
+                GeneratedMessageV3 response = null;
+                switch (callType) {
+                    case SalukiConstants.RPCTYPE_ASYNC:
+                        response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                        break;
+                    case SalukiConstants.RPCTYPE_BLOCKING:
+                        response = ClientCalls.blockingUnaryCall(newCall, arg);
+                        break;
+                    default:
+                        response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
+                        break;
                 }
-                args = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(args[0]) };
-                arg = (GeneratedMessageV3) args[0];
-                returnType = ReflectUtil.getTypeRep(method);
-            } else {
-                int length = ((String[]) args[2]).length;
-                if (length != 2) {
-                    throw new IllegalArgumentException("generic call request type and response type must transmit"
-                                                       + " but length is  " + length);
-                }
-                returnType = ReflectUtil.name2class(((String[]) args[2])[1]);
-                String requestType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[0]);
-                String responseType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[1]);
-                args[2] = new String[] { requestType, responseType };
-                Object[] param = (Object[]) args[3];
-                if (param.length > 1) {
-                    throw new IllegalArgumentException("grpc call not support multiple args,args is " + param
-                                                       + " length is " + param.length);
-                }
-                args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(param[0]) };
-                arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
+                return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
+            } catch (Throwable e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
-            /**
-             * 对入参进行转化，pojo--->pb model end
-             */
-            ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
-                                                                                                                    args),
-                                                                                              CallOptions.DEFAULT);
-            GeneratedMessageV3 response = null;
-            switch (callType) {
-                case SalukiConstants.RPCTYPE_ASYNC:
-                    response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
-                    break;
-                case SalukiConstants.RPCTYPE_BLOCKING:
-                    response = ClientCalls.blockingUnaryCall(newCall, arg);
-                    break;
-                default:
-                    response = ClientCalls.futureUnaryCall(newCall, arg).get(rpcTimeout, TimeUnit.SECONDS);
-                    break;
-            }
-            /**
-             * 对出参进行转化，pb model --->pojo
-             */
-            return MethodDescriptorUtils.convertPbModelToPojo(response, returnType);
         }
     }
+
+    protected abstract Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable;
 
     protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
                                                                                                       Object[] args);

@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.SalukiClassLoader;
@@ -30,7 +33,7 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
     @Override
     public Object getProxy() {
         return Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
-                                      new JavaProxyInvoker(true));
+                                      new JavaProxyInvoker());
     }
 
     @Override
@@ -65,6 +68,27 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
                                                new ClassNotFoundException("Class " + className + " not found"));
         }
 
+    }
+
+    @Override
+    protected Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable {
+        int length = ((String[]) args[2]).length;
+        if (length != 2) {
+            throw new IllegalArgumentException("generic call request type and response type must transmit"
+                                               + " but length is  " + length);
+        }
+        Class<?> returnType = ReflectUtil.name2class(((String[]) args[2])[1]);
+        String requestType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[0]);
+        String responseType = MethodDescriptorUtils.covertPojoTypeToPbModelType(((String[]) args[2])[1]);
+        args[2] = new String[] { requestType, responseType };
+        Object[] param = (Object[]) args[3];
+        if (param.length > 1) {
+            throw new IllegalArgumentException("grpc call not support multiple args,args is " + param + " length is "
+                                               + param.length);
+        }
+        args[3] = new Object[] { MethodDescriptorUtils.convertPojoToPbModel(param[0]) };
+        GeneratedMessageV3 arg = (GeneratedMessageV3) ((Object[]) args[3])[0];
+        return new ImmutablePair<GeneratedMessageV3, Class<?>>(arg, returnType);
     }
 
 }
