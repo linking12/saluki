@@ -144,7 +144,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                             massageName = packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim()
                             methodClassName.put(packageName1 + "." + param_filter[0][1].trim(), packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim())
                         }
-                        def massageParam = line =~ /^\s*(repeated)?\s*(.+)\s+(.+)\s*=\s*(\d+)/
+                        def massageParam = line =~ /^\s*(.+)\s+(.+)\s*=\s*(\d+)/
                         if (massageParam.size() > 0) {
                             if (massageName) {
                                 massageParamList.add(massageParam[0])
