@@ -21,7 +21,7 @@ public class DemoServerApp implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         com.quancheng.boot.starter.model.HelloRequest request = new com.quancheng.boot.starter.model.HelloRequest();
-        request.setName("joe");
+        request.setName("1234");
         RpcContext.getContext().set("123", "helloworld");
         com.quancheng.boot.starter.model.HelloReply reply = greeterService.SayHello(request);
         System.out.println(reply.getMessage());

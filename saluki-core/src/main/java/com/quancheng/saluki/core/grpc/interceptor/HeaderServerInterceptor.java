@@ -43,7 +43,6 @@ public class HeaderServerInterceptor implements ServerInterceptor {
             }
             if (valuesByte != null) {
                 Map<String, Object> values = new Gson().fromJson(new String(valuesByte), Map.class);
-                log.info(new String(valuesByte));
                 for (Map.Entry<String, Object> entry : values.entrySet()) {
                     RpcContext.getContext().set(entry.getKey(), entry.getValue());
                 }
