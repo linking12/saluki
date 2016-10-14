@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -14,12 +13,10 @@ import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
-import io.grpc.Attributes;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
 import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.NameResolver;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -50,32 +47,15 @@ public class GRPCEngineImpl implements GRPCEngine {
                     channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
                 } else {
                     channel = ManagedChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                   .nameResolverFactory(buildNameResolverFactory(refUrl))//
-                                                   .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
+                                                   .nameResolverFactory(new SalukiNameResolverProvider(refUrl))//
+                                                   .loadBalancerFactory(buildLoadBalanceFactory())//
+                                                   .usePlaintext(true)//
+                                                   .build();//
                 }
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
             }
         };
         return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getProxy();
-    }
-
-    private NameResolver.Factory buildNameResolverFactory(SalukiURL refUrl) {
-        final Attributes attributesParams = Attributes.newBuilder().set(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE,
-                                                                        refUrl).build();
-
-        return new NameResolver.Factory() {
-
-            @Override
-            public NameResolver newNameResolver(URI targetUri, Attributes params) {
-                Attributes allParams = Attributes.newBuilder().setAll(attributesParams).setAll(params).build();
-                return new SalukiNameResolver(targetUri, allParams);
-            }
-
-            @Override
-            public String getDefaultScheme() {
-                return "consul";
-            }
-        };
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {
