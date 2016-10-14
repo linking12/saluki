@@ -60,6 +60,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                             def protocPath = "/build/generated/source/proto/main/java/"
                             def fileName = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]   
                             path = fileName + ".java"
+                            println(fileName + "Proto.java")
                             new File(fileName + "Proto.java").deleteOnExit()
                         } else {
                             def fileName = project.projectDir.getPath() + grpcPath + "/" + service[0][1]   
