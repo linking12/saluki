@@ -65,7 +65,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         } else {
                             def fileNamegrpc = project.projectDir.getPath() + grpcPath + "/" + service[0][1]
                             def fileNameprotoc = project.projectDir.getPath() + protocPath + "/" + service[0][1]   
-                            path = fileName + ".java"
+                            path = fileNamegrpc + ".java"
                             new File(fileNameprotoc + "Proto.java").deleteOnExit()
                         }
                         serviceName << service[0][1]
