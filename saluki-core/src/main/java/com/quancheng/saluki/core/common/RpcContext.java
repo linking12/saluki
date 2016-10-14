@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.common;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,8 +12,8 @@ public class RpcContext {
                                                                      return new RpcContext();
                                                                  }
                                                              };
-    private final Map<String, String>            attachments = Collections.synchronizedMap(new HashMap<String, String>());
-    private final Map<String, Object>            values      = Collections.synchronizedMap(new HashMap<String, Object>());
+    private final Map<String, String>            attachments = new HashMap<String, String>();
+    private final Map<String, Object>            values      = new HashMap<String, Object>();
 
     public static RpcContext getContext() {
         return LOCAL.get();
@@ -31,7 +30,7 @@ public class RpcContext {
         return attachments.get(key);
     }
 
-    public synchronized RpcContext setAttachment(String key, String value) {
+    public RpcContext setAttachment(String key, String value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -65,7 +64,7 @@ public class RpcContext {
         return values;
     }
 
-    public synchronized RpcContext set(String key, Object value) {
+    public RpcContext set(String key, Object value) {
         if (value == null) {
             values.remove(key);
         } else {
