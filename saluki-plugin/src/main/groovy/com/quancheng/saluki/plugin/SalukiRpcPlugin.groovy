@@ -53,7 +53,7 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     if (java_package.size() > 0) {
                         packageName = java_package[0][1]
                     }
-                    def service = line =~ /^service\s+(.+)\s*\{$/
+                    def service = line =~ /^service\s+([^\s]+)\s*\{$/
                     if (service.size() > 0) {
                         if (packageName != "") {
                             path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + packageName.replaceAll("\\.", "/") + "/" + service[0][1] + ".java"
