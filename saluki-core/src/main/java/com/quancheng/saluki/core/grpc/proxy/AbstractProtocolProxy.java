@@ -122,7 +122,6 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
         this.callType = callType;
         this.protocolClzz = protocolClass;
         this.channelCache = CacheBuilder.newBuilder()//
-                                        .refreshAfterWrite(5L, TimeUnit.SECONDS)//
                                         .maximumSize(5000L)//
                                         .softValues()//
                                         .ticker(Ticker.systemTicker())//
