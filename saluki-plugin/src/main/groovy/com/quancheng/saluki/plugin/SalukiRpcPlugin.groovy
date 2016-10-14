@@ -56,9 +56,15 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     def service = line =~ /^service\s+([^\s]+)\s*\{$/
                     if (service.size() > 0) {
                         if (packageName != "") {
-                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + packageName.replaceAll("\\.", "/") + "/" + service[0][1] + ".java"
+                            def grpcPath = "/build/generated/source/proto/main/grpc/"
+                            def protocPath = "/build/generated/source/proto/main/java/"
+                            def fileName = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]   
+                            path = fileName + ".java"
+                            new File(fileName + "Proto.java").deleteOnExit()
                         } else {
-                            path = project.projectDir.getPath() + "/build/generated/source/proto/main/grpc/" + "/" + service[0][1] + ".java"
+                            def fileName = project.projectDir.getPath() + grpcPath + "/" + service[0][1]   
+                            path = fileName + ".java"
+                            new File(fileName + "Proto.java").deleteOnExit()
                         }
                         serviceName << service[0][1]
                         serviceName << nb
