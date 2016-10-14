@@ -58,15 +58,17 @@ class SalukiRpcPlugin implements Plugin<Project> {
                        def grpcPath = "/build/generated/source/proto/main/grpc/"
                        def protocPath = "/build/generated/source/proto/main/java/"
                         if (packageName != "") {
-                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]  
-                            def fileNameprotoc = project.projectDir.getPath() + protocPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]
-                            path = fileNamegrpc + ".java"
-                            new File(fileNameprotoc + "Proto.java").deleteOnExit()
+                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/"
+                            def fileNameprotoc = project.projectDir.getPath() + protocPath + packageName.replaceAll("\\.", "/") + "/"
+                            path = fileNamegrpc + service[0][1] + ".java"
+                            new File(fileNameprotoc + service[0][1] + "Proto.java").delete()
+                            new File(fileNameprotoc).delete()
                         } else {
-                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + "/" + service[0][1]
-                            def fileNameprotoc = project.projectDir.getPath() + protocPath + "/" + service[0][1]   
-                            path = fileNamegrpc + ".java"
-                            new File(fileNameprotoc + "Proto.java").deleteOnExit()
+                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + "/" 
+                            def fileNameprotoc = project.projectDir.getPath() + protocPath + "/" 
+                            path = fileNamegrpc + service[0][1] + ".java"
+                            new File(fileNameprotoc + service[0][1] + "Proto.java").delete()
+                            new File(fileNameprotoc).delete()
                         }
                         serviceName << service[0][1]
                         serviceName << nb
