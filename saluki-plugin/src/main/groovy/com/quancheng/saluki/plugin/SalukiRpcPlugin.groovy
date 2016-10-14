@@ -55,17 +55,18 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     }
                     def service = line =~ /^service\s+([^\s]+)\s*\{$/
                     if (service.size() > 0) {
+                       def grpcPath = "/build/generated/source/proto/main/grpc/"
+                       def protocPath = "/build/generated/source/proto/main/java/"
                         if (packageName != "") {
-                            def grpcPath = "/build/generated/source/proto/main/grpc/"
-                            def protocPath = "/build/generated/source/proto/main/java/"
-                            def fileName = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]   
-                            path = fileName + ".java"
-                            println(fileName + "Proto.java")
-                            new File(fileName + "Proto.java").deleteOnExit()
+                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]  
+                            def fileNameprotoc = project.projectDir.getPath() + protocPath + packageName.replaceAll("\\.", "/") + "/" + service[0][1]
+                            path = fileNamegrpc + ".java"
+                            new File(fileNameprotoc + "Proto.java").deleteOnExit()
                         } else {
-                            def fileName = project.projectDir.getPath() + grpcPath + "/" + service[0][1]   
+                            def fileNamegrpc = project.projectDir.getPath() + grpcPath + "/" + service[0][1]
+                            def fileNameprotoc = project.projectDir.getPath() + protocPath + "/" + service[0][1]   
                             path = fileName + ".java"
-                            new File(fileName + "Proto.java").deleteOnExit()
+                            new File(fileNameprotoc + "Proto.java").deleteOnExit()
                         }
                         serviceName << service[0][1]
                         serviceName << nb
