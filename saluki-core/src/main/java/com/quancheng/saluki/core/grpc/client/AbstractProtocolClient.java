@@ -8,9 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
@@ -21,7 +19,7 @@ import io.grpc.ClientCall;
 import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 
-public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
+public abstract class AbstractProtocolClient<T> implements ProtocolClient<T> {
 
     private final String                 protocol;
 
@@ -42,21 +40,22 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
             String methodName = method.getName();
             Class<?>[] parameterTypes = method.getParameterTypes();
             if ("toString".equals(methodName) && parameterTypes.length == 0) {
-                return AbstractProtocolProxy.this.toString();
+                return AbstractProtocolClient.this.toString();
             }
             if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-                return AbstractProtocolProxy.this.hashCode();
+                return AbstractProtocolClient.this.hashCode();
             }
             if ("equals".equals(methodName) && parameterTypes.length == 1) {
-                return AbstractProtocolProxy.this.equals(args[0]);
+                return AbstractProtocolClient.this.equals(args[0]);
             }
             try {
-                Pair<GeneratedMessageV3, Class<?>> pairParam = processParam(method, args);
+                Pair<GeneratedMessageV3, Class<?>> pairParam = AbstractProtocolClient.this.doProcessArgs(method, args);
                 GeneratedMessageV3 arg = pairParam.getLeft();
                 Class<?> returnType = pairParam.getRight();
-                ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = getChannel().newCall(buildMethodDescriptor(method,
-                                                                                                                        args),
-                                                                                                  CallOptions.DEFAULT);
+                MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> methodDesc = AbstractProtocolClient.this.doCreateMethodDesc(method,
+                                                                                                                                     args);
+                ClientCall<GeneratedMessageV3, GeneratedMessageV3> newCall = AbstractProtocolClient.this.getChannel().newCall(methodDesc,
+                                                                                                                              CallOptions.DEFAULT);
                 GeneratedMessageV3 response = null;
                 switch (callType) {
                     case SalukiConstants.RPCTYPE_ASYNC:
@@ -76,23 +75,19 @@ public abstract class AbstractProtocolProxy<T> implements ProtocolProxy<T> {
         }
     }
 
-    protected abstract Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable;
+    protected abstract Pair<GeneratedMessageV3, Class<?>> doProcessArgs(Method method, Object[] args) throws Throwable;
 
-    protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
-                                                                                                      Object[] args);
+    protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> doCreateMethodDesc(Method method,
+                                                                                                   Object[] args);
 
-    public AbstractProtocolProxy(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable,
-                                 int rpcTimeout, int callType){
+    public AbstractProtocolClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
+                                  Callable<Channel> channelCallable, int rpcTimeout, int callType){
         this.protocol = protocol;
         this.channelCallable = channelCallable;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
         this.protocolClzz = protocolClass;
-        this.channelCache = CacheBuilder.newBuilder()//
-                                        .maximumSize(5000L)//
-                                        .softValues()//
-                                        .ticker(Ticker.systemTicker())//
-                                        .build();
+        this.channelCache = channelCache;
     }
 
     public Channel getChannel() {

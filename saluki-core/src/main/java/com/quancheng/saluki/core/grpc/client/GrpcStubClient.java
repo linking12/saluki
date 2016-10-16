@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.google.common.cache.Cache;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -13,15 +14,15 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
-public class StubObject<T> extends AbstractProtocolProxy<T> {
+public class GrpcStubClient<T> extends AbstractProtocolClient<T> {
 
-    public StubObject(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable, int rpcTimeout,
-                      int callType){
-        super(protocol, protocolClass, channelCallable, rpcTimeout, callType);
+    public GrpcStubClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
+                          Callable<Channel> channelCallable, int rpcTimeout, int callType){
+        super(channelCache, protocol, protocolClass, channelCallable, rpcTimeout, callType);
     }
 
     @Override
-    public T getProxy() {
+    public T getClient() {
         String protocol = getProtocolClzz().getName();
         if (StringUtils.contains(protocol, "$")) {
             try {
@@ -51,13 +52,13 @@ public class StubObject<T> extends AbstractProtocolProxy<T> {
     }
 
     @Override
-    protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
-                                                                                             Object[] args) {
+    protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> doCreateMethodDesc(Method method,
+                                                                                          Object[] args) {
         return null;
     }
 
     @Override
-    protected Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable {
+    protected Pair<GeneratedMessageV3, Class<?>> doProcessArgs(Method method, Object[] args) throws Throwable {
         return null;
     }
 

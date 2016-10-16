@@ -55,7 +55,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
             }
         };
-        return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getProxy();
+        return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getClient();
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {

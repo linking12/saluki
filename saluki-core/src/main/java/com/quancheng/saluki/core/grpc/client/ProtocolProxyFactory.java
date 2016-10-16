@@ -2,6 +2,9 @@ package com.quancheng.saluki.core.grpc.client;
 
 import java.util.concurrent.Callable;
 
+import com.google.common.base.Ticker;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.SalukiClassLoader;
@@ -11,7 +14,9 @@ import io.grpc.Channel;
 
 public class ProtocolProxyFactory {
 
-    private final SalukiClassLoader classLoader;
+    private final SalukiClassLoader      classLoader;
+
+    private final Cache<String, Channel> channelCache;
 
     private static class ProtocolProxyFactoryHolder {
 
@@ -19,14 +24,19 @@ public class ProtocolProxyFactory {
     }
 
     private ProtocolProxyFactory(){
-        classLoader = new SalukiClassLoader();
+        this.classLoader = new SalukiClassLoader();
+        this.channelCache = CacheBuilder.newBuilder()//
+                                        .maximumSize(5000L)//
+                                        .softValues()//
+                                        .ticker(Ticker.systemTicker())//
+                                        .build();
     }
 
     public static final ProtocolProxyFactory getInstance() {
         return ProtocolProxyFactoryHolder.INSTANCE;
     }
 
-    public ProtocolProxy<Object> getProtocolProxy(SalukiURL refUrl, Callable<Channel> channelCallable) {
+    public ProtocolClient<Object> getProtocolProxy(SalukiURL refUrl, Callable<Channel> channelCallable) {
         boolean isGeneric = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         int rpcType = refUrl.getParameter(SalukiConstants.RPCTYPE_KEY, SalukiConstants.RPCTYPE_ASYNC);
         int rpcTimeOut = refUrl.getParameter(SalukiConstants.RPCTIMEOUT_KEY, SalukiConstants.DEFAULT_TIMEOUT);
@@ -36,15 +46,17 @@ public class ProtocolProxyFactory {
         try {
             Class<?> protocolClazz = ReflectUtil.name2class(protocolClass);
             if (isGeneric) {
-                GenericProxy genericProxy = new GenericProxy(protocol, protocolClazz, channelCallable, rpcTimeOut,
-                                                             rpcType);
+                GeneralizeProxyClient genericProxy = new GeneralizeProxyClient(channelCache, protocol, protocolClazz,
+                                                                               channelCallable, rpcTimeOut, rpcType);
                 genericProxy.setSalukiClassLoader(classLoader);
                 return genericProxy;
             } else {
                 if (stub) {
-                    return new StubObject<Object>(protocol, protocolClazz, channelCallable, rpcTimeOut, rpcType);
+                    return new GrpcStubClient<Object>(channelCache, protocol, protocolClazz, channelCallable,
+                                                      rpcTimeOut, rpcType);
                 } else {
-                    return new NormalProxy<Object>(protocol, protocolClazz, channelCallable, rpcTimeOut, rpcType);
+                    return new JavaProxyClient<Object>(channelCache, protocol, protocolClazz, channelCallable,
+                                                       rpcTimeOut, rpcType);
                 }
             }
         } catch (ClassNotFoundException e) {

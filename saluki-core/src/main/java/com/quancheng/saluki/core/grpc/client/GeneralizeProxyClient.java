@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.google.common.cache.Cache;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.SalukiClassLoader;
@@ -17,13 +18,13 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
-public class GenericProxy extends AbstractProtocolProxy<Object> {
+public class GeneralizeProxyClient extends AbstractProtocolClient<Object> {
 
     private SalukiClassLoader classLoader;
 
-    public GenericProxy(String protocol, Class<?> protocolClass, Callable<Channel> channelCallable, int rpcTimeout,
-                        int callType){
-        super(protocol, protocolClass, channelCallable, rpcTimeout, callType);
+    public GeneralizeProxyClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
+                                 Callable<Channel> channelCallable, int rpcTimeout, int callType){
+        super(channelCache, protocol, protocolClass, channelCallable, rpcTimeout, callType);
     }
 
     public void setSalukiClassLoader(SalukiClassLoader classLoader) {
@@ -31,14 +32,14 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
     }
 
     @Override
-    public Object getProxy() {
+    public Object getClient() {
         return Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
                                       new JavaProxyInvoker());
     }
 
     @Override
-    protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> buildMethodDescriptor(Method method,
-                                                                                             Object[] args) {
+    protected MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> doCreateMethodDesc(Method method,
+                                                                                          Object[] args) {
         String protocol = (String) args[0];
         String methodName = (String) args[1];
         String[] parameterTypes = (String[]) args[2];
@@ -71,7 +72,7 @@ public class GenericProxy extends AbstractProtocolProxy<Object> {
     }
 
     @Override
-    protected Pair<GeneratedMessageV3, Class<?>> processParam(Method method, Object[] args) throws Throwable {
+    protected Pair<GeneratedMessageV3, Class<?>> doProcessArgs(Method method, Object[] args) throws Throwable {
         int length = ((String[]) args[2]).length;
         if (length != 2) {
             throw new IllegalArgumentException("generic call request type and response type must transmit"
