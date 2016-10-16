@@ -55,8 +55,8 @@ public class GeneralizeProxyClient extends AbstractProtocolClient<Object> {
         } catch (ClassNotFoundException e) {
             responseType = doLoadClass(parameterTypes[1]);
         }
-        com.google.protobuf.GeneratedMessageV3 argsReq = MethodDescriptorUtils.buildDefautInstance(requestType);
-        com.google.protobuf.GeneratedMessageV3 argsRep = MethodDescriptorUtils.buildDefautInstance(responseType);
+        GeneratedMessageV3 argsReq = MethodDescriptorUtils.buildDefautInstance(requestType);
+        GeneratedMessageV3 argsRep = MethodDescriptorUtils.buildDefautInstance(responseType);
         return MethodDescriptorUtils.createMethodDescriptor(protocol, methodName, argsReq, argsRep);
     }
 
