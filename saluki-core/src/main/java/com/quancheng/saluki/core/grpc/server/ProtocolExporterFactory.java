@@ -35,7 +35,7 @@ public class ProtocolExporterFactory {
             } catch (ClassNotFoundException e) {
                 protocol = protocolImpl.getClass();
             }
-            protocolExporter = new NormalProtocolExporter(protocol, protocolImpl);
+            protocolExporter = new DefaultProtocolExporter(protocol, protocolImpl);
         }
         return protocolExporter;
     }

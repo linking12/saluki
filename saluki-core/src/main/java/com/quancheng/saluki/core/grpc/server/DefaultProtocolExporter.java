@@ -14,11 +14,11 @@ import io.grpc.MethodDescriptor;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.stub.ServerCalls;
 
-public class NormalProtocolExporter extends AbstractProtocolExporter {
+public class DefaultProtocolExporter extends AbstractProtocolExporter {
 
     private static final Logger log = LoggerFactory.getLogger(ProtocolExporter.class);
 
-    public NormalProtocolExporter(Class<?> protocolClass, Object protocolImpl){
+    public DefaultProtocolExporter(Class<?> protocolClass, Object protocolImpl){
         super(protocolClass, protocolImpl);
     }
 
