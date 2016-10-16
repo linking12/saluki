@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.proxy;
+package com.quancheng.saluki.core.grpc.client;
 
 import java.util.concurrent.Callable;
 
