@@ -92,7 +92,8 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
                     referenceConfig.setGeneric(false);
                 }
             } catch (ClassNotFoundException e) {
-                referenceConfig.setGeneric(false);
+                referenceConfig.setGeneric(true);
+                referenceConfig.setInterfaceClass(referenceClass);
             }
         }
         Object value = referenceConfig.get();

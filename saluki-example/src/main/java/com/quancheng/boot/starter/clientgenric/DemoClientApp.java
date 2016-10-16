@@ -12,12 +12,12 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 @SpringBootApplication
 public class DemoClientApp implements CommandLineRunner, EmbeddedServletContainerCustomizer {
 
-    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.boot.starter.server.MyGreeterService", group = "default", version = "1.0.0")
     private GenericService genricService;
 
     @Override
     public void run(String... args) throws Exception {
-        String serviceName = "com.quancheng.boot.starter.server.GreeterService";
+        String serviceName = "com.quancheng.boot.starter.server.GreeterServiceImpl";
         String method = "SayHello";
         String[] parameterTypes = new String[] { "com.quancheng.boot.starter.model.HelloRequest",
                                                  "com.quancheng.boot.starter.model.HelloReply" };
