@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.ProtocolProxyFactory;
+import com.quancheng.saluki.core.grpc.client.ProtocolClientFactory;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporter;
@@ -55,7 +55,7 @@ public class GRPCEngineImpl implements GRPCEngine {
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
             }
         };
-        return ProtocolProxyFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getClient();
+        return ProtocolClientFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getClient();
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {

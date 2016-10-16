@@ -12,7 +12,7 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.Channel;
 
-public class ProtocolProxyFactory {
+public class ProtocolClientFactory {
 
     private final SalukiClassLoader      classLoader;
 
@@ -20,10 +20,10 @@ public class ProtocolProxyFactory {
 
     private static class ProtocolProxyFactoryHolder {
 
-        private static final ProtocolProxyFactory INSTANCE = new ProtocolProxyFactory();
+        private static final ProtocolClientFactory INSTANCE = new ProtocolClientFactory();
     }
 
-    private ProtocolProxyFactory(){
+    private ProtocolClientFactory(){
         this.classLoader = new SalukiClassLoader();
         this.channelCache = CacheBuilder.newBuilder()//
                                         .maximumSize(5000L)//
@@ -32,7 +32,7 @@ public class ProtocolProxyFactory {
                                         .build();
     }
 
-    public static final ProtocolProxyFactory getInstance() {
+    public static final ProtocolClientFactory getInstance() {
         return ProtocolProxyFactoryHolder.INSTANCE;
     }
 
