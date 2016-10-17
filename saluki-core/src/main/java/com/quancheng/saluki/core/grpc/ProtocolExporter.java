@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.server;
+package com.quancheng.saluki.core.grpc;
 
 import io.grpc.ServerServiceDefinition;
 

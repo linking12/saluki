@@ -3,6 +3,8 @@ package com.quancheng.saluki.core.grpc.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.quancheng.saluki.core.grpc.ProtocolExporter;
+
 import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
 

@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client;
+package com.quancheng.saluki.core.grpc;
 
 public interface ProtocolClient<T> {
 

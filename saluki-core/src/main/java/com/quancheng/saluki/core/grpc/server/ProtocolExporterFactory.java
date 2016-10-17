@@ -1,6 +1,7 @@
 package com.quancheng.saluki.core.grpc.server;
 
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.ProtocolExporter;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.BindableService;

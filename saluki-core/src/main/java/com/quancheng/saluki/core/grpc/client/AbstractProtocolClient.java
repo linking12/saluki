@@ -12,6 +12,7 @@ import com.google.common.cache.Cache;
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
+import com.quancheng.saluki.core.grpc.ProtocolClient;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;

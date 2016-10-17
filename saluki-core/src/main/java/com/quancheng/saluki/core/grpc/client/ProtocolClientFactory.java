@@ -7,6 +7,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.ProtocolClient;
 import com.quancheng.saluki.core.grpc.SalukiClassLoader;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 

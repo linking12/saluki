@@ -8,7 +8,6 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.ProtocolClientFactory;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
-import com.quancheng.saluki.core.grpc.server.ProtocolExporter;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
