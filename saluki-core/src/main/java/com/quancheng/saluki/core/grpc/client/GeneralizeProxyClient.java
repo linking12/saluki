@@ -22,9 +22,17 @@ public class GeneralizeProxyClient extends AbstractProtocolClient<Object> {
 
     private SalukiClassLoader classLoader;
 
-    public GeneralizeProxyClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
+    public GeneralizeProxyClient(Cache<String, Channel> channelCache, String protocol,
                                  Callable<Channel> channelCallable, int rpcTimeout, int callType){
-        super(channelCache, protocol, protocolClass, channelCallable, rpcTimeout, callType);
+        super(channelCache, protocol, channelCallable, rpcTimeout, callType);
+    }
+
+    public SalukiClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(SalukiClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     public void setSalukiClassLoader(SalukiClassLoader classLoader) {

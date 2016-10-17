@@ -18,15 +18,25 @@ import io.grpc.MethodDescriptor;
 
 public class JavaProxyClient<T> extends AbstractProtocolClient<T> {
 
-    public JavaProxyClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
-                           Callable<Channel> channelCallable, int rpcTimeout, int callType){
-        super(channelCache, protocol, protocolClass, channelCallable, rpcTimeout, callType);
+    private Class<?> protocolClass;
+
+    public JavaProxyClient(Cache<String, Channel> channelCache, String protocol, Callable<Channel> channelCallable,
+                           int rpcTimeout, int callType){
+        super(channelCache, protocol, channelCallable, rpcTimeout, callType);
+    }
+
+    public Class<?> getProtocolClass() {
+        return protocolClass;
+    }
+
+    public void setProtocolClass(Class<?> protocolClass) {
+        this.protocolClass = protocolClass;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public T getClient() {
-        return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { getProtocolClzz() },
+        return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { this.getProtocolClass() },
                                           new JavaProxyInvoker());
     }
 

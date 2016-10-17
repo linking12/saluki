@@ -29,8 +29,6 @@ public abstract class AbstractProtocolClient<T> implements ProtocolClient<T> {
 
     private final int                    rpcTimeout;
 
-    private final Class<?>               protocolClzz;
-
     private final Cache<String, Channel> channelCache;
 
     protected class JavaProxyInvoker implements InvocationHandler {
@@ -80,13 +78,12 @@ public abstract class AbstractProtocolClient<T> implements ProtocolClient<T> {
     protected abstract MethodDescriptor<GeneratedMessageV3, GeneratedMessageV3> doCreateMethodDesc(Method method,
                                                                                                    Object[] args);
 
-    public AbstractProtocolClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
+    public AbstractProtocolClient(Cache<String, Channel> channelCache, String protocol,
                                   Callable<Channel> channelCallable, int rpcTimeout, int callType){
         this.protocol = protocol;
         this.channelCallable = channelCallable;
         this.rpcTimeout = rpcTimeout;
         this.callType = callType;
-        this.protocolClzz = protocolClass;
         this.channelCache = channelCache;
     }
 
@@ -112,10 +109,6 @@ public abstract class AbstractProtocolClient<T> implements ProtocolClient<T> {
 
     public int getRpcTimeout() {
         return rpcTimeout;
-    }
-
-    public Class<?> getProtocolClzz() {
-        return protocolClzz;
     }
 
     public Cache<String, Channel> getChannelCache() {

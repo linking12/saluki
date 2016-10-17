@@ -43,26 +43,30 @@ public class ProtocolClientFactory {
         boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         String protocol = refUrl.getServiceInterface();
         String protocolClass = refUrl.getParameter(SalukiConstants.INTERFACECLASS_KEY, protocol);
-        try {
-            Class<?> protocolClazz = ReflectUtil.name2class(protocolClass);
-            if (isGeneric) {
-                GeneralizeProxyClient genericProxy = new GeneralizeProxyClient(channelCache, protocol, protocolClazz,
-                                                                               channelCallable, rpcTimeOut, rpcType);
-                genericProxy.setSalukiClassLoader(classLoader);
-                return genericProxy;
-            } else {
+        if (isGeneric) {
+            GeneralizeProxyClient genericProxy = new GeneralizeProxyClient(channelCache, protocol, channelCallable,
+                                                                           rpcTimeOut, rpcType);
+            genericProxy.setSalukiClassLoader(classLoader);
+            return genericProxy;
+        } else {
+            try {
+                Class<?> protocolClazz = ReflectUtil.name2class(protocolClass);
                 if (stub) {
-                    return new GrpcStubClient<Object>(channelCache, protocol, protocolClazz, channelCallable,
-                                                      rpcTimeOut, rpcType);
+                    GrpcStubClient<Object> stubClient = new GrpcStubClient<Object>(channelCache, protocol,
+                                                                                   channelCallable, rpcTimeOut,
+                                                                                   rpcType);
+                    stubClient.setProtocolClass(protocolClazz);
+                    return stubClient;
                 } else {
-                    return new JavaProxyClient<Object>(channelCache, protocol, protocolClazz, channelCallable,
-                                                       rpcTimeOut, rpcType);
+                    JavaProxyClient<Object> javaProxyClient = new JavaProxyClient<Object>(channelCache, protocol,
+                                                                                          channelCallable, rpcTimeOut,
+                                                                                          rpcType);
+                    javaProxyClient.setProtocolClass(protocolClazz);
+                    return javaProxyClient;
                 }
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
         }
-
     }
-
 }

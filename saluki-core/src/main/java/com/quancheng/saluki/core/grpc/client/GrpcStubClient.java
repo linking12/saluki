@@ -16,20 +16,30 @@ import io.grpc.MethodDescriptor;
 
 public class GrpcStubClient<T> extends AbstractProtocolClient<T> {
 
-    public GrpcStubClient(Cache<String, Channel> channelCache, String protocol, Class<?> protocolClass,
-                          Callable<Channel> channelCallable, int rpcTimeout, int callType){
-        super(channelCache, protocol, protocolClass, channelCallable, rpcTimeout, callType);
+    private Class<?> protocolClass;
+
+    public GrpcStubClient(Cache<String, Channel> channelCache, String protocol, Callable<Channel> channelCallable,
+                          int rpcTimeout, int callType){
+        super(channelCache, protocol, channelCallable, rpcTimeout, callType);
+    }
+
+    public Class<?> getProtocolClass() {
+        return protocolClass;
+    }
+
+    public void setProtocolClass(Class<?> protocolClass) {
+        this.protocolClass = protocolClass;
     }
 
     @Override
     public T getClient() {
-        String protocol = getProtocolClzz().getName();
+        String protocol = this.getProtocolClass().getName();
         if (StringUtils.contains(protocol, "$")) {
             try {
                 String parentName = StringUtils.substringBefore(protocol, "$");
                 Class<?> clzz = ReflectUtil.name2class(parentName);
                 Method method;
-                switch (this.getCallType()) {
+                switch (super.getCallType()) {
                     case SalukiConstants.RPCTYPE_ASYNC:
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
