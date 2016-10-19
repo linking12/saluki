@@ -60,8 +60,8 @@ public class ServiceConfig extends BasicConfig {
             if (StringUtils.isNotBlank(config.getVersion())) {
                 params.put(SalukiConstants.VERSION_KEY, config.getVersion());
             }
-            SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), port,
-                                                  protocol, params);
+            String localIp = System.getProperty("grpc.serverIp", NetUtils.getLocalHost());
+            SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, localIp, port, protocol, params);
             providerUrls.put(providerUrl, protocolImpl);
         }
         try {
