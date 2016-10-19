@@ -3,6 +3,6 @@ stages:
 build_jar:
   stage: jar-build
   script:
-    - gradle clean uploadArchives
+    - gradle clean uploadArchives --refresh-dependencies
   only:
     - master
