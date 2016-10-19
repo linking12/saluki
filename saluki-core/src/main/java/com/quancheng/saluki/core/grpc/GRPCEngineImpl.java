@@ -8,7 +8,7 @@ import com.quancheng.saluki.core.grpc.client.GrpcClientContext;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
-import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
+import com.quancheng.saluki.core.grpc.server.GrpcServerContext;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
@@ -70,9 +70,8 @@ public class GRPCEngineImpl implements GRPCEngine {
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();
             Object protocolImpl = entry.getValue();
-            ProtocolExporter protocolExporter = ProtocolExporterFactory.getInstance().getProtocolExporter(providerUrl,
-                                                                                                          protocolImpl);
-            ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(protocolExporter.doExport(),
+            GrpcServerContext context = new GrpcServerContext(providerUrl, protocolImpl);
+            ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(context.getServerDefintion(),
                                                                                      new HeaderServerInterceptor());
             remoteServer.addService(serviceDefinition);
             injvmServer.addService(serviceDefinition);

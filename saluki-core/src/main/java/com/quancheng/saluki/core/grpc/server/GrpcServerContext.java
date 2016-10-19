@@ -1,29 +1,25 @@
 package com.quancheng.saluki.core.grpc.server;
 
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.ProtocolExporter;
+import com.quancheng.saluki.core.grpc.server.support.DefaultPolicyExporter;
+import com.quancheng.saluki.core.grpc.server.support.StubPolicyServer;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
 
-public class ProtocolExporterFactory {
+public class GrpcServerContext {
 
-    private static class ProtocolExporterFactoryHolder {
+    private final GrpcProtocolExporter exporter;
 
-        private static final ProtocolExporterFactory INSTANCE = new ProtocolExporterFactory();
-    }
+    private final Class<?>             protocolClass;
 
-    private ProtocolExporterFactory(){
-    }
+    private final Object               protocolImpl;
 
-    public static final ProtocolExporterFactory getInstance() {
-        return ProtocolExporterFactoryHolder.INSTANCE;
-    }
-
-    public ProtocolExporter getProtocolExporter(SalukiURL providerUrl, Object protocolImpl) {
-        ProtocolExporter protocolExporter;
+    public GrpcServerContext(SalukiURL providerUrl, Object protocolImpl){
         if (protocolImpl instanceof BindableService) {
-            protocolExporter = new StubProtocolExporter(protocolImpl.getClass(), protocolImpl);
+            this.exporter = new StubPolicyServer();
+            this.protocolClass = protocolImpl.getClass();
         } else {
             Class<?> protocol;
             try {
@@ -36,8 +32,13 @@ public class ProtocolExporterFactory {
             } catch (ClassNotFoundException e) {
                 protocol = protocolImpl.getClass();
             }
-            protocolExporter = new DefaultProtocolExporter(protocol, protocolImpl);
+            this.protocolClass = protocol;
+            this.exporter = new DefaultPolicyExporter();
         }
-        return protocolExporter;
+        this.protocolImpl = protocolImpl;
+    }
+
+    public ServerServiceDefinition getServerDefintion() {
+        return exporter.export(protocolClass, protocolImpl);
     }
 }
