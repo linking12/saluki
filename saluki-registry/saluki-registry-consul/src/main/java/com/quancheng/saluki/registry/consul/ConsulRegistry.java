@@ -3,8 +3,6 @@ package com.quancheng.saluki.registry.consul;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -97,20 +95,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public List<SalukiURL> discover(SalukiURL url) {
+        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
+                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
+        url = url.removeParameters(keys);
         String group = url.getGroup();
-        try {
-            return serviceCache.get(group, new Callable<Map<String, List<SalukiURL>>>() {
-
-                @Override
-                public Map<String, List<SalukiURL>> call() throws Exception {
-                    return lookupServiceUpdate(group);
-                }
-
-            }).get(url.getServiceKey());
-        } catch (ExecutionException e) {
-            log.error("fetch url from cache faield,the url is " + url.toFullString(), e);
-        }
-        return null;
+        return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
     private Map<String, List<SalukiURL>> lookupServiceUpdate(String group) {

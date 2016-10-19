@@ -29,7 +29,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Object response = method.invoke(serviceToInvoke, requestParams);
             Message message = PojoProtobufUtils.Pojo2Protobuf(response);
             responseObserver.onNext(message);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             responseObserver.onError(ex);
         } finally {
             responseObserver.onCompleted();
