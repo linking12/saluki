@@ -28,7 +28,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
     private static final Logger        log = LoggerFactory.getLogger(SalukiServerRunner.class);
 
     @Autowired
-    private SalukiProperties             grpcProperties;
+    private SalukiProperties           grpcProperties;
 
     @Autowired
     private AbstractApplicationContext applicationContext;
@@ -62,7 +62,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
             return service.group();
         } else {
             String group = grpcProperties.getServiceGroup();
-            Preconditions.checkState(StringUtils.isBlank(group), "Group can not be null", group);
+            Preconditions.checkNotNull(group, "Group can not be null", group);
             return group;
         }
     }
@@ -72,7 +72,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
             return service.version();
         } else {
             String version = grpcProperties.getServcieVersion();
-            Preconditions.checkState(StringUtils.isBlank(version), "Version can not be null", version);
+            Preconditions.checkNotNull(version, "Version can not be null", version);
             return version;
         }
     }
