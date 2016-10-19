@@ -15,11 +15,11 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 @Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface SalukiReference {
 
-    String service() default "";
+    String service();
 
-    String group() default "";
+    String group();
 
-    String version() default "";
+    String version();
 
     boolean localProcess() default false;
 

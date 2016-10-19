@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 
 import org.springframework.stereotype.Service;
 
-import com.quancheng.saluki.core.common.SalukiConstants;
-
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -18,10 +16,10 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 @Service
 public @interface SalukiService {
 
-    String service() default "";
+    String service();
 
-    String group() default SalukiConstants.DEFAULT_GROUP;
+    String group();
 
-    String version() default SalukiConstants.DEFAULT_VERSION;
+    String version();
 
 }
