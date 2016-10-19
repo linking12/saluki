@@ -96,18 +96,26 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             filter.before(request);
         }
         SalukiReuqest salukiRequest = new SalukiReuqest(request);
-        GrpcResponse response = new GrpcResponse();
+        ClientCall<Message, Message> newCall = getChannel(salukiRequest).newCall(salukiRequest.getMethodDescriptor(),
+                                                                                 CallOptions.DEFAULT);
+        Message resp = null;
         switch (salukiRequest.getRequest().getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
-                futureUnaryCall(salukiRequest, response);
+                resp = ClientCalls.futureUnaryCall(newCall, salukiRequest.getRequestArg()).get(
+                                                                                               salukiRequest.getRequest().getMethodRequest().getCallTimeout(),
+                                                                                               TimeUnit.SECONDS);
                 break;
             case SalukiConstants.RPCTYPE_BLOCKING:
-                blockingUnaryCall(salukiRequest, response);
+                resp = ClientCalls.blockingUnaryCall(newCall, salukiRequest.getRequestArg());
                 break;
             default:
-                futureUnaryCall(salukiRequest, response);
+                resp = ClientCalls.futureUnaryCall(newCall, salukiRequest.getRequestArg()).get(
+                                                                                               salukiRequest.getRequest().getMethodRequest().getCallTimeout(),
+                                                                                               TimeUnit.SECONDS);
                 break;
         }
+        GrpcResponse response = new GrpcResponse();
+        response.setMessage(resp);
         response.setReturnType(request.getMethodRequest().getResponseType());
         for (Filter filter : filters) {
             filter.after(response);
@@ -116,74 +124,74 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return salukiResponse.getResponseArg();
     }
 
-    private void asyncUnaryCall(SalukiReuqest request, GrpcResponse response) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
-                                                                           CallOptions.DEFAULT);
-        ClientCalls.asyncUnaryCall(newCall, request.getRequestArg(), new StreamObserver<Message>() {
-
-            @Override
-            public void onNext(Message resp) {
-                response.setMessage(resp);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                Status status = Status.fromThrowable(t);
-                Verify.verify(status.getCode() == Status.Code.INTERNAL);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-
-            }
-
-        });
-        int timeout = request.getRequest().getMethodRequest().getCallTimeout();
-        if (!Uninterruptibles.awaitUninterruptibly(latch, timeout, TimeUnit.SECONDS)) {
-            throw new RuntimeException("timeout!");
-        }
-    }
-
-    private void futureUnaryCall(SalukiReuqest request, GrpcResponse response) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
-                                                                           CallOptions.DEFAULT);
-        ListenableFuture<Message> future = ClientCalls.futureUnaryCall(newCall, request.getRequestArg());
-        Futures.addCallback(future, new FutureCallback<Message>() {
-
-            @Override
-            public void onSuccess(Message resp) {
-                response.setMessage(resp);
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Status status = Status.fromThrowable(t);
-                Verify.verify(status.getCode() == Status.Code.INTERNAL);
-                latch.countDown();
-            }
-
-        });
-        int timeout = request.getRequest().getMethodRequest().getCallTimeout();
-        if (!Uninterruptibles.awaitUninterruptibly(latch, timeout, TimeUnit.SECONDS)) {
-            throw new RuntimeException("timeout!");
-        }
-    }
-
-    private void blockingUnaryCall(SalukiReuqest request, GrpcResponse response) {
-        ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
-                                                                           CallOptions.DEFAULT);
-        try {
-            Message resp = ClientCalls.blockingUnaryCall(newCall, request.getRequestArg());
-            response.setMessage(resp);
-        } catch (Throwable e) {
-            Status status = Status.fromThrowable(e);
-            Verify.verify(status.getCode() == Status.Code.INTERNAL);
-        }
-
-    }
+    // private void asyncUnaryCall(SalukiReuqest request, GrpcResponse response) {
+    // final CountDownLatch latch = new CountDownLatch(1);
+    // ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
+    // CallOptions.DEFAULT);
+    // ClientCalls.asyncUnaryCall(newCall, request.getRequestArg(), new StreamObserver<Message>() {
+    //
+    // @Override
+    // public void onNext(Message resp) {
+    // response.setMessage(resp);
+    // }
+    //
+    // @Override
+    // public void onError(Throwable t) {
+    // Status status = Status.fromThrowable(t);
+    // Verify.verify(status.getCode() == Status.Code.INTERNAL);
+    // latch.countDown();
+    // }
+    //
+    // @Override
+    // public void onCompleted() {
+    //
+    // }
+    //
+    // });
+    // int timeout = request.getRequest().getMethodRequest().getCallTimeout();
+    // if (!Uninterruptibles.awaitUninterruptibly(latch, timeout, TimeUnit.SECONDS)) {
+    // throw new RuntimeException("timeout!");
+    // }
+    // }
+    //
+    // private void futureUnaryCall(SalukiReuqest request, GrpcResponse response) {
+    // final CountDownLatch latch = new CountDownLatch(1);
+    // ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
+    // CallOptions.DEFAULT);
+    // ListenableFuture<Message> future = ClientCalls.futureUnaryCall(newCall, request.getRequestArg());
+    // Futures.addCallback(future, new FutureCallback<Message>() {
+    //
+    // @Override
+    // public void onSuccess(Message resp) {
+    // response.setMessage(resp);
+    // }
+    //
+    // @Override
+    // public void onFailure(Throwable t) {
+    // Status status = Status.fromThrowable(t);
+    // Verify.verify(status.getCode() == Status.Code.INTERNAL);
+    // latch.countDown();
+    // }
+    //
+    // });
+    // int timeout = request.getRequest().getMethodRequest().getCallTimeout();
+    // if (!Uninterruptibles.awaitUninterruptibly(latch, timeout, TimeUnit.SECONDS)) {
+    // throw new RuntimeException("timeout!");
+    // }
+    // }
+    //
+    // private void blockingUnaryCall(SalukiReuqest request, GrpcResponse response) {
+    // ClientCall<Message, Message> newCall = getChannel(request).newCall(request.getMethodDescriptor(),
+    // CallOptions.DEFAULT);
+    // try {
+    // Message resp = ClientCalls.blockingUnaryCall(newCall, request.getRequestArg());
+    // response.setMessage(resp);
+    // } catch (Throwable e) {
+    // Status status = Status.fromThrowable(e);
+    // Verify.verify(status.getCode() == Status.Code.INTERNAL);
+    // }
+    //
+    // }
 
     private List<Filter> doInnerFilter() {
         Iterable<Filter> candidates = ServiceLoader.load(Filter.class, ClassHelper.getClassLoader());
