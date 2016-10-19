@@ -223,12 +223,12 @@ public class ProtobufSerializer implements IProtobufSerializer {
         final Class<?> collectionClazzType = (Class<?>) listType.getActualTypeArguments()[0];
         final ProtobufEntity protoBufEntityAnno = ProtobufSerializerUtils.getProtobufEntity(collectionClazzType);
         final Object first = collectionOfProtobufs.toArray()[0];
-        if (!(first instanceof GeneratedMessage) && protoBufEntityAnno == null) {
+        if (!(first instanceof Message) && protoBufEntityAnno == null) {
             return collectionOfProtobufs;
         }
         final Collection<Object> newCollectionOfValues = new ArrayList<>();
         for (Object protobufValue : collectionOfProtobufs) {
-            if (!(protobufValue instanceof GeneratedMessage)) {
+            if (!(protobufValue instanceof Message)) {
                 throw new ProtobufException("Collection contains an object of type " + protobufValue.getClass()
                                             + " which is not an instanceof GeneratedMessage, can not (de)serialize this");
             }

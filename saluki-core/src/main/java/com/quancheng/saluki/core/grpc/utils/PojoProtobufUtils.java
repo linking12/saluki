@@ -37,8 +37,11 @@ public class PojoProtobufUtils {
 
     public static Object Protobuf2Pojo(Message arg, Class<? extends Object> returnType) {
         if (!Message.class.isAssignableFrom(returnType)) {
-            String json = StringUtils.replace(new Gson().toJson(arg), "_", "");
-            return gson.fromJson(json, returnType);
+            try {
+                return serializer.fromProtobuf(arg, returnType);
+            } catch (ProtobufException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
         } else {
             return arg;
         }
