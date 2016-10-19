@@ -5,8 +5,8 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.grpc.SalukiClassLoader;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
+import com.quancheng.saluki.core.grpc.client.SalukiClassLoader;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;

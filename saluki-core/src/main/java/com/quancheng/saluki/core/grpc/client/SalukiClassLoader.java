@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc;
+package com.quancheng.saluki.core.grpc.client;
 
 import java.io.File;
 import java.io.IOException;

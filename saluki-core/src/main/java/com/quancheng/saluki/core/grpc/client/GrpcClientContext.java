@@ -2,7 +2,6 @@ package com.quancheng.saluki.core.grpc.client;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.SalukiClassLoader;
 import com.quancheng.saluki.core.grpc.client.support.DefaultPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.GenericPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.StubPolicyClient;
