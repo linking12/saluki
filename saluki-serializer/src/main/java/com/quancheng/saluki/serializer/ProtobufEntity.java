@@ -5,11 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ProtobufEntity {
 
-    Class<? extends GeneratedMessageV3> value();
+    Class<? extends Message> value();
 }

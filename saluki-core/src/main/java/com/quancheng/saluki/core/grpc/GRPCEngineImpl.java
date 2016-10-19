@@ -1,11 +1,11 @@
 package com.quancheng.saluki.core.grpc;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.ProtocolClientFactory;
+import com.quancheng.saluki.core.grpc.client.GrpcClientContext;
+import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
 import com.quancheng.saluki.core.grpc.server.ProtocolExporterFactory;
@@ -36,13 +36,13 @@ public class GRPCEngineImpl implements GRPCEngine {
 
     @Override
     public Object getProxy(SalukiURL refUrl) throws Exception {
-        boolean isLocalProcess = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE);
-        Callable<Channel> channelCallable = new Callable<Channel>() {
+        boolean localProcess = refUrl.getParameter(SalukiConstants.GRPC_IN_LOCAL_PROCESS, Boolean.FALSE);
+        GrpcProtocolClient.ChannelCall call = new GrpcProtocolClient.ChannelCall() {
 
             @Override
-            public Channel call() throws Exception {
+            public Channel getChannel() {
                 Channel channel;
-                if (isLocalProcess) {
+                if (localProcess) {
                     channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
                 } else {
                     channel = ManagedChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
@@ -53,8 +53,10 @@ public class GRPCEngineImpl implements GRPCEngine {
                 }
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
             }
+
         };
-        return ProtocolClientFactory.getInstance().getProtocolProxy(refUrl, channelCallable).getClient();
+        GrpcClientContext context = new GrpcClientContext(refUrl, call);
+        return context.getGrpcClient();
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {

@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc;
+package com.quancheng.saluki.core.grpc.utils;
 
 import java.lang.reflect.Method;
 

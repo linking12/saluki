@@ -3,8 +3,8 @@ package com.quancheng.saluki.core.grpc.server;
 import java.lang.reflect.Method;
 
 import com.google.protobuf.GeneratedMessageV3;
-import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.ProtocolExporter;
+import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.stub.StreamObserver;

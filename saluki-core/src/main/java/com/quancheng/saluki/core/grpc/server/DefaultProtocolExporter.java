@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.GeneratedMessageV3;
-import com.quancheng.saluki.core.grpc.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.ProtocolExporter;
+import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.MethodDescriptor;
