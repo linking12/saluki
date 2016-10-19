@@ -214,30 +214,30 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                 if (param[1].trim().split(" ").size() == 2) {
                                     if (param[1].trim().split(" ")[0] == "repeated") {
                                         if (param[1].trim().split(" ")[1].trim() == "string") {
-                                            printParam("java.util.List<String>", param[2], printWriter)
-                                            printGet("java.util.List<String>", param[2], printWriter)
-                                            printSet("java.util.List<String>", param[2], printWriter)
+                                            printParam("java.util.ArrayList<String>", param[2], printWriter)
+                                            printGet("java.util.ArrayList<String>", param[2], printWriter)
+                                            printSet("java.util.ArrayList<String>", param[2], printWriter)
                                         } else if (param[1].trim().split(" ")[1].trim() == "int32") {
-                                            printParam("java.util.List<Integer>", param[2], printWriter)
-                                            printGet("java.util.List<Integer>", param[2], printWriter)
-                                            printSet("java.util.List<Integer>", param[2], printWriter)
+                                            printParam("java.util.ArrayList<Integer>", param[2], printWriter)
+                                            printGet("java.util.ArrayList<Integer>", param[2], printWriter)
+                                            printSet("java.util.ArrayList<Integer>", param[2], printWriter)
                                         } else if (param[1].trim().split(" ")[1].trim() == "int64") {
-                                            printParam("java.util.List<Long>", param[2], printWriter)
-                                            printGet("java.util.List<Long>", param[2], printWriter)
-                                            printSet("java.util.List<Long>", param[2], printWriter)
+                                            printParam("java.util.ArrayList<Long>", param[2], printWriter)
+                                            printGet("java.util.ArrayList<Long>", param[2], printWriter)
+                                            printSet("java.util.ArrayList<Long>", param[2], printWriter)
                                         } else if (param[1].trim().split(" ")[1].trim() == "bool") {
-                                            printParam("java.util.List<Boolean>", param[2], printWriter)
-                                            printGet("java.util.List<Boolean>", param[2], printWriter)
-                                            printSet("java.util.List<Boolean>", param[2], printWriter)
+                                            printParam("java.util.ArrayList<Boolean>", param[2], printWriter)
+                                            printGet("java.util.ArrayList<Boolean>", param[2], printWriter)
+                                            printSet("java.util.ArrayList<Boolean>", param[2], printWriter)
                                         } else {
                                             if (param[1].trim().split(" ")[1].split("\\.").size() > 1) {
-                                                printParam("java.util.List<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
-                                                printGet("java.util.List<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
-                                                printSet("java.util.List<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
+                                                printParam("java.util.ArrayList<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
+                                                printGet("java.util.ArrayList<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
+                                                printSet("java.util.ArrayList<" + methodClassName[param[1].trim().split(" ")[1]] + ">", param[2], printWriter)
                                             } else {
-                                                printParam("java.util.List<" + param[1].trim().split(" ")[1] + ">", param[2], printWriter)
-                                                printGet("java.util.List<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
-                                                printSet("java.util.List<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
+                                                printParam("java.util.ArrayList<" + param[1].trim().split(" ")[1] + ">", param[2], printWriter)
+                                                printGet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
+                                                printSet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
                                             }
 
                                         }

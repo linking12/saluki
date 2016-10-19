@@ -1,5 +1,6 @@
 package com.quancheng.saluki.serializer;
 
+import java.awt.List;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -267,10 +268,6 @@ public class ProtobufSerializer implements IProtobufSerializer {
                                                 ProtobufAttribute protobufAttribute) throws InstantiationException,
                                                                                      IllegalAccessException,
                                                                                      JException {
-        /**
-         * convertCollectionFromProtoBufs() above returns an ArrayList, and we may have a converter to convert to a Set,
-         * so we are performing the conversion there
-         */
         final Class<? extends IProtobufConverter> fromProtoBufConverter = protobufAttribute.converter();
         if (fromProtoBufConverter != NullConverter.class) {
             final IProtobufConverter converter = fromProtoBufConverter.newInstance();
