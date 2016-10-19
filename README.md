@@ -58,13 +58,13 @@ public abstract interface UserService
 * 添加spring-boot-saluki依赖
 
 ```
-        gradle: compile 'com.quancheng:spring-boot-starter-saluki:0.0.1+
+        gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.0.0+
         
         maven:
         <dependency>
 			<groupId>com.quancheng</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		
 		 
@@ -82,7 +82,7 @@ grpc.consulPort=8500 //consul注册中心port
 * 服务消费端
 
 ```
- @SalukiReference(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
+ @SalukiReference(service = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
  private UserService userSerivce;
     
 ```
@@ -90,7 +90,7 @@ grpc.consulPort=8500 //consul注册中心port
 * 服务提供端
 
 ```
-@SalukiService(interfaceName = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
+@SalukiService(service = "com.quancheng.boot.starter.service.UserService", group = "default", version = "1.0.0")
 public class GreeterServiceImpl implements GreeterService {
 
     @Override
