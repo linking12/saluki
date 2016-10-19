@@ -4,8 +4,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Ticker;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
@@ -17,6 +22,7 @@ import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.stub.ClientCalls;
 
@@ -34,22 +40,34 @@ import io.grpc.stub.ClientCalls;
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
-    private final GrpcRequest   request;
+    private final GrpcRequest            request;
 
-    private final List<Filter>  filters;
+    private final List<Filter>           filters;
 
-    private final SalukiReuqest salukiRequest;
-
-    private final Object        lock = new Object();
+    private final Cache<String, Channel> channelCache;
 
     public AbstractClientInvocation(GrpcRequest request){
         this.request = request;
         this.filters = this.doInnerFilter();
-        this.salukiRequest = new SalukiReuqest();
+        this.channelCache = CacheBuilder.newBuilder()//
+                                        .maximumSize(10L)//
+                                        .softValues()//
+                                        .ticker(Ticker.systemTicker())//
+                                        .build();
     }
 
-    public GrpcRequest getRequest() {
-        return request;
+    private Channel cacheChannel(SalukiReuqest request) {
+        try {
+            return channelCache.get(request.getRequest().getServiceName(), new Callable<Channel>() {
+
+                @Override
+                public Channel call() throws Exception {
+                    return request.getChannel();
+                }
+            });
+        } catch (ExecutionException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     protected abstract void doReBuildRequest(Method method, Object[] args);
@@ -61,17 +79,14 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         if ("toString".equals(methodName) && parameterTypes.length == 0) {
             return AbstractClientInvocation.this.toString();
         }
-        synchronized (lock) {
-            doReBuildRequest(method, args);
-            salukiRequest.setRequest(request);
-        }
+        doReBuildRequest(method, args);
         for (Filter filter : filters) {
             filter.before(request);
         }
-        ClientCall<Message, Message> newCall = salukiRequest.getChannel().newCall(salukiRequest.getMethodDescriptor(),
-                                                                                  CallOptions.DEFAULT);
+        SalukiReuqest salukiRequest = new SalukiReuqest(request);
+        ClientCall<Message, Message> newCall = cacheChannel(salukiRequest).newCall(salukiRequest.getMethodDescriptor(),
+                                                                                   CallOptions.DEFAULT);
         Message resp = null;
-
         switch (salukiRequest.getRequest().getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
                 resp = ClientCalls.futureUnaryCall(newCall, salukiRequest.getRequestArg()).get(

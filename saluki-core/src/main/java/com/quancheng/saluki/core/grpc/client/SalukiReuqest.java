@@ -1,11 +1,5 @@
 package com.quancheng.saluki.core.grpc.client;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
-import com.google.common.base.Ticker;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
@@ -17,24 +11,10 @@ import io.grpc.MethodDescriptor;
 
 public final class SalukiReuqest {
 
-    private GrpcRequest                  request;
+    private final GrpcRequest request;
 
-    private final Cache<String, Channel> channelCache;
-
-    public SalukiReuqest(){
-        this.channelCache = CacheBuilder.newBuilder()//
-                                        .maximumSize(10L)//
-                                        .softValues()//
-                                        .ticker(Ticker.systemTicker())//
-                                        .build();
-    }
-
-    public void setRequest(GrpcRequest request) {
+    public SalukiReuqest(GrpcRequest request){
         this.request = request;
-    }
-
-    public GrpcRequest getRequest() {
-        return request;
     }
 
     public Message getRequestArg() {
@@ -52,18 +32,12 @@ public final class SalukiReuqest {
                                        io.grpc.protobuf.ProtoUtils.marshaller(argsRep));
     }
 
-    public Channel getChannel() {
-        try {
-            return channelCache.get(request.getServiceName(), new Callable<Channel>() {
+    public GrpcRequest getRequest() {
+        return request;
+    }
 
-                @Override
-                public Channel call() throws Exception {
-                    return request.getCall().getChannel();
-                }
-            });
-        } catch (ExecutionException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+    public Channel getChannel() {
+        return request.getCall().getChannel();
     }
 
     private Message buildDefaultInstance(Class<?> type) {
