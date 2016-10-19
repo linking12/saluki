@@ -99,7 +99,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         GrpcResponse response = new GrpcResponse();
         switch (salukiRequest.getRequest().getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
-                asyncUnaryCall(salukiRequest, response);
+                futureUnaryCall(salukiRequest, response);
                 break;
             case SalukiConstants.RPCTYPE_BLOCKING:
                 blockingUnaryCall(salukiRequest, response);
