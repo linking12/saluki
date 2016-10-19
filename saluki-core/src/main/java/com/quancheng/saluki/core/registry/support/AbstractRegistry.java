@@ -62,6 +62,9 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public List<SalukiURL> discover(SalukiURL url) {
+        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
+                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
+        url = url.removeParameters(keys);
         List<SalukiURL> result = new ArrayList<SalukiURL>();
         Map<NotifyListener, List<SalukiURL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
