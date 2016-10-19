@@ -111,7 +111,7 @@ public final class ProtobufSerializerUtils {
         }
         String setter = "set" + JStringUtils.upperCaseFirst(fieldName);
         if (fieldValue instanceof Collection) {
-            setter = "addAll" + JStringUtils.upperCaseFirst(fieldName);
+            setter = "setAll" + JStringUtils.upperCaseFirst(fieldName);
         }
         // Finally override setter with a value that is configured in ProtobufAttribute annotation
         final String configedSetter = protobufAttribute.protobufSetter();
