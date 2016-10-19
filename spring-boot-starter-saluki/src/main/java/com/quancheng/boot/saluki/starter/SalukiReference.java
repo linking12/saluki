@@ -17,9 +17,9 @@ public @interface SalukiReference {
 
     String service();
 
-    String group();
+    String group() default "";
 
-    String version();
+    String version() default "";
 
     boolean localProcess() default false;
 

@@ -18,8 +18,8 @@ public @interface SalukiService {
 
     String service();
 
-    String group();
+    String group() default "";
 
-    String version();
+    String version() default "";
 
 }
