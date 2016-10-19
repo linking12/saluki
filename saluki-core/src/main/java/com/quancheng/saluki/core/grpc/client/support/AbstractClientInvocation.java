@@ -56,6 +56,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                                         .build();
     }
 
+    protected GrpcRequest getRequest() {
+        return request;
+    }
+
     private Channel cacheChannel(SalukiReuqest request) {
         try {
             return channelCache.get(request.getRequest().getServiceName(), new Callable<Channel>() {
