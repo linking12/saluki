@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -266,7 +267,15 @@ public class ProtobufSerializer implements IProtobufSerializer {
             final IProtobufConverter converter = fromProtoBufConverter.newInstance();
             protobufValue = converter.convertFromProtobuf(protobufValue);
         }
-        Class<? extends Object> argClazz = protobufValue.getClass();
+        Class<? extends Object> argClazz = null;
+        if (protobufValue instanceof Collection) {
+            argClazz = ArrayList.class;
+            List<Object> temp = new ArrayList<Object>();
+            temp.addAll((Collection<?>) protobufValue);
+            protobufValue = temp;
+        } else {
+            protobufValue.getClass();
+        }
         JReflectionUtils.runSetter(pojo, setter, protobufValue, argClazz);
     }
 }
