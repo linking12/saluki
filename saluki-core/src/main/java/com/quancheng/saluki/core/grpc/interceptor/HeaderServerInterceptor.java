@@ -28,8 +28,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
                                                       ServerCallHandler<ReqT, RespT> next) {
         SocketAddress remoteAddress = call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
         SSLSession remoteSession = call.attributes().get(ServerCall.SSL_SESSION_KEY);
-        RpcContext.getContext().set(SalukiConstants.REMOTE_ADDRESS, remoteAddress);
-        RpcContext.getContext().set(SalukiConstants.REMOTE_SESSION, remoteSession);
+        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.toString());
+        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_SESSION, remoteSession.toString());
         copyMetadataToThreadLocal(headers);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
 

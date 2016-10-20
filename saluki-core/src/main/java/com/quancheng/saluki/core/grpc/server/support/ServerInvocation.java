@@ -30,7 +30,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
 
     @Override
     public void invoke(Message request, StreamObserver<Message> responseObserver) {
-        SocketAddress remoteAddress = (SocketAddress) RpcContext.getContext().get(SalukiConstants.REMOTE_ADDRESS);
+        String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
         log.info(String.format("receiver %s request from %s", new Gson().toJson(request), remoteAddress.toString()));
         try {
             Class<?> requestType = ReflectUtil.getTypedReq(method);
