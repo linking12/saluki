@@ -16,6 +16,9 @@ public class ServiceConfig extends BasicConfig {
 
     private static final long               serialVersionUID = 1L;
 
+    // 服务暴露的host
+    private String                          host;
+
     // 服务暴露端口
     private int                             port;
 
@@ -26,6 +29,10 @@ public class ServiceConfig extends BasicConfig {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public void destroy() {
@@ -60,7 +67,7 @@ public class ServiceConfig extends BasicConfig {
             if (StringUtils.isNotBlank(config.getVersion())) {
                 params.put(SalukiConstants.VERSION_KEY, config.getVersion());
             }
-            String localIp = System.getProperty("grpc.serverIp", NetUtils.getLocalHost());
+            String localIp = StringUtils.isNotBlank(this.host) ? this.host : NetUtils.getLocalHost();
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, localIp, port, protocol, params);
             providerUrls.put(providerUrl, protocolImpl);
         }

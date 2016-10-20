@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "grpc")
 public class SalukiProperties {
 
+    private String serverHost;
+
     private int    serverPort = 6565;
 
     private String consulIp;
@@ -73,6 +75,14 @@ public class SalukiProperties {
 
     public void setReferenceVersion(String referenceVersion) {
         this.referenceVersion = referenceVersion;
+    }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
     }
 
 }
