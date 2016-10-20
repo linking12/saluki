@@ -41,6 +41,9 @@ public class SalukiConstants {
     public static final int                       DEFAULT_TIMEOUT               = 60;
     public static final boolean                   DEFAULT_GENERIC               = false;
     public static final String                    GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
+
+    public static final String                    REMOTE_ADDRESS                = "RmoteAddress";
+    public static final String                    REMOTE_SESSION                = "RmoteSession";
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE       = Attributes.Key.of("subscribe");
     public static Metadata.Key<byte[]>            GRPC_CONTEXT_ATTACHMENTS      = Metadata.Key.of("grpc_header_attachments-bin",
                                                                                                   Metadata.BINARY_BYTE_MARSHALLER);
