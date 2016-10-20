@@ -1,9 +1,7 @@
 package com.quancheng.saluki.core.grpc.interceptor;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.Map;
-
-import javax.net.ssl.SSLSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +24,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, final Metadata headers,
                                                       ServerCallHandler<ReqT, RespT> next) {
-        SocketAddress remoteAddress = call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-        SSLSession remoteSession = call.attributes().get(ServerCall.SSL_SESSION_KEY);
-        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.toString());
-        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_SESSION, remoteSession.toString());
+        InetSocketAddress remoteAddress = (InetSocketAddress) call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
+        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.getHostString());
         copyMetadataToThreadLocal(headers);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
 
