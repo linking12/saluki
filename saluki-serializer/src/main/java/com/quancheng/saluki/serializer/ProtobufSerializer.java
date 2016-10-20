@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
 import com.quancheng.saluki.serializer.converter.NullConverter;
@@ -21,7 +19,6 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.serializer.internal.ProtobufSerializerUtils;
 import com.quancheng.saluki.serializer.utils.JException;
 import com.quancheng.saluki.serializer.utils.JReflectionUtils;
-import com.quancheng.saluki.serializer.utils.JStringUtils;
 
 public class ProtobufSerializer implements IProtobufSerializer {
 
@@ -29,7 +26,7 @@ public class ProtobufSerializer implements IProtobufSerializer {
     public Message toProtobuf(Object pojo) throws ProtobufException {
         try {
             final Class<?> fromClazz = (Class<?>) pojo.getClass();
-            final Class<? extends GeneratedMessageV3> protoClazz = ProtobufSerializerUtils.getProtobufClassFromPojoAnno(fromClazz);
+            final Class<? extends Message> protoClazz = ProtobufSerializerUtils.getProtobufClassFromPojoAnno(fromClazz);
             if (protoClazz == null) {
                 throw new ProtobufAnnotationException("Doesn't seem like " + fromClazz + " is ProtobufEntity");
             }
@@ -74,7 +71,7 @@ public class ProtobufSerializer implements IProtobufSerializer {
     @Override
     public Object fromProtobuf(Message protobuf, Class<?> pojoClazz) throws ProtobufException {
         try {
-            final Class<? extends GeneratedMessageV3> protoClazz = ProtobufSerializerUtils.getProtobufClassFromPojoAnno(pojoClazz);
+            final Class<? extends Message> protoClazz = ProtobufSerializerUtils.getProtobufClassFromPojoAnno(pojoClazz);
             if (protoClazz == null) {
                 throw new ProtobufAnnotationException("Doesn't seem like " + pojoClazz + " is ProtobufEntity");
             }
@@ -141,11 +138,8 @@ public class ProtobufSerializer implements IProtobufSerializer {
     private static final Object getProtobufFieldValue(Message protoBuf, ProtobufAttribute protobufAttribute,
                                                       Field field) throws JException, InstantiationException,
                                                                    IllegalAccessException {
-        final String fieldName = field.getName();
-        final String upperCaseFirstFieldName = JStringUtils.upperCaseFirst(fieldName);
         final String getter = ProtobufSerializerUtils.getProtobufGetter(protobufAttribute, field);
         // This is used to determine if the Protobuf message has populated this value
-
         Boolean isCollection = Boolean.FALSE;
         if (Collection.class.isAssignableFrom(field.getType())) {
             isCollection = Boolean.TRUE;
@@ -157,7 +151,7 @@ public class ProtobufSerializer implements IProtobufSerializer {
             return null;
         }
         // If the field itself is a ProtbufEntity, serialize that!
-        if (protobufValue instanceof GeneratedMessage && ProtobufSerializerUtils.isProtbufEntity(field.getType())) {
+        if (protobufValue instanceof Message && ProtobufSerializerUtils.isProtbufEntity(field.getType())) {
             protobufValue = serializeFromProtobufEntity((Message) protobufValue, field.getType());
         }
 
