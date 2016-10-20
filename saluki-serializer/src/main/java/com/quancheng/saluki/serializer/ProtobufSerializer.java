@@ -268,11 +268,11 @@ public class ProtobufSerializer implements IProtobufSerializer {
             protobufValue = converter.convertFromProtobuf(protobufValue);
         }
         Class<? extends Object> argClazz = null;
-        if (protobufValue instanceof Collection) {
+        if (protobufValue instanceof List) {
+            final ArrayList<Object> newCollectionValues = new ArrayList<>();
+            newCollectionValues.addAll((Collection<?>) protobufValue);
+            protobufValue = newCollectionValues;
             argClazz = ArrayList.class;
-            List<Object> temp = new ArrayList<Object>();
-            temp.addAll((Collection<?>) protobufValue);
-            protobufValue = temp;
         } else {
             protobufValue.getClass();
         }
