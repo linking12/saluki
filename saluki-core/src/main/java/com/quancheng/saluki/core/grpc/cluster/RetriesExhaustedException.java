@@ -1,4 +1,3 @@
-
 package com.quancheng.saluki.core.grpc.cluster;
 
 import java.io.IOException;
