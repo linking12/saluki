@@ -42,31 +42,26 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T getGrpcClient(GrpcProtocolClient.ChannelCall call, int callType, int callTimeout) {
-        GrpcRequest request = this.buildGrpcRequest(call, callType, callTimeout);
         return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { interfaceClass },
-                                          new ClientInvocation(request));
-    }
-
-    private GrpcRequest buildGrpcRequest(GrpcProtocolClient.ChannelCall call, int callType, int callTimeout) {
-        GrpcRequest request = new GrpcRequest();
-        request.setCall(call);
-        request.setServiceName(this.interfaceName);
-        request.setServiceClass(this.interfaceClass);
-        GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest();
-        methodRequest.setCallType(callType);
-        methodRequest.setCallTimeout(callTimeout);
-        request.setMethodRequest(methodRequest);
-        return request;
+                                          new ClientInvocation(call, callType, callTimeout));
     }
 
     private class ClientInvocation extends AbstractClientInvocation {
 
-        public ClientInvocation(GrpcRequest request){
-            super(request);
+        private final GrpcProtocolClient.ChannelCall call;
+        private final int                            callType;
+        private final int                            callTimeout;
+
+        public ClientInvocation(com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall call, int callType,
+                                int callTimeout){
+            super();
+            this.call = call;
+            this.callType = callType;
+            this.callTimeout = callTimeout;
         }
 
         @Override
-        protected void doReBuildRequest(Method method, Object[] args) {
+        protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
             boolean isNeglectMethod = ReflectUtil.neglectMethod(method);
             if (isNeglectMethod) {
                 throw new IllegalArgumentException("remote call type do not support this method " + method.getName());
@@ -75,12 +70,13 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
                 throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
                                                    + args.length);
             }
-            // one way
             Object arg = args[0];
-            super.getRequest().getMethodRequest().setArg(arg);
-            super.getRequest().getMethodRequest().setMethodName(method.getName());
-            super.getRequest().getMethodRequest().setRequestType(arg.getClass());
-            super.getRequest().getMethodRequest().setResponseType(method.getReturnType());
+            GrpcRequest request = new GrpcRequest.Default(interfaceName, interfaceClass, call);
+            GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(method.getName(), arg.getClass(),
+                                                                                    method.getReturnType(), arg,
+                                                                                    callType, callTimeout);
+            request.setMethodRequest(methodRequest);
+            return request;
         }
 
     }

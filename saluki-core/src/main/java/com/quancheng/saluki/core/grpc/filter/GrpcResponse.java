@@ -3,29 +3,39 @@ package com.quancheng.saluki.core.grpc.filter;
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 
-public class GrpcResponse implements Serializable {
+public interface GrpcResponse {
 
-    private static final long serialVersionUID = 1L;
+    public Object getResponseArg();
 
-    private Message           message;
+    public static class Default implements GrpcResponse, Serializable {
 
-    private Class<?>          returnType;
+        @Override
+        public Object getResponseArg() {
+            return PojoProtobufUtils.Protobuf2Pojo(this.getMessage(), this.getReturnType());
+        }
 
-    public Message getMessage() {
-        return message;
-    }
+        private static final long serialVersionUID = 1L;
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
+        private final Message     message;
 
-    public Class<?> getReturnType() {
-        return returnType;
-    }
+        private final Class<?>    returnType;
 
-    public void setReturnType(Class<?> returnType) {
-        this.returnType = returnType;
+        public Default(Message message, Class<?> returnType){
+            super();
+            this.message = message;
+            this.returnType = returnType;
+        }
+
+        public Message getMessage() {
+            return message;
+        }
+
+        public Class<?> getReturnType() {
+            return returnType;
+        }
+
     }
 
 }

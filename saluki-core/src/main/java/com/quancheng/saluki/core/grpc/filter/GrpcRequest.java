@@ -2,113 +2,143 @@ package com.quancheng.saluki.core.grpc.filter;
 
 import java.io.Serializable;
 
+import com.google.protobuf.Message;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
+import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall;
+import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
+import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 
-public class GrpcRequest implements Serializable {
+import io.grpc.Channel;
+import io.grpc.MethodDescriptor;
 
-    private static final long              serialVersionUID = 1L;
+public interface GrpcRequest {
 
-    private String                         serviceName;
+    public Message getRequestArg();
 
-    private Class<?>                       serviceClass;
+    public MethodDescriptor<Message, Message> getMethodDescriptor();
 
-    private GrpcProtocolClient.ChannelCall call;
+    public Channel getChannel();
 
-    private MethodRequest                  methodRequest;
+    public String getServiceName();
 
-    public String getServiceName() {
-        return serviceName;
+    public Class<?> getServiceClass();
+
+    public GrpcProtocolClient.ChannelCall getCall();
+
+    public MethodRequest getMethodRequest();
+
+    public void setMethodRequest(MethodRequest methodRequest);
+
+    public static class Default implements GrpcRequest, Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public Default(String serviceName, Class<?> serviceClass, ChannelCall call){
+            super();
+            this.serviceName = serviceName;
+            this.serviceClass = serviceClass;
+            this.call = call;
+        }
+
+        public Message getRequestArg() {
+            
+            Object arg = this.getMethodRequest().getArg();
+            return PojoProtobufUtils.Pojo2Protobuf(arg);
+        }
+
+        public MethodDescriptor<Message, Message> getMethodDescriptor() {
+            Message argsReq = MethodDescriptorUtils.buildDefaultInstance(this.getMethodRequest().getRequestType());
+            Message argsRep = MethodDescriptorUtils.buildDefaultInstance(this.getMethodRequest().getResponseType());
+            return MethodDescriptorUtils.createMethodDescriptor(this.getServiceName(),
+                                                                this.getMethodRequest().getMethodName(), argsReq,
+                                                                argsRep);
+        }
+
+        public Channel getChannel() {
+            return this.getCall().getChannel();
+        }
+
+        private final String                         serviceName;
+
+        private final Class<?>                       serviceClass;
+
+        private final GrpcProtocolClient.ChannelCall call;
+
+        private MethodRequest                        methodRequest;
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public Class<?> getServiceClass() {
+            return serviceClass;
+        }
+
+        public GrpcProtocolClient.ChannelCall getCall() {
+            return call;
+        }
+
+        public MethodRequest getMethodRequest() {
+            return methodRequest;
+        }
+
+        public void setMethodRequest(MethodRequest methodRequest) {
+            this.methodRequest = methodRequest;
+        }
+
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
+    public static class MethodRequest implements Serializable {
 
-    public Class<?> getServiceClass() {
-        return serviceClass;
-    }
+        private static final long serialVersionUID = 5280935790994972153L;
 
-    public void setServiceClass(Class<?> serviceClass) {
-        this.serviceClass = serviceClass;
-    }
+        private final String      methodName;
 
-    public GrpcProtocolClient.ChannelCall getCall() {
-        return call;
-    }
+        private final Class<?>    requestType;
 
-    public void setCall(GrpcProtocolClient.ChannelCall call) {
-        this.call = call;
-    }
+        private final Class<?>    responseType;
 
-    public MethodRequest getMethodRequest() {
-        return methodRequest;
-    }
+        private final Object      arg;
 
-    public void setMethodRequest(MethodRequest methodRequest) {
-        this.methodRequest = methodRequest;
-    }
+        private final int         callType;
 
-    public static class MethodRequest {
+        private final int         callTimeout;
 
-        private String   methodName;
-
-        private Class<?> requestType;
-
-        private Class<?> responseType;
-
-        private Object   arg;
-
-        private int      callType;
-
-        private int      callTimeout;
+        public MethodRequest(String methodName, Class<?> requestType, Class<?> responseType, Object arg, int callType,
+                             int callTimeout){
+            super();
+            this.methodName = methodName;
+            this.requestType = requestType;
+            this.responseType = responseType;
+            this.arg = arg;
+            this.callType = callType;
+            this.callTimeout = callTimeout;
+        }
 
         public String getMethodName() {
             return methodName;
-        }
-
-        public void setMethodName(String methodName) {
-            this.methodName = methodName;
         }
 
         public Class<?> getRequestType() {
             return requestType;
         }
 
-        public void setRequestType(Class<?> requestType) {
-            this.requestType = requestType;
-        }
-
         public Class<?> getResponseType() {
             return responseType;
-        }
-
-        public void setResponseType(Class<?> responseType) {
-            this.responseType = responseType;
         }
 
         public Object getArg() {
             return arg;
         }
 
-        public void setArg(Object arg) {
-            this.arg = arg;
-        }
-
         public int getCallType() {
             return callType;
-        }
-
-        public void setCallType(int callType) {
-            this.callType = callType;
         }
 
         public int getCallTimeout() {
             return callTimeout;
         }
 
-        public void setCallTimeout(int callTimeout) {
-            this.callTimeout = callTimeout;
-        }
-
     }
+
 }

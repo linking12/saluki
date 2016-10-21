@@ -46,38 +46,37 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T getGrpcClient(GrpcProtocolClient.ChannelCall call, int callType, int callTimeout) {
-        GrpcRequest request = this.buildGrpcRequest(call, callType, callTimeout);
         return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
-                                          new ClientInvocation(request));
-    }
-
-    private GrpcRequest buildGrpcRequest(GrpcProtocolClient.ChannelCall call, int callType, int callTimeout) {
-        GrpcRequest request = new GrpcRequest();
-        request.setServiceClass(GenericService.class);
-        request.setCall(call);
-        GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest();
-        methodRequest.setCallType(callType);
-        methodRequest.setCallTimeout(callTimeout);
-        request.setMethodRequest(methodRequest);
-        return request;
+                                          new ClientInvocation(call, callType, callTimeout));
     }
 
     private class ClientInvocation extends AbstractClientInvocation {
 
-        public ClientInvocation(GrpcRequest request){
-            super(request);
+        private final GrpcProtocolClient.ChannelCall call;
+        private final int                            callType;
+        private final int                            callTimeout;
+
+        public ClientInvocation(com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall call, int callType,
+                                int callTimeout){
+            super();
+            this.call = call;
+            this.callType = callType;
+            this.callTimeout = callTimeout;
         }
 
         @Override
-        protected void doReBuildRequest(Method method, Object[] args) {
+        protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
             if (args.length != 4) {
                 throw new IllegalArgumentException("generic call args invlid" + args + " args " + args);
             }
-            super.getRequest().setServiceName(this.getServiceName(args));
-            super.getRequest().getMethodRequest().setArg(this.getArg(args));
-            super.getRequest().getMethodRequest().setMethodName(this.getMethod(args));
-            super.getRequest().getMethodRequest().setRequestType(this.getReqAndRepType(args).get(0));
-            super.getRequest().getMethodRequest().setResponseType(this.getReqAndRepType(args).get(1));
+            GrpcRequest request = new GrpcRequest.Default(this.getServiceName(args), GenericService.class, call);
+            GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(this.getMethod(args),
+                                                                                    this.getReqAndRepType(args).get(0),
+                                                                                    this.getReqAndRepType(args).get(1),
+                                                                                    this.getArg(args), callType,
+                                                                                    callTimeout);
+            request.setMethodRequest(methodRequest);
+            return request;
         }
 
         private String getServiceName(Object[] args) {
