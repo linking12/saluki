@@ -3,21 +3,18 @@ package com.quancheng.saluki.core.grpc.cluster;
 import java.util.List;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.cluster.async.SalukiAsyncRpc;
+import com.google.protobuf.Message;
+
+import io.grpc.MethodDescriptor;
 
 public interface SalukiGrpcClient {
-    
-    
-    
 
-    public <ReqT, RespT> ListenableFuture<List<RespT>> getStreamingFuture(ReqT request,
-                                                                          SalukiAsyncRpc<ReqT, RespT> rpc);
+    public ListenableFuture<List<Message>> streamingFuture(Message request, MethodDescriptor<Message, Message> method);
 
-    public <ReqT, RespT> List<RespT> getBlockingStreamingResult(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc);
+    public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 
-    public <ReqT, RespT> ListenableFuture<RespT> getUnaryFuture(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc,
-                                                                int retryTimes);
+    public List<Message> blockingStreamResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public <ReqT, RespT> RespT getBlockingUnaryResult(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc);
+    public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
 }

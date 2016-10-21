@@ -1,18 +1,3 @@
-/*
- * Copyright 2015 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.quancheng.saluki.core.grpc.cluster.io;
 
 import java.io.IOException;
@@ -28,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.quancheng.saluki.core.grpc.cluster.metrics.BigtableClientMetrics;
-import com.quancheng.saluki.core.grpc.cluster.metrics.BigtableClientMetrics.MetricLevel;
+import com.quancheng.saluki.core.grpc.cluster.metrics.ClusterClientMetrics;
+import com.quancheng.saluki.core.grpc.cluster.metrics.ClusterClientMetrics.MetricLevel;
 import com.quancheng.saluki.core.grpc.cluster.metrics.Counter;
 import com.quancheng.saluki.core.grpc.cluster.metrics.Meter;
 import com.quancheng.saluki.core.grpc.cluster.metrics.Timer;
@@ -43,12 +28,6 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 
-/**
- * Manages a set of ClosableChannels and uses them in a round robin.
- *
- * @author sduskis
- * @version $Id: $Id
- */
 public class ChannelPool extends ManagedChannel {
 
     protected static final Logger      LOG                = LoggerFactory.getLogger(ChannelPool.class);
@@ -57,11 +36,6 @@ public class ChannelPool extends ManagedChannel {
 
     protected static Stats             STATS;
 
-    /**
-     * A factory for creating ManagedChannels to be used in a {@link ChannelPool}.
-     *
-     * @author sduskis
-     */
     public interface ChannelFactory {
 
         ManagedChannel create() throws IOException;
@@ -69,21 +43,11 @@ public class ChannelPool extends ManagedChannel {
 
     private static class Stats {
 
-        /**
-         * Best effort counter of active channels. There may be some cases where channel termination counting may not
-         * accurately be decremented.
-         */
-        Counter ACTIVE_CHANNEL_COUNTER = BigtableClientMetrics.counter(MetricLevel.Info, "grpc.channel.active");
+        Counter ACTIVE_CHANNEL_COUNTER = ClusterClientMetrics.counter(MetricLevel.Info, "grpc.channel.active");
 
-        /**
-         * Best effort counter of active RPCs.
-         */
-        Counter ACTIVE_RPC_COUNTER     = BigtableClientMetrics.counter(MetricLevel.Info, "grpc.rpc.active");
+        Counter ACTIVE_RPC_COUNTER     = ClusterClientMetrics.counter(MetricLevel.Info, "grpc.rpc.active");
 
-        /**
-         * Best effort counter of RPCs.
-         */
-        Meter   RPC_METER              = BigtableClientMetrics.meter(MetricLevel.Info, "grpc.rpc.performed");
+        Meter   RPC_METER              = ClusterClientMetrics.meter(MetricLevel.Info, "grpc.rpc.performed");
     }
 
     protected static synchronized Stats getStats() {
@@ -93,22 +57,15 @@ public class ChannelPool extends ManagedChannel {
         return STATS;
     }
 
-    /**
-     * Contains a {@link ManagedChannel} and metrics for the channel
-     * 
-     * @author sduskis
-     */
     private class InstrumentedChannel extends ManagedChannel {
 
         private final ManagedChannel delegate;
-        // a uniquely named timer for this channel's latency
         private final Timer          timer;
-
         private final AtomicBoolean  active = new AtomicBoolean(true);
 
         public InstrumentedChannel(ManagedChannel channel){
             this.delegate = channel;
-            this.timer = BigtableClientMetrics.timer(MetricLevel.Trace,
+            this.timer = ClusterClientMetrics.timer(MetricLevel.Trace,
                                                      "channels.channel" + ChannelIdGenerator.incrementAndGet()
                                                                         + ".rpc.latency");
             getStats().ACTIVE_CHANNEL_COUNTER.inc();
@@ -199,7 +156,7 @@ public class ChannelPool extends ManagedChannel {
                             getStats().ACTIVE_RPC_COUNTER.dec();
                         }
                         if (!status.isOk()) {
-                            BigtableClientMetrics.meter(MetricLevel.Info,
+                            ClusterClientMetrics.meter(MetricLevel.Info,
                                                         "grpc.errors." + status.getCode().name()).mark();
                         }
                         delegate.onClose(status, trailers);
@@ -229,15 +186,6 @@ public class ChannelPool extends ManagedChannel {
 
     private boolean                                                   shutdown     = false;
 
-    /**
-     * <p>
-     * Constructor for ChannelPool.
-     * </p>
-     *
-     * @param headerInterceptors a {@link java.util.List} object.
-     * @param factory a {@link com.google.cloud.bigtable.grpc.io.ChannelPool.ChannelFactory} object.
-     * @throws java.io.IOException if any.
-     */
     public ChannelPool(List<HeaderInterceptor> headerInterceptors, ChannelFactory factory) throws IOException{
         this.factory = factory;
         InstrumentedChannel channel = new InstrumentedChannel(factory.create());
@@ -250,13 +198,6 @@ public class ChannelPool extends ManagedChannel {
         }
     }
 
-    /**
-     * Makes sure that the number of channels is at least as big as the specified capacity. This method is only
-     * synchronized when the pool has to be expanded.
-     *
-     * @param capacity The minimum number of channels required for the RPCs of the ChannelPool's clients.
-     * @throws java.io.IOException if any.
-     */
     public void ensureChannelCount(int capacity) throws IOException {
         if (this.shutdown) {
             throw new IOException("The channel is closed.");
@@ -274,12 +215,6 @@ public class ChannelPool extends ManagedChannel {
         }
     }
 
-    /**
-     * Performs a simple round robin on the list of {@link InstrumentedChannel}s in the {@code channels} list. This
-     * method should not be synchronized, if possible, to reduce bottlenecks.
-     *
-     * @return A {@link InstrumentedChannel} that can be used for a single RPC call.
-     */
     private InstrumentedChannel getNextChannel() {
         int currentRequestNum = requestCount.getAndIncrement();
         ImmutableList<InstrumentedChannel> channelsList = channels.get();
@@ -287,19 +222,11 @@ public class ChannelPool extends ManagedChannel {
         return channelsList.get(index);
     }
 
-    /** {@inheritDoc} */
     @Override
     public String authority() {
         return authority;
     }
 
-    /**
-     * {@inheritDoc}
-     * <P>
-     * Create a {@link ClientCall} on a Channel from the pool chosen in a round-robin fashion to the remote operation
-     * specified by the given {@link MethodDescriptor}. The returned {@link ClientCall} does not trigger any remote
-     * behavior until {@link ClientCall#start(ClientCall.Listener, io.grpc.Metadata)} is invoked.
-     */
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> newCall(MethodDescriptor<ReqT, RespT> methodDescriptor,
                                                          CallOptions callOptions) {
@@ -307,28 +234,14 @@ public class ChannelPool extends ManagedChannel {
         return getNextChannel().newCall(methodDescriptor, callOptions);
     }
 
-    /**
-     * Sets the values in newChannelList to the {@code channels} AtomicReference. The values are copied into an
-     * {@link ImmutableList}.
-     *
-     * @param newChannelList A {@link List} of {@link ManagedChannel}s to set to the {@code channels}
-     */
     private void setChannels(List<InstrumentedChannel> newChannelList) {
         channels.set(ImmutableList.copyOf(newChannelList));
     }
 
-    /**
-     * <p>
-     * size.
-     * </p>
-     *
-     * @return a int.
-     */
     public int size() {
         return channels.get().size();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized ManagedChannel shutdown() {
         for (InstrumentedChannel channelWrapper : channels.get()) {
@@ -338,13 +251,11 @@ public class ChannelPool extends ManagedChannel {
         return this;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean isShutdown() {
         return shutdown;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean isTerminated() {
         for (InstrumentedChannel channel : channels.get()) {
@@ -355,7 +266,6 @@ public class ChannelPool extends ManagedChannel {
         return true;
     }
 
-    /** {@inheritDoc} */
     @Override
     public ManagedChannel shutdownNow() {
         for (InstrumentedChannel channel : channels.get()) {
@@ -366,7 +276,6 @@ public class ChannelPool extends ManagedChannel {
         return this;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         long endTimeNanos = System.nanoTime() + unit.toNanos(timeout);

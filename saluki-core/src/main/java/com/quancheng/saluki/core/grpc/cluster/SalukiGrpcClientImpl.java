@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.common.base.Predicates;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.grpc.cluster.async.AbstractRetryingRpcListener;
@@ -23,46 +22,49 @@ import io.grpc.Status;
 
 public class SalukiGrpcClientImpl implements SalukiGrpcClient {
 
-    private RetryOptions             retryOptions;
-    private ScheduledExecutorService retryExecutorService;
-    private CallOptionsFactory       callOptionsFactory = new CallOptionsFactory.Default();
+    private final ChannelPool              channelPool;
 
-    private SalukiAsyncUtilities     asyncUtilities;
+    private final RetryOptions             retryOptions;
+
+    private final ScheduledExecutorService retryExecutorService;
 
     SalukiGrpcClientImpl(ChannelPool channelPool, ScheduledExecutorService retryExecutorService,
-                         SalukiAsyncUtilities asyncUtilities){
-
+                         RetryOptions retryOptions){
+        this.channelPool = channelPool;
+        this.retryExecutorService = retryExecutorService;
+        this.retryOptions = retryOptions;
     }
 
+    @Override
     public ListenableFuture<List<Message>> streamingFuture(Message request, MethodDescriptor<Message, Message> method) {
+        return getCompletionFuture(createStreamingListener(request, buildAsyncRpc(method)));
+    }
+
+    @Override
+    public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
+        return getCompletionFuture(createUnaryListener(request, buildAsyncRpc(method)));
+    }
+
+    @Override
+    public List<Message> blockingStreamResult(Message request, MethodDescriptor<Message, Message> method) {
+        return getBlockingResult(createStreamingListener(request, buildAsyncRpc(method)));
+    }
+
+    @Override
+    public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method) {
+        return getBlockingResult(createUnaryListener(request, buildAsyncRpc(method)));
+    }
+
+    private SalukiAsyncRpc<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
+        SalukiAsyncUtilities asyncUtilities = new SalukiAsyncUtilities.Default(channelPool);
         SalukiAsyncRpc<Message, Message> asyncRpc = asyncUtilities.createAsyncRpc(method,
                                                                                   Predicates.<Message> alwaysTrue());
-        return null;
-        // return Futures.transform(getStreamingFuture(request, asyncRpc));
+        return asyncRpc;
     }
 
-    @Override
-    public <ReqT, RespT> ListenableFuture<List<RespT>> getStreamingFuture(ReqT request,
-                                                                          SalukiAsyncRpc<ReqT, RespT> rpc) {
-        return getCompletionFuture(createStreamingListener(request, rpc));
-    }
-
-    @Override
-    public <ReqT, RespT> List<RespT> getBlockingStreamingResult(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc) {
-        return getBlockingResult(createStreamingListener(request, rpc));
-    }
-
-    @Override
-    public <ReqT, RespT> ListenableFuture<RespT> getUnaryFuture(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc,
-                                                                int retryTimes) {
-        return getCompletionFuture(createUnaryListener(request, rpc));
-    }
-
-    @Override
-    public <ReqT, RespT> RespT getBlockingUnaryResult(ReqT request, SalukiAsyncRpc<ReqT, RespT> rpc) {
-        return getBlockingResult(createUnaryListener(request, rpc));
-    }
-
+    /**
+     * Help Method
+     */
     private <ReqT, RespT> RetryingCollectingClientCallListener<ReqT, RespT> createStreamingListener(ReqT request,
                                                                                                     SalukiAsyncRpc<ReqT, RespT> rpc) {
         CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
@@ -83,15 +85,16 @@ public class SalukiGrpcClientImpl implements SalukiGrpcClient {
     }
 
     private <ReqT> CallOptions getCallOptions(final MethodDescriptor<ReqT, ?> methodDescriptor, ReqT request) {
+        CallOptionsFactory callOptionsFactory = new CallOptionsFactory.Default();
         return callOptionsFactory.create(methodDescriptor, request);
     }
 
-    private static <ReqT, RespT, OutputT> ListenableFuture<OutputT> getCompletionFuture(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
+    private <ReqT, RespT, OutputT> ListenableFuture<OutputT> getCompletionFuture(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
         listener.start();
         return listener.getCompletionFuture();
     }
 
-    private static <ReqT, RespT, OutputT> OutputT getBlockingResult(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
+    private <ReqT, RespT, OutputT> OutputT getBlockingResult(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
         try {
             listener.start();
             return listener.getCompletionFuture().get();
@@ -103,5 +106,8 @@ public class SalukiGrpcClientImpl implements SalukiGrpcClient {
             throw Status.fromThrowable(e).asRuntimeException();
         }
     }
+    /**
+     * Help Method
+     */
 
 }

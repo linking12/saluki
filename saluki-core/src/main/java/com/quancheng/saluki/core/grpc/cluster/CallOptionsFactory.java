@@ -23,32 +23,10 @@ import io.grpc.CallOptions;
 import io.grpc.Deadline;
 import io.grpc.MethodDescriptor;
 
-/**
- * A factory that creates {@link io.grpc.CallOptions} for use in
- * {@link com.google.cloud.bigtable.grpc.BigtableDataClient} RPCs.
- *
- * @author sduskis
- * @version $Id: $Id
- */
 public interface CallOptionsFactory {
 
-    /**
-     * Provide a {@link io.grpc.CallOptions} object to be used in a single RPC. {@link io.grpc.CallOptions} can contain
-     * state, specifically start time with an expiration is set; in cases when timeouts are used, implementations should
-     * create a new CallOptions each time this method is called.
-     *
-     * @param descriptor The RPC that's being called. Different methods have different performance characteristics, so
-     * this parameter can be useful to craft the right timeout for the right method.
-     * @param request Some methods, specifically ReadRows, can have variability depending on the request. The request
-     * can be for either a single row, or a range. This parameter can be used to tune timeouts
-     * @param <RequestT> a RequestT object.
-     * @return a {@link io.grpc.CallOptions} object.
-     */
     <RequestT> CallOptions create(MethodDescriptor<RequestT, ?> descriptor, RequestT request);
 
-    /**
-     * Always returns {@link CallOptions#DEFAULT}.
-     */
     public static class Default implements CallOptionsFactory {
 
         @Override
@@ -57,7 +35,6 @@ public interface CallOptionsFactory {
         }
     }
 
-    /** Creates a new {@link CallOptions} based on a {@link CallOptionsConfig}. */
     public static class ConfiguredCallOptionsFactory implements CallOptionsFactory {
 
         private final CallOptionsConfig config;
