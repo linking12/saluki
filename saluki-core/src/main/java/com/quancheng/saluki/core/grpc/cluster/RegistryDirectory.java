@@ -89,9 +89,12 @@ public interface RegistryDirectory {
 
         private void notifyLoadBalance(SalukiURL subscribeUrl, List<ResolvedServerInfo> servers) {
             NameResolver.Listener listener = resolvedListeners.getIfPresent(subscribeUrl);
-            if (servers != null && servers.isEmpty() && listener != null) {
+            if (servers == null || servers.isEmpty()) {
                 listener.onUpdate(Collections.singletonList(servers), Attributes.EMPTY);
             } else {
+                if (listener == null) {
+                    throw new IllegalArgumentException("Have not start in SalukiNameResolver");
+                }
                 listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                   + subscribeUrl.toFullString()));
             }
