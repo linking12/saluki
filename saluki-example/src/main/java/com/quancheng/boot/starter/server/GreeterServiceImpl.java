@@ -3,7 +3,7 @@ package com.quancheng.boot.starter.server;
 import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.saluki.core.common.RpcContext;
 
-@SalukiService(service = "com.quancheng.boot.starter.server.GreeterService")
+@SalukiService(service = "com.quancheng.boot.starter.server.GreeterService", group = "Default", version = "1.0.0")
 public class GreeterServiceImpl implements GreeterService {
 
     @Override

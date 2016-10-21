@@ -76,7 +76,12 @@ public interface RegistryDirectory {
             List<ResolvedServerInfo> serverInfos = resolvedServerInfos.get(subscribeUrl.getServiceKey());
             List<ResolvedServerInfo> newServerInfos = Lists.newArrayList();
             newServerInfos.addAll(serverInfos);
-            newServerInfos.remove(serverInfo);
+            for (int i = 0; i < newServerInfos.size(); i++) {
+                ResolvedServerInfo inlist = newServerInfos.get(i);
+                if (inlist.getAddress().toString().equals(serverInfo.getAddress().toString())) {
+                    newServerInfos.remove(i);
+                }
+            }
             notifyLoadBalance(subscribeUrl, newServerInfos);
         }
 

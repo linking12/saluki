@@ -23,7 +23,7 @@ import io.grpc.ResolvedServerInfo;
 @RequestMapping("/greeter")
 public class GreeterServiceController {
 
-    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "Default", version = "1.0.0")
     private GreeterService greeterService;
 
     @RequestMapping
