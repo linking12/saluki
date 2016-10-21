@@ -5,11 +5,13 @@ include ':saluki-plugin'
 include ':saluki-registry:saluki-registry-consul'
 include ':saluki-registry:saluki-registry-etcd3'
 include ':spring-boot-starter-saluki'
+include ':saluki-example'
 
 
 project(':saluki-core').projectDir = "$rootDir/saluki-core" as File
 project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
 project(':saluki-plugin').projectDir = "$rootDir/saluki-plugin" as File
+project(':saluki-example').projectDir = "$rootDir/saluki-example" as File
 project(':saluki-registry:saluki-registry-consul').projectDir = "$rootDir/saluki-registry/saluki-registry-consul" as File
 project(':saluki-registry:saluki-registry-etcd3').projectDir = "$rootDir/saluki-registry/saluki-registry-etcd3" as File
 project(':spring-boot-starter-saluki').projectDir = "$rootDir/spring-boot-starter-saluki" as File
