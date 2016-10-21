@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.config.ServiceConfig;
 
 @Order(value = 0)
@@ -38,6 +39,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
     @Override
     public void run(String... args) throws Exception {
         log.info("Starting gRPC Server ...");
+        resetRegistryPort();
         ServiceConfig serviceConfig = newServiceConfig();
         for (Object obj : getTypedBeansWithAnnotation(SalukiService.class)) {
             SalukiService gRpcServiceAnn = obj.getClass().getAnnotation(SalukiService.class);
@@ -77,6 +79,13 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
         }
     }
 
+    private void resetRegistryPort() {
+        int serverRegistryPort = grpcProperties.getServerRegistryPort();
+        if (serverRegistryPort != 0) {
+            System.setProperty(SalukiConstants.REGISTRY_PORT, Integer.valueOf(serverRegistryPort).toString());
+        }
+    }
+
     private ServiceConfig newServiceConfig() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setRegistryName("consul");
@@ -86,9 +95,9 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
         int port = grpcProperties.getConsulPort();
         Preconditions.checkState(port != 0, "RegistryPort can not be zero", port);
         serviceConfig.setRegistryPort(grpcProperties.getConsulPort());
-        int serverPort = grpcProperties.getServerPort();
+        int serverPort = grpcProperties.getServerStartPort();
         Preconditions.checkState(serverPort != 0, "ServerPort can not be null", serverPort);
-        serviceConfig.setPort(grpcProperties.getServerPort());
+        serviceConfig.setPort(serverPort);
         serviceConfig.setHost(grpcProperties.getServerHost());
         return serviceConfig;
     }
