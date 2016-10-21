@@ -5,4 +5,4 @@ build_jar:
   script:
     - gradle clean uploadArchives --refresh-dependencies
   only:
-    - V1.0.0
+    - master
