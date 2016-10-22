@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.cluster;
+package com.quancheng.saluki.core.grpc.ha;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -7,15 +7,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.cluster.async.AbstractRetryingRpcListener;
-import com.quancheng.saluki.core.grpc.cluster.async.RetryingCollectingClientCallListener;
-import com.quancheng.saluki.core.grpc.cluster.async.RetryingUnaryRpcCallListener;
-import com.quancheng.saluki.core.grpc.cluster.async.SalukiAsyncRpc;
-import com.quancheng.saluki.core.grpc.cluster.async.SalukiAsyncUtilities;
-import com.quancheng.saluki.core.grpc.cluster.config.RetryOptions;
-import com.quancheng.saluki.core.grpc.cluster.io.ChannelPool;
+import com.quancheng.saluki.core.grpc.ha.async.AbstractRetryingRpcListener;
+import com.quancheng.saluki.core.grpc.ha.async.RetryingCollectingClientCallListener;
+import com.quancheng.saluki.core.grpc.ha.async.RetryingUnaryRpcCallListener;
+import com.quancheng.saluki.core.grpc.ha.async.SalukiAsyncRpc;
+import com.quancheng.saluki.core.grpc.ha.async.SalukiAsyncUtilities;
 
 import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
@@ -32,15 +31,14 @@ public interface SalukiGrpcClient {
 
     public static class Default implements SalukiGrpcClient {
 
-        private final ChannelPool              channelPool;
+        private final Channel                  channel;
 
         private final RetryOptions             retryOptions;
 
         private final ScheduledExecutorService retryExecutorService;
 
-        public Default(ChannelPool channelPool, ScheduledExecutorService retryExecutorService,
-                       RetryOptions retryOptions){
-            this.channelPool = channelPool;
+        public Default(Channel channel, ScheduledExecutorService retryExecutorService, RetryOptions retryOptions){
+            this.channel = channel;
             this.retryExecutorService = retryExecutorService;
             this.retryOptions = retryOptions;
         }
@@ -67,7 +65,7 @@ public interface SalukiGrpcClient {
         }
 
         private SalukiAsyncRpc<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
-            SalukiAsyncUtilities asyncUtilities = new SalukiAsyncUtilities.Default(channelPool);
+            SalukiAsyncUtilities asyncUtilities = new SalukiAsyncUtilities.Default(channel);
             SalukiAsyncRpc<Message, Message> asyncRpc = asyncUtilities.createAsyncRpc(method,
                                                                                       Predicates.<Message> alwaysTrue());
             return asyncRpc;

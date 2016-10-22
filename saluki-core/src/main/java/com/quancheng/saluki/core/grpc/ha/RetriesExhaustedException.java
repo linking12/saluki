@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.cluster;
+package com.quancheng.saluki.core.grpc.ha;
 
 import java.io.IOException;
 

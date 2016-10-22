@@ -1,11 +1,21 @@
 package com.quancheng.saluki.core.grpc.client.support;
 
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_BACKOFF_MULTIPLIER;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_ENABLE_GRPC_RETRIES_SET;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_INITIAL_BACKOFF_MILLIS;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_MAX_ELAPSED_BACKOFF_MILLIS;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_MAX_SCAN_TIMEOUT_RETRIES;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_READ_PARTIAL_ROW_TIMEOUT_MS;
+import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_STREAMING_BUFFER_SIZE;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Ticker;
@@ -17,12 +27,12 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
+import com.quancheng.saluki.core.grpc.ha.RetryOptions;
+import com.quancheng.saluki.core.grpc.ha.SalukiGrpcClient;
 import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
-import io.grpc.CallOptions;
 import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.stub.ClientCalls;
 
 /**
  * <strong>描述：</strong>TODO 描述 <br>
@@ -78,22 +88,26 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         for (Filter filter : filters) {
             filter.before(salukiRequest);
         }
-        ClientCall<Message, Message> newCall = getChannel(salukiRequest).newCall(salukiRequest.getMethodDescriptor(),
-                                                                                 CallOptions.DEFAULT);
+
+        Channel channel = this.getChannel(salukiRequest);
+        ScheduledExecutorService retryService = this.createRetryService();
+        RetryOptions retryConfig = this.createRetryOption();
+        SalukiGrpcClient grpcClient = new SalukiGrpcClient.Default(channel, retryService, retryConfig);
         Message resp = null;
         switch (salukiRequest.getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
-                resp = ClientCalls.futureUnaryCall(newCall, salukiRequest.getRequestArg()).get(
-                                                                                               salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                               TimeUnit.SECONDS);
+                resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
+                                              salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
+                                                                                       TimeUnit.SECONDS);
                 break;
             case SalukiConstants.RPCTYPE_BLOCKING:
-                resp = ClientCalls.blockingUnaryCall(newCall, salukiRequest.getRequestArg());
+                resp = grpcClient.blockingUnaryResult(salukiRequest.getRequestArg(),
+                                                      salukiRequest.getMethodDescriptor());
                 break;
             default:
-                resp = ClientCalls.futureUnaryCall(newCall, salukiRequest.getRequestArg()).get(
-                                                                                               salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                               TimeUnit.SECONDS);
+                resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
+                                              salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
+                                                                                       TimeUnit.SECONDS);
                 break;
         }
         GrpcResponse response = new GrpcResponse.Default(resp, salukiRequest.getMethodRequest().getResponseType());
@@ -101,6 +115,17 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             filter.after(response);
         }
         return response.getResponseArg();
+    }
+
+    private ScheduledExecutorService createRetryService() {
+        return Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiCientCallRetry", true));
+    }
+
+    private RetryOptions createRetryOption() {
+        return new RetryOptions(true, false, DEFAULT_INITIAL_BACKOFF_MILLIS, DEFAULT_BACKOFF_MULTIPLIER,
+                                DEFAULT_MAX_ELAPSED_BACKOFF_MILLIS, DEFAULT_STREAMING_BUFFER_SIZE,
+                                DEFAULT_READ_PARTIAL_ROW_TIMEOUT_MS, DEFAULT_MAX_SCAN_TIMEOUT_RETRIES,
+                                DEFAULT_ENABLE_GRPC_RETRIES_SET);
     }
 
     private List<Filter> doInnerFilter() {

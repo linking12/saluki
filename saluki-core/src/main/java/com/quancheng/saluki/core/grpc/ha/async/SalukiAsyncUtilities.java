@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.quancheng.saluki.core.grpc.cluster.async;
+package com.quancheng.saluki.core.grpc.ha.async;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;

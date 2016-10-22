@@ -1,17 +1,28 @@
 package com.quancheng.saluki.core.grpc;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Preconditions;
+import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.cluster.RegistryDirectory;
+import com.quancheng.saluki.core.grpc.ha.CallOptionsFactory;
+import com.quancheng.saluki.core.registry.NotifyListener;
+import com.quancheng.saluki.core.registry.Registry;
+import com.quancheng.saluki.core.registry.RegistryProvider;
 
 import io.grpc.Attributes;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
+import io.grpc.ResolvedServerInfo;
+import io.grpc.Status;
 
 public class SalukiNameResolverProvider extends NameResolverProvider {
 
@@ -44,21 +55,20 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
     private class SalukiNameResolver extends NameResolver {
 
-        private RegistryDirectory registryDirectory;
+        private final Registry  registry;
 
-        private final SalukiURL   subscribeUrl;
-
-        @GuardedBy("this")
-        private boolean           shutdown;
+        private final SalukiURL subscribeUrl;
 
         @GuardedBy("this")
-        private Listener          listener;
+        private boolean         shutdown;
+
+        @GuardedBy("this")
+        private Listener        listener;
 
         public SalukiNameResolver(URI targetUri, Attributes params){
             SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
-            this.registryDirectory = new RegistryDirectory.Default();
-            registryDirectory.init(registryUrl);
-            this.subscribeUrl = params.get(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE);
+            registry = RegistryProvider.asFactory().newRegistry(registryUrl);
+            subscribeUrl = params.get(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE);
         }
 
         @Override
@@ -69,13 +79,58 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         @Override
         public final synchronized void refresh() {
             Preconditions.checkState(listener != null, "not started");
-            registryDirectory.discover(subscribeUrl);
+            List<SalukiURL> urls = registry.discover(subscribeUrl);
+            notifyLoadBalance(urls);
+        }
+
+        private NotifyListener notifyListener = new NotifyListener() {
+
+            @Override
+            public void notify(List<SalukiURL> urls) {
+                notifyLoadBalance(urls);
+            }
+
+        };
+
+        private void notifyLoadBalance(List<SalukiURL> urls) {
+            Attributes config = this.buildNameResolverConfig();
+            if (urls != null && !urls.isEmpty()) {
+                List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
+                for (int i = 0; i < urls.size(); i++) {
+                    SalukiURL url = urls.get(i);
+                    String ip = url.getHost();
+                    int port = url.getPort();
+                    SocketAddress sock = new InetSocketAddress(InetAddresses.forString(ip), port);
+                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
+                    servers.add(serverInfo);
+                }
+                SalukiNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
+            } else {
+                SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
+                                                                                          + subscribeUrl.toFullString()));
+            }
+        }
+
+        private Attributes buildNameResolverConfig() {
+            if (listener != null) {
+                return Attributes.newBuilder().set(CallOptionsFactory.NAMERESOVER_LISTENER, listener).build();
+            } else {
+                return Attributes.EMPTY;
+            }
         }
 
         @Override
         public final synchronized void start(Listener listener) {
             Preconditions.checkState(this.listener == null, "already started");
-            registryDirectory.subscribe(subscribeUrl, listener);
+            this.listener = listener;
+            resolve();
+        }
+
+        private void resolve() {
+            if (shutdown) {
+                return;
+            }
+            registry.subscribe(subscribeUrl, notifyListener);
         }
 
         @Override
@@ -84,6 +139,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                 return;
             }
             shutdown = true;
+            registry.unsubscribe(subscribeUrl, notifyListener);
         }
     }
 

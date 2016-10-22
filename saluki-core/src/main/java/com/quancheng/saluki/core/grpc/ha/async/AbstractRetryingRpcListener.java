@@ -1,6 +1,11 @@
-package com.quancheng.saluki.core.grpc.cluster.async;
+package com.quancheng.saluki.core.grpc.ha.async;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -10,16 +15,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.util.BackOff;
+import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sleeper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.cluster.RetriesExhaustedException;
-import com.quancheng.saluki.core.grpc.cluster.config.RetryOptions;
+import com.quancheng.saluki.core.grpc.ha.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.ha.RetriesExhaustedException;
+import com.quancheng.saluki.core.grpc.ha.RetryOptions;
 
+import io.grpc.Attributes;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
 import io.grpc.Metadata;
+import io.grpc.NameResolver;
+import io.grpc.ResolvedServerInfo;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -100,10 +110,39 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         // Perform Retry
         LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), failedCount, status);
         call = null;
+        pickNormalSock();
         retryExecutorService.schedule(this, nextBackOff, TimeUnit.MILLISECONDS);
     }
 
     protected abstract void onOK();
+
+    private void pickNormalSock() {
+        Attributes affinity = callOptions.getAffinity();
+        SocketAddress currentServer = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEY);
+        List<SocketAddress> servers = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEYS);
+        NameResolver.Listener listener = affinity.get(CallOptionsFactory.NAMERESOVER_LISTENER);
+        List<SocketAddress> serversCopy = Lists.newArrayList();
+        if (listener != null && currentServer != null && servers != null) {
+            InetSocketAddress currentSock = (InetSocketAddress) currentServer;
+            for (int i = 0; i < servers.size(); i++) {
+                InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
+                if (!inetSock.getHostName().equals(currentSock.getHostName())) {
+                    serversCopy.add(inetSock);
+                }
+            }
+            notifyChannel(listener, serversCopy);
+        }
+    }
+
+    private void notifyChannel(NameResolver.Listener listener, List<SocketAddress> servers) {
+        List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
+        Attributes config = Attributes.newBuilder().set(CallOptionsFactory.NAMERESOVER_LISTENER, listener).build();
+        for (SocketAddress sock : servers) {
+            ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
+            resolvedServers.add(serverInfo);
+        }
+        listener.onUpdate(Collections.singletonList(resolvedServers), config);
+    }
 
     private long getNextBackoff() {
         if (this.currentBackoff == null) {

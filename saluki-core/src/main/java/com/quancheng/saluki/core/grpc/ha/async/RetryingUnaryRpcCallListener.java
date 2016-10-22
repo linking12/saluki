@@ -1,8 +1,8 @@
-package com.quancheng.saluki.core.grpc.cluster.async;
+package com.quancheng.saluki.core.grpc.ha.async;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import com.quancheng.saluki.core.grpc.cluster.config.RetryOptions;
+import com.quancheng.saluki.core.grpc.ha.RetryOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;

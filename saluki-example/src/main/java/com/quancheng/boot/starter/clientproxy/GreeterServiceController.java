@@ -14,7 +14,7 @@ import com.quancheng.boot.starter.server.GreeterService;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.cluster.RegistryDirectory;
+import com.quancheng.saluki.core.grpc.ha.RegistryDirectory;
 
 import io.grpc.Attributes;
 import io.grpc.ResolvedServerInfo;
