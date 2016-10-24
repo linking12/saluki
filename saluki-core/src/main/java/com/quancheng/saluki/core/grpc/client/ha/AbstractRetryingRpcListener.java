@@ -1,6 +1,5 @@
-package com.quancheng.saluki.core.grpc.ha.async;
+package com.quancheng.saluki.core.grpc.client.ha;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -14,15 +13,9 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.util.BackOff;
-import com.google.api.client.util.Lists;
-import com.google.api.client.util.Sleeper;
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.ha.CallOptionsFactory;
-import com.quancheng.saluki.core.grpc.ha.RetriesExhaustedException;
-import com.quancheng.saluki.core.grpc.ha.RetryOptions;
 
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
@@ -35,41 +28,14 @@ import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
-    protected final static Logger LOG = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
-
-    protected class GrpcFuture<RespT> extends AbstractFuture<RespT> {
-
-        @Override
-        protected void interruptTask() {
-            if (call != null) {
-                call.cancel("Request interrupted.", null);
-            }
-        }
-
-        @Override
-        protected boolean set(@Nullable RespT resp) {
-            return super.set(resp);
-        }
-
-        @Override
-        protected boolean setException(Throwable throwable) {
-            return super.setException(throwable);
-        }
-    }
-
-    @VisibleForTesting
-    BackOff                                           currentBackoff;
-    @VisibleForTesting
-    Sleeper                                           sleeper          = Sleeper.DEFAULT;
-
-    private final SalukiAsyncRpc<RequestT, ResponseT> rpc;
+    protected final static Logger                     LOG              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
     private final RetryOptions                        retryOptions;
+    private final SalukiAsyncRpc<RequestT, ResponseT> rpc;
     private final RequestT                            request;
     private final CallOptions                         callOptions;
     private final ScheduledExecutorService            retryExecutorService;
-    private int                                       failedCount;
+    private int                                       retryCount;
     private final Metadata                            originalMetadata;
-
     protected final GrpcFuture<ResultT>               completionFuture = new GrpcFuture<>();
     protected ClientCall<RequestT, ResponseT>         call;
 
@@ -87,31 +53,27 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
     @Override
     public void onClose(Status status, Metadata trailers) {
         Status.Code code = status.getCode();
-        // OK
         if (code == Status.Code.OK) {
             onOK();
             return;
+        } else {
+            if (retryCount >= retryOptions.getReties()) {
+                String message = String.format("Exhausted retries after %d failures.", retryCount);
+                StatusRuntimeException cause = status.asRuntimeException();
+                completionFuture.setException(new RetriesExhaustedException(message, cause));
+                return;
+            } else if (!retryOptions.isEnableRetry()) {
+                completionFuture.setException(status.asRuntimeException());
+                return;
+            } else {
+                // Retry
+                LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), retryCount, status);
+                call = null;
+                pickNormalSock();
+                retryExecutorService.schedule(this, retryOptions.nextBackoffMillis(), TimeUnit.MILLISECONDS);
+                retryCount += 1;
+            }
         }
-        // Non retry scenario
-        if (!retryOptions.enableRetries() || !retryOptions.isRetryable(code) || !rpc.isRetryable(getRetryRequest())) {
-            completionFuture.setException(status.asRuntimeException());
-            return;
-        }
-        // Attempt retry with backoff
-        long nextBackOff = getNextBackoff();
-        failedCount += 1;
-        // Backoffs timed out.
-        if (nextBackOff == BackOff.STOP) {
-            String message = String.format("Exhausted retries after %d failures.", failedCount);
-            StatusRuntimeException cause = status.asRuntimeException();
-            completionFuture.setException(new RetriesExhaustedException(message, cause));
-            return;
-        }
-        // Perform Retry
-        LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), failedCount, status);
-        call = null;
-        pickNormalSock();
-        retryExecutorService.schedule(this, nextBackOff, TimeUnit.MILLISECONDS);
     }
 
     protected abstract void onOK();
@@ -144,17 +106,6 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         listener.onUpdate(Collections.singletonList(resolvedServers), config);
     }
 
-    private long getNextBackoff() {
-        if (this.currentBackoff == null) {
-            this.currentBackoff = retryOptions.createBackoff();
-        }
-        try {
-            return currentBackoff.nextBackOffMillis();
-        } catch (IOException e) {
-            return BackOff.STOP;
-        }
-    }
-
     public ListenableFuture<ResultT> getCompletionFuture() {
         return completionFuture;
     }
@@ -178,6 +129,26 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
     public void cancel() {
         if (this.call != null) {
             call.cancel("User requested cancelation.", null);
+        }
+    }
+
+    protected class GrpcFuture<RespT> extends AbstractFuture<RespT> {
+
+        @Override
+        protected void interruptTask() {
+            if (call != null) {
+                call.cancel("Request interrupted.", null);
+            }
+        }
+
+        @Override
+        protected boolean set(@Nullable RespT resp) {
+            return super.set(resp);
+        }
+
+        @Override
+        protected boolean setException(Throwable throwable) {
+            return super.setException(throwable);
         }
     }
 }

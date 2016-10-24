@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.ha.async;
+package com.quancheng.saluki.core.grpc.client.ha;
 
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;

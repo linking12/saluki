@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.ha;
+package com.quancheng.saluki.core.grpc.client.ha;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -7,11 +7,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.ha.async.AbstractRetryingRpcListener;
-import com.quancheng.saluki.core.grpc.ha.async.RetryingCollectingClientCallListener;
-import com.quancheng.saluki.core.grpc.ha.async.RetryingUnaryRpcCallListener;
-import com.quancheng.saluki.core.grpc.ha.async.SalukiAsyncRpc;
-import com.quancheng.saluki.core.grpc.ha.async.SalukiAsyncUtilities;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -19,7 +14,7 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 
-public interface SalukiGrpcClient {
+public interface SalukiHaClient {
 
     public ListenableFuture<List<Message>> streamingFuture(Message request, MethodDescriptor<Message, Message> method);
 
@@ -29,7 +24,7 @@ public interface SalukiGrpcClient {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public static class Default implements SalukiGrpcClient {
+    public static class Default implements SalukiHaClient {
 
         private final Channel                  channel;
 

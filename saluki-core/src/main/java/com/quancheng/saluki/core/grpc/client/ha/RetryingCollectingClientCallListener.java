@@ -1,10 +1,9 @@
-package com.quancheng.saluki.core.grpc.ha.async;
+package com.quancheng.saluki.core.grpc.client.ha;
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.common.collect.ImmutableList;
-import com.quancheng.saluki.core.grpc.ha.RetryOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;

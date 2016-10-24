@@ -1,13 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.support;
 
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_BACKOFF_MULTIPLIER;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_ENABLE_GRPC_RETRIES_SET;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_INITIAL_BACKOFF_MILLIS;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_MAX_ELAPSED_BACKOFF_MILLIS;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_MAX_SCAN_TIMEOUT_RETRIES;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_READ_PARTIAL_ROW_TIMEOUT_MS;
-import static com.quancheng.saluki.core.grpc.ha.RetryOptions.DEFAULT_STREAMING_BUFFER_SIZE;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -24,11 +16,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
+import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.ha.SalukiHaClient;
 import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
-import com.quancheng.saluki.core.grpc.ha.RetryOptions;
-import com.quancheng.saluki.core.grpc.ha.SalukiGrpcClient;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
@@ -92,7 +84,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         Channel channel = this.getChannel(salukiRequest);
         ScheduledExecutorService retryService = this.createRetryService();
         RetryOptions retryConfig = this.createRetryOption();
-        SalukiGrpcClient grpcClient = new SalukiGrpcClient.Default(channel, retryService, retryConfig);
+        SalukiHaClient grpcClient = new SalukiHaClient.Default(channel, retryService, retryConfig);
         Message resp = null;
         switch (salukiRequest.getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
@@ -122,10 +114,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     private RetryOptions createRetryOption() {
-        return new RetryOptions(true, false, DEFAULT_INITIAL_BACKOFF_MILLIS, DEFAULT_BACKOFF_MULTIPLIER,
-                                DEFAULT_MAX_ELAPSED_BACKOFF_MILLIS, DEFAULT_STREAMING_BUFFER_SIZE,
-                                DEFAULT_READ_PARTIAL_ROW_TIMEOUT_MS, DEFAULT_MAX_SCAN_TIMEOUT_RETRIES,
-                                DEFAULT_ENABLE_GRPC_RETRIES_SET);
+        return new RetryOptions(2, true);
     }
 
     private List<Filter> doInnerFilter() {

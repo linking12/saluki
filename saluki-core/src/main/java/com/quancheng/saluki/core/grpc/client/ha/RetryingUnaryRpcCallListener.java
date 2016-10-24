@@ -1,8 +1,6 @@
-package com.quancheng.saluki.core.grpc.ha.async;
+package com.quancheng.saluki.core.grpc.client.ha;
 
 import java.util.concurrent.ScheduledExecutorService;
-
-import com.quancheng.saluki.core.grpc.ha.RetryOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;
@@ -30,7 +28,6 @@ public class RetryingUnaryRpcCallListener<RequestT, ResponseT> extends AbstractR
     @Override
     protected void onOK() {
         if (value == null) {
-            // No value received so mark the future as an error
             completionFuture.setException(NO_VALUE_SET_EXCEPTION);
         }
     }
