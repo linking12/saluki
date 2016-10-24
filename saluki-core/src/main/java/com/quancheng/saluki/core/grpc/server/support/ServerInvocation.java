@@ -60,6 +60,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             }
             Metadata trailers = new Metadata(e.getMessage().getBytes(), exception2String(exception).getBytes());
             StatusRuntimeException statusException = new StatusRuntimeException(Status.INTERNAL, trailers);
+            //log.error("invode service " + serviceToInvoke + " the method: " + method + " failed", statusException);
             responseObserver.onError(statusException);
         }
     }
