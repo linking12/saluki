@@ -7,13 +7,14 @@ import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall;
 import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
 public interface GrpcRequest {
 
-    public Message getRequestArg();
+    public Message getRequestArg() throws ProtobufException;
 
     public MethodDescriptor<Message, Message> getMethodDescriptor();
 
@@ -40,8 +41,7 @@ public interface GrpcRequest {
             this.call = call;
         }
 
-        public Message getRequestArg() {
-            
+        public Message getRequestArg() throws ProtobufException {
             Object arg = this.getMethodRequest().getArg();
             return PojoProtobufUtils.Pojo2Protobuf(arg);
         }

@@ -2,6 +2,7 @@ package com.quancheng.saluki.core.grpc.server.support;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
@@ -11,11 +12,12 @@ import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.grpc.SalukiException;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
-import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -41,44 +43,27 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object req = PojoProtobufUtils.Protobuf2Pojo(request, requestType);
             Object[] requestParams = new Object[] { req };
-            Object response;
-            try {
-                response = method.invoke(serviceToInvoke, requestParams);
-            } catch (Throwable e) {
-                SalukiException exception = new SalukiException(SalukiException.BIZ_EXCEPTION, e);
-                throw exception;
-            }
+            Object response = method.invoke(serviceToInvoke, requestParams);
             Message message = PojoProtobufUtils.Pojo2Protobuf(response);
             responseObserver.onNext(message);
             responseObserver.onCompleted();
-        } catch (Throwable e) {
-            SalukiException exception;
-            if (!(e instanceof SalukiException)) {
-                exception = new SalukiException(SalukiException.FRAMEWORK_EXCETPION, e);
-            } else {
-                exception = (SalukiException) e;
-            }
-            Metadata trailers = new Metadata(e.getMessage().getBytes(), exception2String(exception).getBytes());
-            StatusRuntimeException statusException = new StatusRuntimeException(Status.INTERNAL, trailers);
-            //log.error("invode service " + serviceToInvoke + " the method: " + method + " failed", statusException);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            RpcServiceException rpcBiz = new RpcServiceException(e.getCause());
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(exception2String(rpcBiz))//
+                                                                    .asRuntimeException();
+            responseObserver.onError(statusException);
+        } catch (ProtobufException e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(exception2String(rpcFramwork))//
+                                                                    .asRuntimeException();
             responseObserver.onError(statusException);
         }
     }
 
-    private String exception2String(Throwable e) {
-        StringWriter w = new StringWriter();
-        PrintWriter p = new PrintWriter(w);
-        p.print(e.getClass().getName());
-        if (e.getMessage() != null) {
-            p.print(": " + e.getMessage());
-        }
-        p.println();
-        try {
-            e.printStackTrace(p);
-            return w.toString();
-        } finally {
-            p.close();
-        }
+    private String exception2String(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
 }

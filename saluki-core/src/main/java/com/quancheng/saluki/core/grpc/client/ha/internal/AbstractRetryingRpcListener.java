@@ -54,11 +54,11 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         } else {
             HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                completionFuture.setException(status.asException());
                 notify.resetChannel();
-                completionFuture.setException(status.asRuntimeException(trailers));
                 return;
             } else {
-                LOG.error(String.format("Retrying failed call. Failure #%d, got: %s", retryCount), status.getCause());
+                LOG.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
                 call = null;
                 notify.onRefreshChannel();
                 retryExecutorService.schedule(this, retryOptions.nextBackoffMillis(), TimeUnit.MILLISECONDS);

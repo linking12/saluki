@@ -21,27 +21,18 @@ public class PojoProtobufUtils {
     private PojoProtobufUtils(){
     }
 
-    public static Message Pojo2Protobuf(Object arg) {
+    public static Message Pojo2Protobuf(Object arg) throws ProtobufException {
         if (!(arg instanceof Message)) {
-            try {
-
-                Message message = (Message) serializer.toProtobuf(arg);
-                arg = null;
-                return message;
-            } catch (ProtobufException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
+            Message message = (Message) serializer.toProtobuf(arg);
+            arg = null;
+            return message;
         }
         return (Message) arg;
     }
 
-    public static Object Protobuf2Pojo(Message arg, Class<? extends Object> returnType) {
+    public static Object Protobuf2Pojo(Message arg, Class<? extends Object> returnType) throws ProtobufException {
         if (!Message.class.isAssignableFrom(returnType)) {
-            try {
-                return serializer.fromProtobuf(arg, returnType);
-            } catch (ProtobufException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
+            return serializer.fromProtobuf(arg, returnType);
         } else {
             return arg;
         }

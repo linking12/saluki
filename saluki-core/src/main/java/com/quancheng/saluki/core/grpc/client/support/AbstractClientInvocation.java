@@ -7,6 +7,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
@@ -16,10 +17,14 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.client.ha.HaClientCalls;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
+import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
 
@@ -82,21 +87,32 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         RetryOptions retryConfig = this.createRetryOption();
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         Message resp = null;
-        switch (salukiRequest.getMethodRequest().getCallType()) {
-            case SalukiConstants.RPCTYPE_ASYNC:
-                resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
-                                              salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                       TimeUnit.SECONDS);
-                break;
-            case SalukiConstants.RPCTYPE_BLOCKING:
-                resp = grpcClient.blockingUnaryResult(salukiRequest.getRequestArg(),
-                                                      salukiRequest.getMethodDescriptor());
-                break;
-            default:
-                resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
-                                              salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                       TimeUnit.SECONDS);
-                break;
+        try {
+            switch (salukiRequest.getMethodRequest().getCallType()) {
+                case SalukiConstants.RPCTYPE_ASYNC:
+                    resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
+                                                  salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
+                                                                                           TimeUnit.SECONDS);
+                    break;
+                case SalukiConstants.RPCTYPE_BLOCKING:
+                    resp = grpcClient.blockingUnaryResult(salukiRequest.getRequestArg(),
+                                                          salukiRequest.getMethodDescriptor());
+                    break;
+                default:
+                    resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
+                                                  salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
+                                                                                           TimeUnit.SECONDS);
+                    break;
+            }
+        } catch (ProtobufException e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
+        } catch (InterruptedException e) {
+            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_TASK_CANCEL);
+        } catch (ExecutionException e) {
+            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_REJECT);
+        } catch (TimeoutException e) {
+            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
         }
         GrpcResponse response = new GrpcResponse.Default(resp, salukiRequest.getMethodRequest().getResponseType());
         for (Filter filter : filters) {
