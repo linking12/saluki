@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha;
+package com.quancheng.saluki.core.grpc.client.ha.internal;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
+import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
@@ -30,7 +32,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     protected final static Logger                     LOG              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
     private final RetryOptions                        retryOptions;
-    private final SalukiAsyncRpc<RequestT, ResponseT> rpc;
+    private final HaAsyncRpc<RequestT, ResponseT> rpc;
     private final RequestT                            request;
     private final CallOptions                         callOptions;
     private final ScheduledExecutorService            retryExecutorService;
@@ -40,7 +42,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
     protected ClientCall<RequestT, ResponseT>         call;
 
     public AbstractRetryingRpcListener(RetryOptions retryOptions, RequestT request,
-                                       SalukiAsyncRpc<RequestT, ResponseT> retryableRpc, CallOptions callOptions,
+                                       HaAsyncRpc<RequestT, ResponseT> retryableRpc, CallOptions callOptions,
                                        ScheduledExecutorService retryExecutorService, Metadata originalMetadata){
         this.retryOptions = retryOptions;
         this.request = request;

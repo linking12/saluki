@@ -1,9 +1,11 @@
-package com.quancheng.saluki.core.grpc.client.ha;
+package com.quancheng.saluki.core.grpc.client.ha.internal;
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.common.collect.ImmutableList;
+import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
+import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;
@@ -13,7 +15,7 @@ public class RetryingCollectingClientCallListener<RequestT, ResponseT> extends A
     private ImmutableList.Builder<ResponseT> buffer;
 
     public RetryingCollectingClientCallListener(RetryOptions retryOptions, RequestT request,
-                                                SalukiAsyncRpc<RequestT, ResponseT> retryableRpc,
+                                                HaAsyncRpc<RequestT, ResponseT> retryableRpc,
                                                 CallOptions callOptions, ScheduledExecutorService executorService,
                                                 Metadata metadata){
         super(retryOptions, request, retryableRpc, callOptions, executorService, metadata);

@@ -5,7 +5,7 @@ import io.grpc.ClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
-public interface SalukiAsyncRpc<REQUEST, RESPONSE> {
+public interface HaAsyncRpc<REQUEST, RESPONSE> {
 
     ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
 

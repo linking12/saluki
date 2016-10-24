@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.ha.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
