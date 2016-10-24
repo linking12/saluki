@@ -9,8 +9,9 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomi
 @SpringBootApplication
 public class DemoServerApp implements CommandLineRunner, EmbeddedServletContainerCustomizer {
 
-//    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version = "1.0.0")
-//    private GreeterService greeterService;
+    // @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "default", version =
+    // "1.0.0")
+    // private GreeterService greeterService;
 
     public static void main(String[] args) {
 
