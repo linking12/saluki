@@ -5,6 +5,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +19,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
+import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
@@ -26,29 +28,28 @@ import io.grpc.Metadata;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
-    protected final static Logger                     LOG              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
-    private final RetryOptions                        retryOptions;
+    protected final static Logger                 LOG              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
+    private final RetryOptions                    retryOptions;
     private final HaAsyncRpc<RequestT, ResponseT> rpc;
-    private final RequestT                            request;
-    private final CallOptions                         callOptions;
-    private final ScheduledExecutorService            retryExecutorService;
-    private int                                       retryCount;
-    private final Metadata                            originalMetadata;
-    protected final GrpcFuture<ResultT>               completionFuture = new GrpcFuture<>();
-    protected ClientCall<RequestT, ResponseT>         call;
+    private final RequestT                        request;
+    private final CallOptions                     callOptions;
+    private final ScheduledExecutorService        retryExecutorService;
+    private int                                   retryCount;
+    private final Metadata                        originalMetadata;
+    protected final GrpcFuture<ResultT>           completionFuture = new GrpcFuture<>();
+    protected ClientCall<RequestT, ResponseT>     call;
 
     public AbstractRetryingRpcListener(RetryOptions retryOptions, RequestT request,
                                        HaAsyncRpc<RequestT, ResponseT> retryableRpc, CallOptions callOptions,
-                                       ScheduledExecutorService retryExecutorService, Metadata originalMetadata){
+                                       Metadata originalMetadata){
         this.retryOptions = retryOptions;
         this.request = request;
         this.rpc = retryableRpc;
         this.callOptions = callOptions;
-        this.retryExecutorService = retryExecutorService;
+        this.retryExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("HaClientRetry", true));
         this.originalMetadata = originalMetadata;
     }
 
@@ -59,16 +60,10 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             onOK();
             return;
         } else {
-            if (retryCount >= retryOptions.getReties()) {
-                String message = String.format("Exhausted retries after %d failures.", retryCount);
-                StatusRuntimeException cause = status.asRuntimeException();
-                completionFuture.setException(new RetriesExhaustedException(message, cause));
-                return;
-            } else if (!retryOptions.isEnableRetry()) {
-                completionFuture.setException(status.asRuntimeException());
+            if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                completionFuture.setException(status.asRuntimeException(trailers));
                 return;
             } else {
-                // Retry
                 LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), retryCount, status);
                 call = null;
                 pickNormalSock();

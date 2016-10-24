@@ -2,7 +2,6 @@ package com.quancheng.saluki.core.grpc.client.ha;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -18,7 +17,7 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 
-public interface HaClient {
+public interface HaClientCalls {
 
     public ListenableFuture<List<Message>> streamingFuture(Message request, MethodDescriptor<Message, Message> method);
 
@@ -28,17 +27,14 @@ public interface HaClient {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public static class Default implements HaClient {
+    public static class Default implements HaClientCalls {
 
-        private final Channel                  channel;
+        private final Channel      channel;
 
-        private final RetryOptions             retryOptions;
+        private final RetryOptions retryOptions;
 
-        private final ScheduledExecutorService retryExecutorService;
-
-        public Default(Channel channel, ScheduledExecutorService retryExecutorService, RetryOptions retryOptions){
+        public Default(Channel channel, RetryOptions retryOptions){
             this.channel = channel;
-            this.retryExecutorService = retryExecutorService;
             this.retryOptions = retryOptions;
         }
 
@@ -66,7 +62,7 @@ public interface HaClient {
         private HaAsyncRpc<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
             HaAsyncUtilities asyncUtilities = new HaAsyncUtilities.Default(channel);
             HaAsyncRpc<Message, Message> asyncRpc = asyncUtilities.createAsyncRpc(method,
-                                                                                      Predicates.<Message> alwaysTrue());
+                                                                                  Predicates.<Message> alwaysTrue());
             return asyncRpc;
         }
 
@@ -77,14 +73,13 @@ public interface HaClient {
                                                                                                         HaAsyncRpc<ReqT, RespT> rpc) {
             CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
             return new RetryingCollectingClientCallListener<>(retryOptions, request, rpc, callOptions,
-                                                              retryExecutorService, createMetadata());
+                                                              createMetadata());
         }
 
         private <ReqT, RespT> RetryingUnaryRpcCallListener<ReqT, RespT> createUnaryListener(ReqT request,
                                                                                             HaAsyncRpc<ReqT, RespT> rpc) {
             CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
-            return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, retryExecutorService,
-                                                      createMetadata());
+            return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, createMetadata());
         }
 
         private Metadata createMetadata() {

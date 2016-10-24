@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Ticker;
@@ -16,13 +14,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
+import com.quancheng.saluki.core.grpc.client.ha.HaClientCalls;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
-import com.quancheng.saluki.core.grpc.client.ha.HaClient;
 import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.Channel;
 
@@ -82,9 +79,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
 
         Channel channel = this.getChannel(salukiRequest);
-        ScheduledExecutorService retryService = this.createRetryService();
         RetryOptions retryConfig = this.createRetryOption();
-        HaClient grpcClient = new HaClient.Default(channel, retryService, retryConfig);
+        HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         Message resp = null;
         switch (salukiRequest.getMethodRequest().getCallType()) {
             case SalukiConstants.RPCTYPE_ASYNC:
@@ -107,10 +103,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             filter.after(response);
         }
         return response.getResponseArg();
-    }
-
-    private ScheduledExecutorService createRetryService() {
-        return Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiCientCallRetry", true));
     }
 
     private RetryOptions createRetryOption() {

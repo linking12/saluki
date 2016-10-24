@@ -1,7 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.ha.internal;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 
@@ -18,8 +16,8 @@ public class RetryingUnaryRpcCallListener<RequestT, ResponseT> extends AbstractR
 
     public RetryingUnaryRpcCallListener(RetryOptions retryOptions, RequestT request,
                                         HaAsyncRpc<RequestT, ResponseT> retryableRpc, CallOptions callOptions,
-                                        ScheduledExecutorService executorService, Metadata metadata){
-        super(retryOptions, request, retryableRpc, callOptions, executorService, metadata);
+                                        Metadata metadata){
+        super(retryOptions, request, retryableRpc, callOptions, metadata);
     }
 
     @Override
