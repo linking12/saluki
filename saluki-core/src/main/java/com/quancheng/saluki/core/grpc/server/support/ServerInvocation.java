@@ -49,8 +49,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             responseObserver.onCompleted();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             RpcServiceException rpcBiz = new RpcServiceException(e.getCause());
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(exception2String(rpcBiz))//
-                                                                    .asRuntimeException();
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBiz.getMessage())//
+                                                                    .withCause(rpcBiz).asRuntimeException();
             responseObserver.onError(statusException);
         } catch (ProtobufException e) {
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);

@@ -2,6 +2,8 @@ package com.quancheng.saluki.core.common;
 
 import java.util.regex.Pattern;
 
+import com.quancheng.saluki.core.grpc.utils.Marshallers;
+
 import io.grpc.Attributes;
 import io.grpc.Metadata;
 
@@ -51,7 +53,7 @@ public class SalukiConstants {
     public static Metadata.Key<byte[]>            GRPC_CONTEXT_VALUES           = Metadata.Key.of("grpc_header_values-bin",
                                                                                                   Metadata.BINARY_BYTE_MARSHALLER);
 
-    public static Metadata.Key<String>            GRPC_EXCETPION_VALUE          = Metadata.Key.of("grpc_header_exception",
-                                                                                                  Metadata.ASCII_STRING_MARSHALLER);
+    public static Metadata.Key<String>            GRPC_EXCETPION_VALUE          = Metadata.Key.of("grpc_error_cause-bin",
+                                                                                                  Marshallers.utf8Marshaller());
 
 }

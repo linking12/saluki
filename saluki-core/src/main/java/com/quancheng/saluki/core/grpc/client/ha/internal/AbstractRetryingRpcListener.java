@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
@@ -20,6 +21,7 @@ import io.grpc.CallOptions;
 import io.grpc.ClientCall;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
@@ -52,9 +54,11 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             onOK();
             return;
         } else {
+            String cause = trailers.get(SalukiConstants.GRPC_EXCETPION_VALUE);
             HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                completionFuture.setException(status.asException());
+                StatusRuntimeException newException = Status.INTERNAL.withDescription(cause).asRuntimeException();
+                completionFuture.setException(newException);
                 notify.resetChannel();
                 return;
             } else {
@@ -111,6 +115,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
         @Override
         protected boolean setException(Throwable throwable) {
+            throwable.setStackTrace(new StackTraceElement[] {});
             return super.setException(throwable);
         }
     }

@@ -1,5 +1,7 @@
 package com.quancheng.saluki.core.grpc.interceptor;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import io.grpc.Status;
 
 public class HeaderServerInterceptor implements ServerInterceptor {
 
@@ -32,6 +35,15 @@ public class HeaderServerInterceptor implements ServerInterceptor {
             @Override
             public void sendHeaders(Metadata responseHeaders) {
                 super.sendHeaders(responseHeaders);
+            }
+
+            @Override
+            public void close(Status status, Metadata trailers) {
+                StringWriter sw = new StringWriter();
+                status.getCause().printStackTrace(new PrintWriter(sw));
+                trailers.put(SalukiConstants.GRPC_EXCETPION_VALUE, sw.toString());
+                super.close(status, trailers);
+
             }
         }, headers);
     }
