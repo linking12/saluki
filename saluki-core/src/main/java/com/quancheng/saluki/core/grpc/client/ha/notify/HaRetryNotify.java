@@ -31,11 +31,16 @@ public class HaRetryNotify {
         List<SocketAddress> serversCopy = Lists.newArrayList();
         if (listener != null && currentServer != null && servers != null) {
             InetSocketAddress currentSock = (InetSocketAddress) currentServer;
-            for (int i = 0; i < servers.size(); i++) {
-                InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
-                if (!inetSock.getHostName().equals(currentSock.getHostName())) {
-                    serversCopy.add(inetSock);
+            int serverSize = servers.size();
+            if (serverSize > 2) {
+                for (int i = 0; i < serverSize; i++) {
+                    InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
+                    if (!inetSock.getHostName().equals(currentSock.getHostName())) {
+                        serversCopy.add(inetSock);
+                    }
                 }
+            } else {
+                serversCopy.addAll(servers);
             }
             notifyChannel(serversCopy);
         }
