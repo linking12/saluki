@@ -1,10 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.ha.internal;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +9,6 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
@@ -22,12 +16,9 @@ import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
-import io.grpc.Attributes;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
 import io.grpc.Metadata;
-import io.grpc.NameResolver;
-import io.grpc.ResolvedServerInfo;
 import io.grpc.Status;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
