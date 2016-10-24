@@ -50,6 +50,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             }
             Message message = PojoProtobufUtils.Pojo2Protobuf(response);
             responseObserver.onNext(message);
+            responseObserver.onCompleted();
         } catch (Throwable e) {
             SalukiException exception;
             if (!(e instanceof SalukiException)) {
@@ -57,12 +58,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             } else {
                 exception = (SalukiException) e;
             }
-            StatusRuntimeException statusException = new StatusRuntimeException(Status.INTERNAL,
-                                                                                new Metadata(exception2String(exception).getBytes()));
+            Metadata trailers = new Metadata(e.getMessage().getBytes(), exception2String(exception).getBytes());
+            StatusRuntimeException statusException = new StatusRuntimeException(Status.INTERNAL, trailers);
             log.error("invode service " + serviceToInvoke + " the method: " + method + " failed", statusException);
             responseObserver.onError(statusException);
-        } finally {
-            responseObserver.onCompleted();
         }
     }
 

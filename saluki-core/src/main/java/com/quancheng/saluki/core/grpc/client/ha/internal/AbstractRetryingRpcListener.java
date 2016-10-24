@@ -58,7 +58,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                 completionFuture.setException(status.asRuntimeException(trailers));
                 return;
             } else {
-                LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), retryCount, status);
+                LOG.error(String.format("Retrying failed call. Failure #%d, got: %s", retryCount), status.getCause());
                 call = null;
                 notify.onRefreshChannel();
                 retryExecutorService.schedule(this, retryOptions.nextBackoffMillis(), TimeUnit.MILLISECONDS);
