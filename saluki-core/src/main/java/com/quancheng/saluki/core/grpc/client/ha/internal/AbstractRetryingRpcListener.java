@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.Attributes;
@@ -55,18 +56,20 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     @Override
     public void onClose(Status status, Metadata trailers) {
+        HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
         Status.Code code = status.getCode();
         if (code == Status.Code.OK) {
             onOK();
             return;
         } else {
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                notify.resetChannel();
                 completionFuture.setException(status.asRuntimeException(trailers));
                 return;
             } else {
                 LOG.info("Retrying failed call. Failure #%d, got: %s", status.getCause(), retryCount, status);
                 call = null;
-                pickNormalSock();
+                notify.onRefreshChannel();
                 retryExecutorService.schedule(this, retryOptions.nextBackoffMillis(), TimeUnit.MILLISECONDS);
                 retryCount += 1;
             }
@@ -74,34 +77,6 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
     }
 
     protected abstract void onOK();
-
-    private void pickNormalSock() {
-        Attributes affinity = callOptions.getAffinity();
-        SocketAddress currentServer = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEY);
-        List<SocketAddress> servers = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEYS);
-        NameResolver.Listener listener = affinity.get(CallOptionsFactory.NAMERESOVER_LISTENER);
-        List<SocketAddress> serversCopy = Lists.newArrayList();
-        if (listener != null && currentServer != null && servers != null) {
-            InetSocketAddress currentSock = (InetSocketAddress) currentServer;
-            for (int i = 0; i < servers.size(); i++) {
-                InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
-                if (!inetSock.getHostName().equals(currentSock.getHostName())) {
-                    serversCopy.add(inetSock);
-                }
-            }
-            notifyChannel(listener, serversCopy);
-        }
-    }
-
-    private void notifyChannel(NameResolver.Listener listener, List<SocketAddress> servers) {
-        List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
-        Attributes config = Attributes.newBuilder().set(CallOptionsFactory.NAMERESOVER_LISTENER, listener).build();
-        for (SocketAddress sock : servers) {
-            ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
-            resolvedServers.add(serverInfo);
-        }
-        listener.onUpdate(Collections.singletonList(resolvedServers), config);
-    }
 
     public ListenableFuture<ResultT> getCompletionFuture() {
         return completionFuture;
