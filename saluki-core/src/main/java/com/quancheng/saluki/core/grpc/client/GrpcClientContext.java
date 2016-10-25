@@ -1,7 +1,5 @@
 package com.quancheng.saluki.core.grpc.client;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.quancheng.saluki.core.common.SalukiConstants;
