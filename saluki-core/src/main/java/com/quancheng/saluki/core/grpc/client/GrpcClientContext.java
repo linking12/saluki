@@ -1,10 +1,15 @@
 package com.quancheng.saluki.core.grpc.client;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.support.DefaultPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.GenericPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.StubPolicyClient;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.stub.AbstractStub;
@@ -54,9 +59,25 @@ public class GrpcClientContext {
                     throw new IllegalArgumentException("grpc stub client the class must exist in classpath", e);
                 }
             } else {
+                String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
+                int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 1);
                 String interfaceName = refUrl.getServiceInterface();
-                return new DefaultPolicyClient<Object>(interfaceName);
+                Class<?> interfaceClass = generateClass(interfaceName, methodNames, retries);
+                return new DefaultPolicyClient<Object>(interfaceName, interfaceClass);
             }
+        }
+    }
+
+    private Class<?> generateClass(String interfaceName, String[] methodNames, int reties) {
+        try {
+            if (methodNames != null && methodNames.length > 1) {
+                return ReflectUtil.addHastrategyAnnotation(interfaceName, methodNames, reties);
+            } else {
+                return ReflectUtil.addHastrategyAnnotation(interfaceName, reties);
+            }
+        } catch (Exception e) {
+            throw new RpcFrameworkException("Can not add com.quancheng.saluki.core.grpc.client.ha.Hastrategy to "
+                                            + interfaceName, e);
         }
     }
 

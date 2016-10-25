@@ -12,7 +12,7 @@ import com.google.common.base.Preconditions;
 import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
-import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.core.grpc.service.GenericService;
 
 import io.grpc.stub.AbstractStub;
 
@@ -84,16 +84,10 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             referenceConfig.setGrpcStub(true);
             referenceConfig.setInterfaceClass(referenceClass);
         } else {
-            try {
-                Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
-                if (!interfaceClass.isAssignableFrom(referenceClass)) {
-                    referenceConfig.setGeneric(true);
-                } else {
-                    referenceConfig.setGeneric(false);
-                }
-            } catch (ClassNotFoundException e) {
+            if (GenericService.class.isAssignableFrom(referenceClass)) {
                 referenceConfig.setGeneric(true);
-                referenceConfig.setInterfaceClass(referenceClass);
+            } else {
+                referenceConfig.setGeneric(false);
             }
         }
         Object value = referenceConfig.get();

@@ -2,11 +2,6 @@ package com.quancheng.saluki.core.common;
 
 import java.util.regex.Pattern;
 
-import com.quancheng.saluki.core.grpc.utils.Marshallers;
-
-import io.grpc.Attributes;
-import io.grpc.Metadata;
-
 public class SalukiConstants {
 
     public static final Pattern COMMA_SPLIT_PATTERN           = Pattern.compile("\\s*[,]+\\s*");
@@ -22,6 +17,8 @@ public class SalukiConstants {
     public static final String  DEFAULT_VERSION               = "1.0.0";
     public static final String  LOCALHOST_KEY                 = "localhost";
     public static final String  ANYHOST_KEY                   = "anyhost";
+    public static final String  METHODS_KEY                   = "methods";
+    public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
 
     public static final String  REGISTRY_RETRY_PERIOD_KEY     = "retry.period";

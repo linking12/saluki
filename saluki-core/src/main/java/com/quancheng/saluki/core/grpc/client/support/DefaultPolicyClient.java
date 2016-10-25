@@ -26,13 +26,9 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
 
     private final Class<?> interfaceClass;
 
-    public DefaultPolicyClient(String interfaceName){
+    public DefaultPolicyClient(String interfaceName, Class<?> interfaceClass){
         this.interfaceName = interfaceName;
-        try {
-            this.interfaceClass = ReflectUtil.name2class(interfaceName);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+        this.interfaceClass = interfaceClass;
     }
 
     public String getFullServiceName() {

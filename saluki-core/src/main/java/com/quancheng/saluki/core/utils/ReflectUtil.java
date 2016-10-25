@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.Lists;
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -35,11 +36,43 @@ public final class ReflectUtil {
         return null;
     }
 
-    public static Class<?> addHastrategyAnnotation(Class<?> sourceClass, Method sourceMethod,
+    public static Class<?> addHastrategyAnnotation(String className, int retries) throws Exception {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass cc = pool.getCtClass(className);
+        CtMethod[] methods = cc.getDeclaredMethods();
+        for (CtMethod method : methods) {
+            String methodName_ = method.getName();
+            Class[] parameterTypes = CtClass2Class(method.getParameterTypes());
+            if (!neglectMethod(methodName_, parameterTypes)) {
+                addHastrategyAnnotation(cc, method, retries);
+            }
+        }
+        Class<?> targetClass = cc.toClass();
+        return targetClass;
+    }
+
+    public static Class<?> addHastrategyAnnotation(String className, String[] methodNames,
                                                    int retries) throws Exception {
         ClassPool pool = ClassPool.getDefault();
-        CtClass cc = pool.getCtClass(sourceClass.getName());
-        CtMethod method = cc.getDeclaredMethod(sourceMethod.getName());
+        CtClass cc = pool.getCtClass(className);
+        for (String methodName : methodNames) {
+            CtMethod method = cc.getDeclaredMethod(methodName);
+            addHastrategyAnnotation(cc, method, retries);
+        }
+        Class<?> targetClass = cc.toClass();
+        return targetClass;
+    }
+
+    private static Class<?>[] CtClass2Class(CtClass[] parameterTypes) throws CannotCompileException {
+        Class<?>[] clzzs = new Class<?>[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            CtClass ctClzz = parameterTypes[i];
+            clzzs[i] = ctClzz.toClass();
+        }
+        return clzzs;
+    }
+
+    private static void addHastrategyAnnotation(CtClass cc, CtMethod method, int retries) throws Exception {
         ClassFile ccFile = cc.getClassFile();
         ConstPool constpool = ccFile.getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
@@ -48,8 +81,6 @@ public final class ReflectUtil {
         annot.addMemberValue("retries", new IntegerMemberValue(ccFile.getConstPool(), Integer.valueOf(retries)));
         attr.addAnnotation(annot);
         method.getMethodInfo().addAttribute(attr);
-        Class<?> targetClass = cc.toClass();
-        return targetClass;
     }
 
     public static Class<?> getTypedReq(Method method) {
@@ -117,6 +148,10 @@ public final class ReflectUtil {
     public static boolean neglectMethod(Method method) {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
+        return neglectMethod(methodName, parameterTypes);
+    }
+
+    public static boolean neglectMethod(String methodName, Class<?>[] parameterTypes) {
         boolean isToString = "toString".equals(methodName) && parameterTypes.length == 0;
         boolean isHashCode = "hashCode".equals(methodName) && parameterTypes.length == 0;
         boolean isEquals = "equals".equals(methodName) && parameterTypes.length == 1;
