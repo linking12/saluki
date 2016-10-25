@@ -12,7 +12,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD })
+@Target({ ElementType.FIELD })
 public @interface SalukiReference {
 
     String service();
@@ -20,6 +20,10 @@ public @interface SalukiReference {
     String group() default "";
 
     String version() default "";
+
+    int retries() default 1;
+
+    String[] hastrategyMethod() default {};
 
     boolean localProcess() default false;
 
