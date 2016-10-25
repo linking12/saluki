@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
+import com.quancheng.saluki.core.grpc.utils.Marshallers;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.CallOptions;
@@ -54,10 +54,10 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             onOK();
             return;
         } else {
-            String cause = trailers.get(SalukiConstants.GRPC_EXCETPION_VALUE);
             HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                StatusRuntimeException newException = Status.INTERNAL.withDescription(cause).asRuntimeException();
+                String errorCause = trailers.get(Marshallers.GRPC_ERRORCAUSE_VALUE);
+                StatusRuntimeException newException = Status.INTERNAL.withDescription(errorCause).asRuntimeException();
                 completionFuture.setException(newException);
                 notify.resetChannel();
                 return;
@@ -115,6 +115,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
         @Override
         protected boolean setException(Throwable throwable) {
+            // 这个的stackTrace置为空的原因是，这个eror是服务端抛出的，但是这里的trace却是打印客户端的信息，所以要置为空
             throwable.setStackTrace(new StackTraceElement[] {});
             return super.setException(throwable);
         }

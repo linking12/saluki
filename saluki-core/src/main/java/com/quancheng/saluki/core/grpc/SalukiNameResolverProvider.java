@@ -11,9 +11,9 @@ import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
-import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.utils.Marshallers;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
@@ -29,7 +29,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
     private final Attributes attributesParams;
 
     public SalukiNameResolverProvider(SalukiURL refUrl){
-        attributesParams = Attributes.newBuilder().set(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
+        attributesParams = Attributes.newBuilder().set(Marshallers.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         public SalukiNameResolver(URI targetUri, Attributes params){
             SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-            subscribeUrl = params.get(SalukiConstants.PARAMS_DEFAULT_SUBCRIBE);
+            subscribeUrl = params.get(Marshallers.PARAMS_DEFAULT_SUBCRIBE);
         }
 
         @Override

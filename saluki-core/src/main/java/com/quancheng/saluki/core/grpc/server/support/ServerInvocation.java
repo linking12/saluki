@@ -48,22 +48,16 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             responseObserver.onNext(message);
             responseObserver.onCompleted();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            RpcServiceException rpcBiz = new RpcServiceException(e.getCause());
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBiz.getMessage())//
-                                                                    .withCause(rpcBiz).asRuntimeException();
+            RpcServiceException rpcBizError = new RpcServiceException(e.getCause());
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBizError.getMessage())//
+                                                                    .withCause(rpcBizError).asRuntimeException();
             responseObserver.onError(statusException);
         } catch (ProtobufException e) {
-            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(exception2String(rpcFramwork))//
-                                                                    .asRuntimeException();
+            RpcFrameworkException rpcFramworkError = new RpcFrameworkException(e);
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcFramworkError.getMessage())//
+                                                                    .withCause(rpcFramworkError).asRuntimeException();
             responseObserver.onError(statusException);
         }
-    }
-
-    private String exception2String(Exception e) {
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
     }
 
 }
