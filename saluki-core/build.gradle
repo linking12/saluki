@@ -5,6 +5,6 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
-    compile 'com.google.http-client:google-http-client:1.22.0'
+    compile group: 'javassist',name: 'javassist',version:'3.12.1.GA'
     compile project(':saluki-serializer')
 }

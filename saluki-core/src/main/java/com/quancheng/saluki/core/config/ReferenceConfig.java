@@ -1,13 +1,18 @@
 package com.quancheng.saluki.core.config;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.utils.NetUtils;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends BasicConfig {
 
@@ -39,6 +44,9 @@ public class ReferenceConfig extends BasicConfig {
 
     // 请求超时时间
     private int                       requestTimeout;
+
+    // 方法参数
+    private List<MethodConfig>        methods;
 
     private transient volatile Object ref;
 
@@ -173,6 +181,63 @@ public class ReferenceConfig extends BasicConfig {
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;
+    }
+
+    protected void addAnnotationToInterface(Class<?> interfaceClass, List<MethodConfig> methods) {
+        if (interfaceClass == null) {
+            throw new IllegalStateException("interface not allow null!");
+        }
+        // if (!interfaceClass.isInterface()) {
+        // throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
+        // }
+        if (methods != null && !methods.isEmpty()) {
+            for (MethodConfig methodBean : methods) {
+                String methodName = methodBean.getName();
+                for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
+                    Method method_ = null;
+                    if (StringUtils.isNotBlank(methodName) && StringUtils.equals(method.getName(), methodName)) {
+                        method_ = method;
+                    } else {
+                        boolean isNeglectMethod = ReflectUtil.neglectMethod(method);
+                        if (!isNeglectMethod) {
+                            method_ = method;
+                        }
+                    }
+                    try {
+                        Class<?> interfaceClassCopy = ReflectUtil.addHastrategyAnnotation(interfaceClass, method_,
+                                                                                          methodBean.getReties());
+                        interfaceClass = interfaceClassCopy;
+                    } catch (Exception e) {
+                        throw new RpcFrameworkException("Can not add com.quancheng.saluki.core.grpc.client.ha.Hastrategy to "
+                                                        + interfaceClass.getName(), e);
+                    }
+
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException {
+        List<MethodConfig> config = Lists.newArrayList();
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setReties(2);
+        config.add(methodConfig);
+        Class<?> clzz = Class.forName("com.quancheng.saluki.core.grpc.client.ha.RetryOptions");
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.addAnnotationToInterface(clzz, config);
+        try {
+            Method[] methods = clzz.getMethods();
+            for (Method method : methods) {
+                java.lang.annotation.Annotation[] annotations = method.getAnnotations();
+                for (java.lang.annotation.Annotation ann : annotations) {
+                    System.out.println(method.getName() + "==" + ann);
+                }
+            }
+
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }

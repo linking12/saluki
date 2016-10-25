@@ -9,6 +9,14 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.Lists;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.IntegerMemberValue;
+
 public final class ReflectUtil {
 
     private ReflectUtil(){
@@ -25,6 +33,23 @@ public final class ReflectUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static Class<?> addHastrategyAnnotation(Class<?> sourceClass, Method sourceMethod,
+                                                   int retries) throws Exception {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass cc = pool.getCtClass(sourceClass.getName());
+        CtMethod method = cc.getDeclaredMethod(sourceMethod.getName());
+        ClassFile ccFile = cc.getClassFile();
+        ConstPool constpool = ccFile.getConstPool();
+        AnnotationsAttribute attr = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
+        javassist.bytecode.annotation.Annotation annot = new javassist.bytecode.annotation.Annotation("com.quancheng.saluki.core.grpc.client.ha.Hastrategy",
+                                                                                                      constpool);
+        annot.addMemberValue("retries", new IntegerMemberValue(ccFile.getConstPool(), Integer.valueOf(retries)));
+        attr.addAnnotation(annot);
+        method.getMethodInfo().addAttribute(attr);
+        Class<?> targetClass = cc.toClass();
+        return targetClass;
     }
 
     public static Class<?> getTypedReq(Method method) {
