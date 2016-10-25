@@ -1,7 +1,5 @@
 package com.quancheng.saluki.core.grpc.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.IProtobufSerializer;
