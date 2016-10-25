@@ -1,7 +1,7 @@
 package com.quancheng.saluki.core.config;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,7 +42,7 @@ public class ReferenceConfig extends BasicConfig {
     private int                       requestTimeout;
 
     // 方法签名
-    private List<String>              methodNames;
+    private Set<String>               methodNames;
 
     // 重试次数
     private int                       reties;
@@ -132,11 +132,11 @@ public class ReferenceConfig extends BasicConfig {
         this.version = version;
     }
 
-    public List<String> getMethodNames() {
+    public Set<String> getMethodNames() {
         return methodNames;
     }
 
-    public void setMethodNames(List<String> methodNames) {
+    public void setMethodNames(Set<String> methodNames) {
         this.methodNames = methodNames;
     }
 

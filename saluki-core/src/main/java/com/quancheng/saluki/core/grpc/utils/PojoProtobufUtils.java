@@ -9,10 +9,8 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
 public class PojoProtobufUtils {
 
     private final static IProtobufSerializer serializer;
-    private final static Gson                gson;
 
     static {
-        gson = new Gson();
         serializer = new ProtobufSerializer();
     }
 

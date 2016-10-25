@@ -1,6 +1,8 @@
 package com.quancheng.boot.saluki.starter.runner;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,6 +68,12 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             String version = grpcProperties.getReferenceVersion();
             Preconditions.checkNotNull(version, "Version can not be null", version);
             referenceConfig.setVersion(version);
+        }
+        if (reference.retries() > 1
+            && (reference.hastrategyMethod() == null || reference.hastrategyMethod().length == 0)) {
+            logger.warn("Have set retries,but not have set method,will set all method to retry");
+            referenceConfig.setMethodNames(new HashSet<String>(Arrays.asList(reference.hastrategyMethod())));
+            referenceConfig.setReties(reference.retries());
         }
         String interfaceName = reference.service();
         Preconditions.checkNotNull(interfaceName, "interfaceName can not be null", interfaceName);

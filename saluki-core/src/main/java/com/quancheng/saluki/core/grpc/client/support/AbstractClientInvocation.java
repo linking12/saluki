@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.client.ha.HaClientCalls;
+import com.quancheng.saluki.core.grpc.client.ha.Hastrategy;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -24,6 +25,7 @@ import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
@@ -84,7 +86,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
 
         Channel channel = this.getChannel(salukiRequest);
-        RetryOptions retryConfig = this.createRetryOption();
+        RetryOptions retryConfig = this.createRetryOption(method);
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         Message resp = null;
         try {
@@ -121,8 +123,13 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return response.getResponseArg();
     }
 
-    private RetryOptions createRetryOption() {
-        return new RetryOptions(2, true);
+    private RetryOptions createRetryOption(Method method) {
+        Hastrategy haOption = (Hastrategy) ReflectUtil.findAnnotationFromMethod(method, Hastrategy.class);
+        if (haOption != null && haOption.retries() > 1) {
+            return new RetryOptions(1, false);
+        } else {
+            return new RetryOptions(haOption.retries(), true);
+        }
     }
 
     private List<Filter> doInnerFilter() {

@@ -123,8 +123,19 @@ public final class ReflectUtil {
         return obj;
     }
 
-    public static Annotation findAnnotation(Class<?> target, Class<? extends Annotation> annotation) {
+    public static Annotation findAnnotationFromClass(Class<?> target, Class<? extends Annotation> annotation) {
         for (Annotation targetAnnotation : target.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation findAnnotationFromMethod(Method method, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : method.getAnnotations()) {
             if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
                 return targetAnnotation;
             } else {
