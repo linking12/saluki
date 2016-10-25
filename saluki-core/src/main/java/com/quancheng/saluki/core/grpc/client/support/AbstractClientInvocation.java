@@ -128,6 +128,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         if (haOption != null && haOption.retries() > 1) {
             return new RetryOptions(1, false);
         } else {
+            // 如果没有标示ha及retries为1，标示不开启ha的重试机制
             return new RetryOptions(haOption.retries(), true);
         }
     }
