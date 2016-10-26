@@ -29,7 +29,7 @@ public class DemoServerApp implements CommandLineRunner, EmbeddedServletContaine
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
-        container.setPort(8282);
+        container.setPort(8181);
     }
 
 }
