@@ -47,7 +47,9 @@ public class HaRetryNotify {
             } else {
                 serversCopy.addAll(servers);
             }
-            if (serversCopy.size() != 0) notifyChannel(serversCopy);
+            if (serversCopy.size() != 0) {
+                notifyChannel(serversCopy);
+            }
         }
     }
 
