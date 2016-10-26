@@ -1,15 +1,19 @@
 package com.quancheng.saluki.core.grpc;
 
+import java.lang.reflect.Field;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Supplier;
 import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 
 import io.grpc.Attributes;
+import io.grpc.Attributes.Key;
 import io.grpc.LoadBalancer;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
@@ -82,17 +86,32 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             NameResolver.Listener listener = this.nameResolverConfig.get(CallOptionsFactory.NAMERESOVER_LISTENER);
-            Attributes.Builder builder = Attributes.newBuilder();
+            HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
             if (listener != null) {
-                builder.set(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
+                data.put(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
             }
             if (currentAddress != null) {
-                builder.set(CallOptionsFactory.REMOTE_ADDR_KEY, currentAddress);
+                data.put(CallOptionsFactory.REMOTE_ADDR_KEY, currentAddress);
             }
             if (addresses != null) {
-                builder.set(CallOptionsFactory.REMOTE_ADDR_KEYS, addresses);
+                data.put(CallOptionsFactory.REMOTE_ADDR_KEYS, addresses);
             }
-            affinity = builder.build();
+            fillData(affinity, data);
+        }
+
+        /**
+         * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处
+         */
+        private void fillData(Attributes affinity, HashMap<Key<?>, Object> data) {
+            try {
+                Class<?> classType = affinity.getClass();
+                Field field = classType.getDeclaredField("data");
+                field.setAccessible(true);
+                field.set(affinity, data);
+            } catch (Exception e) {
+                RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+                throw rpcFramwork;
+            }
         }
 
         @Override
