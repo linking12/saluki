@@ -40,7 +40,7 @@ public class SalukiConstants {
     public static final int     DEFAULT_TIMEOUT               = 60;
     public static final boolean DEFAULT_GENERIC               = false;
     public static final String  GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
-
     public static final String  REMOTE_ADDRESS                = "RmoteAddress";
+    public static final String  REGISTRY_PORT                 = "registry_port";
 
 }

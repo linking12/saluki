@@ -9,15 +9,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.Lists;
 
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.IntegerMemberValue;
-
 public final class ReflectUtil {
 
     private ReflectUtil(){
@@ -34,53 +25,6 @@ public final class ReflectUtil {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static Class<?> addHastrategyAnnotation(String className, int retries) throws Exception {
-        ClassPool pool = ClassPool.getDefault();
-        CtClass cc = pool.getCtClass(className);
-        CtMethod[] methods = cc.getDeclaredMethods();
-        for (CtMethod method : methods) {
-            String methodName_ = method.getName();
-            Class[] parameterTypes = CtClass2Class(method.getParameterTypes());
-            if (!neglectMethod(methodName_, parameterTypes)) {
-                addHastrategyAnnotation(cc, method, retries);
-            }
-        }
-        Class<?> targetClass = cc.toClass();
-        return targetClass;
-    }
-
-    public static Class<?> addHastrategyAnnotation(String className, String[] methodNames,
-                                                   int retries) throws Exception {
-        ClassPool pool = ClassPool.getDefault();
-        CtClass cc = pool.getCtClass(className);
-        for (String methodName : methodNames) {
-            CtMethod method = cc.getDeclaredMethod(methodName);
-            addHastrategyAnnotation(cc, method, retries);
-        }
-        Class<?> targetClass = cc.toClass();
-        return targetClass;
-    }
-
-    private static Class<?>[] CtClass2Class(CtClass[] parameterTypes) throws CannotCompileException {
-        Class<?>[] clzzs = new Class<?>[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            CtClass ctClzz = parameterTypes[i];
-            clzzs[i] = ctClzz.toClass();
-        }
-        return clzzs;
-    }
-
-    private static void addHastrategyAnnotation(CtClass cc, CtMethod method, int retries) throws Exception {
-        ClassFile ccFile = cc.getClassFile();
-        ConstPool constpool = ccFile.getConstPool();
-        AnnotationsAttribute attr = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
-        javassist.bytecode.annotation.Annotation annot = new javassist.bytecode.annotation.Annotation("com.quancheng.saluki.core.grpc.client.ha.Hastrategy",
-                                                                                                      constpool);
-        annot.addMemberValue("retries", new IntegerMemberValue(ccFile.getConstPool(), Integer.valueOf(retries)));
-        attr.addAnnotation(annot);
-        method.getMethodInfo().addAttribute(attr);
     }
 
     public static Class<?> getTypedReq(Method method) {

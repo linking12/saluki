@@ -43,3 +43,4 @@
 /spring-boot-starter-saluki/.classpath
 /spring-boot-starter-saluki/.gradle/
 /.gradle/
+/build/

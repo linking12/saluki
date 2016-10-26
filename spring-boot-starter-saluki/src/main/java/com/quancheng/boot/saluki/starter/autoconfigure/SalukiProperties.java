@@ -7,7 +7,9 @@ public class SalukiProperties {
 
     private String serverHost;
 
-    private int    serverPort = 6565;
+    private int    serverStartPort;
+
+    private int    serverRegistryPort;
 
     private String consulIp;
 
@@ -21,12 +23,20 @@ public class SalukiProperties {
 
     private String servcieVersion;
 
-    public int getServerPort() {
-        return serverPort;
+    public int getServerStartPort() {
+        return serverStartPort;
     }
 
-    public void setServerPort(int serverPort) {
-        this.serverPort = serverPort;
+    public void setServerStartPort(int serverStartPort) {
+        this.serverStartPort = serverStartPort;
+    }
+
+    public int getServerRegistryPort() {
+        return serverRegistryPort;
+    }
+
+    public void setServerRegistryPort(int serverRegistryPort) {
+        this.serverRegistryPort = serverRegistryPort;
     }
 
     public String getConsulIp() {
