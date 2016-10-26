@@ -191,7 +191,7 @@ public class ReferenceConfig extends BasicConfig {
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
-        if (!this.methodNames.isEmpty()) {
+        if (this.methodNames!=null && !this.methodNames.isEmpty()) {
             params.put(SalukiConstants.METHODS_KEY, StringUtils.join(this.methodNames, ","));
         }
         if (this.reties != 0) {
