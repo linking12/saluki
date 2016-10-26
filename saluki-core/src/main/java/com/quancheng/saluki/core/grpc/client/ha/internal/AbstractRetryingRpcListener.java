@@ -53,7 +53,10 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         Status.Code code = status.getCode();
         if (code == Status.Code.OK) {
             onOK();
-            notify.resetChannel();
+            // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
+            if (retryCount > 0) {
+                notify.resetChannel();
+            }
             return;
         } else {
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {

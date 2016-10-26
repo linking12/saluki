@@ -41,7 +41,6 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private static final Status           SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
 
         private final Object                  lock            = new Object();
-
         @GuardedBy("lock")
         private RoundRobinServerListExtend<T> addresses;
         @GuardedBy("lock")

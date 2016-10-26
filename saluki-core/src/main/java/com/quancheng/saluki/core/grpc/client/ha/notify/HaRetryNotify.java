@@ -60,9 +60,12 @@ public class HaRetryNotify {
     }
 
     private void notifyChannel(List<SocketAddress> servers) {
-        if (listener != null) {
+        if (listener != null && registryServers != null) {
             List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
-            Attributes config = Attributes.newBuilder().set(CallOptionsFactory.NAMERESOVER_LISTENER, listener).build();
+            Attributes config = Attributes.newBuilder()//
+                                          .set(CallOptionsFactory.NAMERESOVER_LISTENER, listener)//
+                                          .set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, registryServers)//
+                                          .build();
             for (SocketAddress sock : servers) {
                 ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
                 resolvedServers.add(serverInfo);

@@ -118,14 +118,14 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         }
 
         private Attributes buildNameResolverConfig() {
+            Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
-                return Attributes.newBuilder()//
-                                 .set(CallOptionsFactory.NAMERESOVER_LISTENER, listener)//
-                                 .set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, addresses)//
-                                 .build();
-            } else {
-                return Attributes.EMPTY;
+                builder.set(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
             }
+            if (addresses != null) {
+                builder.set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, addresses);
+            }
+            return builder.build();
         }
 
         @Override
