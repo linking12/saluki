@@ -11,6 +11,7 @@ public class GreeterServiceImpl implements GreeterService {
         com.quancheng.boot.starter.model.HelloReply reply = new com.quancheng.boot.starter.model.HelloReply();
         reply.setMessage("hello" + request.getName());
         int registryPort = 1;
+        Preconditions.checkState(registryPort == 0, "RegistryPort can not be null", registryPort);
         return reply;
     }
 
