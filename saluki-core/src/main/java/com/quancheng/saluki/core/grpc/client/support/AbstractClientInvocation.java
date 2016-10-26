@@ -20,7 +20,6 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
-import com.quancheng.saluki.core.grpc.server.support.ServerInvocation;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 import io.grpc.CallOptions;
