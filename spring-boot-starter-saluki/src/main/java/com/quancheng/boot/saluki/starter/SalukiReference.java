@@ -21,7 +21,7 @@ public @interface SalukiReference {
 
     String version() default "";
 
-    int retries() default 1;
+    int retries() default 0;
 
     String[] hastrategyMethod() default {};
 
