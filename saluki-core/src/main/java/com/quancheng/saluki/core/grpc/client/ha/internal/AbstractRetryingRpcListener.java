@@ -49,12 +49,13 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     @Override
     public void onClose(Status status, Metadata trailers) {
+        HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
         Status.Code code = status.getCode();
         if (code == Status.Code.OK) {
             onOK();
+            notify.resetChannel();
             return;
         } else {
-            HaRetryNotify notify = new HaRetryNotify(callOptions.getAffinity());
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
                 String errorCause = trailers.get(Marshallers.GRPC_ERRORCAUSE_VALUE);
                 StatusRuntimeException newException = Status.INTERNAL.withDescription(errorCause).asRuntimeException();

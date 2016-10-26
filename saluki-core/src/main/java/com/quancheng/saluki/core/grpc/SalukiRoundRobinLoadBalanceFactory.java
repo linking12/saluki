@@ -2,7 +2,6 @@ package com.quancheng.saluki.core.grpc;
 
 import java.lang.reflect.Field;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +50,8 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private Status                        nameResolutionError;
         @GuardedBy("lock")
         private boolean                       closed;
-        private Attributes                    nameResolverConfig;
+        @GuardedBy("lock")
+        private volatile Attributes           nameResolverConfig;
 
         private final TransportManager<T>     tm;
 
@@ -86,6 +86,7 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             NameResolver.Listener listener = this.nameResolverConfig.get(CallOptionsFactory.NAMERESOVER_LISTENER);
+            List<SocketAddress> registryaddresses = this.nameResolverConfig.get(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY);
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
             if (listener != null) {
                 data.put(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
@@ -95,6 +96,9 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             }
             if (addresses != null) {
                 data.put(CallOptionsFactory.REMOTE_ADDR_KEYS, addresses);
+            }
+            if (registryaddresses != null) {
+                data.put(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
             }
             fillData(affinity, data);
         }
@@ -129,12 +133,9 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     if (servers.isEmpty()) {
                         continue;
                     }
-
-                    final List<SocketAddress> socketAddresses = new ArrayList<SocketAddress>(servers.size());
                     for (ResolvedServerInfo server : servers) {
-                        socketAddresses.add(server.getAddress());
+                        listBuilder.add(server.getAddress());
                     }
-                    listBuilder.addList(socketAddresses);
                 }
                 addresses = listBuilder.build();
                 addressesCopy = addresses;

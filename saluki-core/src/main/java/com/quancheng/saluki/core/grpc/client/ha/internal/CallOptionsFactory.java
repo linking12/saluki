@@ -10,9 +10,10 @@ import io.grpc.NameResolver;
 
 public interface CallOptionsFactory {
 
-    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY      = Attributes.Key.of("remote-addr");
-    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS     = Attributes.Key.of("remote-addrs");
-    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER = Attributes.Key.of("nameResolver-Listener");
+    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY           = Attributes.Key.of("remote-addr");
+    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS          = Attributes.Key.of("remote-addrs");
+    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS_REGISTRY = Attributes.Key.of("remote-addrs-registry");
+    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER      = Attributes.Key.of("nameResolver-Listener");
 
     <RequestT> CallOptions create(MethodDescriptor<RequestT, ?> descriptor, RequestT request);
 

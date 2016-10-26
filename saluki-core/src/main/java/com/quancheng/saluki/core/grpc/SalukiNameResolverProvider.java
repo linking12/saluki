@@ -93,17 +93,19 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         };
 
         private void notifyLoadBalance(List<SalukiURL> urls) {
-            Attributes config = this.buildNameResolverConfig();
             if (urls != null && !urls.isEmpty()) {
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
+                List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
                     SalukiURL url = urls.get(i);
                     String ip = url.getHost();
                     int port = url.getPort();
                     SocketAddress sock = new InetSocketAddress(InetAddresses.forString(ip), port);
-                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
+                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
                     servers.add(serverInfo);
+                    addresses.add(sock);
                 }
+                Attributes config = this.buildNameResolverConfig(addresses);
                 SalukiNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
                 SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
@@ -111,9 +113,12 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
             }
         }
 
-        private Attributes buildNameResolverConfig() {
+        private Attributes buildNameResolverConfig(List<SocketAddress> addresses) {
             if (listener != null) {
-                return Attributes.newBuilder().set(CallOptionsFactory.NAMERESOVER_LISTENER, listener).build();
+                return Attributes.newBuilder()//
+                                 .set(CallOptionsFactory.NAMERESOVER_LISTENER, listener)//
+                                 .set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, addresses)//
+                                 .build();
             } else {
                 return Attributes.EMPTY;
             }

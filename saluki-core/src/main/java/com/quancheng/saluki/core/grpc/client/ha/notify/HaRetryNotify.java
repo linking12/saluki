@@ -17,6 +17,8 @@ public class HaRetryNotify {
 
     private final List<SocketAddress>   servers;
 
+    private final List<SocketAddress>   registryServers;
+
     private final SocketAddress         currentServer;
 
     private final NameResolver.Listener listener;
@@ -24,6 +26,7 @@ public class HaRetryNotify {
     public HaRetryNotify(Attributes affinity){
         this.currentServer = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEY);
         this.servers = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEYS);
+        this.registryServers = affinity.get(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY);
         this.listener = affinity.get(CallOptionsFactory.NAMERESOVER_LISTENER);
     }
 
@@ -35,20 +38,22 @@ public class HaRetryNotify {
             if (serverSize >= 2) {
                 for (int i = 0; i < serverSize; i++) {
                     InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
-                    if (!inetSock.getHostName().equals(currentSock.getHostName())) {
+                    boolean hostequal = inetSock.getHostName().equals(currentSock.getHostName());
+                    boolean portequal = inetSock.getPort() == currentSock.getPort();
+                    if (!hostequal || !portequal) {
                         serversCopy.add(inetSock);
                     }
                 }
             } else {
                 serversCopy.addAll(servers);
             }
-            notifyChannel(serversCopy);
+            if (serversCopy.size() != 0) notifyChannel(serversCopy);
         }
     }
 
     public void resetChannel() {
-        if (servers != null) {
-            notifyChannel(servers);
+        if (registryServers != null) {
+            notifyChannel(registryServers);
         }
     }
 
