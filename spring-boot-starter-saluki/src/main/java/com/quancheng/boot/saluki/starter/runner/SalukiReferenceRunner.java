@@ -8,7 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import com.google.common.base.Preconditions;
 import com.quancheng.boot.saluki.starter.SalukiReference;
@@ -20,9 +22,12 @@ import io.grpc.stub.AbstractStub;
 
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger    logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger        logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
-    private final SalukiProperties grpcProperties;
+    private final SalukiProperties     grpcProperties;
+
+    @Autowired
+    private AbstractApplicationContext applicationContext;
 
     public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
@@ -36,7 +41,11 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             for (Field field : fields) {
                 SalukiReference reference = field.getAnnotation(SalukiReference.class);
                 if (reference != null) {
-                    Object value = refer(reference, field.getType());
+                    Object value = findServiceInSpringContainer(field.getType());
+                    // 如果在spring 容器没有找到改服务，则使用远程服务
+                    if (value == null) {
+                        refer(reference, field.getType());
+                    }
                     try {
                         if (!field.isAccessible()) {
                             field.setAccessible(true);
@@ -51,6 +60,10 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             searchType = searchType.getSuperclass();
         }
         return bean;
+    }
+
+    private Object findServiceInSpringContainer(Class<?> referenceClass) {
+        return applicationContext.getBean(referenceClass);
     }
 
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
