@@ -35,8 +35,13 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object req = PojoProtobufUtils.Protobuf2Pojo(request, requestType);
             Object[] requestParams = new Object[] { req };
+            log.info("before call biz service " + serviceToInvoke.getClass().getName() + "at:"
+                     + System.currentTimeMillis());
             Object response = method.invoke(serviceToInvoke, requestParams);
+            log.info("after call biz service " + serviceToInvoke.getClass().getName() + "at:"
+                     + System.currentTimeMillis());
             Message message = PojoProtobufUtils.Pojo2Protobuf(response);
+            log.info("return to client,the response is:" + message.toString());
             responseObserver.onNext(message);
         } catch (Throwable ex) {
             log.info(serviceToInvoke + "invoke " + method.getName() + "failed", ex);
