@@ -8,7 +8,7 @@ import io.grpc.Metadata;
 
 import java.util.Objects;
 
-public final class Marshallers {
+public final class MarshallersUtils {
 
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE  = Attributes.Key.of("subscribe");
 
@@ -19,9 +19,9 @@ public final class Marshallers {
                                                                                              Metadata.BINARY_BYTE_MARSHALLER);
 
     public static Metadata.Key<String>            GRPC_ERRORCAUSE_VALUE     = Metadata.Key.of("grpc_error_cause-bin",
-                                                                                             Marshallers.utf8Marshaller());
+                                                                                             MarshallersUtils.utf8Marshaller());
 
-    private Marshallers(){
+    private MarshallersUtils(){
     }
 
     public static <E extends Enum<E>> Metadata.BinaryMarshaller<E> enumMarshaller(Class<E> enumType, E defaultValue) {

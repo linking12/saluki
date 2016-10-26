@@ -14,7 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
-import com.quancheng.saluki.core.grpc.utils.Marshallers;
+import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.CallOptions;
@@ -60,7 +60,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             return;
         } else {
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                String errorCause = trailers.get(Marshallers.GRPC_ERRORCAUSE_VALUE);
+                String errorCause = trailers.get(MarshallersUtils.GRPC_ERRORCAUSE_VALUE);
                 StatusRuntimeException newException = Status.INTERNAL.withDescription(errorCause).asRuntimeException();
                 completionFuture.setException(newException);
                 notify.resetChannel();

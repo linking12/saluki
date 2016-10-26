@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.utils.Marshallers;
+import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -47,11 +47,11 @@ public class HeaderClientInterceptor implements ClientInterceptor {
         try {
             if (!attachments.isEmpty()) {
                 byte[] attachmentsBytes = new Gson().toJson(attachments).getBytes();
-                headers.put(Marshallers.GRPC_CONTEXT_ATTACHMENTS, attachmentsBytes);
+                headers.put(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS, attachmentsBytes);
             }
             if (!values.isEmpty()) {
                 byte[] attachmentsValues = new Gson().toJson(values).getBytes();
-                headers.put(Marshallers.GRPC_CONTEXT_VALUES, attachmentsValues);
+                headers.put(MarshallersUtils.GRPC_CONTEXT_VALUES, attachmentsValues);
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
