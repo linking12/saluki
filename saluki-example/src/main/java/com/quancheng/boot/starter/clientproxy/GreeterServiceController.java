@@ -12,7 +12,7 @@ import com.quancheng.saluki.core.common.RpcContext;
 @RequestMapping("/greeter")
 public class GreeterServiceController {
 
-    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "Default", version = "1.0.0", retries = 3)
+    @SalukiReference(service = "com.quancheng.boot.starter.server.GreeterService", group = "Default", version = "1.0.0")
     private GreeterService greeterService;
 
     @RequestMapping
