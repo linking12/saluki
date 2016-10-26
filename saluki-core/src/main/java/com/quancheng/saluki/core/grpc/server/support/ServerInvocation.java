@@ -37,7 +37,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     public void invoke(Message request, StreamObserver<Message> responseObserver) {
         try {
             String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
-            log.info(String.format("receiver %s request from %s", new Gson().toJson(request), remoteAddress));
+            log.debug(String.format("receiver %s request from %s", new Gson().toJson(request), remoteAddress));
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object req = PojoProtobufUtils.Protobuf2Pojo(request, requestType);
             Object[] requestParams = new Object[] { req };
