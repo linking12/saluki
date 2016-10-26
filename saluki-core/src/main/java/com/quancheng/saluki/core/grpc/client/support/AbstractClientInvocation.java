@@ -3,6 +3,7 @@ package com.quancheng.saluki.core.grpc.client.support;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,7 +17,6 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.client.ha.HaClientCalls;
-import com.quancheng.saluki.core.grpc.client.ha.Hastrategy;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -25,7 +25,6 @@ import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
-import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
@@ -48,13 +47,16 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private final Cache<String, Channel> channelCache;
 
-    public AbstractClientInvocation(){
+    private final Map<String, Integer>   methodRetries;
+
+    public AbstractClientInvocation(Map<String, Integer> methodRetries){
         this.filters = this.doInnerFilter();
         this.channelCache = CacheBuilder.newBuilder()//
                                         .maximumSize(10L)//
                                         .softValues()//
                                         .ticker(Ticker.systemTicker())//
                                         .build();
+        this.methodRetries = methodRetries;
     }
 
     private Channel getChannel(GrpcRequest request) {
@@ -86,7 +88,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
 
         Channel channel = this.getChannel(salukiRequest);
-        RetryOptions retryConfig = this.createRetryOption(method);
+        RetryOptions retryConfig = this.createRetryOption(salukiRequest.getMethodRequest().getMethodName());
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         Message resp = null;
         try {
@@ -123,13 +125,17 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return response.getResponseArg();
     }
 
-    private RetryOptions createRetryOption(Method method) {
-        Hastrategy haOption = (Hastrategy) ReflectUtil.findAnnotationFromMethod(method, Hastrategy.class);
-        if (haOption != null && haOption.retries() > 1) {
-            return new RetryOptions(1, false);
+    private RetryOptions createRetryOption(String methodName) {
+        if (methodRetries.size() == 1 && methodRetries.containsKey("*")) {
+            Integer retries = methodRetries.get("*");
+            return new RetryOptions(retries, true);
         } else {
-            // 如果没有标示ha及retries为1，标示不开启ha的重试机制
-            return new RetryOptions(haOption.retries(), true);
+            Integer retries = methodRetries.get(methodName);
+            if (retries != null) {
+                return new RetryOptions(retries, true);
+            } else {
+                return new RetryOptions(0, false);
+            }
         }
     }
 

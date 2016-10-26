@@ -1,13 +1,15 @@
 package com.quancheng.saluki.core.grpc.client;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.support.DefaultPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.GenericPolicyClient;
 import com.quancheng.saluki.core.grpc.client.support.StubPolicyClient;
-import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
 import io.grpc.stub.AbstractStub;
@@ -45,7 +47,10 @@ public class GrpcClientContext {
         boolean generic = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         if (generic) {
-            return new GenericPolicyClient<Object>(new SalukiClassLoader());
+            String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
+            int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 1);
+            Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
+            return new GenericPolicyClient<Object>(new SalukiClassLoader(), retriesCache);
         } else {
             if (stub) {
                 String stubClassName = refUrl.getParameter(SalukiConstants.INTERFACECLASS_KEY);
@@ -60,23 +65,24 @@ public class GrpcClientContext {
                 String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
                 int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 1);
                 String interfaceName = refUrl.getServiceInterface();
-                Class<?> interfaceClass = generateClass(interfaceName, methodNames, retries);
-                return new DefaultPolicyClient<Object>(interfaceName, interfaceClass);
+                Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
+                return new DefaultPolicyClient<Object>(interfaceName, retriesCache);
             }
         }
     }
 
-    private Class<?> generateClass(String interfaceName, String[] methodNames, int reties) {
-        try {
+    private Map<String, Integer> generateRetires(String[] methodNames, int reties) {
+        Map<String, Integer> methodRetries = Maps.newConcurrentMap();
+        if (reties > 0) {
             if (methodNames != null && methodNames.length > 1) {
-                return ReflectUtil.addHastrategyAnnotation(interfaceName, methodNames, reties);
+                for (String methodName : methodNames) {
+                    methodRetries.putIfAbsent(methodName, Integer.valueOf(reties));
+                }
             } else {
-                return ReflectUtil.addHastrategyAnnotation(interfaceName, reties);
+                methodRetries.putIfAbsent("*", Integer.valueOf(reties));
             }
-        } catch (Exception e) {
-            throw new RpcFrameworkException("Can not add com.quancheng.saluki.core.grpc.client.ha.Hastrategy to "
-                                            + interfaceName, e);
         }
+        return methodRetries;
     }
 
     public Object getGrpcClient() {

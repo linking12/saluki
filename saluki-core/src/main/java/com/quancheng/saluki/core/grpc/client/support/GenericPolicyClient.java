@@ -3,6 +3,7 @@ package com.quancheng.saluki.core.grpc.client.support;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
@@ -26,10 +27,13 @@ import com.quancheng.saluki.core.utils.ReflectUtil;
  */
 public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
-    private final SalukiClassLoader classLoader;
+    private final Map<String, Integer> methodRetries;
 
-    public GenericPolicyClient(SalukiClassLoader classLoader){
+    private final SalukiClassLoader    classLoader;
+
+    public GenericPolicyClient(SalukiClassLoader classLoader, Map<String, Integer> methodRetries){
         this.classLoader = classLoader;
+        this.methodRetries = methodRetries;
     }
 
     public Class<?> doLoadClass(String className) {
@@ -58,7 +62,7 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
         public ClientInvocation(com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall call, int callType,
                                 int callTimeout){
-            super();
+            super(GenericPolicyClient.this.methodRetries);
             this.call = call;
             this.callType = callType;
             this.callTimeout = callTimeout;
