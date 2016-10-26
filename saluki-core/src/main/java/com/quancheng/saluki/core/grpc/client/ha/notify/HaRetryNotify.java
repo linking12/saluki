@@ -32,7 +32,7 @@ public class HaRetryNotify {
         if (listener != null && currentServer != null && servers != null) {
             InetSocketAddress currentSock = (InetSocketAddress) currentServer;
             int serverSize = servers.size();
-            if (serverSize > 2) {
+            if (serverSize >= 2) {
                 for (int i = 0; i < serverSize; i++) {
                     InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
                     if (!inetSock.getHostName().equals(currentSock.getHostName())) {
