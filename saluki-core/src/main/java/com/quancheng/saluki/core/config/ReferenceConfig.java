@@ -8,7 +8,10 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.utils.NetUtils;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends BasicConfig {
 
@@ -191,7 +194,8 @@ public class ReferenceConfig extends BasicConfig {
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
-        if (this.methodNames!=null && !this.methodNames.isEmpty()) {
+        if (this.methodNames != null && !this.methodNames.isEmpty()) {
+            checkInterfaceAndMethods();
             params.put(SalukiConstants.METHODS_KEY, StringUtils.join(this.methodNames, ","));
         }
         if (this.reties != 0) {
@@ -202,6 +206,31 @@ public class ReferenceConfig extends BasicConfig {
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;
+    }
+
+    protected void checkInterfaceAndMethods() {
+        if (!this.generic && !this.grpcStub) {
+            try {
+                this.interfaceClass = ReflectUtil.name2class(interfaceName);
+                if (this.methodNames != null && !this.methodNames.isEmpty()) {
+                    for (String methodName : this.methodNames) {
+                        java.lang.reflect.Method hasMethod = null;
+                        for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
+                            if (method.getName().equals(methodName)) {
+                                hasMethod = method;
+                            }
+                        }
+                        if (hasMethod == null) {
+                            throw new RpcFrameworkException("The interface " + interfaceClass.getName()
+                                                            + " not found method " + methodName,
+                                                            RpcErrorMsgConstant.FRAMEWORK_INIT_ERROR);
+                        }
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
+        }
     }
 
 }
