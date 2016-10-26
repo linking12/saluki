@@ -55,15 +55,18 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
     private class SalukiNameResolver extends NameResolver {
 
-        private final Registry  registry;
+        private final Registry               registry;
 
-        private final SalukiURL subscribeUrl;
-
-        @GuardedBy("this")
-        private boolean         shutdown;
+        private final SalukiURL              subscribeUrl;
 
         @GuardedBy("this")
-        private Listener        listener;
+        private boolean                      shutdown;
+
+        @GuardedBy("this")
+        private Listener                     listener;
+
+        @GuardedBy("this")
+        private volatile List<SocketAddress> addresses;
 
         public SalukiNameResolver(URI targetUri, Attributes params){
             SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
@@ -105,7 +108,8 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                     servers.add(serverInfo);
                     addresses.add(sock);
                 }
-                Attributes config = this.buildNameResolverConfig(addresses);
+                this.addresses = addresses;
+                Attributes config = this.buildNameResolverConfig();
                 SalukiNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
                 SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
@@ -113,7 +117,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
             }
         }
 
-        private Attributes buildNameResolverConfig(List<SocketAddress> addresses) {
+        private Attributes buildNameResolverConfig() {
             if (listener != null) {
                 return Attributes.newBuilder()//
                                  .set(CallOptionsFactory.NAMERESOVER_LISTENER, listener)//
