@@ -42,7 +42,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
                 SalukiReference reference = field.getAnnotation(SalukiReference.class);
                 if (reference != null) {
                     Object value = findServiceInSpringContainer(field.getType());
-                    // 如果在spring 容器没有找到改服务，则使用远程服务
+                    // 如果在spring 容器没有找到该服务，则使用远程服务
                     if (value == null) {
                         refer(reference, field.getType());
                     }

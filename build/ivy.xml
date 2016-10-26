@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
-  <info organisation="com.quancheng" module="saluki" revision="1.0.1-SNAPSHOT" status="integration" default="true" publication="20161026173331"/>
+  <info organisation="com.quancheng" module="saluki" revision="1.0.1-SNAPSHOT" status="integration" default="true" publication="20161026175211"/>
   <configurations>
     <conf name="archives" visibility="public"/>
     <conf name="default" visibility="public"/>
