@@ -52,16 +52,16 @@ public class HeaderServerInterceptor implements ServerInterceptor {
     }
 
     private void copyMetadataToThreadLocal(Metadata headers) {
-        byte[] attachmentsBytes = headers.get(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS);
-        byte[] valuesByte = headers.get(MarshallersUtils.GRPC_CONTEXT_VALUES);
+        String attachments = headers.get(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS);
+        String values = headers.get(MarshallersUtils.GRPC_CONTEXT_VALUES);
         try {
-            if (attachmentsBytes != null) {
-                Map<String, String> attachments = new Gson().fromJson(new String(attachmentsBytes), Map.class);
-                RpcContext.getContext().setAttachments(attachments);
+            if (attachments != null) {
+                Map<String, String> attachmentsMap = new Gson().fromJson(attachments, Map.class);
+                RpcContext.getContext().setAttachments(attachmentsMap);
             }
-            if (valuesByte != null) {
-                Map<String, Object> values = new Gson().fromJson(new String(valuesByte), Map.class);
-                for (Map.Entry<String, Object> entry : values.entrySet()) {
+            if (values != null) {
+                Map<String, Object> valuesMap = new Gson().fromJson(values, Map.class);
+                for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
                     RpcContext.getContext().set(entry.getKey(), entry.getValue());
                 }
             }

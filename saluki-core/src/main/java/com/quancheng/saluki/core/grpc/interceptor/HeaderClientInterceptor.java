@@ -46,12 +46,10 @@ public class HeaderClientInterceptor implements ClientInterceptor {
         Map<String, Object> values = RpcContext.getContext().get();
         try {
             if (!attachments.isEmpty()) {
-                byte[] attachmentsBytes = new Gson().toJson(attachments).getBytes();
-                headers.put(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS, attachmentsBytes);
+                headers.put(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS, new Gson().toJson(attachments));
             }
             if (!values.isEmpty()) {
-                byte[] attachmentsValues = new Gson().toJson(values).getBytes();
-                headers.put(MarshallersUtils.GRPC_CONTEXT_VALUES, attachmentsValues);
+                headers.put(MarshallersUtils.GRPC_CONTEXT_VALUES, new Gson().toJson(values));
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
