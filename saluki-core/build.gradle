@@ -1,9 +1,20 @@
-
+buildscript {
+  dependencies {
+    classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
+  }
+}
+apply plugin: "com.google.osdetector"
+def tcnative_classifier = osdetector.classifier;
+if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
+  tcnative_classifier += "-fedora";
+}
 description = 'saluki-core'
 dependencies {
     compile group: 'io.grpc', name: 'grpc-all', version:'1.0.1'
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+    //compile 'io.netty:netty-tcnative:1.1.33.Fork23:' + tcnative_classifier
+    compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
     compile project(':saluki-serializer')
 }

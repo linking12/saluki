@@ -88,6 +88,7 @@ public class ConsulRegistry extends FailbackRegistry {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
         }
+
     }
 
     @Override
