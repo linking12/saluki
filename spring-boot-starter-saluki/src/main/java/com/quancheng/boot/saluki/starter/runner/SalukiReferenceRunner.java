@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -66,7 +67,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         try {
             Object obj = applicationContext.getBean(referenceClass);
             return obj;
-        } catch (BeansException e) {
+        } catch (NoSuchBeanDefinitionException e) {
             return null;
         }
     }
