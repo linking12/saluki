@@ -66,7 +66,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         try {
             Object obj = applicationContext.getBean(referenceClass);
             return obj;
-        } catch (Exception e) {
+        } catch (BeansException e) {
             return null;
         }
     }
