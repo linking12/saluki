@@ -63,7 +63,12 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
     }
 
     private Object findServiceInSpringContainer(Class<?> referenceClass) {
-        return applicationContext.getBean(referenceClass);
+        try {
+            Object obj = applicationContext.getBean(referenceClass);
+            return obj;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
