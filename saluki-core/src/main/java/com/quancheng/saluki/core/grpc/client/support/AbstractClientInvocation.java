@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -51,9 +50,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     public AbstractClientInvocation(){
         this.filters = this.doInnerFilter();
         this.channelCache = CacheBuilder.newBuilder()//
-                                        .maximumSize(10L)//
+                                        .maximumSize(1000L)//
                                         .softValues()//
-                                        .ticker(Ticker.systemTicker())//
                                         .build();
     }
 
