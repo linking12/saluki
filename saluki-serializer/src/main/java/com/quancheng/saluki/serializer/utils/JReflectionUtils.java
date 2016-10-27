@@ -4,15 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 public class JReflectionUtils {
-
-    private static final Map<String, Map<String, Method>> METHOD_FIELD_MAP_CACHE = Collections.synchronizedMap(new WeakHashMap<String, Map<String, Method>>());
 
     private JReflectionUtils(){
     }
@@ -21,27 +15,12 @@ public class JReflectionUtils {
                                                                InvocationTargetException {
         final Class<?> clazz = object.getClass();
         final String fieldName = field.getName();
-
-        Map<String, Method> fieldMethodMap = METHOD_FIELD_MAP_CACHE.get(object.getClass().getCanonicalName());
-        if (fieldMethodMap != null) {
-            final Method fieldMethod = fieldMethodMap.get(fieldName);
-            if (fieldMethod != null) {
-                return fieldMethod.invoke(object);
-            }
-        } else {
-            fieldMethodMap = new HashMap<>();
-        }
-
         try {
             final Method method = clazz.getMethod(JStringUtils.GET + JStringUtils.upperCaseFirst(fieldName), null);
-            fieldMethodMap.put(fieldName, method);
-            METHOD_FIELD_MAP_CACHE.put(object.getClass().getCanonicalName(), fieldMethodMap);
-
             return method.invoke(object);
         } catch (Exception e) {
             // Swallow exception so that we loop through the rest.
         }
-
         for (Method method : clazz.getMethods()) {
             final String methodName = method.getName();
             if (((methodName.startsWith(JStringUtils.GET))
@@ -49,8 +28,6 @@ public class JReflectionUtils {
                 || ((methodName.startsWith(JStringUtils.IS))
                     && (methodName.length() == (fieldName.length() + JStringUtils.IS.length())))) {
                 if (methodName.toLowerCase().endsWith(fieldName.toLowerCase())) {
-                    fieldMethodMap.put(fieldName, method);
-                    METHOD_FIELD_MAP_CACHE.put(object.getClass().getCanonicalName(), fieldMethodMap);
                     return method.invoke(object);
                 }
             }
