@@ -53,7 +53,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
         this.filters = this.doInnerFilter();
         this.channelCache = CacheBuilder.newBuilder()//
-                                        .maximumSize(10L)//
+                                        .maximumSize(1000L)//
                                         .softValues()//
                                         .ticker(Ticker.systemTicker())//
                                         .build();
