@@ -82,6 +82,7 @@ public class ConsulRegistry extends FailbackRegistry {
             listenersPair.getValue().add(listener);
         }
         notifyListeners.putIfAbsent(url.getServiceKey(), listenersPair);
+        notifyListener(url, listener);
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
@@ -127,6 +128,19 @@ public class ConsulRegistry extends FailbackRegistry {
             }
         }
         return null;
+    }
+
+    private void notifyListener(SalukiURL url, NotifyListener listener) {
+        Map<String, List<SalukiURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
+        if (groupCacheUrls != null) {
+            for (Map.Entry<String, List<SalukiURL>> entry : groupCacheUrls.entrySet()) {
+                String cacheServiceKey = entry.getKey();
+                if (url.getServiceKey().equals(cacheServiceKey)) {
+                    List<SalukiURL> newUrls = entry.getValue();
+                    ConsulRegistry.this.notify(url, listener, newUrls);
+                }
+            }
+        }
     }
 
     private class ServiceLookUper extends Thread {
