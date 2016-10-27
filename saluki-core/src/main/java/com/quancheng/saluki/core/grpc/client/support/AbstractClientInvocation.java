@@ -15,6 +15,7 @@ import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.filter.Filter;
@@ -108,7 +109,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         for (Filter filter : filters) {
             filter.after(response);
         }
-        return response.getResponseArg();
+        Object value = response.getResponseArg();
+        log.info("return to client:" + new Gson().toJson(value));
+        return value;
     }
 
     private List<Filter> doInnerFilter() {
