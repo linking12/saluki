@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc.utils;
 
-import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.IProtobufSerializer;
 import com.quancheng.saluki.serializer.ProtobufSerializer;
@@ -9,10 +8,8 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
 public class PojoProtobufUtils {
 
     private final static IProtobufSerializer serializer;
-    private final static Gson                gson;
 
     static {
-        gson = new Gson();
         serializer = new ProtobufSerializer();
     }
 
