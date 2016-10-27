@@ -66,8 +66,8 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
 
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            boolean isNeglectMethod = ReflectUtil.neglectMethod(method);
-            if (isNeglectMethod) {
+            boolean isLegalMethod = ReflectUtil.isLegal(method);
+            if (isLegalMethod) {
                 throw new IllegalArgumentException("remote call type do not support this method " + method.getName());
             }
             if (args.length != 1) {

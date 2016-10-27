@@ -25,6 +25,7 @@ import com.quancheng.saluki.core.grpc.filter.Filter;
 import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
 import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
@@ -77,9 +78,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        if ("toString".equals(methodName) && parameterTypes.length == 0) {
+        if (ReflectUtil.isToStringMethod(method)) {
             return AbstractClientInvocation.this.toString();
         }
         GrpcRequest salukiRequest = this.buildGrpcRequest(method, args);

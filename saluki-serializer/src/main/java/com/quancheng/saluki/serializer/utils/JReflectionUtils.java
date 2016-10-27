@@ -16,7 +16,8 @@ public class JReflectionUtils {
         final Class<?> clazz = object.getClass();
         final String fieldName = field.getName();
         try {
-            final Method method = clazz.getMethod(JStringUtils.GET + JStringUtils.upperCaseFirst(fieldName), null);
+            final Method method = clazz.getMethod(JStringUtils.GET + JStringUtils.upperCaseFirst(fieldName),
+                                                  new Class<?>[] {});
             return method.invoke(object);
         } catch (Exception e) {
             // Swallow exception so that we loop through the rest.
