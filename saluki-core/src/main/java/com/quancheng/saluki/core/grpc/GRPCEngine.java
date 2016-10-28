@@ -82,8 +82,7 @@ public class GRPCEngine {
         try {
 
             return GrpcSslContexts.configure(SslContextBuilder.forClient()//
-                                                              .trustManager(tlsServerCert),//
-                                                              //.keyManager(tlsClientCert, tlsClientKey, "123456"),
+                                                              .keyManager(tlsClientCert, tlsClientKey, "123456"),
                                              SslProvider.OPENSSL).build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
