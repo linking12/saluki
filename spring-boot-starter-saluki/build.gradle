@@ -13,6 +13,8 @@ description = 'spring-boot-starter-saluki'
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version:'1.4.0.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version:'1.4.0.RELEASE'
+    compile group: 'org.mortbay.jetty.alpn', name: 'jetty-alpn-agent', version:'2.0.5'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.0.RELEASE'
     compile project(':saluki-core')
     compile project(':saluki-registry:saluki-registry-consul')
 }

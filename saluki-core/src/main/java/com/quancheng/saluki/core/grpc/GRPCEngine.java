@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -36,11 +35,21 @@ public class GRPCEngine {
 
     private final Registry    registry;
 
-    private final InputStream caRoot = this.getClass().getResourceAsStream(name);
+    private final InputStream tlsClientCert;
+
+    private final InputStream tlsClientKey;
+
+    private final InputStream tlsServerCert;
+
+    private final InputStream tlsServerKey;
 
     public GRPCEngine(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
+        this.tlsClientCert = getClass().getClassLoader().getResourceAsStream("certificate/client_certificate.pem");
+        this.tlsClientKey = getClass().getClassLoader().getResourceAsStream("certificate/client_privatekey.pem");
+        this.tlsServerCert = getClass().getClassLoader().getResourceAsStream("certificate/server_certificate.pem");
+        this.tlsServerKey = getClass().getClassLoader().getResourceAsStream("certificate/server_privatekey.pem");
     }
 
     public Object getProxy(SalukiURL refUrl) throws Exception {
@@ -72,7 +81,7 @@ public class GRPCEngine {
         try {
             return SslContextBuilder.forClient()//
                                     .sslProvider(SslProvider.OPENSSL)//
-                                    .keyManager(new File("cacert.pem"), new File("client.pem"))//
+                                    .keyManager(tlsClientCert, tlsClientKey, "123456")//
                                     .build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
@@ -83,10 +92,19 @@ public class GRPCEngine {
         return SalukiRoundRobinLoadBalanceFactory.getInstance();
     }
 
+    private SslContext buildServerSslContext() {
+        try {
+            return SslContextBuilder.forServer(tlsServerCert, tlsServerKey, "123456")//
+                                    .sslProvider(SslProvider.OPENSSL)//
+                                    .build();
+        } catch (SSLException e) {
+            throw new RpcFrameworkException(e);
+        }
+    }
+
     public SalukiServer getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception {
         final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(port)//
-                                                                  .useTransportSecurity(new File("cacert.pem"),
-                                                                                        new File("server.pem"));
+                                                                  .sslContext(buildServerSslContext());
         final InProcessServerBuilder injvmServer = InProcessServerBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS);
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();

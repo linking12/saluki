@@ -14,7 +14,6 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
-    //compile 'io.netty:netty-tcnative:1.1.33.Fork23:' + tcnative_classifier
     compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
     compile project(':saluki-serializer')
 }
