@@ -23,6 +23,7 @@ import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.netty.handler.ssl.SslContext;
@@ -79,10 +80,11 @@ public class GRPCEngine {
 
     private SslContext buildClientSslContext() {
         try {
-            return SslContextBuilder.forClient()//
-                                    .sslProvider(SslProvider.OPENSSL)//
-                                    .keyManager(tlsClientCert, tlsClientKey, "123456")//
-                                    .build();
+
+            return GrpcSslContexts.configure(SslContextBuilder.forClient()//
+                                                              .trustManager(tlsServerCert),//
+                                                              //.keyManager(tlsClientCert, tlsClientKey, "123456"),
+                                             SslProvider.OPENSSL).build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
         }
@@ -94,9 +96,8 @@ public class GRPCEngine {
 
     private SslContext buildServerSslContext() {
         try {
-            return SslContextBuilder.forServer(tlsServerCert, tlsServerKey, "123456")//
-                                    .sslProvider(SslProvider.OPENSSL)//
-                                    .build();
+            return GrpcSslContexts.configure(SslContextBuilder.forServer(tlsServerCert, tlsServerKey, "123456")//
+                                             , SslProvider.OPENSSL).build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
         }

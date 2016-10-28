@@ -82,12 +82,12 @@ public class ConsulRegistry extends FailbackRegistry {
             listenersPair.getValue().add(listener);
         }
         notifyListeners.putIfAbsent(url.getServiceKey(), listenersPair);
-        // 如果缓存中有，先把缓存中的数据吐出去
-        notifyListener(url, listener);
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
         }
+        // 如果缓存中有，先把缓存中的数据吐出去
+        notifyListener(url, listener);
 
     }
 
