@@ -1,6 +1,7 @@
 package com.quancheng.saluki.core.grpc;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Map;
 
 import javax.net.ssl.SSLException;
@@ -31,9 +32,11 @@ import io.netty.handler.ssl.SslProvider;
 
 public class GRPCEngine {
 
-    private final SalukiURL registryUrl;
+    private final SalukiURL   registryUrl;
 
-    private final Registry  registry;
+    private final Registry    registry;
+
+    private final InputStream caRoot = this.getClass().getResourceAsStream(name);
 
     public GRPCEngine(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
