@@ -7,7 +7,7 @@ apply plugin: "com.google.osdetector"
 sourceSets {
     main {
         java {
-            srcDir 'src/main/groovy'
+            srcDir 'src/main/java'
         }
         resources {
             srcDir 'src/main/resource' 
