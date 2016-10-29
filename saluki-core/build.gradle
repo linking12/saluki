@@ -4,6 +4,16 @@ buildscript {
   }
 }
 apply plugin: "com.google.osdetector"
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/groovy'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
 def tcnative_classifier = osdetector.classifier;
 if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
   tcnative_classifier += "-fedora";
