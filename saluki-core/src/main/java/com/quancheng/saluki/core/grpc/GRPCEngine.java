@@ -13,6 +13,7 @@ import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderClientInterceptor;
 import com.quancheng.saluki.core.grpc.interceptor.HeaderServerInterceptor;
 import com.quancheng.saluki.core.grpc.server.GrpcServerContext;
+import com.quancheng.saluki.core.grpc.utils.SSLUtils;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
@@ -32,19 +33,13 @@ import io.netty.handler.ssl.SslContextBuilder;
 
 public class GRPCEngine {
 
-    private final SalukiURL   registryUrl;
+    private final SalukiURL registryUrl;
 
-    private final Registry    registry;
-
-    private final InputStream tlsServerCert;
-
-    private final InputStream tlsServerKey;
+    private final Registry  registry;
 
     public GRPCEngine(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-        this.tlsServerCert = getClass().getClassLoader().getResourceAsStream("certificate/server.pem");
-        this.tlsServerKey = getClass().getClassLoader().getResourceAsStream("certificate/server_pkcs8.key");
     }
 
     public Object getProxy(SalukiURL refUrl) throws Exception {
@@ -75,9 +70,9 @@ public class GRPCEngine {
 
     private SslContext buildClientSslContext() {
         try {
-
+            InputStream certs = SSLUtils.loadInputStreamCert("server.pem");
             return GrpcSslContexts.configure(SslContextBuilder.forClient()//
-                                                              .trustManager(tlsServerCert))//
+                                                              .trustManager(certs))//
                                   .build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
@@ -90,7 +85,9 @@ public class GRPCEngine {
 
     private SslContext buildServerSslContext() {
         try {
-            return GrpcSslContexts.configure(SslContextBuilder.forServer(tlsServerCert, tlsServerKey)).build();
+            InputStream certs = SSLUtils.loadInputStreamCert("server.pem");
+            InputStream keys = SSLUtils.loadInputStreamCert("server_pkcs8.key");
+            return GrpcSslContexts.configure(SslContextBuilder.forServer(certs, keys)).build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
         }
