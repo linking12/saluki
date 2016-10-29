@@ -24,21 +24,17 @@ import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
 
 public class GRPCEngine {
 
     private final SalukiURL   registryUrl;
 
     private final Registry    registry;
-
-    private final InputStream tlsClientCert;
-
-    private final InputStream tlsClientKey;
 
     private final InputStream tlsServerCert;
 
@@ -47,10 +43,8 @@ public class GRPCEngine {
     public GRPCEngine(SalukiURL registryUrl){
         this.registryUrl = registryUrl;
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-        this.tlsClientCert = getClass().getClassLoader().getResourceAsStream("certificate/client_certificate.pem");
-        this.tlsClientKey = getClass().getClassLoader().getResourceAsStream("certificate/client_privatekey.pem");
-        this.tlsServerCert = getClass().getClassLoader().getResourceAsStream("certificate/server_certificate.pem");
-        this.tlsServerKey = getClass().getClassLoader().getResourceAsStream("certificate/server_privatekey.pem");
+        this.tlsServerCert = getClass().getClassLoader().getResourceAsStream("certificate/server.pem");
+        this.tlsServerKey = getClass().getClassLoader().getResourceAsStream("certificate/server_pkcs8.key");
     }
 
     public Object getProxy(SalukiURL refUrl) throws Exception {
@@ -68,6 +62,7 @@ public class GRPCEngine {
                                                  .loadBalancerFactory(buildLoadBalanceFactory())//
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//
+                                                 .negotiationType(NegotiationType.TLS)//
                                                  .build();//
                 }
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
@@ -82,8 +77,8 @@ public class GRPCEngine {
         try {
 
             return GrpcSslContexts.configure(SslContextBuilder.forClient()//
-                                                              .keyManager(tlsClientCert, tlsClientKey, "123456"),
-                                             SslProvider.OPENSSL).build();
+                                                              .trustManager(tlsServerCert))//
+                                  .build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
         }
@@ -95,8 +90,7 @@ public class GRPCEngine {
 
     private SslContext buildServerSslContext() {
         try {
-            return GrpcSslContexts.configure(SslContextBuilder.forServer(tlsServerCert, tlsServerKey, "123456")//
-                                             , SslProvider.OPENSSL).build();
+            return GrpcSslContexts.configure(SslContextBuilder.forServer(tlsServerCert, tlsServerKey)).build();
         } catch (SSLException e) {
             throw new RpcFrameworkException(e);
         }

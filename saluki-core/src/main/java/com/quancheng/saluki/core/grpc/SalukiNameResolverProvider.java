@@ -76,7 +76,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
         @Override
         public final String getServiceAuthority() {
-            return "consulauthority";
+            return "grpc";
         }
 
         @Override
