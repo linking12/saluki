@@ -4,10 +4,14 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
@@ -26,7 +30,9 @@ import io.grpc.Status;
 
 public class SalukiNameResolverProvider extends NameResolverProvider {
 
-    private final Attributes attributesParams;
+    private static final Logger log = LoggerFactory.getLogger(NameResolverProvider.class);
+
+    private final Attributes    attributesParams;
 
     public SalukiNameResolverProvider(SalukiURL refUrl){
         attributesParams = Attributes.newBuilder().set(MarshallersUtils.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
@@ -97,6 +103,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<SalukiURL> urls) {
             if (urls != null && !urls.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.info("Receive notify from registry, subscribeUrl is " + subscribeUrl + " prividerUrl is"
+                             + Arrays.toString(urls.toArray()));
+                }
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
