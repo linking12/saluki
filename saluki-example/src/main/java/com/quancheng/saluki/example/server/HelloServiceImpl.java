@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter.server;
+package com.quancheng.saluki.example.server;
 
 import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.examples.model.hello.HelloReply;

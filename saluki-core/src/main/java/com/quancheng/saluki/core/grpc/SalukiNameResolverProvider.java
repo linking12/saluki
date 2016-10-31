@@ -103,9 +103,8 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<SalukiURL> urls) {
             if (urls != null && !urls.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    log.info("Receive notify from registry, subscribeUrl is " + subscribeUrl + " prividerUrl is"
-                             + Arrays.toString(urls.toArray()));
+                if (log.isInfoEnabled()) {
+                    log.info("Receive notify from registry, prividerUrl is" + Arrays.toString(urls.toArray()));
                 }
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());

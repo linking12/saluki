@@ -1,4 +1,4 @@
-package com.quancheng.boot.starter.clientproxy;
+package com.quancheng.saluki.example.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,16 +6,15 @@ import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletCont
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 
 @SpringBootApplication
-public class DemoClientApp implements EmbeddedServletContainerCustomizer {
+public class ClientApp implements EmbeddedServletContainerCustomizer {
 
     public static void main(String[] args) {
 
-        SpringApplication.run(DemoClientApp.class, args);
+        SpringApplication.run(ClientApp.class, args);
     }
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
         container.setPort(8787);
     }
-
 }
