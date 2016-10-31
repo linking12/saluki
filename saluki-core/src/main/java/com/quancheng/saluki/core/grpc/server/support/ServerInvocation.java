@@ -48,7 +48,9 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // 由于反射调用method，获得的异常都是经过反射异常包装过的，所以我们需要取target error
             Throwable target = e.getCause();
-            log.debug(target.getMessage(), target);
+            if (log.isInfoEnabled()) {
+                log.info(target.getMessage(), target);
+            }
             RpcServiceException rpcBizError = new RpcServiceException(target);
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBizError.getMessage())//
                                                                     .withCause(rpcBizError).asRuntimeException();

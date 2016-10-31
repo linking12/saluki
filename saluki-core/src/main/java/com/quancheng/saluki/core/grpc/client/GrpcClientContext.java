@@ -63,7 +63,7 @@ public class GrpcClientContext {
                 }
             } else {
                 String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
-                int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 1);
+                int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
                 String interfaceName = refUrl.getServiceInterface();
                 Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
                 return new DefaultPolicyClient<Object>(interfaceName, retriesCache);
