@@ -103,3 +103,34 @@ public class GreeterServiceImpl implements GreeterService {
 ```
 
 详细demo请看工程的example
+
+
+* http2.0
+
+由于在saluki1.0.1版本开启http2.0，需要项目引入netty ssl的native包，引入如下：
+
+```
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
+  }
+}
+
+// Use the osdetector-gradle-plugin
+apply plugin: "com.google.osdetector"
+
+def tcnative_classifier = osdetector.classifier;
+// Fedora variants use a different soname for OpenSSL than other linux distributions
+// (see http://netty.io/wiki/forked-tomcat-native.html).
+if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
+  tcnative_classifier += "-fedora";
+}
+
+dependencies {
+    compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
+}
+```
+
