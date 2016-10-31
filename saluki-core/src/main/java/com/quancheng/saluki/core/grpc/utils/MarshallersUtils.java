@@ -10,13 +10,13 @@ public final class MarshallersUtils {
 
     public static final Attributes.Key<SalukiURL> PARAMS_DEFAULT_SUBCRIBE  = Attributes.Key.of("subscribe");
 
-    public static Metadata.Key<String>            GRPC_CONTEXT_ATTACHMENTS = Metadata.Key.of("grpc_header_attachments-bin",
+    public static final Metadata.Key<String>      GRPC_CONTEXT_ATTACHMENTS = Metadata.Key.of("grpc_header_attachments-bin",
                                                                                              MarshallersUtils.utf8Marshaller());
 
-    public static Metadata.Key<String>            GRPC_CONTEXT_VALUES      = Metadata.Key.of("grpc_header_values-bin",
+    public static final Metadata.Key<String>      GRPC_CONTEXT_VALUES      = Metadata.Key.of("grpc_header_values-bin",
                                                                                              MarshallersUtils.utf8Marshaller());
 
-    public static Metadata.Key<String>            GRPC_ERRORCAUSE_VALUE    = Metadata.Key.of("grpc_error_cause-bin",
+    public static final Metadata.Key<String>      GRPC_ERRORCAUSE_VALUE    = Metadata.Key.of("grpc_error_cause-bin",
                                                                                              MarshallersUtils.utf8Marshaller());
 
     private MarshallersUtils(){
