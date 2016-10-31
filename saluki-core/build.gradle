@@ -1,7 +1,13 @@
-buildscript {
-  dependencies {
-    classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
-  }
+apply plugin: 'java'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
 }
 description = 'saluki-core'
 dependencies {
