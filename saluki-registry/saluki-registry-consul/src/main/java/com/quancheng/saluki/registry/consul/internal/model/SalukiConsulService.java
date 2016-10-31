@@ -39,7 +39,7 @@ public final class SalukiConsulService {
         consulService.setTags(unmodifiableList(new ArrayList<>(this.tags)));
         NewService.Check check = new NewService.Check();
         check.setTtl(this.interval + "s");
-        check.setDeregisterCriticalServiceAfter("1m");
+        check.setDeregisterCriticalServiceAfter("1440m");
         consulService.setCheck(check);
         return consulService;
     }
