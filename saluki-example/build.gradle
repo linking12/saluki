@@ -1,3 +1,13 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
+  }
+}
+apply plugin: 'java'
+apply plugin: "com.google.osdetector"
 sourceSets {
     main {
         java {
@@ -8,6 +18,11 @@ sourceSets {
         }
     }
 }
+
+def tcnative_classifier = osdetector.classifier;
+if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
+  tcnative_classifier += "-fedora";
+}
 description = 'spring-boot-starter-saluki'
 dependencies {
     compile project(':spring-boot-starter-saluki')
@@ -17,4 +32,5 @@ dependencies {
     }
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.0.RELEASE'
     compile group: 'com.quancheng.shared', name: 'shared.api', version:'1.0.0-SNAPSHOT'
+    compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
 }
