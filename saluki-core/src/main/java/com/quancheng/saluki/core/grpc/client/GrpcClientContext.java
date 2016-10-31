@@ -48,7 +48,7 @@ public class GrpcClientContext {
         boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         if (generic) {
             String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
-            int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 1);
+            int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
             Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
             return new GenericPolicyClient<Object>(new SalukiClassLoader(), retriesCache);
         } else {
