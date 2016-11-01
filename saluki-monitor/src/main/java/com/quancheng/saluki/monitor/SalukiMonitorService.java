@@ -13,35 +13,35 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.monitor.domain.DubboInvoke;
-import com.quancheng.saluki.monitor.support.Dao;
+import com.quancheng.saluki.monitor.mapper.DubboInvokeMapping;
+import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 import com.quancheng.saluki.monitor.util.UuidUtil;
 
 public class SalukiMonitorService implements MonitorService {
 
-    private static final Logger      logger    = LoggerFactory.getLogger(SalukiMonitorService.class);
+    private static final Logger            logger  = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    public static final String       CLASSNAME = SalukiMonitorService.class.getName() + ".";
+    private final BlockingQueue<SalukiURL> queue;
 
-    private BlockingQueue<SalukiURL> queue;
+    private final Thread                   writeThread;
 
-    private Thread                   writeThread;
+    private final DubboInvokeMapping       invokeMapping;
 
-    private Dao                      dao;
-
-    private volatile boolean         running   = true;
+    private volatile boolean               running = true;
 
     public SalukiMonitorService(){
         queue = new LinkedBlockingQueue<SalukiURL>(100000);
+        invokeMapping = SpringBeanUtils.getBean(DubboInvokeMapping.class);
         writeThread = new Thread(new Runnable() {
 
             public void run() {
                 while (running) {
                     try {
-                        writeToDataBase(); // 记录统计日志
-                    } catch (Throwable t) { // 防御性容错
+                        writeToDataBase();
+                    } catch (Throwable t) {
                         logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
                         try {
-                            Thread.sleep(5000); // 失败延迟
+                            Thread.sleep(5000);
                         } catch (Throwable t2) {
                         }
                     }
@@ -105,7 +105,7 @@ public class SalukiMonitorService implements MonitorService {
                 && dubboInvoke.getMaxConcurrent() == 0) {
                 return;
             }
-            dao.insert(CLASSNAME, "addDubboInvoke", dubboInvoke);
+            invokeMapping.insert(dubboInvoke);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }

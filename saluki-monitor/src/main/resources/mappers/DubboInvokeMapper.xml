@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.handu.open.dubbo.monitor.DubboMonitorService">
+<mapper namespace="com.quancheng.saluki.monitor.SalukiMonitorService">
 
     <sql id="allOfDubboInvoke">
         id,
@@ -38,7 +38,7 @@
     </sql>
 
     <!-- Add -->
-    <insert id="addDubboInvoke" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke">
+    <insert id="addDubboInvoke" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         insert into
         dubbo_invoke (
         <include refid="allNoAsOfDubboInvoke" />
@@ -61,7 +61,7 @@
         )
     </insert>
 
-    <select id="countDubboInvoke" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke" resultType="com.handu.open.dubbo.monitor.domain.DubboInvoke">
+    <select id="countDubboInvoke" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke" resultType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         SELECT
         dubbo_invoke.method,
         dubbo_invoke.type,
@@ -97,7 +97,7 @@
         GROUP BY dubbo_invoke.invoke_time DIV #{timeParticle} * #{timeParticle}
     </select>
 
-    <select id="countDubboInvokeInfo" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke" resultType="com.handu.open.dubbo.monitor.domain.DubboInvoke">
+    <select id="countDubboInvokeInfo" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke" resultType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         SELECT
             SUM(dubbo_invoke.success) as success,
             SUM(dubbo_invoke.failure) as failure,
@@ -133,7 +133,7 @@
         </if>
     </select>
 
-    <select id="getMethodsByService" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke" resultType="string">
+    <select id="getMethodsByService" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke" resultType="string">
         SELECT
          DISTINCT(method)
         FROM dubbo_invoke
@@ -165,7 +165,7 @@
         </if>
     </select>
 
-    <select id="countDubboInvokeSuccessTopTen" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke" resultType="com.handu.open.dubbo.monitor.domain.DubboInvoke">
+    <select id="countDubboInvokeSuccessTopTen" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke" resultType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         SELECT
         dubbo_invoke.service,
         dubbo_invoke.method,
@@ -201,7 +201,7 @@
         ORDER BY SUM(dubbo_invoke.success)  DESC LIMIT 20
     </select>
 
-    <select id="countDubboInvokeFailureTopTen" parameterType="com.handu.open.dubbo.monitor.domain.DubboInvoke" resultType="com.handu.open.dubbo.monitor.domain.DubboInvoke">
+    <select id="countDubboInvokeFailureTopTen" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke" resultType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         SELECT
         dubbo_invoke.service,
         dubbo_invoke.method,
