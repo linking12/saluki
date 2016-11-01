@@ -17,8 +17,6 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.GrpcRequest;
-import com.quancheng.saluki.core.grpc.client.GrpcResponse;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
@@ -90,7 +88,9 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     // 信息采集
     private void collect(Message request, Message response, long start, boolean error) {
         try {
-
+            if (monitors == null || monitors.isEmpty()) {
+                return;
+            }
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent().get(); // 当前并发数

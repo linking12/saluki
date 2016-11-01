@@ -162,6 +162,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response, long start,
                          boolean error) {
         try {
+            if (monitors == null || monitors.isEmpty()) {
+                return;
+            }
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
