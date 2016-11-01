@@ -6,29 +6,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
+import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.client.GrpcRequest;
+import com.quancheng.saluki.core.grpc.client.GrpcResponse;
 import com.quancheng.saluki.core.grpc.client.ha.HaClientCalls;
 import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
-import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
-import com.quancheng.saluki.core.grpc.filter.Filter;
-import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
-import com.quancheng.saluki.core.grpc.filter.GrpcResponse;
+import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
+import io.grpc.MethodDescriptor;
 
 /**
  * <strong>描述：</strong>TODO 描述 <br>
@@ -44,20 +54,27 @@ import io.grpc.Channel;
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
-    private final List<Filter>           filters;
+    private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
 
-    private final Cache<String, Channel> channelCache;
+    private final List<MonitorService>                 monitors;
 
-    private final Map<String, Integer>   methodRetries;
+    private final Cache<String, Channel>               channelCache;
 
-    public AbstractClientInvocation(Map<String, Integer> methodRetries){
-        this.filters = this.doInnerFilter();
+    private final Map<String, Integer>                 methodRetries;
+
+    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+
+    private final SalukiURL                            refUrl;
+
+    public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
+        this.monitors = this.findMonitor();
         this.channelCache = CacheBuilder.newBuilder()//
                                         .maximumSize(1000L)//
                                         .softValues()//
                                         .ticker(Ticker.systemTicker())//
                                         .build();
         this.methodRetries = methodRetries;
+        this.refUrl = refUrl;
     }
 
     private Channel getChannel(GrpcRequest request) {
@@ -81,47 +98,50 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         if (ReflectUtil.isToStringMethod(method)) {
             return AbstractClientInvocation.this.toString();
         }
-        GrpcRequest salukiRequest = this.buildGrpcRequest(method, args);
-        for (Filter filter : filters) {
-            filter.before(salukiRequest);
-        }
-
-        Channel channel = this.getChannel(salukiRequest);
-        RetryOptions retryConfig = this.createRetryOption(salukiRequest.getMethodRequest().getMethodName());
+        GrpcRequest request = buildGrpcRequest(method, args);
+        // 准备Grpc参数begin
+        String serviceName = request.getServiceName();
+        String methodName = request.getMethodRequest().getMethodName();
+        Message reqProtoBufer = null;
+        Message respProtoBufer = null;
+        MethodDescriptor<Message, Message> methodDesc = request.getMethodDescriptor();
+        int timeOut = request.getMethodRequest().getCallTimeout();
+        // 准备Grpc调用参数end
+        Channel channel = getChannel(request);
+        RetryOptions retryConfig = createRetryOption(methodName);
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
-        Message resp = null;
+        long start = System.currentTimeMillis();
         try {
-            switch (salukiRequest.getMethodRequest().getCallType()) {
+            reqProtoBufer = request.getRequestArg();
+            switch (request.getMethodRequest().getCallType()) {
                 case SalukiConstants.RPCTYPE_ASYNC:
-                    resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
-                                                  salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                           TimeUnit.SECONDS);
+                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
                     break;
                 case SalukiConstants.RPCTYPE_BLOCKING:
-                    resp = grpcClient.blockingUnaryResult(salukiRequest.getRequestArg(),
-                                                          salukiRequest.getMethodDescriptor());
+                    respProtoBufer = grpcClient.blockingUnaryResult(reqProtoBufer, methodDesc);
                     break;
                 default:
-                    resp = grpcClient.unaryFuture(salukiRequest.getRequestArg(),
-                                                  salukiRequest.getMethodDescriptor()).get(salukiRequest.getMethodRequest().getCallTimeout(),
-                                                                                           TimeUnit.SECONDS);
+                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
                     break;
             }
-        } catch (ProtobufException e) {
-            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-            throw rpcFramwork;
-        } catch (InterruptedException e) {
-            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_TASK_CANCEL);
-        } catch (ExecutionException e) {
-            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_REJECT);
-        } catch (TimeoutException e) {
-            throw new RpcServiceException(e.getMessage(), e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
+            Class<?> respPojoType = request.getMethodRequest().getResponseType();
+            GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
+            Object respPojo = response.getResponseArg();
+            // 收集监控信息
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false);
+            return respPojo;
+        } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
+            if (e instanceof ProtobufException) {
+                RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+                throw rpcFramwork;
+            } else {
+                RpcServiceException rpcService = new RpcServiceException(e);
+                throw rpcService;
+            }
+        } finally {
+            getConcurrent(serviceName, methodName).decrementAndGet();
         }
-        GrpcResponse response = new GrpcResponse.Default(resp, salukiRequest.getMethodRequest().getResponseType());
-        for (Filter filter : filters) {
-            filter.after(response);
-        }
-        return response.getResponseArg();
     }
 
     private RetryOptions createRetryOption(String methodName) {
@@ -138,10 +158,50 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
-    private List<Filter> doInnerFilter() {
-        Iterable<Filter> candidates = ServiceLoader.load(Filter.class, ClassHelper.getClassLoader());
-        List<Filter> list = Lists.newArrayList();
-        for (Filter current : candidates) {
+    // 信息采集
+    private void collect(String serviceName, String methodName, Message request, Message response, long start,
+                         boolean error) {
+        try {
+            // ---- 服务信息获取 ----
+            long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
+            int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
+            String service = serviceName; // 获取服务名称
+            String method = methodName; // 获取方法名
+            String provider = RpcContext.getContext().getAttachment(MonitorService.PROVIDER);// 服务端主机
+            String req = new Gson().toJson(request);// 入参
+            String rep = new Gson().toJson(response);// 出参
+            for (MonitorService monitor : monitors) {
+                monitor.collect(new SalukiURL("Monitor", NetUtils.getLocalHost(), 0, //
+                                              service + "/" + method, //
+                                              MonitorService.APPLICATION, refUrl.getGroup(), //
+                                              MonitorService.INTERFACE, service, //
+                                              MonitorService.METHOD, method, //
+                                              MonitorService.CONSUMER, provider, //
+                                              error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
+                                              MonitorService.ELAPSED, String.valueOf(elapsed), //
+                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
+                                              MonitorService.INPUT, req, //
+                                              MonitorService.OUTPUT, rep));
+            }
+        } catch (Throwable t) {
+            log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
+        }
+    }
+
+    private AtomicInteger getConcurrent(String servcieName, String methodName) {
+        String key = servcieName + "." + methodName;
+        AtomicInteger concurrent = concurrents.get(key);
+        if (concurrent == null) {
+            concurrents.putIfAbsent(key, new AtomicInteger());
+            concurrent = concurrents.get(key);
+        }
+        return concurrent;
+    }
+
+    private List<MonitorService> findMonitor() {
+        Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
+        List<MonitorService> list = Lists.newArrayList();
+        for (MonitorService current : candidates) {
             list.add(current);
         }
         return list;

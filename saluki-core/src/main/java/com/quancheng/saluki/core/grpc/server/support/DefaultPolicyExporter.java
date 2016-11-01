@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
 import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -18,6 +19,12 @@ import io.grpc.stub.ServerCalls;
 public class DefaultPolicyExporter implements GrpcProtocolExporter {
 
     private static final Logger log = LoggerFactory.getLogger(GrpcProtocolExporter.class);
+
+    private final SalukiURL     providerUrl;
+
+    public DefaultPolicyExporter(SalukiURL providerUrl){
+        this.providerUrl = providerUrl;
+    }
 
     @Override
     public ServerServiceDefinition export(Class<?> protocol, Object protocolImpl) {
@@ -34,7 +41,8 @@ public class DefaultPolicyExporter implements GrpcProtocolExporter {
             MethodDescriptor<Message, Message> methodDescriptor = MethodDescriptorUtils.createMethodDescriptor(serivce,
                                                                                                                method);
             serviceDefBuilder.addMethod(methodDescriptor,
-                                        ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method)));
+                                        ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method,
+                                                                                        providerUrl)));
         }
         log.info("'{}' service has been registered.", serviceName);
         return serviceDefBuilder.build();

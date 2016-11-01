@@ -4,8 +4,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
+import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
-import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
+import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 
@@ -29,7 +30,9 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
 
     private final Class<?>             interfaceClass;
 
-    public DefaultPolicyClient(String interfaceName, Map<String, Integer> methodRetries){
+    private final SalukiURL            refUrl;
+
+    public DefaultPolicyClient(String interfaceName, Map<String, Integer> methodRetries, SalukiURL refUrl){
         this.interfaceName = interfaceName;
         try {
             this.interfaceClass = ReflectUtil.name2class(interfaceName);
@@ -37,6 +40,7 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
         this.methodRetries = methodRetries;
+        this.refUrl = refUrl;
     }
 
     public String getFullServiceName() {
@@ -58,7 +62,7 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
 
         public ClientInvocation(com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall call, int callType,
                                 int callTimeout){
-            super(DefaultPolicyClient.this.methodRetries);
+            super(DefaultPolicyClient.this.methodRetries, DefaultPolicyClient.this.refUrl);
             this.call = call;
             this.callType = callType;
             this.callTimeout = callTimeout;

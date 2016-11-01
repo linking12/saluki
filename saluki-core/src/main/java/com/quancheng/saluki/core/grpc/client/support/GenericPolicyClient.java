@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
+import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.SalukiClassLoader;
-import com.quancheng.saluki.core.grpc.filter.GrpcRequest;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -31,9 +32,12 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
     private final SalukiClassLoader    classLoader;
 
-    public GenericPolicyClient(SalukiClassLoader classLoader, Map<String, Integer> methodRetries){
+    private final SalukiURL            refUrl;
+
+    public GenericPolicyClient(SalukiClassLoader classLoader, Map<String, Integer> methodRetries, SalukiURL refUrl){
         this.classLoader = classLoader;
         this.methodRetries = methodRetries;
+        this.refUrl = refUrl;
     }
 
     public Class<?> doLoadClass(String className) {
@@ -62,7 +66,7 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
         public ClientInvocation(com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall call, int callType,
                                 int callTimeout){
-            super(GenericPolicyClient.this.methodRetries);
+            super(GenericPolicyClient.this.methodRetries, GenericPolicyClient.this.refUrl);
             this.call = call;
             this.callType = callType;
             this.callTimeout = callTimeout;

@@ -1,10 +1,8 @@
-package com.quancheng.saluki.core.grpc.filter;
+package com.quancheng.saluki.core.grpc.client;
 
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
-import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient.ChannelCall;
 import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
@@ -34,7 +32,7 @@ public interface GrpcRequest {
 
         private static final long serialVersionUID = 1L;
 
-        public Default(String serviceName, Class<?> serviceClass, ChannelCall call){
+        public Default(String serviceName, Class<?> serviceClass, GrpcProtocolClient.ChannelCall call){
             super();
             this.serviceName = serviceName;
             this.serviceClass = serviceClass;

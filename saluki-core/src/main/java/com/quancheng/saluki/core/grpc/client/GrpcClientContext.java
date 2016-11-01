@@ -49,8 +49,8 @@ public class GrpcClientContext {
         if (generic) {
             String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
             int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
-            Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
-            return new GenericPolicyClient<Object>(new SalukiClassLoader(), retriesCache);
+            Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
+            return new GenericPolicyClient<Object>(new SalukiClassLoader(), methodRetries, refUrl);
         } else {
             if (stub) {
                 String stubClassName = refUrl.getParameter(SalukiConstants.INTERFACECLASS_KEY);
@@ -65,13 +65,13 @@ public class GrpcClientContext {
                 String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
                 int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
                 String interfaceName = refUrl.getServiceInterface();
-                Map<String, Integer> retriesCache = generateRetires(methodNames, retries);
-                return new DefaultPolicyClient<Object>(interfaceName, retriesCache);
+                Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
+                return new DefaultPolicyClient<Object>(interfaceName, methodRetries, refUrl);
             }
         }
     }
 
-    private Map<String, Integer> generateRetires(String[] methodNames, int reties) {
+    private Map<String, Integer> cacheRetries(String[] methodNames, int reties) {
         Map<String, Integer> methodRetries = Maps.newConcurrentMap();
         if (reties > 0) {
             if (methodNames != null && methodNames.length > 1) {
