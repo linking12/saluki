@@ -13,7 +13,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.monitor.domain.DubboInvoke;
-import com.quancheng.saluki.monitor.mapper.DubboInvokeMapping;
+import com.quancheng.saluki.monitor.mapper.DubboInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 import com.quancheng.saluki.monitor.util.UuidUtil;
 
@@ -25,13 +25,13 @@ public class SalukiMonitorService implements MonitorService {
 
     private final Thread                   writeThread;
 
-    private final DubboInvokeMapping       invokeMapping;
+    private final DubboInvokeMapper        invokeMapping;
 
     private volatile boolean               running = true;
 
     public SalukiMonitorService(){
         queue = new LinkedBlockingQueue<SalukiURL>(100000);
-        invokeMapping = SpringBeanUtils.getBean(DubboInvokeMapping.class);
+        invokeMapping = SpringBeanUtils.getBean(DubboInvokeMapper.class);
         writeThread = new Thread(new Runnable() {
 
             public void run() {
@@ -105,7 +105,7 @@ public class SalukiMonitorService implements MonitorService {
                 && dubboInvoke.getMaxConcurrent() == 0) {
                 return;
             }
-            invokeMapping.insert(dubboInvoke);
+            invokeMapping.addDubboInvoke(dubboInvoke);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }
