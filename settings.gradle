@@ -1,6 +1,7 @@
 rootProject.name = 'saluki'
 include ':saluki-core'
 include ':saluki-serializer'
+include ':saluki-monitor'
 include ':saluki-plugin'
 include ':saluki-registry:saluki-registry-consul'
 include ':saluki-registry:saluki-registry-etcd3'
@@ -10,6 +11,7 @@ include ':saluki-example'
 
 project(':saluki-core').projectDir = "$rootDir/saluki-core" as File
 project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
+project(':saluki-monitor').projectDir = "$rootDir/saluki-monitor" as File
 project(':saluki-plugin').projectDir = "$rootDir/saluki-plugin" as File
 project(':saluki-example').projectDir = "$rootDir/saluki-example" as File
 project(':saluki-registry:saluki-registry-consul').projectDir = "$rootDir/saluki-registry/saluki-registry-consul" as File
