@@ -174,12 +174,14 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String req = new Gson().toJson(request);// 入参
             String rep = new Gson().toJson(response);// 出参
             for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL("Monitor", NetUtils.getLocalHost(), 0, //
+                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), 0, //
                                               service + "/" + method, //
-                                              MonitorService.APPLICATION, refUrl.getGroup(), //
+                                              MonitorService.TIMESTAMP, String.valueOf(start), //
+                                              MonitorService.APPLICATION, //
+                                              refUrl.getGroup(), //
                                               MonitorService.INTERFACE, service, //
                                               MonitorService.METHOD, method, //
-                                              MonitorService.CONSUMER, provider, //
+                                              MonitorService.PROVIDER, provider, //
                                               error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
                                               MonitorService.ELAPSED, String.valueOf(elapsed), //
                                               MonitorService.CONCURRENT, String.valueOf(concurrent), //

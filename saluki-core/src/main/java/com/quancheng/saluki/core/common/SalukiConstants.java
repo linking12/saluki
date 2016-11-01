@@ -32,6 +32,7 @@ public class SalukiConstants {
 
     public static final String  REGISTRY_PROTOCOL             = "registry";
     public static final String  DEFATULT_PROTOCOL             = "Grpc";
+    public static final String  MONITOR_PROTOCOL              = "monitor";
 
     public static final String  RPCTYPE_KEY                   = "syc";
     public static final int     RPCTYPE_ASYNC                 = 1;

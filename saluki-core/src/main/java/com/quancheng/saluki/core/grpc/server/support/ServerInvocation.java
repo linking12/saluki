@@ -102,13 +102,14 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String req = new Gson().toJson(request);// 入参
             String rep = new Gson().toJson(response);// 出参
             for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL("Monitor", NetUtils.getLocalHost(), //
+                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), //
                                               Integer.valueOf(registryPort), //
                                               service + "/" + method, //
+                                              MonitorService.TIMESTAMP, String.valueOf(start), //
                                               MonitorService.APPLICATION, providerUrl.getGroup(), //
                                               MonitorService.INTERFACE, service, //
                                               MonitorService.METHOD, method, //
-                                              MonitorService.PROVIDER, consumer, //
+                                              MonitorService.CONSUMER, consumer, //
                                               error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
                                               MonitorService.ELAPSED, String.valueOf(elapsed), //
                                               MonitorService.CONCURRENT, String.valueOf(concurrent), //
