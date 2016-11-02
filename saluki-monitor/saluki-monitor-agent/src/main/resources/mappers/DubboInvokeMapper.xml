@@ -23,7 +23,7 @@
     <!-- Add -->
     <insert id="addDubboInvoke" parameterType="com.quancheng.saluki.monitor.domain.DubboInvoke">
         insert into
-        dubbo_invoke (
+        saluki_invoke (
         <include refid="allNoAsOfDubboInvoke" />
         )
         values(
