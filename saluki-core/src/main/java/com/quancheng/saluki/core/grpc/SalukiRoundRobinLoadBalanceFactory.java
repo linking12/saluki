@@ -50,9 +50,9 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @GuardedBy("lock")
         private boolean                       closed;
         @GuardedBy("lock")
-        private volatile Attributes           nameResolverConfig;
+        private volatile Attributes           nameResolver_Config;
         @GuardedBy("lock")
-        private volatile Attributes           affinity;
+        private volatile Attributes           callOptions_Affinity;
 
         private final TransportManager<T>     tm;
 
@@ -62,7 +62,7 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public T pickTransport(Attributes affinity) {
-            this.affinity = affinity;
+            this.callOptions_Affinity = affinity;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
                 if (closed) {
@@ -80,15 +80,15 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 addressesCopy = addresses;
             }
             T t = addressesCopy.getTransportForNextServer();
-            this.saveAddress(addressesCopy);
+            this.doSaveRemoteInfo(addressesCopy);
             return t;
         }
 
-        private void saveAddress(RoundRobinServerListExtend<T> serverList) {
+        private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
-            NameResolver.Listener listener = this.nameResolverConfig.get(CallOptionsFactory.NAMERESOVER_LISTENER);
-            List<SocketAddress> registryaddresses = this.nameResolverConfig.get(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY);
+            NameResolver.Listener listener = this.nameResolver_Config.get(CallOptionsFactory.NAMERESOVER_LISTENER);
+            List<SocketAddress> registryaddresses = this.nameResolver_Config.get(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY);
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
             if (listener != null) {
                 data.put(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
@@ -102,18 +102,14 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             if (registryaddresses != null) {
                 data.put(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
             }
-            fillData(data);
-        }
-
-        /**
-         * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处
-         */
-        private void fillData(HashMap<Key<?>, Object> data) {
+            /**
+             * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处
+             */
             try {
-                Class<?> classType = affinity.getClass();
+                Class<?> classType = callOptions_Affinity.getClass();
                 Field field = classType.getDeclaredField("data");
                 field.setAccessible(true);
-                field.set(affinity, data);
+                field.set(callOptions_Affinity, data);
             } catch (Exception e) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -123,7 +119,7 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @Override
         public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
                                             Attributes config) {
-            this.nameResolverConfig = config;
+            this.nameResolver_Config = config;
             final InterimTransport<T> savedInterimTransport;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
@@ -151,7 +147,7 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     @Override
                     public T get() {
                         T t = addressesCopy.getTransportForNextServer();
-                        saveAddress(addressesCopy);
+                        RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressesCopy);
                         return t;
 
                     }
