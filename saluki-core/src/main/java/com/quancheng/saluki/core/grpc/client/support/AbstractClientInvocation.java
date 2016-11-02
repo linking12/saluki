@@ -130,8 +130,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
             // 收集监控信息
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start,
-                    false);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, true);
