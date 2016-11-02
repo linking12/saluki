@@ -1,0 +1,22 @@
+apply plugin: 'java'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
+description='saluki-monitor-agent'
+dependencies {
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version:'1.4.0.RELEASE'){
+        exclude group: 'org.apache.tomcat',module: 'tomcat-jdbc'
+    }
+    compile('com.alibaba:druid:1.0.24')
+    compile('mysql:mysql-connector-java:5.1.39')
+    compile('org.mybatis:mybatis:3.4.1')
+    compile('org.mybatis:mybatis-spring:1.3.0')
+    compileOnly project(':saluki-core')
+}
