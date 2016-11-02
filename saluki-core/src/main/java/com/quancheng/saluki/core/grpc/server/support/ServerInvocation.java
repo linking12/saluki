@@ -53,6 +53,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message reqProtoBufer = request;
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
+        getConcurrent().incrementAndGet();
         try {
             String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
             log.debug(String.format("receiver %s request from %s", new Gson().toJson(reqProtoBufer), remoteAddress));
@@ -61,11 +62,11 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Object[] requestParams = new Object[] { reqPojo };
             Object respPojo = method.invoke(serviceToInvoke, requestParams);
             respProtoBufer = PojoProtobufUtils.Pojo2Protobuf(respPojo);
-            //collect(reqProtoBufer, respProtoBufer, start, false);
+            collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            //collect(reqProtoBufer, respProtoBufer, start, true);
+            collect(reqProtoBufer, respProtoBufer, start, true);
             // 由于反射调用method，获得的异常都是经过反射异常包装过的，所以我们需要取target error
             Throwable target = e.getCause();
             if (log.isInfoEnabled()) {
@@ -94,7 +95,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent().get(); // 当前并发数
-            String service = this.serviceToInvoke.getClass().getName(); // 获取服务名称
+            String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
             String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();

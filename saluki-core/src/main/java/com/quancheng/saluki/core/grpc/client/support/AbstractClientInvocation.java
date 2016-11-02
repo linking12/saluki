@@ -112,6 +112,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         RetryOptions retryConfig = createRetryOption(methodName);
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         long start = System.currentTimeMillis();
+        getConcurrent(serviceName, methodName).incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
