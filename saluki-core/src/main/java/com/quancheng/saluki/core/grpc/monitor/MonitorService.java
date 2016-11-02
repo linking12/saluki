@@ -34,6 +34,8 @@ public interface MonitorService {
 
     String CONCURRENT  = "concurrent";
 
+    String TRACEID     = "traceId";
+
     /**
      * 监控数据采集. 1.
      * 支持调用次数统计：count://host/interface?application=foo&method=foo&provider=10.20.153.11:20880&success=12&failure=2&elapsed=135423423

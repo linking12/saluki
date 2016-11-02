@@ -9,4 +9,6 @@ public interface DubboInvokeMapper {
 
     int addDubboInvoke(DubboInvoke dubboInvoke);
 
+    int deleteDubboInvoke(DubboInvoke dubboInvoke);
+
 }

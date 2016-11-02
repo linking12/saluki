@@ -24,6 +24,7 @@ import com.quancheng.saluki.core.registry.support.FailbackRegistry;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.registry.consul.internal.ConsulConstants;
 import com.quancheng.saluki.registry.consul.internal.SalukiConsulClient;
+import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulService;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceResp;
 
@@ -88,7 +89,9 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         // 如果缓存中有，先把缓存中的数据吐出去
         notifyListener(url, listener);
-
+        // 注册本机地址到consul中
+        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        client.registerEphemralNode(ephemralNode);
     }
 
     @Override
@@ -102,6 +105,9 @@ public class ConsulRegistry extends FailbackRegistry {
                                        SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
         url = url.removeParameters(keys);
         String group = url.getGroup();
+        // 注册本机地址到consul中
+        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
@@ -213,6 +219,14 @@ public class ConsulRegistry extends FailbackRegistry {
                                   .withTag(toUrlPath(url))//
                                   .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath())//
                                   .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
+    }
+
+    private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url) {
+        return SalukiConsulEphemralNode.newEphemralNode()//
+                                       .withGroup(url.getGroup())//
+                                       .withIp(url.getHost())//
+                                       .withServiceName(url.getServiceInterface())//
+                                       .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
 
     private SalukiURL buildSalukiURL(SalukiConsulService service) {
