@@ -36,9 +36,13 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     private static final Logger                        log         = LoggerFactory.getLogger(ServerInvocation.class);
 
     private final List<MonitorService>                 monitors;
+
     private final Object                               serviceToInvoke;
+
     private final Method                               method;
+
     private final SalukiURL                            providerUrl;
+
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){

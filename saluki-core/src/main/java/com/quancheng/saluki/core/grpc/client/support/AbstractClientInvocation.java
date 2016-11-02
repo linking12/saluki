@@ -63,9 +63,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private final Map<String, Integer>                 methodRetries;
 
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
-
     private final SalukiURL                            refUrl;
+
+    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
         this.monitors = this.findMonitor();
@@ -130,7 +130,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
             // 收集监控信息
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, false);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start,
+                    false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, true);
