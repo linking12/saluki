@@ -9,7 +9,7 @@ sourceSets {
         }
     }
 }
-description = 'saluki-monitor'
+description='saluki-monitor-web'
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.0.RELEASE'
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.0.RELEASE'){
