@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha;
+package com.quancheng.saluki.core.grpc.client.calls;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;

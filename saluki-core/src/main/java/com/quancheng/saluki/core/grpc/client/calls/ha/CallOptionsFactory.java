@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha.internal;
+package com.quancheng.saluki.core.grpc.client.calls.ha;
 
 import java.net.SocketAddress;
 import java.util.List;

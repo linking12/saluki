@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha;
+package com.quancheng.saluki.core.grpc.client.calls;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

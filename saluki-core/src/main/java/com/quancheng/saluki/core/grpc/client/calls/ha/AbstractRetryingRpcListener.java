@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha.internal;
+package com.quancheng.saluki.core.grpc.client.calls.ha;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -11,9 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
-import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
-import com.quancheng.saluki.core.grpc.client.ha.notify.HaRetryNotify;
+import com.quancheng.saluki.core.grpc.client.calls.HaAsyncRpc;
+import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
 import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 

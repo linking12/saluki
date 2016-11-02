@@ -1,7 +1,7 @@
-package com.quancheng.saluki.core.grpc.client.ha.internal;
+package com.quancheng.saluki.core.grpc.client.calls.ha;
 
-import com.quancheng.saluki.core.grpc.client.ha.HaAsyncRpc;
-import com.quancheng.saluki.core.grpc.client.ha.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.calls.HaAsyncRpc;
+import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;

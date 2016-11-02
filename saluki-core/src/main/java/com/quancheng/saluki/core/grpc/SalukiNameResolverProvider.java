@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.client.calls.ha.CallOptionsFactory;
 import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;

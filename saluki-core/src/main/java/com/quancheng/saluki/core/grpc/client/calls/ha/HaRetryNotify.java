@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.ha.notify;
+package com.quancheng.saluki.core.grpc.client.calls.ha;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
 
 import io.grpc.Attributes;
 import io.grpc.NameResolver;

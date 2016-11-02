@@ -8,7 +8,7 @@ import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Supplier;
-import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
+import com.quancheng.saluki.core.grpc.client.calls.ha.CallOptionsFactory;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 
 import io.grpc.Attributes;
