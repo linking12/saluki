@@ -51,6 +51,8 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private boolean                       closed;
         @GuardedBy("lock")
         private volatile Attributes           nameResolverConfig;
+        @GuardedBy("lock")
+        private volatile Attributes           affinity;
 
         private final TransportManager<T>     tm;
 
@@ -60,6 +62,7 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public T pickTransport(Attributes affinity) {
+            this.affinity = affinity;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
                 if (closed) {
@@ -77,11 +80,11 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 addressesCopy = addresses;
             }
             T t = addressesCopy.getTransportForNextServer();
-            this.saveAddress(affinity, addressesCopy);
+            this.saveAddress(addressesCopy);
             return t;
         }
 
-        private void saveAddress(Attributes affinity, RoundRobinServerListExtend<T> serverList) {
+        private void saveAddress(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             NameResolver.Listener listener = this.nameResolverConfig.get(CallOptionsFactory.NAMERESOVER_LISTENER);
@@ -99,13 +102,13 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             if (registryaddresses != null) {
                 data.put(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
             }
-            fillData(affinity, data);
+            fillData(data);
         }
 
         /**
          * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处
          */
-        private void fillData(Attributes affinity, HashMap<Key<?>, Object> data) {
+        private void fillData(HashMap<Key<?>, Object> data) {
             try {
                 Class<?> classType = affinity.getClass();
                 Field field = classType.getDeclaredField("data");
@@ -147,7 +150,10 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
                     @Override
                     public T get() {
-                        return addressesCopy.getTransportForNextServer();
+                        T t = addressesCopy.getTransportForNextServer();
+                        saveAddress(addressesCopy);
+                        return t;
+
                     }
                 });
             }

@@ -61,11 +61,11 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Object[] requestParams = new Object[] { reqPojo };
             Object respPojo = method.invoke(serviceToInvoke, requestParams);
             respProtoBufer = PojoProtobufUtils.Pojo2Protobuf(respPojo);
-            collect(reqProtoBufer, respProtoBufer, start, false);
+            //collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            collect(reqProtoBufer, respProtoBufer, start, true);
+            //collect(reqProtoBufer, respProtoBufer, start, true);
             // 由于反射调用method，获得的异常都是经过反射异常包装过的，所以我们需要取target error
             Throwable target = e.getCause();
             if (log.isInfoEnabled()) {

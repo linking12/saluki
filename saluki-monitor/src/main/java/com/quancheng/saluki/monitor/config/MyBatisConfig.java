@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
 import com.alibaba.druid.pool.DruidDataSource;
 
 @Configuration
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:monitor.properties")
 public class MyBatisConfig implements EnvironmentAware {
 
     private RelaxedPropertyResolver propertyResolver;

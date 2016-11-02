@@ -2,6 +2,8 @@ package com.quancheng.saluki.core.grpc.client.support;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -128,10 +130,11 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
             // 收集监控信息
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start,
+                    false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -159,8 +162,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     // 信息采集
-    private void collect(String serviceName, String methodName, Message request, Message response, long start,
-                         boolean error) {
+    private void collect(String serviceName, String methodName, Message request, Message response,
+                         SocketAddress remoteAddress, long start, boolean error) {
         try {
             if (monitors == null || monitors.isEmpty()) {
                 return;
@@ -170,7 +173,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = RpcContext.getContext().getAttachment(MonitorService.PROVIDER);// 服务端主机
+            String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
             String req = new Gson().toJson(request);// 入参
             String rep = new Gson().toJson(response);// 出参
             for (MonitorService monitor : monitors) {

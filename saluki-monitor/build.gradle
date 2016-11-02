@@ -16,7 +16,9 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.0.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version:'1.4.0.RELEASE'
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version:'1.4.0.RELEASE'){
+        exclude group: 'org.apache.tomcat',module: 'tomcat-jdbc'
+    }
     compile('com.alibaba:druid:1.0.24')
     compile('mysql:mysql-connector-java:5.1.39')
     compile('org.mybatis:mybatis:3.4.1')

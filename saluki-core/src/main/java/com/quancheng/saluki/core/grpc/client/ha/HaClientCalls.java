@@ -1,6 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.ha;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -8,12 +7,10 @@ import java.util.concurrent.ExecutionException;
 import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.ha.internal.AbstractRetryingRpcListener;
 import com.quancheng.saluki.core.grpc.client.ha.internal.CallOptionsFactory;
 import com.quancheng.saluki.core.grpc.client.ha.internal.RetryingCollectingClientCallListener;
 import com.quancheng.saluki.core.grpc.client.ha.internal.RetryingUnaryRpcCallListener;
-import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -31,11 +28,15 @@ public interface HaClientCalls {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
+    public SocketAddress getRemoteAddress();
+
     public static class Default implements HaClientCalls {
 
-        private final Channel      channel;
+        private final Channel        channel;
 
-        private final RetryOptions retryOptions;
+        private final RetryOptions   retryOptions;
+
+        private volatile CallOptions callOptions;
 
         public Default(Channel channel, RetryOptions retryOptions){
             this.channel = channel;
@@ -63,6 +64,11 @@ public interface HaClientCalls {
             return getBlockingResult(createUnaryListener(request, buildAsyncRpc(method)));
         }
 
+        @Override
+        public SocketAddress getRemoteAddress() {
+            return callOptions.getAffinity().get(CallOptionsFactory.REMOTE_ADDR_KEY);
+        }
+
         /**
          * Help Method
          */
@@ -76,30 +82,20 @@ public interface HaClientCalls {
         private <ReqT, RespT> RetryingCollectingClientCallListener<ReqT, RespT> createStreamingListener(ReqT request,
                                                                                                         HaAsyncRpc<ReqT, RespT> rpc) {
             CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
-            SocketAddress remote = callOptions.getAffinity().get(CallOptionsFactory.REMOTE_ADDR_KEY);
-            if (remote != null) {
-                InetSocketAddress remoteAddress = (InetSocketAddress) remote;
-                RpcContext.getContext().setAttachment(MonitorService.PROVIDER,
-                                                      remoteAddress.getAddress().getHostAddress());
-            }
-            return new RetryingCollectingClientCallListener<>(retryOptions, request, rpc, callOptions,
-                                                              createMetadata());
+            return new RetryingCollectingClientCallListener<>(retryOptions, request, rpc, callOptions, new Metadata());
         }
 
         private <ReqT, RespT> RetryingUnaryRpcCallListener<ReqT, RespT> createUnaryListener(ReqT request,
                                                                                             HaAsyncRpc<ReqT, RespT> rpc) {
             CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
-            return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, createMetadata());
-        }
-
-        private Metadata createMetadata() {
-            Metadata metadata = new Metadata();
-            return metadata;
+            return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, new Metadata());
         }
 
         private <ReqT> CallOptions getCallOptions(final MethodDescriptor<ReqT, ?> methodDescriptor, ReqT request) {
             CallOptionsFactory callOptionsFactory = new CallOptionsFactory.Default();
-            return callOptionsFactory.create(methodDescriptor, request);
+            CallOptions callOptions = callOptionsFactory.create(methodDescriptor, request);
+            this.callOptions = callOptions;
+            return callOptions;
         }
 
         private <ReqT, RespT, OutputT> ListenableFuture<OutputT> getCompletionFuture(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
