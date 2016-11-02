@@ -23,14 +23,13 @@ import java.util.Date;
 /**
  * Dubbo Invoke Base Entity
  *
- * @author Zhiguo.Chen <me@chenzhiguo.cn>
- *         Created on 15/6/29.
+ * @author Zhiguo.Chen <me@chenzhiguo.cn> Created on 15/6/29.
  */
 public class DubboInvoke implements Serializable {
 
     private String id;
 
-    private Date invokeDate;
+    private Date   invokeDate;
 
     private String service;
 
@@ -48,23 +47,23 @@ public class DubboInvoke implements Serializable {
 
     private double elapsed;
 
-    private int concurrent;
+    private int    concurrent;
 
-    private int maxElapsed;
+    private int    maxElapsed;
 
-    private int maxConcurrent;
+    private int    maxConcurrent;
 
-    private long invokeTime;
+    private Date   invokeTime;
 
     // ====================查询辅助参数===================
     /**
      * 统计时间粒度(毫秒)
      */
-    private long timeParticle = 60000;
+    private long   timeParticle = 60000;
 
-    private Date invokeDateFrom;
+    private Date   invokeDateFrom;
 
-    private Date invokeDateTo;
+    private Date   invokeDateTo;
 
     public Date getInvokeDate() {
         return invokeDate;
@@ -149,7 +148,6 @@ public class DubboInvoke implements Serializable {
         this.invokeDateTo = invokeDateTo;
     }
 
-
     public double getSuccess() {
         return success;
     }
@@ -202,11 +200,12 @@ public class DubboInvoke implements Serializable {
         this.timeParticle = timeParticle;
     }
 
-    public long getInvokeTime() {
+    public Date getInvokeTime() {
         return invokeTime;
     }
 
-    public void setInvokeTime(long invokeTime) {
+    public void setInvokeTime(Date invokeTime) {
         this.invokeTime = invokeTime;
     }
+
 }

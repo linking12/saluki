@@ -72,13 +72,13 @@ public class SalukiMonitorService implements MonitorService {
             return;
         }
         String timestamp = statistics.getParameter(TIMESTAMP);
-        Date now;
+        Date invokeTime;
         if (timestamp == null || timestamp.length() == 0) {
-            now = new Date();
+            invokeTime = new Date();
         } else if (timestamp.length() == "yyyyMMddHHmmss".length()) {
-            now = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
+            invokeTime = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
         } else {
-            now = new Date(Long.parseLong(timestamp));
+            invokeTime = new Date(Long.parseLong(timestamp));
         }
         DubboInvoke dubboInvoke = new DubboInvoke();
         dubboInvoke.setId(UuidUtil.createUUID());
@@ -92,10 +92,10 @@ public class SalukiMonitorService implements MonitorService {
                 dubboInvoke.setConsumer(statistics.getParameter(CONSUMER));
                 dubboInvoke.setProvider(statistics.getHost());
             }
-            dubboInvoke.setInvokeDate(now);
+            dubboInvoke.setInvokeDate(new Date());
             dubboInvoke.setService(statistics.getServiceInterface());
             dubboInvoke.setMethod(statistics.getParameter(METHOD));
-            dubboInvoke.setInvokeTime(statistics.getParameter(TIMESTAMP, System.currentTimeMillis()));
+            dubboInvoke.setInvokeTime(invokeTime);
             dubboInvoke.setSuccess(statistics.getParameter(SUCCESS, 0));
             dubboInvoke.setFailure(statistics.getParameter(FAILURE, 0));
             dubboInvoke.setElapsed(statistics.getParameter(ELAPSED, 0));
