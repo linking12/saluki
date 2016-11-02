@@ -106,8 +106,8 @@ public class ConsulRegistry extends FailbackRegistry {
         url = url.removeParameters(keys);
         String group = url.getGroup();
         // 注册本机地址到consul中
-        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
-        client.registerEphemralNode(ephemralNode);
+        //SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        //client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 

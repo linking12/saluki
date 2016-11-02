@@ -59,7 +59,7 @@ public class SalukiConsulClient {
         }
         PutParams kvPutParams = new PutParams();
         kvPutParams.setReleaseSession(sessionId);
-        client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
+        Response<Boolean> response = client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
     }
 
     public SalukiConsulServiceResp lookupHealthService(String serviceName, long lastConsulIndex) {

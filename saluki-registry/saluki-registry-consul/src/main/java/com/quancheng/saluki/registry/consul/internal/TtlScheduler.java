@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
+import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.session.model.Session;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
@@ -85,8 +87,8 @@ public class TtlScheduler {
 
         @Override
         public void run() {
-            client.renewSession(sessionId, QueryParams.DEFAULT);
-            log.debug("Sending consul heartbeat for: " + sessionId);
+            Response<Session> response = client.renewSession(sessionId, QueryParams.DEFAULT);
+            log.debug("Sending consul heartbeat for: " + response.getValue().getId());
         }
     }
 }
