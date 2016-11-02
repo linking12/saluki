@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,20 +169,26 @@ public class NetUtils {
 
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
-        try {
-            localAddress = InetAddress.getLocalHost();
-            if (isValidAddress(localAddress)) {
-                return localAddress;
-            }
-        } catch (Throwable e) {
-            logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
-        }
+        /**
+         * 这里如果装了虚拟机，本地获取ip是错误的
+         */
+        // try {
+        // localAddress = InetAddress.getLocalHost();
+        // if (isValidAddress(localAddress)) {
+        // return localAddress;
+        // }
+        // } catch (Throwable e) {
+        // logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+        // }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             if (interfaces != null) {
                 while (interfaces.hasMoreElements()) {
                     try {
                         NetworkInterface network = interfaces.nextElement();
+                        if (StringUtils.contains(network.getName(), "vbox")) {
+                            continue;
+                        }
                         Enumeration<InetAddress> addresses = network.getInetAddresses();
                         if (addresses != null) {
                             while (addresses.hasMoreElements()) {
