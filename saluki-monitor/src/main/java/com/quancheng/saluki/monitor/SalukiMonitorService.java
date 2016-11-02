@@ -56,8 +56,8 @@ public class SalukiMonitorService implements MonitorService {
     @Override
     public void collect(SalukiURL statistics) {
         queue.offer(statistics);
-        if (logger.isInfoEnabled()) {
-            logger.info("collect statistics: " + statistics);
+        if (logger.isDebugEnabled()) {
+            logger.debug("collect statistics: " + statistics);
         }
     }
 
