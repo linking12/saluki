@@ -4,7 +4,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
+import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.domain.SalukiInvoke;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
@@ -29,9 +33,20 @@ public class SalukiMonitorService implements MonitorService {
 
     private volatile boolean               running = true;
 
+    private final ScheduledExecutorService clearDataExecutor;
+
     public SalukiMonitorService(){
         queue = new LinkedBlockingQueue<SalukiURL>(100000);
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
+        clearDataExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("ClearMonitorData", true));
+        clearDataExecutor.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                clearDataBase();
+
+            }
+        }, 0, 30, TimeUnit.MINUTES);
         writeThread = new Thread(new Runnable() {
 
             public void run() {
@@ -64,6 +79,10 @@ public class SalukiMonitorService implements MonitorService {
     @Override
     public List<SalukiURL> lookup(SalukiURL statistics) {
         return null;
+    }
+
+    private void clearDataBase() {
+        invokeMapping.truncateTable();
     }
 
     private void writeToDataBase() throws Exception {

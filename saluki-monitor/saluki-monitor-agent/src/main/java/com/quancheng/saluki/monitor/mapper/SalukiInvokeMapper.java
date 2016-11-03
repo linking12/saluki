@@ -13,7 +13,7 @@ public interface SalukiInvokeMapper {
 
     int truncateTable();
 
-    List<SalukiInvoke> queryAllInvoke(String service);
+    List<SalukiInvoke> queryAllInvoke();
 
     List<SalukiInvoke> countInvoke(SalukiInvoke invoke);
 

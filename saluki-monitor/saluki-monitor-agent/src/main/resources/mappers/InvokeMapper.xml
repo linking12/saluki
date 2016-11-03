@@ -158,14 +158,12 @@
 	</select>
 
 
-	<select id="queryAllInvoke" parameterType="java.lang.String"
+	<select id="queryAllInvoke"
 		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
 		SELECT * 
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		AND saluki_invoke.service =
-		#{service}
 		ORDER BY saluki_invoke.invoke_time DESC
 	</select>
 
