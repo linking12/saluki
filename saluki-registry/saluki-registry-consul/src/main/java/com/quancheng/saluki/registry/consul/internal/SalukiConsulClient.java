@@ -44,6 +44,7 @@ public class SalukiConsulClient {
     }
 
     public void registerEphemralNode(SalukiConsulEphemralNode ephemralNode) {
+        client.setKVValue(ephemralNode.getKey(), "");
         List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
         String sessionId = null;
         if (sessions != null && !sessions.isEmpty()) {
@@ -58,8 +59,8 @@ public class SalukiConsulClient {
             ttlScheduler.addHeartbeatSession(sessionId);
         }
         PutParams kvPutParams = new PutParams();
-        kvPutParams.setReleaseSession(sessionId);
-        Response<Boolean> response = client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
+        kvPutParams.setAcquireSession(sessionId);
+        client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
     }
 
     public SalukiConsulServiceResp lookupHealthService(String serviceName, long lastConsulIndex) {

@@ -24,6 +24,7 @@ public final class SalukiConsulEphemralNode {
     public NewSession getNewSession() {
         NewSession newSersson = new NewSession();
         newSersson.setName(this.ip);
+        newSersson.setLockDelay(0);
         newSersson.setBehavior(Session.Behavior.DELETE);
         newSersson.setTtl(this.interval + "s");
         return newSersson;
