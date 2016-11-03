@@ -50,11 +50,11 @@ public class MyBatisConfig {
         }
     }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnMissingBean(Server.class)
-    public Server h2WebServer() throws SQLException {
-        return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
-    }
+    // @Bean(initMethod = "start", destroyMethod = "stop")
+    // @ConditionalOnMissingBean(Server.class)
+    // public Server h2WebServer() throws SQLException {
+    // return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
+    // }
 
     @Bean
     public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
