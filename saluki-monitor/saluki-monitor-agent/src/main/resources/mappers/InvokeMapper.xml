@@ -147,29 +147,11 @@
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date = #{invokeDate}
-		</if>
 		<if test="invokeDateFrom != null">
 			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
 			AND saluki_invoke.invoke_date &lt;= #{invokeDateTo}
-		</if>
-		<if test="service != null and service!= '' ">
-			AND saluki_invoke.service = #{service}
-		</if>
-		<if test="method != null and method!= '' ">
-			AND saluki_invoke.method = #{method}
-		</if>
-		<if test="consumer != null and consumer!= '' ">
-			AND saluki_invoke.consumer = #{consumer}
-		</if>
-		<if test="provider != null and provider!= '' ">
-			AND saluki_invoke.provider = #{provider}
-		</if>
-		<if test="type != null and type!= '' ">
-			AND saluki_invoke.type = #{type}
 		</if>
 		GROUP BY saluki_invoke.service, saluki_invoke.method
 		ORDER BY
@@ -185,29 +167,11 @@
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date = #{invokeDate}
-		</if>
 		<if test="invokeDateFrom != null">
 			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
 			AND saluki_invoke.invoke_date &lt;= #{invokeDateTo}
-		</if>
-		<if test="service != null and service!= '' ">
-			AND saluki_invoke.service = #{service}
-		</if>
-		<if test="method != null and method!= '' ">
-			AND saluki_invoke.method = #{method}
-		</if>
-		<if test="consumer != null and consumer!= '' ">
-			AND saluki_invoke.consumer = #{consumer}
-		</if>
-		<if test="provider != null and provider!= '' ">
-			AND saluki_invoke.provider = #{provider}
-		</if>
-		<if test="type != null and type!= '' ">
-			AND saluki_invoke.type = #{type}
 		</if>
 		GROUP BY saluki_invoke.service, saluki_invoke.method
 		ORDER BY

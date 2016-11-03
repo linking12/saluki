@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.monitor.domain.LineChartSeries;
@@ -18,14 +18,14 @@ import com.quancheng.saluki.monitor.domain.SalukiInvokeLineChart;
 import com.quancheng.saluki.monitor.util.CommonResponse;
 import com.quancheng.saluki.monitor.util.DateUtil;
 
-@Controller
+@RestController
 @RequestMapping("/salukiMonitor")
 public class IndexController {
 
     @Autowired
     private SalukiMonitoWebService dubboMonitorService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/index", method = RequestMethod.GET)
     public CommonResponse loadTopDate(@RequestParam(value = "from", required = true) String from,
                                       @RequestParam(value = "to", required = true) String to) {
         SalukiInvoke dubboInvoke = new SalukiInvoke();
