@@ -9,7 +9,8 @@
 	<artifactId>saluki-monitor</artifactId>
 	<packaging>pom</packaging>
 	<modules>
-		<module>saluki-monitor-agent</module>
+		<module>saluki-monitor-consumer</module>
+		<module>saluki-monitor-provider</module>
 		<module>saluki-monitor-web</module>
 	</modules>
 </project>
