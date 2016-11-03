@@ -24,7 +24,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
@@ -174,14 +173,13 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String traceId = RpcContext.getContext().getAttachment(MonitorService.TRACEID);
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
             String req = new Gson().toJson(request);// 入参
             String rep = new Gson().toJson(response);// 出参
+            String consumerHost = System.getProperty(SalukiConstants.REGISTRY_CLIENT_HOST, NetUtils.getLocalHost());
             for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), 0, //
+                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, consumerHost, 0, //
                                               service + "/" + method, //
-                                              MonitorService.TRACEID, traceId, //
                                               MonitorService.TIMESTAMP, String.valueOf(start), //
                                               MonitorService.APPLICATION, //
                                               refUrl.getGroup(), //
