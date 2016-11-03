@@ -41,7 +41,7 @@ public class IndexController {
         Map<String, List<SalukiInvoke>> dubboInvokeMap = dubboMonitorService.countDubboInvokeTopTen(dubboInvoke);
         List<SalukiInvoke> success = (List<SalukiInvoke>) dubboInvokeMap.get("success");
         for (SalukiInvoke di : success) {
-            sxAxisCategories.add(di.getMethod());
+            sxAxisCategories.add(di.getService() + "." + di.getMethod());
             data = new double[] { di.getSuccess() };
             sdataList.add(data);
         }
@@ -59,7 +59,7 @@ public class IndexController {
         List<double[]> fdataList = Lists.newArrayList();
         List<SalukiInvoke> failure = (List<SalukiInvoke>) dubboInvokeMap.get("failure");
         for (SalukiInvoke di : failure) {
-            fxAxisCategories.add(di.getMethod());
+            fxAxisCategories.add(di.getService() + "." + di.getMethod());
             data = new double[] { di.getFailure() };
             fdataList.add(data);
         }
