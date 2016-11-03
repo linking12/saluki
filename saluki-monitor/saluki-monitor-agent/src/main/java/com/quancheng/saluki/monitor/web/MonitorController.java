@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.saluki.monitor.domain.SalukiInvoke;
@@ -23,7 +22,7 @@ public class MonitorController {
     }
 
     @RequestMapping(value = "/clear", method = RequestMethod.GET)
-    public void clear(@RequestParam(value = "service", required = true) String service) {
+    public void clear() {
         mapper.truncateTable();
     }
 }
