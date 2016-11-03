@@ -1,49 +1,41 @@
 package com.quancheng.saluki.monitor.config;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.h2.tools.Server;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.boot.bind.RelaxedPropertyResolver;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
-import com.alibaba.druid.pool.DruidDataSource;
-
 @Configuration
-@PropertySource("classpath:monitor.properties")
-public class MyBatisConfig implements EnvironmentAware {
+public class MyBatisConfig {
 
-    private RelaxedPropertyResolver propertyResolver;
-
-    @Override
-    public void setEnvironment(Environment env) {
-        this.propertyResolver = new RelaxedPropertyResolver(env, "spring.datasource.");
+    @Bean
+    public DataSource dataSource() {
+        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+        EmbeddedDatabase db = builder.setType(EmbeddedDatabaseType.H2) //
+                                     .setName("saluki-monitor")//
+                                     .addScript("sql/create-db.sql")//
+                                     .build();
+        return db;
     }
 
-    @Bean(destroyMethod = "close", initMethod = "init")
-    public DataSource dataSource() {
-        DruidDataSource datasource = new DruidDataSource();
-        datasource.setUrl(propertyResolver.getProperty("url"));
-        datasource.setDriverClassName(propertyResolver.getProperty("driver-class-name"));
-        datasource.setUsername(propertyResolver.getProperty("username"));
-        datasource.setPassword(propertyResolver.getProperty("password"));
-        datasource.setInitialSize(Integer.valueOf(propertyResolver.getProperty("initialSize")));
-        datasource.setMinIdle(Integer.valueOf(propertyResolver.getProperty("minIdle")));
-        datasource.setMaxWait(Long.valueOf(propertyResolver.getProperty("maxWait")));
-        datasource.setMaxActive(Integer.valueOf(propertyResolver.getProperty("maxActive")));
-        datasource.setMinEvictableIdleTimeMillis(Long.valueOf(propertyResolver.getProperty("minEvictableIdleTimeMillis")));
-        return datasource;
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server startDBManager() throws SQLException {
+        return Server.createWebServer();
     }
 
     @Bean(name = "sqlSessionFactory")
