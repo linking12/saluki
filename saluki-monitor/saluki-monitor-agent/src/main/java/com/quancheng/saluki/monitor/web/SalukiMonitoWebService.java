@@ -45,8 +45,7 @@ public class SalukiMonitoWebService {
      * @return
      */
     public List<SalukiInvoke> countDubboInvokeInfo(SalukiInvoke invoke) {
-        if (StringUtils.isEmpty(invoke.getService()) || StringUtils.isEmpty(invoke.getMethod())
-            || StringUtils.isEmpty(invoke.getType())) {
+        if (StringUtils.isEmpty(invoke.getService()) || StringUtils.isEmpty(invoke.getMethod())) {
             logger.error("统计查询缺少必要参数！");
             throw new RuntimeException("统计查询缺少必要参数！");
         }

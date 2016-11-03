@@ -77,14 +77,11 @@
 		SUM(saluki_invoke.success) as success,
 		SUM(saluki_invoke.failure) as failure,
 		SUM(saluki_invoke.elapsed) as elapsed,
-		saluki_invoke.inPutParam as inPutParam
+		saluki_invoke.inPutParam as inPutParam,
 		saluki_invoke.outPutParam as outPutParam
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date =#{invokeDate}
-		</if>
 		<if test="invokeDateFrom != null">
 			AND saluki_invoke.invoke_date &gt;=#{invokeDateFrom}
 		</if>
@@ -97,15 +94,6 @@
 		<if test="method != null and method!= '' ">
 			AND saluki_invoke.method = #{method}
 		</if>
-		<if test="consumer != null and consumer!= '' ">
-			AND saluki_invoke.consumer = #{consumer}
-		</if>
-		<if test="provider != null and provider!= '' ">
-			AND saluki_invoke.provider = #{provider}
-		</if>
-		<if test="type != null and type!= '' ">
-			AND saluki_invoke.type = #{type}
-		</if>
 	</select>
 
 	<select id="getMethodsByService" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
@@ -115,9 +103,6 @@
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="invokeDate != null">
-			AND invoke_date = #{invokeDate}
-		</if>
 	    <if test="invokeDateFrom != null">
 			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
@@ -129,12 +114,6 @@
 		</if>
 		<if test="method != null and method!= '' ">
 			AND method = #{method}
-		</if>
-		<if test="consumer != null and consumer!= '' ">
-			AND consumer = #{consumer}
-		</if>
-		<if test="provider != null and provider!= '' ">
-			AND provider = #{provider}
 		</if>
 	</select>
 
