@@ -25,7 +25,7 @@ import java.util.Date;
  *
  * @author Zhiguo.Chen <me@chenzhiguo.cn> Created on 15/6/29.
  */
-public class DubboInvoke implements Serializable {
+public class SalukiInvoke implements Serializable {
 
     private String id;
 
