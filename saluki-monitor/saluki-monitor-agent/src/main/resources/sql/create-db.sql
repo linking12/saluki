@@ -12,7 +12,7 @@ CREATE TABLE `saluki_invoke` (
   `failure` int(11) DEFAULT NULL,
   `elapsed` int(11) DEFAULT NULL,
   `concurrent` int(11) DEFAULT NULL,
-  `max_elapsed` int(11) DEFAULT NULL,
-  `max_concurrent` int(11) DEFAULT NULL,
+  `inPutParam` varchar(500) DEFAULT NULL,
+  `outPutParam` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );

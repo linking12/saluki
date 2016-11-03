@@ -100,9 +100,10 @@ public class SalukiMonitorService implements MonitorService {
             dubboInvoke.setFailure(statistics.getParameter(FAILURE, 0));
             dubboInvoke.setElapsed(statistics.getParameter(ELAPSED, 0));
             dubboInvoke.setConcurrent(statistics.getParameter(CONCURRENT, 0));
+            dubboInvoke.setInPutParam(statistics.getParameter(INPUT, ""));
+            dubboInvoke.setOutPutParam(statistics.getParameter(OUTPUT, ""));
             if (dubboInvoke.getSuccess() == 0 && dubboInvoke.getFailure() == 0 && dubboInvoke.getElapsed() == 0
-                && dubboInvoke.getConcurrent() == 0 && dubboInvoke.getMaxElapsed() == 0
-                && dubboInvoke.getMaxConcurrent() == 0) {
+                && dubboInvoke.getConcurrent() == 0) {
                 return;
             }
             invokeMapping.addDubboInvoke(dubboInvoke);

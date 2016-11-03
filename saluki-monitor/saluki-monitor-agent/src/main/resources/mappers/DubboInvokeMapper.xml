@@ -16,8 +16,8 @@
         failure,
         elapsed,
         concurrent,
-        max_elapsed,
-        max_concurrent
+        inPutParam,
+        outPutParam
     </sql>
 
     <!-- Add -->
@@ -39,8 +39,8 @@
         #{failure},
         #{elapsed},
         #{concurrent},
-        #{maxElapsed},
-        #{maxConcurrent}
+        #{inPutParam},
+        #{outPutParam}
         )
     </insert>
 </mapper>

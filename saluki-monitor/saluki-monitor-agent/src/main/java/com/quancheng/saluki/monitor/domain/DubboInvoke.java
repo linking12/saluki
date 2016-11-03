@@ -49,11 +49,11 @@ public class DubboInvoke implements Serializable {
 
     private int    concurrent;
 
-    private int    maxElapsed;
-
-    private int    maxConcurrent;
-
     private Date   invokeTime;
+
+    private String inPutParam;
+
+    private String outPutParam;
 
     // ====================查询辅助参数===================
     /**
@@ -180,22 +180,6 @@ public class DubboInvoke implements Serializable {
         this.concurrent = concurrent;
     }
 
-    public int getMaxElapsed() {
-        return maxElapsed;
-    }
-
-    public void setMaxElapsed(int maxElapsed) {
-        this.maxElapsed = maxElapsed;
-    }
-
-    public int getMaxConcurrent() {
-        return maxConcurrent;
-    }
-
-    public void setMaxConcurrent(int maxConcurrent) {
-        this.maxConcurrent = maxConcurrent;
-    }
-
     public void setTimeParticle(long timeParticle) {
         this.timeParticle = timeParticle;
     }
@@ -206,6 +190,22 @@ public class DubboInvoke implements Serializable {
 
     public void setInvokeTime(Date invokeTime) {
         this.invokeTime = invokeTime;
+    }
+
+    public String getInPutParam() {
+        return inPutParam;
+    }
+
+    public void setInPutParam(String inPutParam) {
+        this.inPutParam = inPutParam;
+    }
+
+    public String getOutPutParam() {
+        return outPutParam;
+    }
+
+    public void setOutPutParam(String outPutParam) {
+        this.outPutParam = outPutParam;
     }
 
 }
