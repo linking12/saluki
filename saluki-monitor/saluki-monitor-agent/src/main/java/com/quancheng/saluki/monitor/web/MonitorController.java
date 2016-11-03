@@ -14,7 +14,7 @@ import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 
 @RestController
-@RequestMapping("/saluki")
+@RequestMapping("/salukiMonitor/all")
 public class MonitorController {
 
     private final SalukiInvokeMapper mapper = SpringBeanUtils.getBean(SalukiInvokeMapper.class);

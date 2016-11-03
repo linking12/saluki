@@ -19,7 +19,7 @@ public interface SalukiInvokeMapper {
 
     List<SalukiInvoke> countInvokeInfo(SalukiInvoke invoke);
 
-    String getMethodsByService(SalukiInvoke invoke);
+    List<String> getMethodsByService(SalukiInvoke invoke);
 
     List<SalukiInvoke> countInvokeSuccessTopTen(SalukiInvoke invoke);
 
