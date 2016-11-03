@@ -26,8 +26,7 @@ if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
 description = 'spring-boot-starter-saluki'
 dependencies {
     compile project(':spring-boot-starter-saluki')
-    compile project(':saluki-monitor:saluki-monitor-consumer')
-    compile project(':saluki-monitor:saluki-monitor-provider')
+    compile project(':saluki-monitor:saluki-monitor-agent')
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.0.RELEASE'
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.0.RELEASE'){
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'

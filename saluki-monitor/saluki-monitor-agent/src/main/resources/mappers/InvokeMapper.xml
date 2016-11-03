@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper">
+
+
+	<sql id="allNoAsOfInvoke">
+		id,
+		invoke_date,
+		service,
+		method,
+		consumer,
+		provider,
+		type,
+		invoke_time,
+		success,
+		failure,
+		elapsed,
+		concurrent,
+		inPutParam,
+		outPutParam
+	</sql>
+
+	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		insert into
+		saluki_invoke (
+		<include refid="allNoAsOfInvoke" />
+		)
+		values(
+		#{id},
+		#{invokeDate},
+		#{service},
+		#{method},
+		#{consumer},
+		#{provider},
+		#{type},
+		#{invokeTime},
+		#{success},
+		#{failure},
+		#{elapsed},
+		#{concurrent},
+		#{inPutParam},
+		#{outPutParam}
+		)
+	</insert>
+
+
+	<select id="countInvoke" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
+		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		SELECT
+		saluki_invoke.method,
+		saluki_invoke.type,
+		SUM(saluki_invoke.success)
+		as success,
+		SUM(saluki_invoke.elapsed) /
+		SUM(saluki_invoke.success) as
+		elapsed,
+		saluki_invoke.invoke_time DIV
+		#{timeParticle} * #{timeParticle}
+		as invokeTime
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		<if test="invokeDate != null">
+			AND saluki_invoke.invoke_date =
+			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateTo != null">
+			AND saluki_invoke.invoke_date &lt;=
+			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+		</if>
+		<if test="service != null and service!= '' ">
+			AND saluki_invoke.service = #{service}
+		</if>
+		<if test="method != null and method!= '' ">
+			AND saluki_invoke.method = #{method}
+		</if>
+		<if test="consumer != null and consumer!= '' ">
+			AND saluki_invoke.consumer = #{consumer}
+		</if>
+		<if test="provider != null and provider!= '' ">
+			AND saluki_invoke.provider = #{provider}
+		</if>
+		<if test="type != null and type!= '' ">
+			AND saluki_invoke.type = #{type}
+		</if>
+		GROUP BY saluki_invoke.invoke_time DIV #{timeParticle} *
+		#{timeParticle}
+	</select>
+
+	<select id="countInvokeInfo" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
+		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		SELECT
+		SUM(saluki_invoke.success) as success,
+		SUM(saluki_invoke.failure)
+		as failure,
+		SUM(saluki_invoke.elapsed) as
+		elapsed,
+		saluki_invoke.inPutParam as inPutParam
+		saluki_invoke.outPutParam as outPutParam
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		<if test="invokeDate != null">
+			AND saluki_invoke.invoke_date =
+			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateTo != null">
+			AND saluki_invoke.invoke_date &lt;=
+			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+		</if>
+		<if test="service != null and service!= '' ">
+			AND saluki_invoke.service = #{service}
+		</if>
+		<if test="method != null and method!= '' ">
+			AND saluki_invoke.method = #{method}
+		</if>
+		<if test="consumer != null and consumer!= '' ">
+			AND saluki_invoke.consumer = #{consumer}
+		</if>
+		<if test="provider != null and provider!= '' ">
+			AND saluki_invoke.provider = #{provider}
+		</if>
+		<if test="type != null and type!= '' ">
+			AND saluki_invoke.type = #{type}
+		</if>
+	</select>
+
+	<select id="getMethodsByService" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
+		resultType="string">
+		SELECT
+		DISTINCT(method)
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		<if test="invokeDate != null">
+			AND invoke_date = DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateTo != null">
+			AND saluki_invoke.invoke_date &lt;=
+			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+		</if>
+		<if test="service != null and service!= '' ">
+			AND service = #{service}
+		</if>
+		<if test="method != null and method!= '' ">
+			AND method = #{method}
+		</if>
+		<if test="consumer != null and consumer!= '' ">
+			AND consumer = #{consumer}
+		</if>
+		<if test="provider != null and provider!= '' ">
+			AND provider = #{provider}
+		</if>
+		<if test="type != null and type!= '' ">
+			AND type = #{type}
+		</if>
+	</select>
+
+	<select id="countInvokeSuccessTopTen" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
+		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		SELECT
+		saluki_invoke.service,
+		saluki_invoke.method,
+		SUM(saluki_invoke.success) as success
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		<if test="invokeDate != null">
+			AND saluki_invoke.invoke_date =
+			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateTo != null">
+			AND saluki_invoke.invoke_date &lt;=
+			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+		</if>
+		<if test="service != null and service!= '' ">
+			AND saluki_invoke.service = #{service}
+		</if>
+		<if test="method != null and method!= '' ">
+			AND saluki_invoke.method = #{method}
+		</if>
+		<if test="consumer != null and consumer!= '' ">
+			AND saluki_invoke.consumer = #{consumer}
+		</if>
+		<if test="provider != null and provider!= '' ">
+			AND saluki_invoke.provider = #{provider}
+		</if>
+		<if test="type != null and type!= '' ">
+			AND saluki_invoke.type = #{type}
+		</if>
+		GROUP BY saluki_invoke.service, saluki_invoke.method
+		ORDER BY
+		SUM(saluki_invoke.success) DESC LIMIT 20
+	</select>
+
+	<select id="countInvokeFailureTopTen" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
+		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		SELECT
+		saluki_invoke.service,
+		saluki_invoke.method,
+		SUM(saluki_invoke.failure) as failure
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		<if test="invokeDate != null">
+			AND saluki_invoke.invoke_date =
+			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+		</if>
+		<if test="invokeDateTo != null">
+			AND saluki_invoke.invoke_date &lt;=
+			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+		</if>
+		<if test="service != null and service!= '' ">
+			AND saluki_invoke.service = #{service}
+		</if>
+		<if test="method != null and method!= '' ">
+			AND saluki_invoke.method = #{method}
+		</if>
+		<if test="consumer != null and consumer!= '' ">
+			AND saluki_invoke.consumer = #{consumer}
+		</if>
+		<if test="provider != null and provider!= '' ">
+			AND saluki_invoke.provider = #{provider}
+		</if>
+		<if test="type != null and type!= '' ">
+			AND saluki_invoke.type = #{type}
+		</if>
+		GROUP BY saluki_invoke.service, saluki_invoke.method
+		ORDER BY
+		SUM(saluki_invoke.failure) DESC LIMIT 20
+	</select>
+
+
+	<select id="queryAllInvoke" parameterType="java.lang.String"
+		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
+		SELECT * 
+		FROM saluki_invoke
+		WHERE
+		1 = 1
+		AND saluki_invoke.service =
+		#{service}
+		ORDER BY saluki_invoke.invoke_time DESC
+	</select>
+
+	<delete id="truncateTable">
+		truncate table saluki_invoke
+	</delete>
+</mapper>

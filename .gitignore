@@ -45,5 +45,5 @@
 /.gradle/
 /build/*
 /build/
-/saluki-monitor/saluki-monitor-consumer/.*
-/saluki-monitor/saluki-monitor-consumer/build
+/saluki-monitor/saluki-monitor-agent/.*
+/saluki-monitor/saluki-monitor-agent/build
