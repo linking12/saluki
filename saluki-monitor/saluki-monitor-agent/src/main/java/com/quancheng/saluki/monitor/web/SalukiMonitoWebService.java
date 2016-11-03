@@ -59,8 +59,8 @@ public class SalukiMonitoWebService {
      * @param invoke
      * @return
      */
-    public Map<String, List> countDubboInvokeTopTen(SalukiInvoke invoke) {
-        Map<String, List> result = Maps.newHashMap();
+    public Map<String, List<SalukiInvoke>> countDubboInvokeTopTen(SalukiInvoke invoke) {
+        Map<String, List<SalukiInvoke>> result = Maps.newHashMap();
         result.put("success", mapper.countInvokeSuccessTopTen(invoke));
         result.put("failure", mapper.countInvokeFailureTopTen(invoke));
         return result;

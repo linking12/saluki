@@ -20,9 +20,9 @@ public class MonitorController {
     private final SalukiInvokeMapper mapper = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
 
     @RequestMapping(value = "/queryByService", method = RequestMethod.GET)
-    public List<SalukiInvoke> view(@RequestParam(value = "serviceName", required = true) String serviceName) {
-        if (StringUtils.isNoneBlank(serviceName)) {
-            return mapper.queryAllInvoke(serviceName);
+    public List<SalukiInvoke> view(@RequestParam(value = "service", required = true) String service) {
+        if (StringUtils.isNoneBlank(service)) {
+            return mapper.queryAllInvoke(service);
         } else {
             return Collections.emptyList();
         }

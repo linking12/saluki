@@ -17,30 +17,19 @@ package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
 
-/**
- * Dubbo Statistics Entity
- *
- * @author Zhiguo.Chen <me@chenzhiguo.cn> Created on 15/7/2.
- */
 public class SalukiStatistics implements Serializable {
 
-    private String method;
+    private static final long serialVersionUID = 1L;
 
-    private double consumerSuccess;
+    private String            method;
 
-    private double providerSuccess;
+    private double            success;
 
-    private double consumerFailure;
+    private double            failure;
 
-    private double providerFailure;
+    private double            avgElapsed;
 
-    private double consumerAvgElapsed;
-
-    private double providerAvgElapsed;
-
-    private int    consumerMaxConcurrent;
-
-    private int    providerMaxConcurrent;
+    private double            maxConcurrent;
 
     public String getMethod() {
         return method;
@@ -50,67 +39,36 @@ public class SalukiStatistics implements Serializable {
         this.method = method;
     }
 
-    public double getConsumerSuccess() {
-        return consumerSuccess;
+    public double getSuccess() {
+        return success;
     }
 
-    public void setConsumerSuccess(double consumerSuccess) {
-        this.consumerSuccess = consumerSuccess;
+    public void setSuccess(double success) {
+        this.success = success;
     }
 
-    public double getProviderSuccess() {
-        return providerSuccess;
+    public double getFailure() {
+        return failure;
     }
 
-    public void setProviderSuccess(double providerSuccess) {
-        this.providerSuccess = providerSuccess;
+    public void setFailure(double failure) {
+        this.failure = failure;
     }
 
-    public double getConsumerFailure() {
-        return consumerFailure;
+    public double getAvgElapsed() {
+        return avgElapsed;
     }
 
-    public void setConsumerFailure(double consumerFailure) {
-        this.consumerFailure = consumerFailure;
+    public void setAvgElapsed(double avgElapsed) {
+        this.avgElapsed = avgElapsed;
     }
 
-    public double getProviderFailure() {
-        return providerFailure;
+    public double getMaxConcurrent() {
+        return maxConcurrent;
     }
 
-    public void setProviderFailure(double providerFailure) {
-        this.providerFailure = providerFailure;
+    public void setMaxConcurrent(double maxConcurrent) {
+        this.maxConcurrent = maxConcurrent;
     }
 
-    public double getConsumerAvgElapsed() {
-        return consumerAvgElapsed;
-    }
-
-    public void setConsumerAvgElapsed(double consumerAvgElapsed) {
-        this.consumerAvgElapsed = consumerAvgElapsed;
-    }
-
-    public double getProviderAvgElapsed() {
-        return providerAvgElapsed;
-    }
-
-    public void setProviderAvgElapsed(double providerAvgElapsed) {
-        this.providerAvgElapsed = providerAvgElapsed;
-    }
-
-    public int getConsumerMaxConcurrent() {
-        return consumerMaxConcurrent;
-    }
-
-    public void setConsumerMaxConcurrent(int consumerMaxConcurrent) {
-        this.consumerMaxConcurrent = consumerMaxConcurrent;
-    }
-
-    public int getProviderMaxConcurrent() {
-        return providerMaxConcurrent;
-    }
-
-    public void setProviderMaxConcurrent(int providerMaxConcurrent) {
-        this.providerMaxConcurrent = providerMaxConcurrent;
-    }
 }

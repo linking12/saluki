@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.utils.NetUtils;
 
 /**
@@ -40,8 +42,9 @@ public class SystemController {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 
+    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    public String system(Model model) {
+    public String system() {
         List<String[]> rows = new ArrayList<String[]>();
 
         rows.add(new String[] { "Version", "2.8.4" });
@@ -67,7 +70,8 @@ public class SystemController {
 
         rows.add(new String[] { "Time", formatter.format(new Date()) });
 
-        model.addAttribute("rows", rows);
+        Map<String, Object> model = Maps.newHashMap();
+        model.put("rows", rows);
         return "system";
     }
 
