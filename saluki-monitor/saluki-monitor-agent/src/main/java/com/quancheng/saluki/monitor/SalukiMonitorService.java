@@ -95,7 +95,7 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setInvokeDate(new Date());
             invoke.setService(statistics.getServiceInterface());
             invoke.setMethod(statistics.getParameter(METHOD));
-            invoke.setInvokeTime(invokeTime);
+            invoke.setInvokeTime(statistics.getParameter(TIMESTAMP, System.currentTimeMillis()));
             invoke.setSuccess(statistics.getParameter(SUCCESS, 0));
             invoke.setFailure(statistics.getParameter(FAILURE, 0));
             invoke.setElapsed(statistics.getParameter(ELAPSED, 0));
@@ -107,8 +107,6 @@ public class SalukiMonitorService implements MonitorService {
                 return;
             }
             invokeMapping.addInvoke(invoke);
-            List<SalukiInvoke> s = invokeMapping.queryAllInvoke("com.quancheng.examples.service.HelloService");
-            System.out.println(s);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }

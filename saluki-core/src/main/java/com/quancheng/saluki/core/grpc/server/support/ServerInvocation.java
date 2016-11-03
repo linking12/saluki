@@ -35,7 +35,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
 
     private static final Logger                        log         = LoggerFactory.getLogger(ServerInvocation.class);
 
-    private final List<MonitorService>                 monitors;
+    // private final List<MonitorService> monitors;
 
     private final Object                               serviceToInvoke;
 
@@ -48,7 +48,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
-        this.monitors = this.findMonitor();
+        // this.monitors = this.findMonitor();
         this.providerUrl = providerUrl;
     }
 
@@ -66,11 +66,11 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             Object[] requestParams = new Object[] { reqPojo };
             Object respPojo = method.invoke(serviceToInvoke, requestParams);
             respProtoBufer = PojoProtobufUtils.Pojo2Protobuf(respPojo);
-            collect(reqProtoBufer, respProtoBufer, start, false);
+            //collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            collect(reqProtoBufer, respProtoBufer, start, true);
+            //collect(reqProtoBufer, respProtoBufer, start, true);
             // 由于反射调用method，获得的异常都是经过反射异常包装过的，所以我们需要取target error
             Throwable target = e.getCause();
             if (log.isInfoEnabled()) {
@@ -90,42 +90,42 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         }
     }
 
-    // 信息采集
-    private void collect(Message request, Message response, long start, boolean error) {
-        try {
-            if (monitors == null || monitors.isEmpty()) {
-                return;
-            }
-            // ---- 服务信息获取 ----
-            long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
-            int concurrent = getConcurrent().get(); // 当前并发数
-            String service = providerUrl.getServiceInterface(); // 获取服务名称
-            String method = this.method.getName(); // 获取方法名
-            String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
-            String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();
-            String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT, registryRealPort);
-            String req = new Gson().toJson(request);// 入参
-            String rep = new Gson().toJson(response);// 出参
-            for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), //
-                                              Integer.valueOf(registryPort), //
-                                              service + "/" + method, //
-                                              MonitorService.TIMESTAMP, String.valueOf(start), //
-                                              MonitorService.APPLICATION, providerUrl.getGroup(), //
-                                              MonitorService.INTERFACE, service, //
-                                              MonitorService.METHOD, method, //
-                                              MonitorService.CONSUMER, consumer, //
-                                              error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
-                                              MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                              MonitorService.INPUT, req, //
-                                              MonitorService.OUTPUT, rep));
-            }
-        } catch (Throwable t) {
-            log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
-                      + t.getMessage(), t);
-        }
-    }
+//    // 信息采集
+//    private void collect(Message request, Message response, long start, boolean error) {
+//        try {
+//            if (monitors == null || monitors.isEmpty()) {
+//                return;
+//            }
+//            // ---- 服务信息获取 ----
+//            long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
+//            int concurrent = getConcurrent().get(); // 当前并发数
+//            String service = providerUrl.getServiceInterface(); // 获取服务名称
+//            String method = this.method.getName(); // 获取方法名
+//            String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
+//            String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();
+//            String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT, registryRealPort);
+//            String req = new Gson().toJson(request);// 入参
+//            String rep = new Gson().toJson(response);// 出参
+//            for (MonitorService monitor : monitors) {
+//                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), //
+//                                              Integer.valueOf(registryPort), //
+//                                              service + "/" + method, //
+//                                              MonitorService.TIMESTAMP, String.valueOf(start), //
+//                                              MonitorService.APPLICATION, providerUrl.getGroup(), //
+//                                              MonitorService.INTERFACE, service, //
+//                                              MonitorService.METHOD, method, //
+//                                              MonitorService.CONSUMER, consumer, //
+//                                              error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
+//                                              MonitorService.ELAPSED, String.valueOf(elapsed), //
+//                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
+//                                              MonitorService.INPUT, req, //
+//                                              MonitorService.OUTPUT, rep));
+//            }
+//        } catch (Throwable t) {
+//            log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
+//                      + t.getMessage(), t);
+//        }
+//    }
 
     // 获取并发计数器
     private AtomicInteger getConcurrent() {
@@ -138,12 +138,12 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         return concurrent;
     }
 
-    private List<MonitorService> findMonitor() {
-        Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
-        List<MonitorService> list = Lists.newArrayList();
-        for (MonitorService current : candidates) {
-            list.add(current);
-        }
-        return list;
-    }
+    // private List<MonitorService> findMonitor() {
+    // Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
+    // List<MonitorService> list = Lists.newArrayList();
+    // for (MonitorService current : candidates) {
+    // list.add(current);
+    // }
+    // return list;
+    // }
 }

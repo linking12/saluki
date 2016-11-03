@@ -7,7 +7,7 @@ CREATE TABLE `saluki_invoke` (
   `consumer` varchar(255) DEFAULT NULL,
   `provider` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT '',
-  `invoke_time` datetime DEFAULT NULL,
+  `invoke_time` bigint(20) DEFAULT NULL,
   `success` int(11) DEFAULT NULL,
   `failure` int(11) DEFAULT NULL,
   `elapsed` int(11) DEFAULT NULL,

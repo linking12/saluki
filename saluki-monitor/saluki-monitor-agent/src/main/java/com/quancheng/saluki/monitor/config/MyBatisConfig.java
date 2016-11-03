@@ -1,8 +1,11 @@
 package com.quancheng.saluki.monitor.config;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.h2.tools.Server;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -45,6 +48,12 @@ public class MyBatisConfig {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    @ConditionalOnMissingBean(Server.class)
+    public Server h2WebServer() throws SQLException {
+        return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
     }
 
     @Bean

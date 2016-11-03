@@ -32,7 +32,7 @@ public class SalukiInvoke implements Serializable {
 
     private int               concurrent;
 
-    private Date              invokeTime;
+    private long              invokeTime;
 
     private String            inPutParam;
 
@@ -167,11 +167,11 @@ public class SalukiInvoke implements Serializable {
         this.timeParticle = timeParticle;
     }
 
-    public Date getInvokeTime() {
+    public long getInvokeTime() {
         return invokeTime;
     }
 
-    public void setInvokeTime(Date invokeTime) {
+    public void setInvokeTime(long invokeTime) {
         this.invokeTime = invokeTime;
     }
 

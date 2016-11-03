@@ -1,11 +1,11 @@
 package com.quancheng.saluki.monitor.web;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,22 +13,23 @@ import com.quancheng.saluki.monitor.domain.LineChartSeries;
 import com.quancheng.saluki.monitor.domain.SalukiInvoke;
 import com.quancheng.saluki.monitor.domain.SalukiInvokeLineChart;
 import com.quancheng.saluki.monitor.util.CommonResponse;
+import com.quancheng.saluki.monitor.util.DateUtil;
 
 @RestController
-@RequestMapping("/salukiMonitor/charts")
+@RequestMapping("/salukiMonitor")
 public class ChartsController {
 
     @Autowired
     private SalukiMonitoWebService dubboMonitorService;
 
-    @RequestMapping(value = "loadChartsData")
+    @RequestMapping(value = "/charts", method = RequestMethod.GET)
     public CommonResponse loadChartsData(@RequestParam(value = "service", required = true) String service,
-                                         @RequestParam(value = "from", required = true) Date from,
-                                         @RequestParam(value = "to", required = true) Date to) {
+                                         @RequestParam(value = "from", required = true) String from,
+                                         @RequestParam(value = "to", required = true) String to) {
         SalukiInvoke dubboInvoke = new SalukiInvoke();
         dubboInvoke.setService(service);
-        dubboInvoke.setInvokeDateFrom(from);
-        dubboInvoke.setInvokeDateTo(to);
+        dubboInvoke.setInvokeDateFrom(DateUtil.parse(from));
+        dubboInvoke.setInvokeDateTo(DateUtil.parse(to));
         long timeParticle = dubboInvoke.getTimeParticle() / 1000;
         List<SalukiInvokeLineChart> dubboInvokeLineChartList = new ArrayList<SalukiInvokeLineChart>();
         SalukiInvokeLineChart qpsLineChart;
@@ -56,11 +57,11 @@ public class ChartsController {
             double[] qpsProviderSeriesData;
             double[] artProviderSeriesData;
             for (SalukiInvoke dubboInvokeDetail : providerDubboInvokeDetails) {
-                qpsProviderSeriesData = new double[] { dubboInvokeDetail.getInvokeTime().getTime(),
+                qpsProviderSeriesData = new double[] { dubboInvokeDetail.getInvokeTime(),
                                                        Double.valueOf(String.format("%.4f",
                                                                                     dubboInvokeDetail.getSuccess() / timeParticle)) };
                 qpsSeriesDatas.add(qpsProviderSeriesData);
-                artProviderSeriesData = new double[] { dubboInvokeDetail.getInvokeTime().getTime(),
+                artProviderSeriesData = new double[] { dubboInvokeDetail.getInvokeTime(),
                                                        Double.valueOf(String.format("%.4f",
                                                                                     dubboInvokeDetail.getElapsed())) };
                 artSeriesDatas.add(artProviderSeriesData);
@@ -88,4 +89,5 @@ public class ChartsController {
         commonResponse.setData(dubboInvokeLineChartList);
         return commonResponse;
     }
+
 }

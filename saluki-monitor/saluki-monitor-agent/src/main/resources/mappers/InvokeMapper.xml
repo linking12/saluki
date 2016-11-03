@@ -50,28 +50,17 @@
 		SELECT
 		saluki_invoke.method,
 		saluki_invoke.type,
-		SUM(saluki_invoke.success)
-		as success,
-		SUM(saluki_invoke.elapsed) /
-		SUM(saluki_invoke.success) as
-		elapsed,
-		saluki_invoke.invoke_time DIV
-		#{timeParticle} * #{timeParticle}
-		as invokeTime
+		SUM(saluki_invoke.success) as success,
+		SUM(saluki_invoke.elapsed) / SUM(saluki_invoke.success) as elapsed,
+		FLOOR (saluki_invoke.invoke_time/60000/60000) as invokeTime
 		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date =
-			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
-		</if>
-		<if test="invokeDateFrom != null">
-			AND saluki_invoke.invoke_date &gt;=
-			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+	    <if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;=#{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
-			AND saluki_invoke.invoke_date &lt;=
-			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &lt;=#{invokeDateTo}
 		</if>
 		<if test="service != null and service!= '' ">
 			AND saluki_invoke.service = #{service}
@@ -79,43 +68,28 @@
 		<if test="method != null and method!= '' ">
 			AND saluki_invoke.method = #{method}
 		</if>
-		<if test="consumer != null and consumer!= '' ">
-			AND saluki_invoke.consumer = #{consumer}
-		</if>
-		<if test="provider != null and provider!= '' ">
-			AND saluki_invoke.provider = #{provider}
-		</if>
-		<if test="type != null and type!= '' ">
-			AND saluki_invoke.type = #{type}
-		</if>
-		GROUP BY saluki_invoke.invoke_time DIV #{timeParticle} *
-		#{timeParticle}
+		 GROUP BY FLOOR (saluki_invoke.invoke_time/60000/60000), saluki_invoke.invoke_time
 	</select>
 
 	<select id="countInvokeInfo" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke"
 		resultType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
 		SELECT
 		SUM(saluki_invoke.success) as success,
-		SUM(saluki_invoke.failure)
-		as failure,
-		SUM(saluki_invoke.elapsed) as
-		elapsed,
+		SUM(saluki_invoke.failure) as failure,
+		SUM(saluki_invoke.elapsed) as elapsed,
 		saluki_invoke.inPutParam as inPutParam
 		saluki_invoke.outPutParam as outPutParam
 		FROM saluki_invoke
 		WHERE
 		1 = 1
 		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date =
-			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date =#{invokeDate}
 		</if>
 		<if test="invokeDateFrom != null">
-			AND saluki_invoke.invoke_date &gt;=
-			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &gt;=#{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
-			AND saluki_invoke.invoke_date &lt;=
-			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &lt;=#{invokeDateTo}
 		</if>
 		<if test="service != null and service!= '' ">
 			AND saluki_invoke.service = #{service}
@@ -142,18 +116,16 @@
 		WHERE
 		1 = 1
 		<if test="invokeDate != null">
-			AND invoke_date = DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+			AND invoke_date = #{invokeDate}
 		</if>
-		<if test="invokeDateFrom != null">
-			AND saluki_invoke.invoke_date &gt;=
-			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+	    <if test="invokeDateFrom != null">
+			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
-			AND saluki_invoke.invoke_date &lt;=
-			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &lt;= #{invokeDateTo}
 		</if>
 		<if test="service != null and service!= '' ">
-			AND service = #{service}
+			AND service=#{service}
 		</if>
 		<if test="method != null and method!= '' ">
 			AND method = #{method}
@@ -163,9 +135,6 @@
 		</if>
 		<if test="provider != null and provider!= '' ">
 			AND provider = #{provider}
-		</if>
-		<if test="type != null and type!= '' ">
-			AND type = #{type}
 		</if>
 	</select>
 
@@ -179,16 +148,13 @@
 		WHERE
 		1 = 1
 		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date =
-			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date = #{invokeDate}
 		</if>
 		<if test="invokeDateFrom != null">
-			AND saluki_invoke.invoke_date &gt;=
-			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
-			AND saluki_invoke.invoke_date &lt;=
-			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &lt;= #{invokeDateTo}
 		</if>
 		<if test="service != null and service!= '' ">
 			AND saluki_invoke.service = #{service}
@@ -220,16 +186,13 @@
 		WHERE
 		1 = 1
 		<if test="invokeDate != null">
-			AND saluki_invoke.invoke_date =
-			DATE_FORMAT(#{invokeDate},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date = #{invokeDate}
 		</if>
 		<if test="invokeDateFrom != null">
-			AND saluki_invoke.invoke_date &gt;=
-			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &gt;= #{invokeDateFrom}
 		</if>
 		<if test="invokeDateTo != null">
-			AND saluki_invoke.invoke_date &lt;=
-			DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+			AND saluki_invoke.invoke_date &lt;= #{invokeDateTo}
 		</if>
 		<if test="service != null and service!= '' ">
 			AND saluki_invoke.service = #{service}

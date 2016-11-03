@@ -26,7 +26,6 @@ import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.utils.NetUtils;
@@ -42,9 +41,8 @@ public class SystemController {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 
-    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    public String system() {
+    public Map<String, Object> system() {
         List<String[]> rows = new ArrayList<String[]>();
 
         rows.add(new String[] { "Version", "2.8.4" });
@@ -72,7 +70,7 @@ public class SystemController {
 
         Map<String, Object> model = Maps.newHashMap();
         model.put("rows", rows);
-        return "system";
+        return model;
     }
 
     private static final long SECOND = 1000;
