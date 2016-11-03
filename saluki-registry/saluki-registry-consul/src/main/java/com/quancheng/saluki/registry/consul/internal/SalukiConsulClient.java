@@ -44,23 +44,26 @@ public class SalukiConsulClient {
     }
 
     public void registerEphemralNode(SalukiConsulEphemralNode ephemralNode) {
-        client.setKVValue(ephemralNode.getKey(), "");
-        List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
-        String sessionId = null;
-        if (sessions != null && !sessions.isEmpty()) {
-            for (Session session : sessions) {
-                if (session.getName().equals(ephemralNode.getIp())) {
-                    sessionId = session.getId();
+        try {
+            client.setKVValue(ephemralNode.getKey(), "");
+        } finally {
+            List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
+            String sessionId = null;
+            if (sessions != null && !sessions.isEmpty()) {
+                for (Session session : sessions) {
+                    if (session.getName().equals(ephemralNode.getIp())) {
+                        sessionId = session.getId();
+                    }
                 }
+            } else {
+                NewSession newSession = ephemralNode.getNewSession();
+                sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
+                ttlScheduler.addHeartbeatSession(sessionId);
             }
-        } else {
-            NewSession newSession = ephemralNode.getNewSession();
-            sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
-            ttlScheduler.addHeartbeatSession(sessionId);
+            PutParams kvPutParams = new PutParams();
+            kvPutParams.setAcquireSession(sessionId);
+            client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
         }
-        PutParams kvPutParams = new PutParams();
-        kvPutParams.setAcquireSession(sessionId);
-        client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
     }
 
     public SalukiConsulServiceResp lookupHealthService(String serviceName, long lastConsulIndex) {
