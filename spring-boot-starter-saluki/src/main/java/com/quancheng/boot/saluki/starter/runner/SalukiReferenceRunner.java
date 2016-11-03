@@ -72,6 +72,12 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         }
     }
 
+    private void registyConsumerIp() {
+        if (StringUtils.isNotBlank(grpcProperties.getClientHost())) {
+            System.setProperty(key, value);
+        }
+    }
+
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         if (StringUtils.isNoneBlank(reference.group())) {

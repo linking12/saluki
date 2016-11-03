@@ -82,7 +82,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
     private void resetRegistryPort() {
         int serverRegistryPort = grpcProperties.getServerRegistryPort();
         if (serverRegistryPort != 0) {
-            System.setProperty(SalukiConstants.REGISTRY_PORT, Integer.valueOf(serverRegistryPort).toString());
+            System.setProperty(SalukiConstants.REGISTRY_SERVER_PORT, Integer.valueOf(serverRegistryPort).toString());
         }
     }
 

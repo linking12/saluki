@@ -105,7 +105,7 @@ public class GRPCEngine {
                                                                                      new HeaderServerInterceptor());
             remoteServer.addService(serviceDefinition);
             injvmServer.addService(serviceDefinition);
-            String registryPort = System.getProperty(SalukiConstants.REGISTRY_PORT,
+            String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT,
                                                      Integer.valueOf(providerUrl.getPort()).toString());
             providerUrl = providerUrl.setPort(Integer.valueOf(registryPort).intValue());
             registry.register(providerUrl);

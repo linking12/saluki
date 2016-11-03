@@ -103,7 +103,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
             String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();
-            String registryPort = System.getProperty(SalukiConstants.REGISTRY_PORT, registryRealPort);
+            String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT, registryRealPort);
             String req = new Gson().toJson(request);// 入参
             String rep = new Gson().toJson(response);// 出参
             for (MonitorService monitor : monitors) {
