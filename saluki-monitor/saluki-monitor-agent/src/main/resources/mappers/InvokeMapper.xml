@@ -16,9 +16,7 @@
 		success,
 		failure,
 		elapsed,
-		concurrent,
-		inPutParam,
-		outPutParam
+		concurrent
 	</sql>
 
 	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvoke">
