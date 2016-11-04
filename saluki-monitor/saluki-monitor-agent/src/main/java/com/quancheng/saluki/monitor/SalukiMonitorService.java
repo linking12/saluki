@@ -119,8 +119,8 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setFailure(statistics.getParameter(FAILURE, 0));
             invoke.setElapsed(statistics.getParameter(ELAPSED, 0));
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 0));
-            invoke.setInPutParam(statistics.getParameter(INPUT, ""));
-            invoke.setOutPutParam(statistics.getParameter(OUTPUT, ""));
+            invoke.setInPutParam(statistics.getParameter(INPUT, "").getBytes());
+            invoke.setOutPutParam(statistics.getParameter(OUTPUT, "").getBytes());
             if (invoke.getSuccess() == 0 && invoke.getFailure() == 0 && invoke.getElapsed() == 0
                 && invoke.getConcurrent() == 0) {
                 return;

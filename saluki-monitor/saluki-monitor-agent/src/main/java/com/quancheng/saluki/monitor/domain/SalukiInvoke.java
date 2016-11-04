@@ -1,10 +1,10 @@
 
 package com.quancheng.saluki.monitor.domain;
 
-import org.springframework.util.StringUtils;
-
 import java.io.Serializable;
 import java.util.Date;
+
+import org.springframework.util.StringUtils;
 
 public class SalukiInvoke implements Serializable {
 
@@ -34,9 +34,9 @@ public class SalukiInvoke implements Serializable {
 
     private long              invokeTime;
 
-    private String            inPutParam;
+    private byte[]            inPutParam;
 
-    private String            outPutParam;
+    private byte[]            outPutParam;
 
     // ====================查询辅助参数===================
     /**
@@ -175,19 +175,19 @@ public class SalukiInvoke implements Serializable {
         this.invokeTime = invokeTime;
     }
 
-    public String getInPutParam() {
+    public byte[] getInPutParam() {
         return inPutParam;
     }
 
-    public void setInPutParam(String inPutParam) {
+    public void setInPutParam(byte[] inPutParam) {
         this.inPutParam = inPutParam;
     }
 
-    public String getOutPutParam() {
+    public byte[] getOutPutParam() {
         return outPutParam;
     }
 
-    public void setOutPutParam(String outPutParam) {
+    public void setOutPutParam(byte[] outPutParam) {
         this.outPutParam = outPutParam;
     }
 
