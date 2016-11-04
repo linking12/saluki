@@ -16,28 +16,20 @@
 package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Dubbo Application Entity
  *
- * @author Zhiguo.Chen <me@chenzhiguo.cn>
- *         Created on 15/6/27.
+ * @author Zhiguo.Chen <me@chenzhiguo.cn> Created on 15/6/27.
  */
 public class SalukiApplication implements Serializable {
 
-    private String name;
+    private String      name;
 
-    private String owner;
+    private Set<String> providers;
 
-    private String organization;
-
-    private int providerCount;
-
-    private int consumerCount;
-
-    private int efferentCount;
-
-    private int afferentCount;
+    private Set<String> consumers;
 
     public String getName() {
         return name;
@@ -47,51 +39,20 @@ public class SalukiApplication implements Serializable {
         this.name = name;
     }
 
-    public String getOwner() {
-        return owner;
+    public Set<String> getProviders() {
+        return providers;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setProviders(Set<String> providers) {
+        this.providers = providers;
     }
 
-    public String getOrganization() {
-        return organization;
+    public Set<String> getConsumers() {
+        return consumers;
     }
 
-    public void setOrganization(String organization) {
-        this.organization = organization;
+    public void setConsumers(Set<String> consumers) {
+        this.consumers = consumers;
     }
 
-    public int getProviderCount() {
-        return providerCount;
-    }
-
-    public void setProviderCount(int providerCount) {
-        this.providerCount = providerCount;
-    }
-
-    public int getConsumerCount() {
-        return consumerCount;
-    }
-
-    public void setConsumerCount(int consumerCount) {
-        this.consumerCount = consumerCount;
-    }
-
-    public int getEfferentCount() {
-        return efferentCount;
-    }
-
-    public void setEfferentCount(int efferentCount) {
-        this.efferentCount = efferentCount;
-    }
-
-    public int getAfferentCount() {
-        return afferentCount;
-    }
-
-    public void setAfferentCount(int afferentCount) {
-        this.afferentCount = afferentCount;
-    }
 }

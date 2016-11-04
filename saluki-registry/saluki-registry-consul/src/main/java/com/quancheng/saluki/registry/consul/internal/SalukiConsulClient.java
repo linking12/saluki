@@ -27,7 +27,7 @@ public class SalukiConsulClient {
     private final TtlScheduler  ttlScheduler;
 
     public SalukiConsulClient(String host, int port){
-        client = new ConsulClient(host + ":" + port);
+        client = new ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(client);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }

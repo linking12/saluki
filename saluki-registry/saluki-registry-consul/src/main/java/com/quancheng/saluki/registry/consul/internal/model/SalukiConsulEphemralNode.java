@@ -2,6 +2,7 @@ package com.quancheng.saluki.registry.consul.internal.model;
 
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.registry.consul.ConsulRegistry;
 
 public final class SalukiConsulEphemralNode {
@@ -31,11 +32,14 @@ public final class SalukiConsulEphemralNode {
     }
 
     public String getKey() {
-        return ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/" + this.ip;
+        String key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/" + this.ip;
+
+        return key;
     }
 
     public String getValue() {
-        return this.ip;
+        String consumerPort = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PORT);
+       return consumerPort;
     }
 
     public String getIp() {
