@@ -102,7 +102,7 @@ public class GreeterServiceImpl implements GreeterService {
 
 ```
 
-详细demo请看工程的example
+详细demo请看工程的<a href="https://github.com/quancheng-ec/saluki/tree/master/saluki-example" title="example">example</a> 
 
 
 * http2.0
