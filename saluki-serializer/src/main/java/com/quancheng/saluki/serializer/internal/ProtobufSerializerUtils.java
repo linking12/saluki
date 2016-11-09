@@ -34,6 +34,9 @@ public final class ProtobufSerializerUtils {
         if (value instanceof List) {
             return Iterable.class;
         }
+        if (value instanceof Map) {
+            return Map.class;
+        }
         return protobufClass;
     }
 
@@ -86,6 +89,9 @@ public final class ProtobufSerializerUtils {
         String setter = "set" + JStringUtils.upperCaseFirst(fieldName);
         if (fieldValue instanceof Collection) {
             setter = "addAll" + JStringUtils.upperCaseFirst(fieldName);
+        }
+        if (fieldValue instanceof Map) {
+            setter = "putAll" + JStringUtils.upperCaseFirst(fieldName);
         }
         final String configedSetter = protobufAttribute.protobufSetter();
         if (!configedSetter.equals(JStringUtils.EMPTY)) {
