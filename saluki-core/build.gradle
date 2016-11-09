@@ -1,4 +1,14 @@
-
+apply plugin: 'java'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
 description = 'saluki-core'
 dependencies {
     compile group: 'io.grpc', name: 'grpc-all', version:'1.0.1'

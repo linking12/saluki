@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -273,6 +274,11 @@ public class ProtobufSerializer implements IProtobufSerializer {
             newCollectionValues.addAll((Collection<?>) protobufValue);
             protobufValue = newCollectionValues;
             argClazz = ArrayList.class;
+        } else if (protobufValue instanceof Map) {
+            final Map<Object, Object> newMapValues = new HashMap<>();
+            newMapValues.putAll((Map<?, ?>) protobufValue);
+            protobufValue = newMapValues;
+            argClazz = Map.class;
         } else {
             protobufValue.getClass();
         }

@@ -12,7 +12,7 @@ sourceSets {
 description = 'spring-boot-starter-saluki'
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version:'1.4.0.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version:'1.4.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version:'1.4.0.RELEASE'   
     compile project(':saluki-core')
     compile project(':saluki-registry:saluki-registry-consul')
 }

@@ -11,7 +11,11 @@ import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.health.model.HealthService;
 import com.ecwid.consul.v1.health.model.HealthService.Service;
+import com.ecwid.consul.v1.kv.model.PutParams;
+import com.ecwid.consul.v1.session.model.NewSession;
+import com.ecwid.consul.v1.session.model.Session;
 import com.google.common.collect.Lists;
+import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulService;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceResp;
 
@@ -23,7 +27,7 @@ public class SalukiConsulClient {
     private final TtlScheduler  ttlScheduler;
 
     public SalukiConsulClient(String host, int port){
-        client = new ConsulClient(host + ":" + port);
+        client = new ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(client);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }
@@ -37,6 +41,29 @@ public class SalukiConsulClient {
     public void unregisterService(String serviceid) {
         client.agentServiceDeregister(serviceid);
         ttlScheduler.removeHeartbeatServcie(serviceid);
+    }
+
+    public void registerEphemralNode(SalukiConsulEphemralNode ephemralNode) {
+        try {
+            client.setKVValue(ephemralNode.getKey(), "");
+        } finally {
+            List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
+            String sessionId = null;
+            if (sessions != null && !sessions.isEmpty()) {
+                for (Session session : sessions) {
+                    if (session.getName().equals(ephemralNode.getIp())) {
+                        sessionId = session.getId();
+                    }
+                }
+            } else {
+                NewSession newSession = ephemralNode.getNewSession();
+                sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
+                ttlScheduler.addHeartbeatSession(sessionId);
+            }
+            PutParams kvPutParams = new PutParams();
+            kvPutParams.setAcquireSession(sessionId);
+            client.setKVValue(ephemralNode.getKey(), ephemralNode.getValue(), kvPutParams);
+        }
     }
 
     public SalukiConsulServiceResp lookupHealthService(String serviceName, long lastConsulIndex) {

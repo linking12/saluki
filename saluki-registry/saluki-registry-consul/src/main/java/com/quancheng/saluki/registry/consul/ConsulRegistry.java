@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -24,25 +22,19 @@ import com.quancheng.saluki.core.registry.support.FailbackRegistry;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.registry.consul.internal.ConsulConstants;
 import com.quancheng.saluki.registry.consul.internal.SalukiConsulClient;
+import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulService;
 import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceResp;
 
 public class ConsulRegistry extends FailbackRegistry {
 
     private static final Logger                                     log                = LoggerFactory.getLogger(ConsulRegistry.class);
-
     public static final String                                      CONSUL_SERVICE_PRE = "Saluki_";
-
     private final SalukiConsulClient                                client;
-
     private final Cache<String, Map<String, List<SalukiURL>>>       serviceCache;
-
     private final Map<String, Long>                                 lookupGroupServices;
-
     private final ExecutorService                                   lookUpServiceExecutor;
-
     private final Map<String, Pair<SalukiURL, Set<NotifyListener>>> notifyListeners;
-
     private final Set<String>                                       groupLoogUped;
 
     public ConsulRegistry(SalukiURL url){
@@ -88,6 +80,9 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         // 如果缓存中有，先把缓存中的数据吐出去
         notifyListener(url, listener);
+        // 注册本机地址到consul中
+        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        client.registerEphemralNode(ephemralNode);
     }
 
     @Override
@@ -101,6 +96,9 @@ public class ConsulRegistry extends FailbackRegistry {
                                        SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
         url = url.removeParameters(keys);
         String group = url.getGroup();
+        // 注册本机地址到consul中
+        // SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        // client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
@@ -181,7 +179,6 @@ public class ConsulRegistry extends FailbackRegistry {
                                     }
                                 }
                             }
-
                         }
                     }
                     sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
@@ -212,6 +209,14 @@ public class ConsulRegistry extends FailbackRegistry {
                                   .withTag(toUrlPath(url))//
                                   .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath())//
                                   .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
+    }
+
+    private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url) {
+        return SalukiConsulEphemralNode.newEphemralNode()//
+                                       .withGroup(url.getGroup())//
+                                       .withIp(url.getHost())//
+                                       .withServiceName(url.getServiceInterface())//
+                                       .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
 
     private SalukiURL buildSalukiURL(SalukiConsulService service) {

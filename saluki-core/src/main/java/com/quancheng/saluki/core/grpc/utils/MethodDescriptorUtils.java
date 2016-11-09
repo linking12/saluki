@@ -34,7 +34,7 @@ public class MethodDescriptorUtils {
     public static Message buildDefaultInstance(Class<?> type) {
         Class<? extends Message> messageType;
         if (!Message.class.isAssignableFrom(type)) {
-            ProtobufEntity entity = (ProtobufEntity) ReflectUtil.findAnnotation(type, ProtobufEntity.class);
+            ProtobufEntity entity = (ProtobufEntity) ReflectUtil.findAnnotationFromClass(type, ProtobufEntity.class);
             messageType = entity.value();
         } else {
             messageType = (Class<? extends Message>) type;

@@ -14,116 +14,6 @@ public final class ReflectUtil {
     private ReflectUtil(){
     }
 
-    public static Object classInstance(Class cls) {
-        checkPackageAccess(cls);
-        try {
-            Constructor con = cls.getDeclaredConstructor();
-            con.setAccessible(true);
-            Object obj = con.newInstance();
-            return obj;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static Class<?> getTypedReq(Method method) {
-        Class[] params = method.getParameterTypes();
-        return params[0];
-    }
-
-    public static Class<?> getTypeRep(Method method) {
-        return method.getReturnType();
-    }
-
-    public static Object newMethodReq(Method method) {
-        Class[] params = method.getParameterTypes();
-        List<Object> objs = Lists.newArrayList();
-        for (Class cls : params) {
-            checkPackageAccess(cls);
-            try {
-                Constructor con = cls.getDeclaredConstructor();
-                con.setAccessible(true);
-                Object obj = con.newInstance();
-                objs.add(obj);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return objs.get(0);
-    }
-
-    public static Object newMethodRep(Method method) {
-        Class cls = method.getReturnType();
-        checkPackageAccess(cls);
-        Object obj = null;
-        try {
-            Constructor con = cls.getDeclaredConstructor();
-            con.setAccessible(true);
-            obj = con.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return obj;
-    }
-
-    public static Annotation findAnnotation(Class<?> target, Class<? extends Annotation> annotation) {
-        for (Annotation targetAnnotation : target.getAnnotations()) {
-            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
-                return targetAnnotation;
-            } else {
-                continue;
-            }
-        }
-        return null;
-    }
-
-    public static List<Method> findAllPublicMethods(Class<?> clazz) {
-        List<Method> methods = Lists.newLinkedList();
-        for (Method method : clazz.getMethods()) {
-            if (neglectMethod(method)) {
-                continue;
-            }
-            methods.add(method);
-        }
-        return methods;
-    }
-
-    public static boolean neglectMethod(Method method) {
-        String methodName = method.getName();
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        boolean isToString = "toString".equals(methodName) && parameterTypes.length == 0;
-        boolean isHashCode = "hashCode".equals(methodName) && parameterTypes.length == 0;
-        boolean isEquals = "equals".equals(methodName) && parameterTypes.length == 1;
-        boolean isnotify = "notify".equals(methodName) && parameterTypes.length == 0;
-        boolean isnotifyAll = "notifyAll".equals(methodName) && parameterTypes.length == 0;
-        boolean isgetClass = "getClass".equals(methodName) && parameterTypes.length == 0;
-        boolean iswait = "wait".equals(methodName)
-                         && (parameterTypes.length == 0 || parameterTypes.length == 1 || parameterTypes.length == 2);
-        if (isToString || isHashCode || isEquals || isnotify || isnotifyAll || isgetClass || iswait) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private static void checkPackageAccess(Class clazz) {
-        SecurityManager s = System.getSecurityManager();
-        if (s != null) {
-            String cname = clazz.getName().replace('/', '.');
-            if (cname.startsWith("[")) {
-                int b = cname.lastIndexOf('[') + 2;
-                if (b > 1 && b < cname.length()) {
-                    cname = cname.substring(b);
-                }
-            }
-            int i = cname.lastIndexOf('.');
-            if (i != -1) {
-                s.checkPackageAccess(cname.substring(0, i));
-            }
-        }
-    }
-
     /**
      * void(V).
      */
@@ -237,6 +127,143 @@ public final class ReflectUtil {
             NAME_CLASS_CACHE.put(name, clazz);
         }
         return clazz;
+    }
+
+    public static Object classInstance(Class cls) {
+        checkPackageAccess(cls);
+        try {
+            Constructor con = cls.getDeclaredConstructor();
+            con.setAccessible(true);
+            Object obj = con.newInstance();
+            return obj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Class<?> getTypedReq(Method method) {
+        Class[] params = method.getParameterTypes();
+        return params[0];
+    }
+
+    public static Class<?> getTypeRep(Method method) {
+        return method.getReturnType();
+    }
+
+    public static Object newMethodReq(Method method) {
+        Class[] params = method.getParameterTypes();
+        List<Object> objs = Lists.newArrayList();
+        for (Class cls : params) {
+            checkPackageAccess(cls);
+            try {
+                Constructor con = cls.getDeclaredConstructor();
+                con.setAccessible(true);
+                Object obj = con.newInstance();
+                objs.add(obj);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return objs.get(0);
+    }
+
+    public static Object newMethodRep(Method method) {
+        Class cls = method.getReturnType();
+        checkPackageAccess(cls);
+        Object obj = null;
+        try {
+            Constructor con = cls.getDeclaredConstructor();
+            con.setAccessible(true);
+            obj = con.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
+
+    public static Annotation findAnnotationFromClass(Class<?> target, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : target.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation findAnnotationFromMethod(Method method, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : method.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static List<Method> findAllPublicMethods(Class<?> clazz) {
+        List<Method> methods = Lists.newLinkedList();
+        for (Method method : clazz.getMethods()) {
+            if (isLegal(method)) {
+                continue;
+            }
+            methods.add(method);
+        }
+        return methods;
+    }
+
+    // begin
+    public static boolean isLegal(Method method) {
+        return isEqualsMethod(method) || isHashCodeMethod(method) || isToStringMethod(method) || isObjectMethod(method);
+    }
+
+    public static boolean isEqualsMethod(Method method) {
+        if (method == null || !method.getName().equals("equals")) {
+            return false;
+        }
+        Class<?>[] paramTypes = method.getParameterTypes();
+        return (paramTypes.length == 1 && paramTypes[0] == Object.class);
+    }
+
+    public static boolean isHashCodeMethod(Method method) {
+        return (method != null && method.getName().equals("hashCode") && method.getParameterTypes().length == 0);
+    }
+
+    public static boolean isToStringMethod(Method method) {
+        return (method != null && method.getName().equals("toString") && method.getParameterTypes().length == 0);
+    }
+
+    public static boolean isObjectMethod(Method method) {
+        if (method == null) {
+            return false;
+        }
+        try {
+            Object.class.getDeclaredMethod(method.getName(), method.getParameterTypes());
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    // end
+
+    private static void checkPackageAccess(Class clazz) {
+        SecurityManager s = System.getSecurityManager();
+        if (s != null) {
+            String cname = clazz.getName().replace('/', '.');
+            if (cname.startsWith("[")) {
+                int b = cname.lastIndexOf('[') + 2;
+                if (b > 1 && b < cname.length()) {
+                    cname = cname.substring(b);
+                }
+            }
+            int i = cname.lastIndexOf('.');
+            if (i != -1) {
+                s.checkPackageAccess(cname.substring(0, i));
+            }
+        }
     }
 
 }

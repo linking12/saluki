@@ -1,5 +1,10 @@
 package com.quancheng.saluki.core.grpc.client;
 
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.support.DefaultPolicyClient;
@@ -42,7 +47,10 @@ public class GrpcClientContext {
         boolean generic = refUrl.getParameter(SalukiConstants.GENERIC_KEY, SalukiConstants.DEFAULT_GENERIC);
         boolean stub = refUrl.getParameter(SalukiConstants.GRPC_STUB_KEY, Boolean.FALSE);
         if (generic) {
-            return new GenericPolicyClient<Object>(new SalukiClassLoader());
+            String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
+            int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
+            Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
+            return new GenericPolicyClient<Object>(new SalukiClassLoader(), methodRetries, refUrl);
         } else {
             if (stub) {
                 String stubClassName = refUrl.getParameter(SalukiConstants.INTERFACECLASS_KEY);
@@ -54,10 +62,27 @@ public class GrpcClientContext {
                     throw new IllegalArgumentException("grpc stub client the class must exist in classpath", e);
                 }
             } else {
+                String[] methodNames = StringUtils.split(refUrl.getParameter(SalukiConstants.METHODS_KEY), ",");
+                int retries = refUrl.getParameter((SalukiConstants.METHOD_RETRY_KEY), 0);
                 String interfaceName = refUrl.getServiceInterface();
-                return new DefaultPolicyClient<Object>(interfaceName);
+                Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
+                return new DefaultPolicyClient<Object>(interfaceName, methodRetries, refUrl);
             }
         }
+    }
+
+    private Map<String, Integer> cacheRetries(String[] methodNames, int reties) {
+        Map<String, Integer> methodRetries = Maps.newConcurrentMap();
+        if (reties > 0) {
+            if (methodNames != null && methodNames.length > 1) {
+                for (String methodName : methodNames) {
+                    methodRetries.putIfAbsent(methodName, Integer.valueOf(reties));
+                }
+            } else {
+                methodRetries.putIfAbsent("*", Integer.valueOf(reties));
+            }
+        }
+        return methodRetries;
     }
 
     public Object getGrpcClient() {

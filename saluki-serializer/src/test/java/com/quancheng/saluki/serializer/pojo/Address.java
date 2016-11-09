@@ -1,6 +1,8 @@
 
 package com.quancheng.saluki.serializer.pojo;
 
+import java.util.Map;
+
 import com.quancheng.saluki.serializer.ProtobufAttribute;
 import com.quancheng.saluki.serializer.ProtobufEntity;
 import com.quancheng.saluki.serializer.converter.StringBooleanConverter;
@@ -9,22 +11,25 @@ import com.quancheng.saluki.serializer.converter.StringBooleanConverter;
 public class Address {
 
     @ProtobufAttribute
-    private String street;
+    private String              street;
 
     @ProtobufAttribute
-    private String city;
+    private String              city;
 
     @ProtobufAttribute
-    private String stateOrProvince;
+    private String              stateOrProvince;
 
     @ProtobufAttribute
-    private String country;
+    private String              country;
 
     @ProtobufAttribute
-    private String postalCode;
+    private String              postalCode;
+
+    @ProtobufAttribute
+    private Map<String, String> mapTest;
 
     @ProtobufAttribute(pojoGetter = "getIsCanada", pojoSetter = "setIsCanada", protobufSetter = "setIsCanada", protobufGetter = "getIsCanada", converter = StringBooleanConverter.class)
-    private String isCanadaBooleanAsStr;
+    private String              isCanadaBooleanAsStr;
 
     /**
      * @param street the street to set
@@ -108,6 +113,14 @@ public class Address {
      */
     public String getIsCanada() {
         return isCanadaBooleanAsStr;
+    }
+
+    public Map<String, String> getMapTest() {
+        return mapTest;
+    }
+
+    public void setMapTest(Map<String, String> mapTest) {
+        this.mapTest = mapTest;
     }
 
     /**

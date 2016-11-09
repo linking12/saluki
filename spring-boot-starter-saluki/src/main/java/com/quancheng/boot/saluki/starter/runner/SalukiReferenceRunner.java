@@ -1,26 +1,35 @@
 package com.quancheng.boot.saluki.starter.runner;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import com.google.common.base.Preconditions;
 import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
+import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.config.ReferenceConfig;
-import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.core.grpc.service.GenericService;
 
 import io.grpc.stub.AbstractStub;
 
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger    logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger        logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
-    private final SalukiProperties grpcProperties;
+    private final SalukiProperties     grpcProperties;
+
+    @Autowired
+    private AbstractApplicationContext applicationContext;
 
     public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
@@ -34,7 +43,11 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             for (Field field : fields) {
                 SalukiReference reference = field.getAnnotation(SalukiReference.class);
                 if (reference != null) {
-                    Object value = refer(reference, field.getType());
+                    Object value = findServiceInSpringContainer(field.getType());
+                    // 如果在spring 容器没有找到该服务，则使用远程服务
+                    if (value == null) {
+                        value = refer(reference, field.getType());
+                    }
                     try {
                         if (!field.isAccessible()) {
                             field.setAccessible(true);
@@ -49,6 +62,22 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             searchType = searchType.getSuperclass();
         }
         return bean;
+    }
+
+    private Object findServiceInSpringContainer(Class<?> referenceClass) {
+        try {
+            Object obj = applicationContext.getBean(referenceClass);
+            return obj;
+        } catch (NoSuchBeanDefinitionException e) {
+            return null;
+        }
+    }
+
+    private void registyConsumerIp() {
+        if (StringUtils.isNotBlank(grpcProperties.getClientHost())) {
+            System.setProperty(SalukiConstants.REGISTRY_CLIENT_HOST, grpcProperties.getClientHost());
+        }
+
     }
 
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
@@ -67,6 +96,12 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             Preconditions.checkNotNull(version, "Version can not be null", version);
             referenceConfig.setVersion(version);
         }
+        if (reference.retries() > 1
+            && (reference.hastrategyMethod() == null || reference.hastrategyMethod().length == 0)) {
+            logger.warn("Have set retries,but not have set method,will set all method to retry");
+            referenceConfig.setMethodNames(new HashSet<String>(Arrays.asList(reference.hastrategyMethod())));
+            referenceConfig.setReties(reference.retries());
+        }
         String interfaceName = reference.service();
         Preconditions.checkNotNull(interfaceName, "interfaceName can not be null", interfaceName);
         referenceConfig.setInterfaceName(interfaceName);
@@ -84,18 +119,13 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             referenceConfig.setGrpcStub(true);
             referenceConfig.setInterfaceClass(referenceClass);
         } else {
-            try {
-                Class<?> interfaceClass = ReflectUtil.name2class(interfaceName);
-                if (!interfaceClass.isAssignableFrom(referenceClass)) {
-                    referenceConfig.setGeneric(true);
-                } else {
-                    referenceConfig.setGeneric(false);
-                }
-            } catch (ClassNotFoundException e) {
+            if (GenericService.class.isAssignableFrom(referenceClass)) {
                 referenceConfig.setGeneric(true);
-                referenceConfig.setInterfaceClass(referenceClass);
+            } else {
+                referenceConfig.setGeneric(false);
             }
         }
+        registyConsumerIp();
         Object value = referenceConfig.get();
         return value;
     }

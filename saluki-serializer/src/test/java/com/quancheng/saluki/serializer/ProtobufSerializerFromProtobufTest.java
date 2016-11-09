@@ -36,7 +36,8 @@ public class ProtobufSerializerFromProtobufTest {
         person.setAddress(address);
 
         // Setup Address Protobuf
-        protobufAddress = com.quancheng.saluki.serializer.proto.Message.Address.newBuilder().setStreet("1 Main St").setCity("Foo Ville").setStateOrProvince("Bar").setPostalCode("J0J 1J1").setCountry("Canada").setIsCanada(true).build();
+        protobufAddress = com.quancheng.saluki.serializer.proto.Message.Address.newBuilder().setStreet("1 Main St").setCity("Foo Ville").setStateOrProvince("Bar").setPostalCode("J0J 1J1").setCountry("Canada").setIsCanada(true).putMapTest("123",
+                                                                                                                                                                                                                                              "123").build();
         // Setup Person Protobuf
         protobufPerson = com.quancheng.saluki.serializer.proto.Message.Person.newBuilder().setName("Erick").setAge(22).setAddress(protobufAddress).build();
     }
@@ -44,7 +45,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test1Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertEquals("Attribute street not equal", address.getStreet(), protobufAddress.getStreet());
     }
@@ -52,7 +53,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test2Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertEquals("Attribute city not equal", address.getCity(), protobufAddress.getCity());
     }
@@ -60,7 +61,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test3Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertEquals("Attribute stateOrProvince not equal", address.getStateOrProvince(),
                             protobufAddress.getStateOrProvince());
@@ -69,7 +70,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test4Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertEquals("Attribute postalCode not equal", address.getPostalCode(), protobufAddress.getPostalCode());
     }
@@ -77,7 +78,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test5Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertEquals("Attribute country not equal", address.getCountry(), protobufAddress.getCountry());
     }
@@ -85,7 +86,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test6Address() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Address address = (com.quancheng.saluki.serializer.pojo.Address) SERIALIZER.fromProtobuf(protobufAddress,
-                                                                                                                      com.quancheng.saluki.serializer.pojo.Address.class);
+                                                                                                                                            com.quancheng.saluki.serializer.pojo.Address.class);
 
         Assert.assertFalse("Attribute street isEmpty", address.getStreet().isEmpty());
     }
@@ -93,7 +94,7 @@ public class ProtobufSerializerFromProtobufTest {
     @Test
     public void test7Person() throws ProtobufException {
         final com.quancheng.saluki.serializer.pojo.Person person = (com.quancheng.saluki.serializer.pojo.Person) SERIALIZER.fromProtobuf(protobufPerson,
-                                                                                                                   com.quancheng.saluki.serializer.pojo.Person.class);
+                                                                                                                                         com.quancheng.saluki.serializer.pojo.Person.class);
         Assert.assertEquals("Attribute age not equal", (int) person.getAge(), protobufPerson.getAge());
     }
 

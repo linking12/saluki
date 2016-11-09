@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.GRPCEngine;
-import com.quancheng.saluki.core.grpc.GRPCEngineImpl;
 
 public class BasicConfig implements Serializable {
 
@@ -82,11 +81,11 @@ public class BasicConfig implements Serializable {
 
     protected void loadRegistry() {
         if (grpcEngine == null) {
-            Preconditions.checkNotNull(registryAddress, "registryAddress  is not Null",registryAddress);
+            Preconditions.checkNotNull(registryAddress, "registryAddress  is not Null", registryAddress);
             Preconditions.checkState(registryPort != 0, "RegistryPort can not be zero", registryPort);
             String registryName = this.registryName != null ? this.registryName : SalukiConstants.REGISTRY_PROTOCOL;
             SalukiURL registryUrl = new SalukiURL(registryName, this.registryAddress, this.registryPort);
-            grpcEngine = new GRPCEngineImpl(registryUrl);
+            grpcEngine = new GRPCEngine(registryUrl);
         }
     }
 

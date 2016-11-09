@@ -1,13 +1,17 @@
 package com.quancheng.saluki.core.config;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.utils.NetUtils;
+import com.quancheng.saluki.core.utils.ReflectUtil;
 
 public class ReferenceConfig extends BasicConfig {
 
@@ -39,6 +43,12 @@ public class ReferenceConfig extends BasicConfig {
 
     // 请求超时时间
     private int                       requestTimeout;
+
+    // 方法签名
+    private Set<String>               methodNames;
+
+    // 重试次数
+    private int                       reties;
 
     private transient volatile Object ref;
 
@@ -125,6 +135,22 @@ public class ReferenceConfig extends BasicConfig {
         this.version = version;
     }
 
+    public Set<String> getMethodNames() {
+        return methodNames;
+    }
+
+    public void setMethodNames(Set<String> methodNames) {
+        this.methodNames = methodNames;
+    }
+
+    public int getReties() {
+        return reties;
+    }
+
+    public void setReties(int reties) {
+        this.reties = reties;
+    }
+
     public synchronized Object get() {
         if (ref == null) {
             init();
@@ -168,11 +194,43 @@ public class ReferenceConfig extends BasicConfig {
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
+        if (this.methodNames != null && !this.methodNames.isEmpty()) {
+            checkInterfaceAndMethods();
+            params.put(SalukiConstants.METHODS_KEY, StringUtils.join(this.methodNames, ","));
+        }
+        if (this.reties != 0) {
+            params.put(SalukiConstants.METHOD_RETRY_KEY, Integer.valueOf(this.reties).toString());
+        }
         String interfaceClassName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
         params.put(SalukiConstants.INTERFACECLASS_KEY, interfaceClassName);
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,
                                          params);
         return refUrl;
+    }
+
+    protected void checkInterfaceAndMethods() {
+        if (!this.generic && !this.grpcStub) {
+            try {
+                this.interfaceClass = ReflectUtil.name2class(interfaceName);
+                if (this.methodNames != null && !this.methodNames.isEmpty()) {
+                    for (String methodName : this.methodNames) {
+                        java.lang.reflect.Method hasMethod = null;
+                        for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
+                            if (method.getName().equals(methodName)) {
+                                hasMethod = method;
+                            }
+                        }
+                        if (hasMethod == null) {
+                            throw new RpcFrameworkException("The interface " + interfaceClass.getName()
+                                                            + " not found method " + methodName,
+                                                            RpcErrorMsgConstant.FRAMEWORK_INIT_ERROR);
+                        }
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
+        }
     }
 
 }

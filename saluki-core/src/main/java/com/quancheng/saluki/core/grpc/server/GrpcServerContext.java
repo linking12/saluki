@@ -33,7 +33,7 @@ public class GrpcServerContext {
                 protocol = protocolImpl.getClass();
             }
             this.protocolClass = protocol;
-            this.exporter = new DefaultPolicyExporter();
+            this.exporter = new DefaultPolicyExporter(providerUrl);
         }
         this.protocolImpl = protocolImpl;
     }
