@@ -1,4 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.support;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -13,13 +14,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
@@ -31,11 +35,12 @@ import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.core.utils.ClassHelper;
-import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
+
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
+
 /**
  * <strong>描述：</strong>TODO 描述 <br>
  * <strong>功能：</strong><br>
@@ -49,12 +54,14 @@ import io.grpc.MethodDescriptor;
  * @version $Id: AbstractClientInvocation.java, v 0.0.1 2016年10月18日 下午11:20:15 shimingliu Exp $
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
+
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
     private final List<MonitorService>                 monitors;
     private final Cache<String, Channel>               channelCache;
     private final Map<String, Integer>                 methodRetries;
     private final SalukiURL                            refUrl;
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
         this.monitors = this.findMonitor();
         this.channelCache = CacheBuilder.newBuilder()//
@@ -65,9 +72,11 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         this.methodRetries = methodRetries;
         this.refUrl = refUrl;
     }
+
     private Channel getChannel(GrpcRequest request) {
         try {
             return channelCache.get(request.getServiceName(), new Callable<Channel>() {
+
                 @Override
                 public Channel call() throws Exception {
                     return request.getChannel();
@@ -77,7 +86,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
+
     protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (ReflectUtil.isToStringMethod(method)) {
@@ -130,6 +141,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             getConcurrent(serviceName, methodName).decrementAndGet();
         }
     }
+
     private RetryOptions createRetryOption(String methodName) {
         if (methodRetries.size() == 1 && methodRetries.containsKey("*")) {
             Integer retries = methodRetries.get("*");
@@ -143,6 +155,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             }
         }
     }
+
     // 信息采集
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
@@ -150,17 +163,22 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             if (monitors == null || monitors.isEmpty()) {
                 return;
             }
+            Gson gson = new Gson();
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
-            String req = new Gson().toJson(request);// 入参
-            String rep = new Gson().toJson(response);// 出参
-            String consumerHost = System.getProperty(SalukiConstants.REGISTRY_CLIENT_HOST, NetUtils.getLocalHost());
+            String req = gson.toJson(request);// 入参
+            String rep = gson.toJson(response);// 出参
+            Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
+                                                                  new TypeToken<Map<String, String>>() {
+                                                                  }.getType());
+            String consumerHost = clientParam.get("consumerHost");
+            String host = consumerHost != null ? consumerHost : refUrl.getHost();
             for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, consumerHost, 0, //
+                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
                                               service + "/" + method, //
                                               MonitorService.TIMESTAMP, String.valueOf(start), //
                                               MonitorService.APPLICATION, //
@@ -178,6 +196,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
         }
     }
+
     private AtomicInteger getConcurrent(String servcieName, String methodName) {
         String key = servcieName + "." + methodName;
         AtomicInteger concurrent = concurrents.get(key);
@@ -187,6 +206,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
         return concurrent;
     }
+
     private List<MonitorService> findMonitor() {
         Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
         List<MonitorService> list = Lists.newArrayList();

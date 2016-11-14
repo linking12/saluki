@@ -16,7 +16,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 import com.google.common.base.Preconditions;
 import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
-import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.config.ReferenceConfig;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 
@@ -73,13 +72,6 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         }
     }
 
-    private void registyConsumerIp() {
-        if (StringUtils.isNotBlank(grpcProperties.getClientHost())) {
-            System.setProperty(SalukiConstants.REGISTRY_CLIENT_HOST, grpcProperties.getClientHost());
-        }
-
-    }
-
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         if (StringUtils.isNoneBlank(reference.group())) {
@@ -125,7 +117,6 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
                 referenceConfig.setGeneric(false);
             }
         }
-        registyConsumerIp();
         Object value = referenceConfig.get();
         return value;
     }
