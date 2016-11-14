@@ -5,25 +5,31 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "grpc")
 public class SalukiProperties {
 
+    /**
+     * consumer param
+     */
     private String clientHost;
 
+    private String referenceGroup;
+
+    private String referenceVersion;
+
+    /**
+     * provider param
+     */
     private String serverHost;
 
     private int    serverStartPort;
 
     private int    serverRegistryPort;
 
-    private String consulIp;
-
-    private int    consulPort;
-
-    private String referenceGroup;
-
-    private String referenceVersion;
-
     private String serviceGroup;
 
     private String servcieVersion;
+
+    private String consulIp;
+
+    private int    consulPort;
 
     public int getServerStartPort() {
         return serverStartPort;

@@ -38,8 +38,11 @@ public final class SalukiConsulEphemralNode {
     }
 
     public String getValue() {
-        String consumerPort = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PORT);
-       return consumerPort;
+        // new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
+        // new TypeToken<Map<String, String>>() {
+        // }.getType());
+        String consumerPort = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM);
+        return consumerPort;
     }
 
     public String getIp() {

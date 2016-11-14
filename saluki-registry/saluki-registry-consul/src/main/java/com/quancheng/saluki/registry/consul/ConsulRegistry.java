@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -31,19 +29,12 @@ import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceRe
 public class ConsulRegistry extends FailbackRegistry {
 
     private static final Logger                                     log                = LoggerFactory.getLogger(ConsulRegistry.class);
-
     public static final String                                      CONSUL_SERVICE_PRE = "Saluki_";
-
     private final SalukiConsulClient                                client;
-
     private final Cache<String, Map<String, List<SalukiURL>>>       serviceCache;
-
     private final Map<String, Long>                                 lookupGroupServices;
-
     private final ExecutorService                                   lookUpServiceExecutor;
-
     private final Map<String, Pair<SalukiURL, Set<NotifyListener>>> notifyListeners;
-
     private final Set<String>                                       groupLoogUped;
 
     public ConsulRegistry(SalukiURL url){
@@ -106,8 +97,8 @@ public class ConsulRegistry extends FailbackRegistry {
         url = url.removeParameters(keys);
         String group = url.getGroup();
         // 注册本机地址到consul中
-        //SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
-        //client.registerEphemralNode(ephemralNode);
+        // SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
+        // client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
@@ -188,7 +179,6 @@ public class ConsulRegistry extends FailbackRegistry {
                                     }
                                 }
                             }
-
                         }
                     }
                     sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
