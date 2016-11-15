@@ -11,7 +11,7 @@ import com.quancheng.saluki.registry.consul.ConsulRegistry;
 
 public final class SalukiConsulEphemralNode {
 
-    private final String host;
+    private final String hostAndPort;
 
     private final String serverInfo;
 
@@ -29,7 +29,7 @@ public final class SalukiConsulEphemralNode {
         this.serviceName = builder.serviceName;
         this.interval = builder.interval;
         this.flag = builder.flag;
-        this.host = builder.host;
+        this.hostAndPort = builder.hostAndPort;
     }
 
     public NewSession getNewSession() {
@@ -45,10 +45,10 @@ public final class SalukiConsulEphemralNode {
         String key;
         if (this.flag.equals("provider")) {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/provider" + "/"
-                  + this.host;
+                  + this.hostAndPort;
         } else {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/consumer" + "/"
-                  + this.host;
+                  + this.hostAndPort;
         }
         return key;
     }
@@ -83,7 +83,7 @@ public final class SalukiConsulEphemralNode {
 
         private final static Gson gson = new Gson();
 
-        private String            host;
+        private String            hostAndPort;
 
         private String            serverInfo;
 
@@ -101,15 +101,17 @@ public final class SalukiConsulEphemralNode {
         }
 
         public Builder withHost(String host) {
-            this.host = substituteEnvironmentVariables(host);
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM);
             this.serverInfo = serverInfo;
-            Map<String, String> clientParam = gson.fromJson(serverInfo, new TypeToken<Map<String, String>>() {
+            Map<String, String> serverParam = gson.fromJson(serverInfo, new TypeToken<Map<String, String>>() {
             }.getType());
-            String serverHost = clientParam.get("serverHost");
+            String serverHost = serverParam.get("serverHost");
+            String serverHttpPort = serverParam.get("serverHttpPort");
+            // 如果是docker，ip会变化，需要手动注入下
             if (serverHost != null) {
-                this.host = serverHost;
+                host = serverHost;
             }
+            this.hostAndPort = substituteEnvironmentVariables(host) + ":" + serverHttpPort;
             return this;
         }
 

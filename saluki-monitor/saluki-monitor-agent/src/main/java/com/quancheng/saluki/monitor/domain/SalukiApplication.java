@@ -11,11 +11,18 @@ public class SalukiApplication implements Serializable {
 
     private String                 name;
 
+    private String                 serverFlag;
+
     private SalukiApplication      parent;
 
     private Set<SalukiApplication> children;
 
     private Set<SalukiHost>        hosts;
+
+    public SalukiApplication(String applicationName, String serverFlag){
+        this.name = applicationName;
+        this.serverFlag = serverFlag;
+    }
 
     public SalukiApplication(String applicationName){
         this.name = applicationName;
@@ -72,6 +79,14 @@ public class SalukiApplication implements Serializable {
             this.hosts = new HashSet<SalukiHost>();
         }
         this.hosts.add(host);
+    }
+
+    public String getServerFlag() {
+        return serverFlag;
+    }
+
+    public void setServerFlag(String serverFlag) {
+        this.serverFlag = serverFlag;
     }
 
     public synchronized void addAllHost(Collection<SalukiHost> hosts) {

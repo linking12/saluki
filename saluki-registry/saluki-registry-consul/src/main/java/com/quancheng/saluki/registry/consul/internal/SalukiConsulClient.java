@@ -53,17 +53,25 @@ public class SalukiConsulClient {
                 for (Session session : sessions) {
                     if (session.getName().equals(ephemralNode.getServerInfo())) {
                         sessionId = session.getId();
+                    } else {
+                        sessionId = generateNewSession(ephemralNode);
                     }
                 }
             } else {
-                NewSession newSession = ephemralNode.getNewSession();
-                sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
-                ttlScheduler.addHeartbeatSession(sessionId);
+                sessionId = generateNewSession(ephemralNode);
             }
             PutParams kvPutParams = new PutParams();
             kvPutParams.setAcquireSession(sessionId);
             client.setKVValue(ephemralNode.getKey(), ephemralNode.getServerInfo(), kvPutParams);
         }
+    }
+
+    private String generateNewSession(SalukiConsulEphemralNode ephemralNode) {
+        String sessionId;
+        NewSession newSession = ephemralNode.getNewSession();
+        sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
+        ttlScheduler.addHeartbeatSession(sessionId);
+        return sessionId;
     }
 
     public SalukiConsulServiceResp lookupHealthService(String serviceName, long lastConsulIndex) {
