@@ -1,13 +1,19 @@
 package com.quancheng.saluki.registry.consul.internal.model;
 
+import java.util.Map;
+
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.registry.consul.ConsulRegistry;
 
 public final class SalukiConsulEphemralNode {
 
-    private final String ip;
+    private final String host;
+
+    private final String serverInfo;
 
     private final String group;
 
@@ -15,16 +21,20 @@ public final class SalukiConsulEphemralNode {
 
     private final String interval;
 
+    private final String flag;
+
     private SalukiConsulEphemralNode(Builder builder){
-        this.ip = builder.ip;
+        this.serverInfo = builder.serverInfo;
         this.group = builder.group;
         this.serviceName = builder.serviceName;
         this.interval = builder.interval;
+        this.flag = builder.flag;
+        this.host = builder.host;
     }
 
     public NewSession getNewSession() {
         NewSession newSersson = new NewSession();
-        newSersson.setName(this.ip);
+        newSersson.setName(this.serverInfo);
         newSersson.setLockDelay(0);
         newSersson.setBehavior(Session.Behavior.DELETE);
         newSersson.setTtl(this.interval + "s");
@@ -32,21 +42,19 @@ public final class SalukiConsulEphemralNode {
     }
 
     public String getKey() {
-        String key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/" + this.ip;
-
+        String key;
+        if (this.flag.equals("provider")) {
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/provider" + "/"
+                  + this.host;
+        } else {
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/consumer" + "/"
+                  + this.host;
+        }
         return key;
     }
 
-    public String getValue() {
-        // new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
-        // new TypeToken<Map<String, String>>() {
-        // }.getType());
-        String consumerPort = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM);
-        return consumerPort;
-    }
-
-    public String getIp() {
-        return ip;
+    public String getServerInfo() {
+        return serverInfo;
     }
 
     public String getGroup() {
@@ -63,8 +71,8 @@ public final class SalukiConsulEphemralNode {
 
     @Override
     public String toString() {
-        return "SalukiConsulEphemralNode [ip=" + ip + ", group=" + group + ", serviceName=" + serviceName
-               + ", interval=" + interval + "]";
+        return "SalukiConsulEphemralNode [consumerinfo=" + serverInfo + ", group=" + group + ", serviceName="
+               + serviceName + ", interval=" + interval + "]";
     }
 
     public static Builder newEphemralNode() {
@@ -73,16 +81,35 @@ public final class SalukiConsulEphemralNode {
 
     public static class Builder extends AbstractBuilder {
 
-        private String ip;
+        private final static Gson gson = new Gson();
 
-        private String group;
+        private String            host;
 
-        private String serviceName;
+        private String            serverInfo;
 
-        private String interval;
+        private String            group;
 
-        public Builder withIp(String ip) {
-            this.ip = substituteEnvironmentVariables(ip);
+        private String            serviceName;
+
+        private String            interval;
+
+        private String            flag;
+
+        public Builder withFlag(String flag) {
+            this.flag = substituteEnvironmentVariables(flag);
+            return this;
+        }
+
+        public Builder withHost(String host) {
+            this.host = substituteEnvironmentVariables(host);
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM);
+            this.serverInfo = serverInfo;
+            Map<String, String> clientParam = gson.fromJson(serverInfo, new TypeToken<Map<String, String>>() {
+            }.getType());
+            String serverHost = clientParam.get("serverHost");
+            if (serverHost != null) {
+                this.host = serverHost;
+            }
             return this;
         }
 
@@ -102,14 +129,17 @@ public final class SalukiConsulEphemralNode {
         }
 
         public SalukiConsulEphemralNode build() {
-            if (ip == null) {
-                throw new java.lang.IllegalArgumentException("Required client ip is missing");
+            if (flag == null) {
+                throw new java.lang.IllegalArgumentException("Required flag is missing");
+            }
+            if (serverInfo == null) {
+                throw new java.lang.IllegalArgumentException("Required serverInfo is missing");
             }
             if (group == null) {
-                throw new java.lang.IllegalArgumentException("Required client group is missing for EphemralNode ");
+                throw new java.lang.IllegalArgumentException("Required group is missing for EphemralNode ");
             }
             if (serviceName == null) {
-                throw new java.lang.IllegalArgumentException("Required client servicename is missing for EphemralNode ");
+                throw new java.lang.IllegalArgumentException("Required servicename is missing for EphemralNode ");
             }
             if (interval == null) {
                 throw new java.lang.IllegalArgumentException("Required interval is missing for EphemralNode ");

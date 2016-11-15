@@ -175,7 +175,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
                                                                   new TypeToken<Map<String, String>>() {
                                                                   }.getType());
-            String consumerHost = clientParam.get("consumerHost");
+            String consumerHost = clientParam.get("serverHost");
             String host = consumerHost != null ? consumerHost : refUrl.getHost();
             for (MonitorService monitor : monitors) {
                 monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //

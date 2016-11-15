@@ -55,10 +55,13 @@ public class SalukiAutoConfiguration {
             Map<String, String> consumerParam = Maps.newHashMap();
             int httpPort = event.getEmbeddedServletContainer().getPort();
             if (httpPort != 0) {
-                consumerParam.put("consumerPort", String.valueOf(httpPort));
+                consumerParam.put("serverHttpPort", String.valueOf(httpPort));
             }
             if (StringUtils.isNotBlank(grpcProperty.getClientHost())) {
-                consumerParam.put("consumerHost", String.valueOf(grpcProperty.getClientHost()));
+                consumerParam.put("serverHost", String.valueOf(grpcProperty.getClientHost()));
+            }
+            if (StringUtils.isNoneBlank(grpcProperty.getServerHost())) {
+                consumerParam.put("serverHost", String.valueOf(grpcProperty.getServerHost()));
             }
             consumerParam.put("appName", applicationName);
             System.setProperty(SalukiConstants.REGISTRY_CLIENT_PARAM, new Gson().toJson(consumerParam));

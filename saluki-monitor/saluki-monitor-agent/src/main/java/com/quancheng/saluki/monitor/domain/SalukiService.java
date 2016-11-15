@@ -1,35 +1,23 @@
-/**
- * Copyright 2006-2015 handu.com
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
+import java.util.List;
 
-/**
- * DubboService
- *
- * @author Jinkai.Ma
- */
 public class SalukiService implements Serializable {
 
-    private String name;
-    private String application;
-    private String organization;
-    private String owner;
-    private int providerCount;
-    private int consumerCount;
+    private static final long   serialVersionUID = 1L;
+
+    private String              name;
+
+    private String              applicationName;
+
+    private SalukiService       parent;
+
+    private List<SalukiService> children;
+
+    private List<SalukiHost>    consumerHost;
+
+    private List<SalukiHost>    providerHost;
 
     public String getName() {
         return name;
@@ -39,43 +27,70 @@ public class SalukiService implements Serializable {
         this.name = name;
     }
 
-    public String getApplication() {
-        return application;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setApplication(String application) {
-        this.application = application;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
-    public String getOrganization() {
-        return organization;
+    public SalukiService getParent() {
+        return parent;
     }
 
-    public void setOrganization(String organization) {
-        this.organization = organization;
+    public void setParent(SalukiService parent) {
+        this.parent = parent;
     }
 
-    public String getOwner() {
-        return owner;
+    public List<SalukiService> getChildren() {
+        return children;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setChildren(List<SalukiService> children) {
+        this.children = children;
     }
 
-    public int getProviderCount() {
-        return providerCount;
+    public List<SalukiHost> getConsumerHost() {
+        return consumerHost;
     }
 
-    public void setProviderCount(int providerCount) {
-        this.providerCount = providerCount;
+    public void setConsumerHost(List<SalukiHost> consumerHost) {
+        this.consumerHost = consumerHost;
     }
 
-    public int getConsumerCount() {
-        return consumerCount;
+    public List<SalukiHost> getProviderHost() {
+        return providerHost;
     }
 
-    public void setConsumerCount(int consumerCount) {
-        this.consumerCount = consumerCount;
+    public void setProviderHost(List<SalukiHost> providerHost) {
+        this.providerHost = providerHost;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        SalukiService other = (SalukiService) obj;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "SalukiService [name=" + name + ", applicationName=" + applicationName + ", parent=" + parent
+               + ", children=" + children + ", consumerHost=" + consumerHost + ", providerHost=" + providerHost + "]";
+    }
+
 }

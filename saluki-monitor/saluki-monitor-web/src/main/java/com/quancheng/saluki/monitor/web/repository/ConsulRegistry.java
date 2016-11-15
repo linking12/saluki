@@ -1,5 +1,6 @@
 package com.quancheng.saluki.monitor.web.repository;
 
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,13 +15,19 @@ import org.springframework.stereotype.Repository;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Check;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.monitor.domain.SalukiApplication;
+import com.quancheng.saluki.monitor.domain.SalukiHost;
 
 @Repository
 public class ConsulRegistry {
 
     public static final String                       CONSUL_SERVICE_PRE  = "Saluki_";
+
+    private final Gson                               gson                = new Gson();
 
     private String                                   agentHost;
 
@@ -30,7 +37,7 @@ public class ConsulRegistry {
 
     private final ConcurrentMap<String, Set<String>> applicatonProviders = new ConcurrentHashMap<String, Set<String>>();
 
-    private final ConcurrentMap<String, Set<String>> applicatonConsumers = new ConcurrentHashMap<String, Set<String>>();
+    private final Map<String, SalukiApplication>     applicatonConsumers = Maps.newConcurrentMap();
 
     @PostConstruct
     public void init() {
@@ -50,9 +57,18 @@ public class ConsulRegistry {
                 getProviders(group).add(provider_host);
                 List<String> consumer_hosts_kvs = consulClient.getKVKeysOnly(group + "/" + serviceName).getValue();
                 for (String consumer_host_kv : consumer_hosts_kvs) {
-                    String consumer_port = consulClient.getKVValue(consumer_host_kv).getValue().getDecodedValue();
-                    String consumer_host = StringUtils.substring(consumer_host_kv,
+                    String consumerParam = StringUtils.substring(consumer_host_kv,
                                                                  consumer_host_kv.lastIndexOf("/") + 1);
+                    Map<String, String> consumerInfo = gson.fromJson(URLDecoder.decode(consumerParam, "UTF-8"),
+                                                                     new TypeToken<Map<String, String>>() {
+                                                                     }.getType());
+                    String appName = consumerInfo.get("appName");
+                    String appHost = consumerInfo.get("consumerHost");
+                    String appPort = consumerInfo.get("consumerPort");
+                    SalukiApplication application = new SalukiApplication(appName);
+                    application.addHost(new SalukiHost(appHost, appPort));
+                    consumer_host = clientParam.get("consumerHost");
+
                     getConsumers(group).add(consumer_host + ":" + consumer_port);
                 }
             }
@@ -79,13 +95,14 @@ public class ConsulRegistry {
         return providers;
     }
 
-    private Set<String> getConsumers(String applicationName) {
-        Set<String> consumers = applicatonConsumers.get(applicationName);
-        if (consumers == null) {
-            applicatonConsumers.putIfAbsent(applicationName, Sets.newHashSet());
-            consumers = applicatonConsumers.get(applicationName);
+    private void addConsumer(SalukiApplication app) {
+        String appName = app.getName();
+        if (applicatonConsumers.containsKey(appName)) {
+            SalukiApplication application = applicatonConsumers.get(appName);
+            application.addAllChild(app.getChildren());
+            application.addAllHost(app.getHosts());
         }
-        return consumers;
+
     }
 
     public String getAgentHost() {

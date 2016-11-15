@@ -1,35 +1,25 @@
-/**
- * Copyright 2006-2015 handu.com
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Dubbo Application Entity
- *
- * @author Zhiguo.Chen <me@chenzhiguo.cn> Created on 15/6/27.
- */
 public class SalukiApplication implements Serializable {
 
-    private String      name;
+    private static final long      serialVersionUID = 1L;
 
-    private Set<String> providers;
+    private String                 name;
 
-    private Set<String> consumers;
+    private SalukiApplication      parent;
+
+    private Set<SalukiApplication> children;
+
+    private Set<SalukiHost>        hosts;
+
+    public SalukiApplication(String applicationName){
+        this.name = applicationName;
+    }
 
     public String getName() {
         return name;
@@ -39,20 +29,82 @@ public class SalukiApplication implements Serializable {
         this.name = name;
     }
 
-    public Set<String> getProviders() {
-        return providers;
+    public SalukiApplication getParent() {
+        return parent;
     }
 
-    public void setProviders(Set<String> providers) {
-        this.providers = providers;
+    public void setParent(SalukiApplication parent) {
+        this.parent = parent;
     }
 
-    public Set<String> getConsumers() {
-        return consumers;
+    public Set<SalukiApplication> getChildren() {
+        return children;
     }
 
-    public void setConsumers(Set<String> consumers) {
-        this.consumers = consumers;
+    public void setChildren(Set<SalukiApplication> children) {
+        this.children = children;
+    }
+
+    public synchronized void addChild(SalukiApplication childApplication) {
+        if (this.children == null) {
+            this.children = new HashSet<SalukiApplication>();
+        }
+        this.children.add(childApplication);
+    }
+
+    public synchronized void addAllChild(Collection<SalukiApplication> childApplications) {
+        if (this.children == null) {
+            this.children = new HashSet<SalukiApplication>();
+        }
+        this.children.addAll(childApplications);
+    }
+
+    public Set<SalukiHost> getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(Set<SalukiHost> hosts) {
+        this.hosts = hosts;
+    }
+
+    public synchronized void addHost(SalukiHost host) {
+        if (this.hosts == null) {
+            this.hosts = new HashSet<SalukiHost>();
+        }
+        this.hosts.add(host);
+    }
+
+    public synchronized void addAllHost(Collection<SalukiHost> hosts) {
+        if (this.hosts == null) {
+            this.hosts = new HashSet<SalukiHost>();
+        }
+        this.hosts.addAll(hosts);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        SalukiApplication other = (SalukiApplication) obj;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "SalukiApplication [name=" + name + ", parent=" + parent + ", children=" + children + ", hosts=" + hosts
+               + "]";
     }
 
 }
