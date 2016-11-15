@@ -53,11 +53,11 @@ public class SalukiConsulClient {
                 for (Session session : sessions) {
                     if (session.getName().equals(ephemralNode.getServerInfo())) {
                         sessionId = session.getId();
-                    } else {
-                        sessionId = generateNewSession(ephemralNode);
                     }
+                    continue;
                 }
-            } else {
+            }
+            if (sessionId == null) {
                 sessionId = generateNewSession(ephemralNode);
             }
             PutParams kvPutParams = new PutParams();
