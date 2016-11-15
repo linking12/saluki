@@ -8,6 +8,16 @@ public class SalukiHost implements Serializable {
     private String            host;
     private String            port;
 
+    public SalukiHost(String host){
+        if (host.contains(":")) {
+            String[] hostAndPort = host.split(":");
+            this.host = hostAndPort[0];
+            this.port = hostAndPort[1];
+        } else {
+            this.host = host;
+        }
+    }
+
     public SalukiHost(String host, String port){
         this.host = host;
         this.port = port;

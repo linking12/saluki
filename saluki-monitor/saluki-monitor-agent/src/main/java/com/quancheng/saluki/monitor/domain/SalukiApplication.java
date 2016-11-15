@@ -13,7 +13,7 @@ public class SalukiApplication implements Serializable {
 
     private String                 serverFlag;
 
-    private SalukiApplication      parent;
+    private Set<SalukiApplication> parent;
 
     private Set<SalukiApplication> children;
 
@@ -36,12 +36,26 @@ public class SalukiApplication implements Serializable {
         this.name = name;
     }
 
-    public SalukiApplication getParent() {
+    public Set<SalukiApplication> getParent() {
         return parent;
     }
 
-    public void setParent(SalukiApplication parent) {
+    public void setParent(Set<SalukiApplication> parent) {
         this.parent = parent;
+    }
+
+    public synchronized void addParent(SalukiApplication parentApplication) {
+        if (this.parent == null) {
+            this.parent = new HashSet<SalukiApplication>();
+        }
+        this.parent.add(parentApplication);
+    }
+
+    public synchronized void addAllParent(Collection<SalukiApplication> parentApplications) {
+        if (this.parent == null) {
+            this.parent = new HashSet<SalukiApplication>();
+        }
+        this.parent.addAll(parentApplications);
     }
 
     public Set<SalukiApplication> getChildren() {

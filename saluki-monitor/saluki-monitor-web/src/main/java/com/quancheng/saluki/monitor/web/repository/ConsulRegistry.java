@@ -1,7 +1,5 @@
 package com.quancheng.saluki.monitor.web.repository;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,37 +12,41 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Check;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.monitor.domain.SalukiApplication;
-import com.quancheng.saluki.monitor.domain.SalukiHost;
 import com.quancheng.saluki.monitor.web.utils.NamedThreadFactory;
 
 @Repository
 public class ConsulRegistry {
 
-    public static final String                                                      CONSUL_SERVICE_PRE = "Saluki_";
+    private static final Logger                     logger                    = LoggerFactory.getLogger(ConsulRegistry.class);
 
-    private final Gson                                                              gson               = new Gson();
+    public static final String                      CONSUL_SERVICE_PRE        = "Saluki_";
 
-    private String                                                                  agentHost;
+    private final Gson                              gson                      = new Gson();
 
-    private int                                                                     agentPort;
+    private String                                  agentHost;
 
-    private ConsulClient                                                            consulClient;
+    private int                                     agentPort;
 
-    private final Map<String, Pair<Set<SalukiApplication>, Set<SalukiApplication>>> services           = Maps.newConcurrentMap();
+    private ConsulClient                            consulClient;
 
-    private final ScheduledExecutorService                                          executor           = Executors.newScheduledThreadPool(1,
-                                                                                                                                          new NamedThreadFactory("ConsulLookUpService",
-                                                                                                                                                                 true));;
+    private final Map<String, Pair<String, String>> serviceApplicationMapping = Maps.newConcurrentMap();
+
+    private final Map<String, Set<String>>          applicationHostsMapping   = Maps.newConcurrentMap();
+
+    private final ScheduledExecutorService          executor                  = Executors.newScheduledThreadPool(1,
+                                                                                                                 new NamedThreadFactory("ConsulLookUpService",
+                                                                                                                                        true));;
 
     @PostConstruct
     public void init() {
@@ -53,32 +55,7 @@ public class ConsulRegistry {
     }
 
     public List<SalukiApplication> getAllApplication() {
-        if (services.isEmpty()) {
-            return Lists.newArrayList();
-        } else {
-            Map<String, Set<SalukiApplication>> apps = Maps.newConcurrentMap();
-            for (Map.Entry<String, Pair<Set<SalukiApplication>, Set<SalukiApplication>>> entry : services.entrySet()) {
-                Pair<Set<SalukiApplication>, Set<SalukiApplication>> serviceApps = entry.getValue();
-                Set<SalukiApplication> consumers = serviceApps.getLeft();
-                Set<SalukiApplication> providers = serviceApps.getRight();
-                int consumerIndex = 0;
-                for (Iterator<SalukiApplication> it = consumers.iterator(); it.hasNext();) {
-                    SalukiApplication consumerApp = it.next();
-                    if (consumerIndex == 0) {
-                        String consumerAppName = consumerApp.getName();
-                        Set<SalukiApplication> appName_Set = apps.get(consumerAppName);
-                        if (appName_Set == null) {
-                            appName_Set = Sets.newHashSet();
-                        }
-                        appName_Set.add(consumerApp);
-                    } else {
-
-                    }
-                    consumerIndex++;
-                }
-
-            }
-        }
+        return null;
     }
 
     public void pickUpApplication() {
@@ -113,47 +90,48 @@ public class ConsulRegistry {
                     String[] args = serviceCheck.getServiceId().split("-");
                     String serviceName = args[1];
                     String serviceKey = group + "/" + serviceName;
-                    addServiceToCache(serviceKey);
+                    Pair<String, String> serviceAppPair = addServiceToCache(serviceKey);
+                    //这里
+                    serviceApplicationMapping.put(serviceKey, serviceAppPair);
                 }
             }
         }
 
-        private void addServiceToCache(String serviceKey) {
-            List<String> applicationPaths = consulClient.getKVKeysOnly(serviceKey).getValue();
-            Set<SalukiApplication> providers = Sets.newHashSet();
-            Set<SalukiApplication> consumers = Sets.newHashSet();
-            for (String applicationPath : applicationPaths) {
-                lookUpAppinfo(serviceKey, providers, consumers, applicationPath);
+        private Pair<String, String> addServiceToCache(String serviceKey) {
+            List<String> providerAndConsumers = consulClient.getKVKeysOnly(serviceKey).getValue();
+            String providerAppName = null;
+            String consumerAppName = null;
+            Set<String> providerHosts = Sets.newHashSet();
+            Set<String> comsumerHosts = Sets.newHashSet();
+            for (String providerAndConsumer : providerAndConsumers) {
+                String providerAndConsumerAppInfo = consulClient.getKVValue(providerAndConsumer).getValue().getDecodedValue();
+                Map<String, String> appInfoMap = gson.fromJson(providerAndConsumerAppInfo,
+                                                               new TypeToken<Map<String, String>>() {
+                                                               }.getType());
+                String[] serverInfos = StringUtils.split(StringUtils.remove(providerAndConsumer, serviceKey + "/"),
+                                                         "/");
+                String appFlag = serverInfos[0];
+                String appHost = serverInfos[1];
+                String appName = appInfoMap.get("appName");
+                if (appFlag.equals("provider")) {
+                    providerAppName = appName;
+                    providerHosts.add(appHost);
+                } else if (appFlag.equals("consumer")) {
+                    consumerAppName = appName;
+                    comsumerHosts.add(appHost);
+                }
             }
-            for (SalukiApplication consumer : consumers) {
-                consumer.addAllParent(providers);
+            if (providerAppName == null || consumerAppName == null) {
+                logger.error(serviceKey + " have not registry appName");
             }
-            for (SalukiApplication provider : providers) {
-                provider.addAllChild(consumers);
+            if (applicationHostsMapping.containsKey(providerAppName)) {
+                applicationHostsMapping.get(providerAppName).addAll(providerHosts);
             }
-            services.put(serviceKey,
-                         new ImmutablePair<Set<SalukiApplication>, Set<SalukiApplication>>(consumers, providers));
+            if (applicationHostsMapping.containsKey(consumerAppName)) {
+                applicationHostsMapping.get(consumerAppName).addAll(comsumerHosts);
+            }
+            return new ImmutablePair<String, String>(consumerAppName, providerAppName);
         }
 
-        private void lookUpAppinfo(String serviceKey, Set<SalukiApplication> providers,
-                                   Set<SalukiApplication> consumers, String applicationPath) {
-            String applicationInfo = consulClient.getKVValue(applicationPath).getValue().getDecodedValue();
-            Map<String, String> serverParam = gson.fromJson(applicationInfo, new TypeToken<Map<String, String>>() {
-            }.getType());
-            String appName = serverParam.get("appName");
-            String appHttpPort = serverParam.get("serverHttpPort");
-            String[] serverInfos = StringUtils.split(StringUtils.remove(applicationPath, serviceKey + "/"), "/");
-            String appFlag = serverInfos[0];
-            String appHost = serverInfos[1];
-            SalukiApplication application = new SalukiApplication(appName);
-            application.addHost(new SalukiHost(appHost, appHttpPort));
-            if (appFlag.equals("provider")) {
-                application.setServerFlag("provider");
-                providers.add(application);
-            } else if (appFlag.equals("consumer")) {
-                application.setServerFlag("consumer");
-                consumers.add(application);
-            }
-        }
     }
 }
