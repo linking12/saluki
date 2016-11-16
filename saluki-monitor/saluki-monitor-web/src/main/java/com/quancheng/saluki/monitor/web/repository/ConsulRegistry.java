@@ -1,5 +1,6 @@
 package com.quancheng.saluki.monitor.web.repository;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,11 +56,22 @@ public class ConsulRegistry {
     }
 
     public List<SalukiApplication> getAllApplication() {
+        // 首先做一次剔重操作
+        Set<Pair<String, String>> consumerAndProviderAppNames = Sets.newHashSet();
+        for (Map.Entry<String, Pair<String, String>> entry : serviceApplicationMapping.entrySet()) {
+            Pair<String, String> consumerAndProviderApp = entry.getValue();
+            consumerAndProviderAppNames.add(consumerAndProviderApp);
+        }
+        // 取出consumer和provider
+        Iterator<Pair<String, String>> it = consumerAndProviderAppNames.iterator();
+        while (it.hasNext()) {
+            Pair<String, String> consumerAndProviderApp = it.next();
+            String consumerAppName = consumerAndProviderApp.getLeft();
+            String providerAppName = consumerAndProviderApp.getRight();
+            Set<String> consumerHost = applicationHostsMapping.get(consumerAppName);
+            Set<String> providerHost = applicationHostsMapping.get(providerAppName);
+        }
         return null;
-    }
-
-    public void pickUpApplication() {
-
     }
 
     public String getAgentHost() {
@@ -89,15 +101,16 @@ public class ConsulRegistry {
                     String group = serviceCheck.getServiceName();
                     String[] args = serviceCheck.getServiceId().split("-");
                     String serviceName = args[1];
-                    String serviceKey = group + "/" + serviceName;
-                    Pair<String, String> serviceAppPair = addServiceToCache(serviceKey);
-                    //这里
+                    Pair<String, String> serviceAppPair = addServiceToCache(group, serviceName);
+                    // 这里需要把应用名加上，防止serviceName重复(是否必要？)
+                    String serviceKey = StringUtils.replace(group, CONSUL_SERVICE_PRE, "") + ":" + serviceName;
                     serviceApplicationMapping.put(serviceKey, serviceAppPair);
                 }
             }
         }
 
-        private Pair<String, String> addServiceToCache(String serviceKey) {
+        private Pair<String, String> addServiceToCache(String group, String serviceName) {
+            String serviceKey = group + "/" + serviceName;
             List<String> providerAndConsumers = consulClient.getKVKeysOnly(serviceKey).getValue();
             String providerAppName = null;
             String consumerAppName = null;
@@ -112,11 +125,14 @@ public class ConsulRegistry {
                                                          "/");
                 String appFlag = serverInfos[0];
                 String appHost = serverInfos[1];
-                String appName = appInfoMap.get("appName");
+                // 对于provider端，直接取group做为应用名
                 if (appFlag.equals("provider")) {
+                    String appName = StringUtils.replace(group, CONSUL_SERVICE_PRE, "");
                     providerAppName = appName;
                     providerHosts.add(appHost);
-                } else if (appFlag.equals("consumer")) {
+                } // 对于consumer端，需要取注册的参数做为应用名
+                else if (appFlag.equals("consumer")) {
+                    String appName = appInfoMap.get("appName");
                     consumerAppName = appName;
                     comsumerHosts.add(appHost);
                 }
@@ -126,9 +142,13 @@ public class ConsulRegistry {
             }
             if (applicationHostsMapping.containsKey(providerAppName)) {
                 applicationHostsMapping.get(providerAppName).addAll(providerHosts);
+            } else {
+                applicationHostsMapping.put(providerAppName, providerHosts);
             }
             if (applicationHostsMapping.containsKey(consumerAppName)) {
                 applicationHostsMapping.get(consumerAppName).addAll(comsumerHosts);
+            } else {
+                applicationHostsMapping.put(consumerAppName, comsumerHosts);
             }
             return new ImmutablePair<String, String>(consumerAppName, providerAppName);
         }
