@@ -1,5 +1,6 @@
 package com.quancheng.saluki.monitor.web.repository;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.ecwid.consul.v1.ConsulClient;
@@ -30,6 +33,8 @@ import com.quancheng.saluki.monitor.web.utils.NamedThreadFactory;
 
 @Repository
 public class ConsulRegistry {
+
+    private static final Logger                                       log                = LoggerFactory.getLogger(ConsulRegistry.class);
 
     public static final String                                        CONSUL_SERVICE_PRE = "Saluki_";
 
@@ -55,6 +60,9 @@ public class ConsulRegistry {
         executor.scheduleWithFixedDelay(new LookUpService(), 0, 1, TimeUnit.HOURS);
     }
 
+    /**
+     * 获取所有应用
+     */
     public List<SalukiApplication> getAllApplication() {
         Map<String, SalukiApplication> appCache = Maps.newHashMap();
         for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesPassing.entrySet()) {
@@ -68,6 +76,71 @@ public class ConsulRegistry {
             applications.add(entry.getValue());
         }
         return applications;
+    }
+
+    /**
+     * 模糊匹配服务，从服务角度查询
+     */
+    public List<SalukiService> queryPassingServiceByService(String search) {
+        Set<Pair<String, String>> beAboutToQuery = buildQueryCondition(search, "service");
+        if (beAboutToQuery.size() == 0) {
+            // 触发一次全量查询
+            doQueryAllService();
+            beAboutToQuery = buildQueryCondition(search, "service");
+            log.debug("fuzzy query response null,there is no data in cache");
+        }
+        return buildQueryResponse(beAboutToQuery);
+    }
+
+    /**
+     * 模糊匹配服务，从应用角度查询
+     */
+    public List<SalukiService> queryPassingServiceByApp(String search) {
+        Set<Pair<String, String>> beAboutToQuery = buildQueryCondition(search, "application");
+        if (beAboutToQuery.size() == 0) {
+            // 触发一次全量查询
+            doQueryAllService();
+            beAboutToQuery = buildQueryCondition(search, "service");
+            log.debug("fuzzy query response null,there is no data in cache");
+        }
+        return buildQueryResponse(beAboutToQuery);
+    }
+
+    private List<SalukiService> buildQueryResponse(Set<Pair<String, String>> queryCondition) {
+        List<SalukiService> services = Lists.newArrayList();
+        for (Iterator<Pair<String, String>> it = queryCondition.iterator(); it.hasNext();) {
+            Pair<String, String> groupAndService = it.next();
+            String group = groupAndService.getLeft();
+            String serviceName = groupAndService.getRight();
+            Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = getProviderAndConsumer(group, serviceName);
+            SalukiService service = new SalukiService(serviceName);
+            service.setPrividerHost(providerConsumer.getLeft());
+            service.setConsumerHost(providerConsumer.getRight());
+            service.setStatus("passing");
+            services.add(service);
+        }
+        return services;
+    }
+
+    private Set<Pair<String, String>> buildQueryCondition(String search, String dimension) {
+        Set<Pair<String, String>> beAboutToQuery = Sets.newHashSet();
+        for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesPassing.entrySet()) {
+            Pair<String, String> appNameService = getAppNameService(entry.getKey());
+            String appName = appNameService.getLeft();
+            String serviceName = appNameService.getRight();
+            if (dimension.equals("service")) {
+                if (StringUtils.containsAny(serviceName, search)) {
+                    String group = CONSUL_SERVICE_PRE + appName;
+                    beAboutToQuery.add(new ImmutablePair<String, String>(group, serviceName));
+                }
+            } else {
+                if (StringUtils.containsAny(appName, dimension)) {
+                    String group = CONSUL_SERVICE_PRE + appName;
+                    beAboutToQuery.add(new ImmutablePair<String, String>(group, serviceName));
+                }
+            }
+        }
+        return beAboutToQuery;
     }
 
     private void processApplication(Map<String, SalukiApplication> appCache,
@@ -148,6 +221,31 @@ public class ConsulRegistry {
         return new ImmutablePair<String, String>(args[0], args[1]);
     }
 
+    private void doQueryAllService() {
+        Map<String, Check> allServices = consulClient.getAgentChecks().getValue();
+        for (Map.Entry<String, Check> entry : allServices.entrySet()) {
+            Check serviceCheck = entry.getValue();
+            String group = serviceCheck.getServiceName();
+            Triple<String, String, String> PortHostService = getPortHostService(serviceCheck.getServiceId());
+            String host = PortHostService.getMiddle();
+            String rpcPort = PortHostService.getLeft();
+            String service = PortHostService.getRight();
+            String serviceKey = generateServicekey(group, service);
+            if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
+                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service);
+                servicesPassing.put(serviceKey, providerAndConsumer);
+            } else {
+                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
+                if (servicesFailing.get(serviceKey) == null) {
+                    Set<SalukiHost> provider = Sets.newHashSet(new SalukiHost(host, null, rpcPort));
+                    providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
+                    servicesFailing.put(serviceKey, providerAndConsumer);
+                }
+                providerAndConsumer.getLeft().add(new SalukiHost(host, null, rpcPort));
+            }
+        }
+    }
+
     /**
      * ==============help method=============
      */
@@ -155,28 +253,7 @@ public class ConsulRegistry {
 
         @Override
         public void run() {
-            Map<String, Check> allServices = consulClient.getAgentChecks().getValue();
-            for (Map.Entry<String, Check> entry : allServices.entrySet()) {
-                Check serviceCheck = entry.getValue();
-                String group = serviceCheck.getServiceName();
-                Triple<String, String, String> PortHostService = getPortHostService(serviceCheck.getServiceId());
-                String host = PortHostService.getMiddle();
-                String rpcPort = PortHostService.getLeft();
-                String service = PortHostService.getRight();
-                String serviceKey = generateServicekey(group, service);
-                if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
-                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service);
-                    servicesPassing.put(serviceKey, providerAndConsumer);
-                } else {
-                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
-                    if (servicesFailing.get(serviceKey) == null) {
-                        Set<SalukiHost> provider = Sets.newHashSet(new SalukiHost(host, null, rpcPort));
-                        providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
-                        servicesFailing.put(serviceKey, providerAndConsumer);
-                    }
-                    providerAndConsumer.getLeft().add(new SalukiHost(host, null, rpcPort));
-                }
-            }
+            doQueryAllService();
         }
 
     }
