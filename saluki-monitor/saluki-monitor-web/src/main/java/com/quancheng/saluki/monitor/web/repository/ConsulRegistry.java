@@ -79,64 +79,75 @@ public class ConsulRegistry {
     }
 
     /**
-     * 模糊匹配服务，从服务角度查询
+     * 匹配服务，从服务角度查询,这里需要从缓存中直接取出返回么？减轻consul的压力，但会导致结果不一定准确
      */
-    public List<SalukiService> queryPassingServiceByService(String search) {
-        Set<Pair<String, String>> beAboutToQuery = buildQueryCondition(search, "service");
+    public List<SalukiService> queryPassingServiceByService(String search, Boolean accurate) {
+        Set<String> beAboutToQuery = buildQueryCondition(search, "service", accurate);
         if (beAboutToQuery.size() == 0) {
+            log.debug("fuzzy query response null,there is no data in cache,will load service into cache ");
             // 触发一次全量查询
             doQueryAllService();
-            beAboutToQuery = buildQueryCondition(search, "service");
-            log.debug("fuzzy query response null,there is no data in cache");
+            beAboutToQuery = buildQueryCondition(search, "service", accurate);
+
         }
-        return buildQueryResponse(beAboutToQuery);
+        return buildQueryResponse(beAboutToQuery, accurate);
     }
 
     /**
-     * 模糊匹配服务，从应用角度查询
+     * 匹配服务，从服务角度查询,这里需要从缓存中直接取出返回么？减轻consul的压力，但会导致结果不一定准确
      */
-    public List<SalukiService> queryPassingServiceByApp(String search) {
-        Set<Pair<String, String>> beAboutToQuery = buildQueryCondition(search, "application");
+    public List<SalukiService> queryPassingServiceByApp(String search, Boolean accurate) {
+        Set<String> beAboutToQuery = buildQueryCondition(search, "application", accurate);
         if (beAboutToQuery.size() == 0) {
+            log.debug("fuzzy query response null,there is no data in cache,will load service into cache ");
             // 触发一次全量查询
             doQueryAllService();
-            beAboutToQuery = buildQueryCondition(search, "service");
-            log.debug("fuzzy query response null,there is no data in cache");
+            beAboutToQuery = buildQueryCondition(search, "application", accurate);
+
         }
-        return buildQueryResponse(beAboutToQuery);
+        return buildQueryResponse(beAboutToQuery, accurate);
     }
 
-    private List<SalukiService> buildQueryResponse(Set<Pair<String, String>> queryCondition) {
+    private List<SalukiService> buildQueryResponse(Set<String> queryCondition, Boolean accurate) {
         List<SalukiService> services = Lists.newArrayList();
-        for (Iterator<Pair<String, String>> it = queryCondition.iterator(); it.hasNext();) {
-            Pair<String, String> groupAndService = it.next();
-            String group = groupAndService.getLeft();
-            String serviceName = groupAndService.getRight();
-            Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = getProviderAndConsumer(group, serviceName);
-            SalukiService service = new SalukiService(serviceName);
+        for (Iterator<String> it = queryCondition.iterator(); it.hasNext();) {
+            String serviceKey = it.next();
+            Pair<String, String> appNameService = getAppNameService(serviceKey);
+            Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = servicesPassing.get(serviceKey);
+            SalukiService service = new SalukiService(appNameService.getRight());
+            service.setStatus("passing");
             service.setPrividerHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
-            service.setStatus("passing");
-            services.add(service);
         }
         return services;
     }
 
-    private Set<Pair<String, String>> buildQueryCondition(String search, String dimension) {
-        Set<Pair<String, String>> beAboutToQuery = Sets.newHashSet();
+    private Set<String> buildQueryCondition(String search, String dimension, Boolean accurate) {
+        Set<String> beAboutToQuery = Sets.newHashSet();
         for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesPassing.entrySet()) {
-            Pair<String, String> appNameService = getAppNameService(entry.getKey());
+            String serviceKey = entry.getKey();
+            Pair<String, String> appNameService = getAppNameService(serviceKey);
             String appName = appNameService.getLeft();
             String serviceName = appNameService.getRight();
             if (dimension.equals("service")) {
-                if (StringUtils.containsAny(serviceName, search)) {
-                    String group = CONSUL_SERVICE_PRE + appName;
-                    beAboutToQuery.add(new ImmutablePair<String, String>(group, serviceName));
+                if (accurate) {
+                    if (StringUtils.equalsIgnoreCase(serviceName, search)) {
+                        beAboutToQuery.add(serviceKey);
+                    }
+                } else {
+                    if (StringUtils.containsAny(serviceName, search)) {
+                        beAboutToQuery.add(serviceKey);
+                    }
                 }
             } else {
-                if (StringUtils.containsAny(appName, dimension)) {
-                    String group = CONSUL_SERVICE_PRE + appName;
-                    beAboutToQuery.add(new ImmutablePair<String, String>(group, serviceName));
+                if (accurate) {
+                    if (StringUtils.equalsIgnoreCase(appName, search)) {
+                        beAboutToQuery.add(serviceKey);
+                    }
+                } else {
+                    if (StringUtils.containsAny(appName, search)) {
+                        beAboutToQuery.add(serviceKey);
+                    }
                 }
             }
         }
