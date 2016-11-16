@@ -64,7 +64,7 @@ public class SalukiAutoConfiguration {
                 consumerParam.put("serverHost", String.valueOf(grpcProperty.getServerHost()));
             }
             consumerParam.put("appName", applicationName);
-            System.setProperty(SalukiConstants.REGISTRY_CLIENT_PARAM, new Gson().toJson(consumerParam));
+            System.setProperty(SalukiConstants.REGISTRY_SERVER_PARAM, new Gson().toJson(consumerParam));
         }
     }
 

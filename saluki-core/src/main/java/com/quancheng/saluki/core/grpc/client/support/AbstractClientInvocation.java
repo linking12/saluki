@@ -172,7 +172,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
             String req = gson.toJson(request);// 入参
             String rep = gson.toJson(response);// 出参
-            Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
+            Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM),
                                                                   new TypeToken<Map<String, String>>() {
                                                                   }.getType());
             String consumerHost = clientParam.get("serverHost");

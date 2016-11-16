@@ -101,9 +101,6 @@ public class ConsulRegistry extends FailbackRegistry {
                                        SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
         url = url.removeParameters(keys);
         String group = url.getGroup();
-        // 注册本机地址到consul中
-        // SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
-        // client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 

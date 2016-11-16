@@ -2,119 +2,53 @@ package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 public class SalukiApplication implements Serializable {
 
-    private static final long      serialVersionUID = 1L;
+    private static final long  serialVersionUID = 1L;
 
-    private String                 name;
+    private final String       appName;
 
-    private String                 serverFlag;
+    private Set<SalukiService> services;
 
-    private Set<SalukiApplication> parent;
-
-    private Set<SalukiApplication> children;
-
-    private Set<SalukiHost>        hosts;
-
-    public SalukiApplication(String applicationName, String serverFlag){
-        this.name = applicationName;
-        this.serverFlag = serverFlag;
+    public SalukiApplication(String appName){
+        this.appName = appName;
     }
 
-    public SalukiApplication(String applicationName){
-        this.name = applicationName;
+    public Set<SalukiService> getServices() {
+        return services;
     }
 
-    public String getName() {
-        return name;
+    public void setServices(Set<SalukiService> services) {
+        this.services = services;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getAppName() {
+        return appName;
     }
 
-    public Set<SalukiApplication> getParent() {
-        return parent;
-    }
-
-    public void setParent(Set<SalukiApplication> parent) {
-        this.parent = parent;
-    }
-
-    public synchronized void addParent(SalukiApplication parentApplication) {
-        if (this.parent == null) {
-            this.parent = new HashSet<SalukiApplication>();
+    public void addService(SalukiService service) {
+        if (this.services == null) {
+            this.services = Sets.newConcurrentHashSet();
         }
-        this.parent.add(parentApplication);
+        this.services.add(service);
     }
 
-    public synchronized void addAllParent(Collection<SalukiApplication> parentApplications) {
-        if (this.parent == null) {
-            this.parent = new HashSet<SalukiApplication>();
+    public void addServices(Collection<SalukiService> services) {
+        if (this.services == null) {
+            this.services = Sets.newConcurrentHashSet();
         }
-        this.parent.addAll(parentApplications);
-    }
-
-    public Set<SalukiApplication> getChildren() {
-        return children;
-    }
-
-    public void setChildren(Set<SalukiApplication> children) {
-        this.children = children;
-    }
-
-    public synchronized void addChild(SalukiApplication childApplication) {
-        if (this.children == null) {
-            this.children = new HashSet<SalukiApplication>();
-        }
-        this.children.add(childApplication);
-    }
-
-    public synchronized void addAllChild(Collection<SalukiApplication> childApplications) {
-        if (this.children == null) {
-            this.children = new HashSet<SalukiApplication>();
-        }
-        this.children.addAll(childApplications);
-    }
-
-    public Set<SalukiHost> getHosts() {
-        return hosts;
-    }
-
-    public void setHosts(Set<SalukiHost> hosts) {
-        this.hosts = hosts;
-    }
-
-    public synchronized void addHost(SalukiHost host) {
-        if (this.hosts == null) {
-            this.hosts = new HashSet<SalukiHost>();
-        }
-        this.hosts.add(host);
-    }
-
-    public String getServerFlag() {
-        return serverFlag;
-    }
-
-    public void setServerFlag(String serverFlag) {
-        this.serverFlag = serverFlag;
-    }
-
-    public synchronized void addAllHost(Collection<SalukiHost> hosts) {
-        if (this.hosts == null) {
-            this.hosts = new HashSet<SalukiHost>();
-        }
-        this.hosts.addAll(hosts);
+        this.services.addAll(services);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((appName == null) ? 0 : appName.hashCode());
         return result;
     }
 
@@ -124,16 +58,15 @@ public class SalukiApplication implements Serializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         SalukiApplication other = (SalukiApplication) obj;
-        if (name == null) {
-            if (other.name != null) return false;
-        } else if (!name.equals(other.name)) return false;
+        if (appName == null) {
+            if (other.appName != null) return false;
+        } else if (!appName.equals(other.appName)) return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "SalukiApplication [name=" + name + ", parent=" + parent + ", children=" + children + ", hosts=" + hosts
-               + "]";
+        return "SalukiApplication [appName=" + appName + ", services=" + services + "]";
     }
 
 }

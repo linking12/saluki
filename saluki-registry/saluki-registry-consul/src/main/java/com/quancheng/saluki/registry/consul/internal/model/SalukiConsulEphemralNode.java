@@ -11,7 +11,7 @@ import com.quancheng.saluki.registry.consul.ConsulRegistry;
 
 public final class SalukiConsulEphemralNode {
 
-    private final String hostAndPort;
+    private final String host;
 
     private final String serverInfo;
 
@@ -29,7 +29,7 @@ public final class SalukiConsulEphemralNode {
         this.serviceName = builder.serviceName;
         this.interval = builder.interval;
         this.flag = builder.flag;
-        this.hostAndPort = builder.hostAndPort;
+        this.host = builder.host;
     }
 
     public NewSession getNewSession() {
@@ -45,10 +45,10 @@ public final class SalukiConsulEphemralNode {
         String key;
         if (this.flag.equals("provider")) {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/provider" + "/"
-                  + this.hostAndPort;
+                  + this.host;
         } else {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/consumer" + "/"
-                  + this.hostAndPort;
+                  + this.host;
         }
         return key;
     }
@@ -83,7 +83,7 @@ public final class SalukiConsulEphemralNode {
 
         private final static Gson gson = new Gson();
 
-        private String            hostAndPort;
+        private String            host;
 
         private String            serverInfo;
 
@@ -101,17 +101,16 @@ public final class SalukiConsulEphemralNode {
         }
 
         public Builder withHost(String host) {
-            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM);
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
             this.serverInfo = serverInfo;
             Map<String, String> serverParam = gson.fromJson(serverInfo, new TypeToken<Map<String, String>>() {
             }.getType());
             String serverHost = serverParam.get("serverHost");
-            String serverHttpPort = serverParam.get("serverHttpPort");
             // 如果是docker，ip会变化，需要手动注入下
             if (serverHost != null) {
                 host = serverHost;
             }
-            this.hostAndPort = substituteEnvironmentVariables(host) + ":" + serverHttpPort;
+            this.host = substituteEnvironmentVariables(host);
             return this;
         }
 

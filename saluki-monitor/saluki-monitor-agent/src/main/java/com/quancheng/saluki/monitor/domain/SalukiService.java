@@ -1,77 +1,74 @@
 package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 public class SalukiService implements Serializable {
 
-    private static final long   serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-    private String              name;
+    private final String      serviceName;
 
-    private String              applicationName;
+    private String            status;
 
-    private SalukiService       parent;
+    private Set<SalukiHost>   prividerHost;
 
-    private List<SalukiService> children;
+    private Set<SalukiHost>   consumerHost;
 
-    private List<SalukiHost>    consumerHost;
-
-    private List<SalukiHost>    providerHost;
-
-    public String getName() {
-        return name;
+    public SalukiService(String serviceName){
+        this.serviceName = serviceName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public String getApplicationName() {
-        return applicationName;
+    public String getStatus() {
+        return status;
     }
 
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public SalukiService getParent() {
-        return parent;
+    public Set<SalukiHost> getPrividerHost() {
+        return prividerHost;
     }
 
-    public void setParent(SalukiService parent) {
-        this.parent = parent;
+    public void setPrividerHost(Set<SalukiHost> prividerHost) {
+        this.prividerHost = prividerHost;
     }
 
-    public List<SalukiService> getChildren() {
-        return children;
+    public void addPrividerHost(Set<SalukiHost> prividerHosts) {
+        if (this.prividerHost == null) {
+            this.prividerHost = Sets.newConcurrentHashSet();
+        }
+        this.prividerHost.addAll(prividerHosts);
     }
 
-    public void setChildren(List<SalukiService> children) {
-        this.children = children;
-    }
-
-    public List<SalukiHost> getConsumerHost() {
+    public Set<SalukiHost> getConsumerHost() {
         return consumerHost;
     }
 
-    public void setConsumerHost(List<SalukiHost> consumerHost) {
+    public void setConsumerHost(Set<SalukiHost> consumerHost) {
         this.consumerHost = consumerHost;
     }
 
-    public List<SalukiHost> getProviderHost() {
-        return providerHost;
-    }
-
-    public void setProviderHost(List<SalukiHost> providerHost) {
-        this.providerHost = providerHost;
+    public void addConsumerHosts(Set<SalukiHost> consumerHosts) {
+        if (this.consumerHost == null) {
+            this.consumerHost = Sets.newConcurrentHashSet();
+        }
+        this.consumerHost.addAll(consumerHosts);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((serviceName == null) ? 0 : serviceName.hashCode());
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
         return result;
     }
 
@@ -81,16 +78,19 @@ public class SalukiService implements Serializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         SalukiService other = (SalukiService) obj;
-        if (name == null) {
-            if (other.name != null) return false;
-        } else if (!name.equals(other.name)) return false;
+        if (serviceName == null) {
+            if (other.serviceName != null) return false;
+        } else if (!serviceName.equals(other.serviceName)) return false;
+        if (status == null) {
+            if (other.status != null) return false;
+        } else if (!status.equals(other.status)) return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "SalukiService [name=" + name + ", applicationName=" + applicationName + ", parent=" + parent
-               + ", children=" + children + ", consumerHost=" + consumerHost + ", providerHost=" + providerHost + "]";
+        return "SalukiService [serviceName=" + serviceName + ", status=" + status + ", prividerHost=" + prividerHost
+               + ", consumerHost=" + consumerHost + "]";
     }
 
 }
