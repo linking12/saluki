@@ -2,8 +2,6 @@ package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class SalukiHost implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -13,18 +11,6 @@ public class SalukiHost implements Serializable {
     private final String      httpPort;
 
     private final String      rpcPort;
-
-    public SalukiHost(String hostRpcPort){
-        String[] _hostPort = StringUtils.split(hostRpcPort, ":");
-        if (_hostPort.length > 1) {
-            this.host = _hostPort[0];
-            this.rpcPort = _hostPort[1];
-        } else {
-            this.host = _hostPort[0];
-            this.rpcPort = null;
-        }
-        this.httpPort = null;
-    }
 
     public SalukiHost(String host, String httpPort, String rpcPort){
         this.host = host;

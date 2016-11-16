@@ -2,6 +2,7 @@ package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -34,14 +35,33 @@ public class SalukiApplication implements Serializable {
         if (this.services == null) {
             this.services = Sets.newConcurrentHashSet();
         }
-        this.services.add(service);
+        SalukiService machService = null;
+        for (Iterator<SalukiService> it = this.services.iterator(); it.hasNext();) {
+            SalukiService targetService = it.next();
+            Boolean isServiceNameMatch = service.getServiceName().equals(targetService.getServiceName());
+            Boolean isStatusMatch = service.getServiceName().equals(targetService.getStatus());
+            if (isServiceNameMatch && isStatusMatch) {
+                machService = targetService;
+            }
+        }
+        if (machService != null) {
+            this.services.remove(machService);
+            if (service.getConsumerHost() != null) {
+                machService.addConsumerHosts(service.getConsumerHost());
+            }
+            if (service.getPrividerHost() != null) {
+                machService.addPrividerHost(service.getPrividerHost());
+            }
+            this.services.add(machService);
+        } else {
+            this.services.add(service);
+        }
     }
 
     public void addServices(Collection<SalukiService> services) {
-        if (this.services == null) {
-            this.services = Sets.newConcurrentHashSet();
+        for (Iterator<SalukiService> it = services.iterator(); it.hasNext();) {
+            addService(it.next());
         }
-        this.services.addAll(services);
     }
 
     @Override

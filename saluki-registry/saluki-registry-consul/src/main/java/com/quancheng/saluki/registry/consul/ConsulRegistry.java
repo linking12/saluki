@@ -216,10 +216,12 @@ public class ConsulRegistry extends FailbackRegistry {
     private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url, String flag) {
         return SalukiConsulEphemralNode.newEphemralNode()//
                                        .withHost(url.getHost())//
+                                       .withRpcPort(Integer.valueOf(url.getPort()).toString())//
                                        .withFlag(flag)//
                                        .withGroup(url.getGroup())//
                                        .withServiceName(url.getServiceInterface())//
                                        .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
+
     }
 
     private SalukiURL buildSalukiURL(SalukiConsulService service) {

@@ -5,31 +5,47 @@ import java.util.Map;
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.registry.consul.ConsulRegistry;
 
 public final class SalukiConsulEphemralNode {
 
-    private final String host;
+    private final static Gson gson = new Gson();
 
-    private final String serverInfo;
+    private final String      host;
 
-    private final String group;
+    private final String      serverInfo;
 
-    private final String serviceName;
+    private final String      group;
 
-    private final String interval;
+    private final String      serviceName;
 
-    private final String flag;
+    private final String      interval;
+
+    private final String      flag;
+
+    private final String      rpcPort;
+
+    private final String      httpServerPort;
 
     private SalukiConsulEphemralNode(Builder builder){
-        this.serverInfo = builder.serverInfo;
+        String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
+        this.serverInfo = serverInfo;
         this.group = builder.group;
         this.serviceName = builder.serviceName;
         this.interval = builder.interval;
         this.flag = builder.flag;
-        this.host = builder.host;
+        this.rpcPort = builder.rpcPort;
+        @SuppressWarnings("unchecked")
+        Map<String, String> serverParam = gson.fromJson(serverInfo, Map.class);
+        String serverHost = serverParam.get("serverHost");
+        this.httpServerPort = serverParam.get("serverHttpPort");
+        // 如果是docker，ip会变化，需要手动注入下
+        if (serverHost != null) {
+            this.host = serverHost;
+        } else {
+            this.host = builder.host;
+        }
     }
 
     public NewSession getNewSession() {
@@ -45,10 +61,10 @@ public final class SalukiConsulEphemralNode {
         String key;
         if (this.flag.equals("provider")) {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/provider" + "/"
-                  + this.host;
+                  + this.host + ":" + this.rpcPort;
         } else {
             key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/consumer" + "/"
-                  + this.host;
+                  + this.host + ":" + this.httpServerPort;
         }
         return key;
     }
@@ -81,19 +97,17 @@ public final class SalukiConsulEphemralNode {
 
     public static class Builder extends AbstractBuilder {
 
-        private final static Gson gson = new Gson();
+        private String host;
 
-        private String            host;
+        private String rpcPort;
 
-        private String            serverInfo;
+        private String group;
 
-        private String            group;
+        private String serviceName;
 
-        private String            serviceName;
+        private String interval;
 
-        private String            interval;
-
-        private String            flag;
+        private String flag;
 
         public Builder withFlag(String flag) {
             this.flag = substituteEnvironmentVariables(flag);
@@ -101,16 +115,12 @@ public final class SalukiConsulEphemralNode {
         }
 
         public Builder withHost(String host) {
-            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
-            this.serverInfo = serverInfo;
-            Map<String, String> serverParam = gson.fromJson(serverInfo, new TypeToken<Map<String, String>>() {
-            }.getType());
-            String serverHost = serverParam.get("serverHost");
-            // 如果是docker，ip会变化，需要手动注入下
-            if (serverHost != null) {
-                host = serverHost;
-            }
             this.host = substituteEnvironmentVariables(host);
+            return this;
+        }
+
+        public Builder withRpcPort(String rpcPort) {
+            this.rpcPort = substituteEnvironmentVariables(rpcPort);
             return this;
         }
 
@@ -133,9 +143,7 @@ public final class SalukiConsulEphemralNode {
             if (flag == null) {
                 throw new java.lang.IllegalArgumentException("Required flag is missing");
             }
-            if (serverInfo == null) {
-                throw new java.lang.IllegalArgumentException("Required serverInfo is missing");
-            }
+
             if (group == null) {
                 throw new java.lang.IllegalArgumentException("Required group is missing for EphemralNode ");
             }

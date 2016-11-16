@@ -17,6 +17,6 @@ public class ClientApp implements EmbeddedServletContainerCustomizer {
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
-        container.setPort(8787);
+        container.setPort(8788);
     }
 }
