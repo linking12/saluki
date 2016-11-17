@@ -1,6 +1,9 @@
 package com.quancheng.saluki.registry.consul.internal.model;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
+import java.util.UUID;
 
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
@@ -50,11 +53,29 @@ public final class SalukiConsulEphemralNode {
 
     public NewSession getNewSession() {
         NewSession newSersson = new NewSession();
-        newSersson.setName(this.serverInfo);
+        newSersson.setName(getSessionName());
         newSersson.setLockDelay(0);
         newSersson.setBehavior(Session.Behavior.DELETE);
         newSersson.setTtl(this.interval + "s");
         return newSersson;
+    }
+
+    public String getSessionName() {
+        String key;
+        if (this.flag.equals("provider")) {
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_provider" + "_"
+                  + this.host + "_" + this.rpcPort;
+        } else {
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_consumer" + "_"
+                  + this.host + "_" + this.httpServerPort;
+        }
+        try {
+            return URLEncoder.encode(key, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        // 执行到这里是有问题的
+        return UUID.randomUUID().toString();
     }
 
     public String getKey() {
