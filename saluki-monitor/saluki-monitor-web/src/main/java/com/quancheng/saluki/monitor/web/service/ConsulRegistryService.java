@@ -82,7 +82,7 @@ public class ConsulRegistryService {
     }
 
     /**
-     * 匹配服务，从服务角度查询,这里需要从缓存中直接取出返回么？减轻consul的压力，但会导致结果不一定准确
+     * 匹配服务，从服务角度查询
      */
     public List<SalukiService> queryPassingServiceByService(String search, Boolean accurate) {
         Set<String> beAboutToQuery = buildQueryCondition(search, "service", accurate);
@@ -97,7 +97,7 @@ public class ConsulRegistryService {
     }
 
     /**
-     * 匹配服务，从服务角度查询,这里需要从缓存中直接取出返回么？减轻consul的压力，但会导致结果不一定准确
+     * 匹配服务，从应用角度查询
      */
     public List<SalukiService> queryPassingServiceByApp(String search, Boolean accurate) {
         Set<String> beAboutToQuery = buildQueryCondition(search, "application", accurate);
@@ -121,6 +121,7 @@ public class ConsulRegistryService {
             service.setStatus("passing");
             service.setPrividerHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
+            services.add(service);
         }
         return services;
     }
