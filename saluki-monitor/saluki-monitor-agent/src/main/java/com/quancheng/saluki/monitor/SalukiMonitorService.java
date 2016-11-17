@@ -3,10 +3,13 @@ package com.quancheng.saluki.monitor;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,23 +19,26 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.domain.SalukiInvoke;
+import com.quancheng.saluki.monitor.domain.Statistics;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 import com.quancheng.saluki.monitor.util.UuidUtil;
 
 public class SalukiMonitorService implements MonitorService {
 
-    private static final Logger            logger  = LoggerFactory.getLogger(SalukiMonitorService.class);
+    private static final Logger                                      logger        = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    private final BlockingQueue<SalukiURL> queue;
+    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
-    private final Thread                   writeThread;
+    private final BlockingQueue<SalukiURL>                           queue;
 
-    private final SalukiInvokeMapper       invokeMapping;
+    private final Thread                                             writeThread;
 
-    private volatile boolean               running = true;
+    private final SalukiInvokeMapper                                 invokeMapping;
 
-    private final ScheduledExecutorService clearDataExecutor;
+    private volatile boolean                                         running       = true;
+
+    private final ScheduledExecutorService                           clearDataExecutor;
 
     public SalukiMonitorService(){
         queue = new LinkedBlockingQueue<SalukiURL>(100000);
