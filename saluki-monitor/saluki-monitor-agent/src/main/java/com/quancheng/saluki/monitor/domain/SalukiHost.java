@@ -6,6 +6,10 @@ public class SalukiHost implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private String            status;
+
+    private String            url;
+
     private final String      host;
 
     private final String      httpPort;
@@ -16,6 +20,22 @@ public class SalukiHost implements Serializable {
         this.host = host;
         this.httpPort = httpPort;
         this.rpcPort = rpcPort;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getHost() {
@@ -37,6 +57,7 @@ public class SalukiHost implements Serializable {
         result = prime * result + ((host == null) ? 0 : host.hashCode());
         result = prime * result + ((httpPort == null) ? 0 : httpPort.hashCode());
         result = prime * result + ((rpcPort == null) ? 0 : rpcPort.hashCode());
+        result = prime * result + ((status == null) ? 0 : status.hashCode());
         return result;
     }
 
@@ -55,12 +76,16 @@ public class SalukiHost implements Serializable {
         if (rpcPort == null) {
             if (other.rpcPort != null) return false;
         } else if (!rpcPort.equals(other.rpcPort)) return false;
+        if (status == null) {
+            if (other.status != null) return false;
+        } else if (!status.equals(other.status)) return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "SalukiHost [host=" + host + ", httpPort=" + httpPort + ", rpcPort=" + rpcPort + "]";
+        return "SalukiHost [status=" + status + ", url=" + url + ", host=" + host + ", httpPort=" + httpPort
+               + ", rpcPort=" + rpcPort + "]";
     }
 
 }

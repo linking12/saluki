@@ -69,10 +69,10 @@ public class ConsulRegistryService {
     public List<SalukiApplication> getAllApplication() {
         Map<String, SalukiApplication> appCache = Maps.newHashMap();
         for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesPassing.entrySet()) {
-            processApplication(appCache, entry, true);
+            processApplication(appCache, entry);
         }
         for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesFailing.entrySet()) {
-            processApplication(appCache, entry, false);
+            processApplication(appCache, entry);
         }
         List<SalukiApplication> applications = Lists.newArrayList();
         for (Map.Entry<String, SalukiApplication> entry : appCache.entrySet()) {
@@ -118,7 +118,6 @@ public class ConsulRegistryService {
             Pair<String, String> appNameService = getAppNameService(serviceKey);
             Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = servicesPassing.get(serviceKey);
             SalukiService service = new SalukiService(appNameService.getRight());
-            service.setStatus("passing");
             service.setProvideHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
             services.add(service);
@@ -159,20 +158,18 @@ public class ConsulRegistryService {
     }
 
     private void processApplication(Map<String, SalukiApplication> appCache,
-                                    Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry,
-                                    Boolean passOrFail) {
+                                    Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry) {
         Pair<String, String> appNameService = getAppNameService(entry.getKey());
         Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = entry.getValue();
         String appName = appNameService.getLeft();
         String serviceName = appNameService.getRight();
         SalukiApplication application = new SalukiApplication(appName);
         SalukiService service = new SalukiService(serviceName);
-        service.addProviderHosts(providerConsumer.getLeft());
-        if (passOrFail) {
+        if (providerConsumer.getLeft() != null) {
+            service.addProviderHosts(providerConsumer.getLeft());
+        }
+        if (providerConsumer.getRight() != null) {
             service.addConsumerHosts(providerConsumer.getRight());
-            service.setStatus("passing");
-        } else {
-            service.setStatus("failing");
         }
         application.addService(service);
         if (appCache.get(application.getAppName()) == null) {
@@ -193,10 +190,16 @@ public class ConsulRegistryService {
             String appHttpPort = machineInfo.getRight();
             // 对于provider端，直接取group做为应用名
             if (appFlag.equals("provider")) {
-                providerHosts.add(new SalukiHost(appHostRpcPort[0], appHttpPort, appHostRpcPort[1]));
+                SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, appHostRpcPort[1]);
+                host.setStatus("passing");
+                host.setUrl("service:" + appHostRpcPort[0] + ":" + appHostRpcPort[1] + "-" + service);
+                providerHosts.add(host);
             } // 对于consumer端，需要取注册的参数做为应用名
             else if (appFlag.equals("consumer")) {
-                comsumerHosts.add(new SalukiHost(appHostRpcPort[0], appHttpPort, "0"));
+                SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, "0");
+                host.setStatus("passing");
+                host.setUrl(null);
+                comsumerHosts.add(host);
             }
         }
         return new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(providerHosts, comsumerHosts);
@@ -251,12 +254,15 @@ public class ConsulRegistryService {
                 servicesPassing.put(serviceKey, providerAndConsumer);
             } else {
                 Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
+                SalukiHost providerHost = new SalukiHost(host, null, rpcPort);
+                providerHost.setStatus("failing");
+                providerHost.setUrl("service:" + host + ":" + rpcPort + "-" + service);
                 if (servicesFailing.get(serviceKey) == null) {
-                    Set<SalukiHost> provider = Sets.newHashSet(new SalukiHost(host, null, rpcPort));
+                    Set<SalukiHost> provider = Sets.newHashSet(providerHost);
                     providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
                     servicesFailing.put(serviceKey, providerAndConsumer);
                 }
-                providerAndConsumer.getLeft().add(new SalukiHost(host, null, rpcPort));
+                providerAndConsumer.getLeft().add(providerHost);
             }
         }
     }

@@ -12,8 +12,6 @@ public class SalukiService implements Serializable {
 
     private final String      serviceName;
 
-    private String            status;
-
     private Set<SalukiHost>   provideHost;
 
     private Set<SalukiHost>   consumerHost;
@@ -24,14 +22,6 @@ public class SalukiService implements Serializable {
 
     public String getServiceName() {
         return serviceName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Set<SalukiHost> getProvideHost() {
@@ -69,7 +59,6 @@ public class SalukiService implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((serviceName == null) ? 0 : serviceName.hashCode());
-        result = prime * result + ((status == null) ? 0 : status.hashCode());
         return result;
     }
 
@@ -82,16 +71,13 @@ public class SalukiService implements Serializable {
         if (serviceName == null) {
             if (other.serviceName != null) return false;
         } else if (!serviceName.equals(other.serviceName)) return false;
-        if (status == null) {
-            if (other.status != null) return false;
-        } else if (!status.equals(other.status)) return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "SalukiService [serviceName=" + serviceName + ", status=" + status + ", prividerHost=" + provideHost
-               + ", consumerHost=" + consumerHost + "]";
+        return "SalukiService [serviceName=" + serviceName + ", prividerHost=" + provideHost + ", consumerHost="
+               + consumerHost + "]";
     }
 
 }

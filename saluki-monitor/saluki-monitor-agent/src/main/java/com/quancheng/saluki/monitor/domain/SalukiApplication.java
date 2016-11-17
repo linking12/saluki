@@ -39,13 +39,11 @@ public class SalukiApplication implements Serializable {
         for (Iterator<SalukiService> it = this.services.iterator(); it.hasNext();) {
             SalukiService targetService = it.next();
             Boolean isServiceNameMatch = service.getServiceName().equals(targetService.getServiceName());
-            Boolean isStatusMatch = service.getServiceName().equals(targetService.getStatus());
-            if (isServiceNameMatch && isStatusMatch) {
+            if (isServiceNameMatch) {
                 machService = targetService;
             }
         }
         if (machService != null) {
-            this.services.remove(machService);
             if (service.getConsumerHost() != null) {
                 machService.addConsumerHosts(service.getConsumerHost());
             }
