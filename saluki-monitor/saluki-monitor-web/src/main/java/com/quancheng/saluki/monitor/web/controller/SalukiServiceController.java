@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,14 +21,14 @@ public class SalukiServiceController {
     @Autowired
     private ConsulRegistryService registrySerivce;
 
-    @RequestMapping(value = "/fuzzyapp/{search}", method = RequestMethod.GET)
-    public List<SalukiService> queryByApp(@PathVariable("search") String search) {
+    @RequestMapping(value = "/fuzzyapp", method = RequestMethod.GET)
+    public List<SalukiService> queryByApp(@RequestParam(value = "search", required = true) String search) {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByApp(search, Boolean.FALSE);
     }
 
-    @RequestMapping(value = "/fuzzyservice/{search}", method = RequestMethod.GET)
-    public List<SalukiService> queryByService(@PathVariable("search") String search) {
+    @RequestMapping(value = "/fuzzyservice", method = RequestMethod.GET)
+    public List<SalukiService> queryByService(@RequestParam(value = "search", required = true) String search) {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByService(search, Boolean.FALSE);
     }
