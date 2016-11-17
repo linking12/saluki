@@ -60,7 +60,7 @@ public class ConsulRegistryService {
     @PostConstruct
     public void init() {
         consulClient = new ConsulClient(agentHost, agentPort);
-        executor.scheduleWithFixedDelay(new LookUpService(), 0, 1, TimeUnit.HOURS);
+        executor.scheduleWithFixedDelay(new LookUpService(), 0, 30, TimeUnit.MINUTES);
     }
 
     /**

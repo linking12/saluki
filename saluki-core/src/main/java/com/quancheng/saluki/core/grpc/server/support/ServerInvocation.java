@@ -7,8 +7,10 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.protobuf.Message;
@@ -23,6 +25,7 @@ import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -109,9 +112,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                               MonitorService.CONSUMER, consumer, //
                                               error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
                                               MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                              MonitorService.INPUT, req, //
-                                              MonitorService.OUTPUT, rep));
+                                              MonitorService.CONCURRENT, String.valueOf(concurrent)));
             }
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "

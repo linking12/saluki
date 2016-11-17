@@ -163,15 +163,12 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             if (monitors == null || monitors.isEmpty()) {
                 return;
             }
-            Gson gson = new Gson();
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
-            String req = gson.toJson(request);// 入参
-            String rep = gson.toJson(response);// 出参
             Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM),
                                                                   new TypeToken<Map<String, String>>() {
                                                                   }.getType());
@@ -188,9 +185,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                                               MonitorService.PROVIDER, provider, //
                                               error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
                                               MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                              MonitorService.INPUT, req, //
-                                              MonitorService.OUTPUT, rep));
+                                              MonitorService.CONCURRENT, String.valueOf(concurrent)));
             }
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);

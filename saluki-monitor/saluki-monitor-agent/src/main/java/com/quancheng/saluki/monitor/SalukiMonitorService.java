@@ -2,7 +2,6 @@ package com.quancheng.saluki.monitor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -76,11 +75,6 @@ public class SalukiMonitorService implements MonitorService {
         }
     }
 
-    @Override
-    public List<SalukiURL> lookup(SalukiURL statistics) {
-        return null;
-    }
-
     private void clearDataBase() {
         invokeMapping.truncateTable();
     }
@@ -119,8 +113,6 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setFailure(statistics.getParameter(FAILURE, 0));
             invoke.setElapsed(statistics.getParameter(ELAPSED, 0));
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 0));
-            invoke.setInPutParam(statistics.getParameter(INPUT, "").getBytes());
-            invoke.setOutPutParam(statistics.getParameter(OUTPUT, "").getBytes());
             if (invoke.getSuccess() == 0 && invoke.getFailure() == 0 && invoke.getElapsed() == 0
                 && invoke.getConcurrent() == 0) {
                 return;
