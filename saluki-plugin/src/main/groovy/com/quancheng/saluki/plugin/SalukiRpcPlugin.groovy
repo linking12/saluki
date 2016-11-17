@@ -204,6 +204,16 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                     printGet("Boolean", param[2], printWriter)
                                     printSet("Boolean", param[2], printWriter)
                                 }
+                                if (param[1].trim() == "double") {
+                                    printParam("Double", param[2], printWriter)
+                                    printGet("Double", param[2], printWriter)
+                                    printSet("Double", param[2], printWriter)
+                                }
+                                if (param[1].trim() == "float") {
+                                    printParam("Float", param[2], printWriter)
+                                    printGet("Float", param[2], printWriter)
+                                    printSet("Float", param[2], printWriter)
+                                }
                                 if (methodClassName[param[1]] != null) {
                                     printParam(methodClassName[param[1]], param[2], printWriter)
                                     printGet(methodClassName[param[1]], param[2], printWriter)
