@@ -75,7 +75,7 @@ public class ConsulRegistryRepository {
                 servicesPassing.put(serviceKey, providerAndConsumer);
             } else {
                 Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
-                SalukiHost providerHost = new SalukiHost(host, null, rpcPort);
+                SalukiHost providerHost = new SalukiHost(host, "0", rpcPort);
                 providerHost.setStatus("failing");
                 providerHost.setUrl("service:" + host + ":" + rpcPort + "-" + service);
                 if (servicesFailing.get(serviceKey) == null) {
