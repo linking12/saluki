@@ -252,7 +252,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                 } 
                                 def mapMatch = param[1].trim() =~ /^(map){1}(.*)/
                                 if(mapMatch.size()>0){
-                                    println(mapMatch)
                                     printParam("java.util.Map<String,String>", param[2], printWriter)
                                     printGet("java.util.Map<String,String> ", param[2], printWriter)
                                     printSet("java.util.Map<String,String> ", param[2], printWriter)
