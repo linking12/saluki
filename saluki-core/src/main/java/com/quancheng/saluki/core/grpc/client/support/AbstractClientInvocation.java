@@ -23,7 +23,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
@@ -169,23 +168,24 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
-            Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM),
-                                                                  new TypeToken<Map<String, String>>() {
-                                                                  }.getType());
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
+            @SuppressWarnings("unchecked")
+            Map<String, String> clientParam = new Gson().fromJson(serverInfo, Map.class);
             String consumerHost = clientParam.get("serverHost");
             String host = consumerHost != null ? consumerHost : refUrl.getHost();
             for (MonitorService monitor : monitors) {
                 monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
                                               service + "/" + method, //
                                               MonitorService.TIMESTAMP, String.valueOf(start), //
-                                              MonitorService.APPLICATION, //
-                                              refUrl.getGroup(), //
+                                              MonitorService.APPLICATION, refUrl.getGroup(), //
                                               MonitorService.INTERFACE, service, //
                                               MonitorService.METHOD, method, //
                                               MonitorService.PROVIDER, provider, //
                                               error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
                                               MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent)));
+                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
+                                              MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
+                                              MonitorService.OUTPUT, String.valueOf(response.getSerializedSize())));
             }
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);

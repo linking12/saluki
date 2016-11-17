@@ -4,31 +4,43 @@ import com.quancheng.saluki.core.common.SalukiURL;
 
 public interface MonitorService {
 
-    String APPLICATION = "application";
+    String APPLICATION    = "application";
 
-    String INTERFACE   = "interface";
+    String INTERFACE      = "interface";
 
-    String METHOD      = "method";
+    String METHOD         = "method";
 
-    String GROUP       = "group";
+    String GROUP          = "group";
 
-    String VERSION     = "version";
+    String VERSION        = "version";
 
-    String CONSUMER    = "consumer";
+    String CONSUMER       = "consumer";
 
-    String PROVIDER    = "provider";
+    String PROVIDER       = "provider";
 
-    String TIMESTAMP   = "timestamp";
+    String TIMESTAMP      = "timestamp";
 
-    String SUCCESS     = "success";
+    String SUCCESS        = "success";
 
-    String FAILURE     = "failure";
+    String FAILURE        = "failure";
 
-    String ELAPSED     = "elapsed";
+    String ELAPSED        = "elapsed";
 
-    String CONCURRENT  = "concurrent";
+    String CONCURRENT     = "concurrent";
 
-    String TRACEID     = "traceId";
+    String TRACEID        = "traceId";
+
+    String INPUT          = "input";
+
+    String OUTPUT         = "output";
+
+    String MAX_INPUT      = "max.input";
+
+    String MAX_OUTPUT     = "max.output";
+
+    String MAX_ELAPSED    = "max.elapsed";
+
+    String MAX_CONCURRENT = "max.concurrent";
 
     /**
      * 监控数据采集. 1.

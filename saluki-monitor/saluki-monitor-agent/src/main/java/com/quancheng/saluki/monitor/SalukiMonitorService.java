@@ -1,19 +1,20 @@
 package com.quancheng.saluki.monitor;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
@@ -26,24 +27,26 @@ import com.quancheng.saluki.monitor.util.UuidUtil;
 
 public class SalukiMonitorService implements MonitorService {
 
-    private static final Logger                                      logger        = LoggerFactory.getLogger(SalukiMonitorService.class);
+    private static final Logger                                      logger = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
-
-    private final BlockingQueue<SalukiURL>                           queue;
-
-    private final Thread                                             writeThread;
+    private static final int                                         LENGTH = 10;
 
     private final SalukiInvokeMapper                                 invokeMapping;
 
-    private volatile boolean                                         running       = true;
+    private final ScheduledFuture<?>                                 sendFuture;
 
+    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap;
+
+    // 定时清理内存数据
     private final ScheduledExecutorService                           clearDataExecutor;
 
+    // 定时收集器
+    private final ScheduledExecutorService                           scheduledExecutorService;
+
     public SalukiMonitorService(){
-        queue = new LinkedBlockingQueue<SalukiURL>(100000);
+        statisticsMap = Maps.newConcurrentMap();
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
-        clearDataExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("ClearMonitorData", true));
+        clearDataExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiClearMonitorData", true));
         clearDataExecutor.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -51,51 +54,141 @@ public class SalukiMonitorService implements MonitorService {
                 clearDataBase();
 
             }
-        }, 0, 30, TimeUnit.MINUTES);
-        writeThread = new Thread(new Runnable() {
+        }, 0, 1, TimeUnit.DAYS);
+        scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer",
+                                                                                              true));
+        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
             public void run() {
-                while (running) {
-                    try {
-                        writeToDataBase();
-                    } catch (Throwable t) {
-                        logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
-                        try {
-                            Thread.sleep(5000);
-                        } catch (Throwable t2) {
-                        }
-                    }
+                try {
+                    send();
+                } catch (Throwable t) {
+                    logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
                 }
             }
-        });
-        writeThread.setDaemon(true);
-        writeThread.setName("DubboMonitorAsyncWriteLogThread");
-        writeThread.start();
+        }, 60000, 60000, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public void collect(SalukiURL statistics) {
-        queue.offer(statistics);
-        if (logger.isDebugEnabled()) {
-            logger.debug("collect statistics: " + statistics);
+    public void collect(SalukiURL url) {
+        // 读写统计变量
+        int success = url.getParameter(MonitorService.SUCCESS, 0);
+        int failure = url.getParameter(MonitorService.FAILURE, 0);
+        int input = url.getParameter(MonitorService.INPUT, 0);
+        int output = url.getParameter(MonitorService.OUTPUT, 0);
+        int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
+        int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
+        // 初始化原子引用
+        Statistics statistics = new Statistics(url);
+        AtomicReference<long[]> reference = statisticsMap.get(statistics);
+        if (reference == null) {
+            statisticsMap.putIfAbsent(statistics, new AtomicReference<long[]>());
+            reference = statisticsMap.get(statistics);
         }
+        // CompareAndSet并发加入统计数据
+        long[] current;
+        long[] update = new long[LENGTH];
+        do {
+            current = reference.get();
+            if (current == null) {
+                update[0] = success;
+                update[1] = failure;
+                update[2] = input;
+                update[3] = output;
+                update[4] = elapsed;
+                update[5] = concurrent;
+                update[6] = input;
+                update[7] = output;
+                update[8] = elapsed;
+                update[9] = concurrent;
+            } else {
+                update[0] = current[0] + success;
+                update[1] = current[1] + failure;
+                update[2] = current[2] + input;
+                update[3] = current[3] + output;
+                update[4] = current[4] + elapsed;
+                update[5] = (current[5] + concurrent) / 2;
+                update[6] = current[6] > input ? current[6] : input;
+                update[7] = current[7] > output ? current[7] : output;
+                update[8] = current[8] > elapsed ? current[8] : elapsed;
+                update[9] = current[9] > concurrent ? current[9] : concurrent;
+            }
+        } while (!reference.compareAndSet(current, update));
     }
 
     private void clearDataBase() {
         invokeMapping.truncateTable();
     }
 
-    private void writeToDataBase() throws Exception {
-        SalukiURL statistics = queue.take();
+    public void send() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
+            // 获取已统计数据
+            Statistics statistics = entry.getKey();
+            AtomicReference<long[]> reference = entry.getValue();
+            long[] numbers = reference.get();
+            long success = numbers[0];
+            long failure = numbers[1];
+            long input = numbers[2];
+            long output = numbers[3];
+            long elapsed = numbers[4];
+            long concurrent = numbers[5];
+            long maxInput = numbers[6];
+            long maxOutput = numbers[7];
+            long maxElapsed = numbers[8];
+            long maxConcurrent = numbers[9];
+            // 发送汇总信息
+            SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, timestamp,
+                                                              MonitorService.SUCCESS, String.valueOf(success),
+                                                              MonitorService.FAILURE, String.valueOf(failure),
+                                                              MonitorService.INPUT, String.valueOf(input),
+                                                              MonitorService.OUTPUT, String.valueOf(output),
+                                                              MonitorService.ELAPSED, String.valueOf(elapsed),
+                                                              MonitorService.CONCURRENT, String.valueOf(concurrent),
+                                                              MonitorService.MAX_INPUT, String.valueOf(maxInput),
+                                                              MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
+                                                              MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
+                                                              MonitorService.MAX_CONCURRENT,
+                                                              String.valueOf(maxConcurrent));
+            writeToDataBase(url);
+            // 减掉已统计数据
+            long[] current;
+            long[] update = new long[LENGTH];
+            do {
+                current = reference.get();
+                if (current == null) {
+                    update[0] = 0;
+                    update[1] = 0;
+                    update[2] = 0;
+                    update[3] = 0;
+                    update[4] = 0;
+                    update[5] = 0;
+                } else {
+                    update[0] = current[0] - success;
+                    update[1] = current[1] - failure;
+                    update[2] = current[2] - input;
+                    update[3] = current[3] - output;
+                    update[4] = current[4] - elapsed;
+                    update[5] = current[5] - concurrent;
+                }
+            } while (!reference.compareAndSet(current, update));
+        }
+    }
+
+    private void writeToDataBase(SalukiURL statistics) {
         if (!SalukiConstants.MONITOR_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
         String timestamp = statistics.getParameter(TIMESTAMP);
-        Date invokeTime;
+        Date invokeTime = null;
         if (timestamp == null || timestamp.length() == 0) {
             invokeTime = new Date();
         } else if (timestamp.length() == "yyyyMMddHHmmss".length()) {
-            invokeTime = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
+            try {
+                invokeTime = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
+            } catch (ParseException e) {
+                invokeTime = new Date();
+            }
         } else {
             invokeTime = new Date(Long.parseLong(timestamp));
         }
@@ -126,6 +219,14 @@ public class SalukiMonitorService implements MonitorService {
             invokeMapping.addInvoke(invoke);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
+        }
+    }
+
+    public void destroy() {
+        try {
+            sendFuture.cancel(true);
+        } catch (Throwable t) {
+            logger.error("Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
         }
     }
 }

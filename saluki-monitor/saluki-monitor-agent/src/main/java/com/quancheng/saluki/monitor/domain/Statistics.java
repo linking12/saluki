@@ -3,6 +3,7 @@ package com.quancheng.saluki.monitor.domain;
 import java.io.Serializable;
 
 import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 
 public class Statistics implements Serializable {
 
@@ -23,6 +24,17 @@ public class Statistics implements Serializable {
     private String            client;
 
     private String            server;
+
+    public Statistics(SalukiURL url){
+        this.url = url;
+        this.application = url.getParameter(MonitorService.APPLICATION);
+        this.service = url.getParameter(MonitorService.INTERFACE);
+        this.method = url.getParameter(MonitorService.METHOD);
+        this.group = url.getParameter(MonitorService.GROUP);
+        this.version = url.getParameter(MonitorService.VERSION);
+        this.client = url.getParameter(MonitorService.CONSUMER, url.getAddress());
+        this.server = url.getParameter(MonitorService.PROVIDER, url.getAddress());
+    }
 
     public SalukiURL getUrl() {
         return url;
