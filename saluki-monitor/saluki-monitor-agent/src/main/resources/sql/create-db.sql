@@ -12,7 +12,5 @@ CREATE TABLE `saluki_invoke` (
   `failure` int(11) DEFAULT NULL,
   `elapsed` int(11) DEFAULT NULL,
   `concurrent` int(11) DEFAULT NULL,
-  `inPutParam` BINARY(5000) DEFAULT NULL,
-  `outPutParam` BINARY(5000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
