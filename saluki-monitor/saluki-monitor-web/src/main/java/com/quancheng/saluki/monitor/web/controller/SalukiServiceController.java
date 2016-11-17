@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.saluki.monitor.domain.SalukiService;
@@ -33,14 +34,14 @@ public class SalukiServiceController {
         return registrySerivce.queryPassingServiceByService(search, Boolean.FALSE);
     }
 
-    @RequestMapping(value = "/accurateapp/{search}", method = RequestMethod.GET)
-    public List<SalukiService> getByApp(@PathVariable("search") String search) {
+    @RequestMapping(value = "/accurateapp", method = RequestMethod.GET)
+    public List<SalukiService> getByApp(@RequestParam(value = "search", required = true) String search) {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByApp(search, Boolean.TRUE);
     }
 
-    @RequestMapping(value = "/accurateservice/{search}", method = RequestMethod.GET)
-    public List<SalukiService> getByService(@PathVariable("search") String search) {
+    @RequestMapping(value = "/accurateservice", method = RequestMethod.GET)
+    public List<SalukiService> getByService(@RequestParam(value = "search", required = true) String search) {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByService(search, Boolean.TRUE);
     }

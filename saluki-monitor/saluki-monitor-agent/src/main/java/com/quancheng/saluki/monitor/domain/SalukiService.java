@@ -1,6 +1,7 @@
 package com.quancheng.saluki.monitor.domain;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -13,7 +14,7 @@ public class SalukiService implements Serializable {
 
     private String            status;
 
-    private Set<SalukiHost>   prividerHost;
+    private Set<SalukiHost>   provideHost;
 
     private Set<SalukiHost>   consumerHost;
 
@@ -33,19 +34,19 @@ public class SalukiService implements Serializable {
         this.status = status;
     }
 
-    public Set<SalukiHost> getPrividerHost() {
-        return prividerHost;
+    public Set<SalukiHost> getProvideHost() {
+        return provideHost;
     }
 
-    public void setPrividerHost(Set<SalukiHost> prividerHost) {
-        this.prividerHost = prividerHost;
+    public void setProvideHost(Set<SalukiHost> provideHost) {
+        this.provideHost = provideHost;
     }
 
-    public void addPrividerHost(Set<SalukiHost> prividerHosts) {
-        if (this.prividerHost == null) {
-            this.prividerHost = Sets.newConcurrentHashSet();
+    public void addProviderHosts(Collection<SalukiHost> provideHost) {
+        if (this.provideHost == null) {
+            this.provideHost = Sets.newConcurrentHashSet();
         }
-        this.prividerHost.addAll(prividerHosts);
+        this.provideHost.addAll(provideHost);
     }
 
     public Set<SalukiHost> getConsumerHost() {
@@ -89,7 +90,7 @@ public class SalukiService implements Serializable {
 
     @Override
     public String toString() {
-        return "SalukiService [serviceName=" + serviceName + ", status=" + status + ", prividerHost=" + prividerHost
+        return "SalukiService [serviceName=" + serviceName + ", status=" + status + ", prividerHost=" + provideHost
                + ", consumerHost=" + consumerHost + "]";
     }
 

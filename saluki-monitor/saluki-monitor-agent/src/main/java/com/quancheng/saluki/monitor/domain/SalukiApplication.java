@@ -49,8 +49,8 @@ public class SalukiApplication implements Serializable {
             if (service.getConsumerHost() != null) {
                 machService.addConsumerHosts(service.getConsumerHost());
             }
-            if (service.getPrividerHost() != null) {
-                machService.addPrividerHost(service.getPrividerHost());
+            if (service.getProvideHost() != null) {
+                machService.addProviderHosts(service.getProvideHost());
             }
             this.services.add(machService);
         } else {

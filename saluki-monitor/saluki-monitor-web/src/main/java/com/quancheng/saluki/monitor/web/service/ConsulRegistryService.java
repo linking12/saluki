@@ -119,7 +119,7 @@ public class ConsulRegistryService {
             Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = servicesPassing.get(serviceKey);
             SalukiService service = new SalukiService(appNameService.getRight());
             service.setStatus("passing");
-            service.setPrividerHost(providerConsumer.getLeft());
+            service.setProvideHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
             services.add(service);
         }
@@ -167,7 +167,7 @@ public class ConsulRegistryService {
         String serviceName = appNameService.getRight();
         SalukiApplication application = new SalukiApplication(appName);
         SalukiService service = new SalukiService(serviceName);
-        service.addPrividerHost(providerConsumer.getLeft());
+        service.addProviderHosts(providerConsumer.getLeft());
         if (passOrFail) {
             service.addConsumerHosts(providerConsumer.getRight());
             service.setStatus("passing");
