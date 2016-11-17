@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web.repository;
+package com.quancheng.saluki.monitor.web.service;
 
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +17,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Check;
@@ -31,17 +32,19 @@ import com.quancheng.saluki.monitor.domain.SalukiService;
 import com.quancheng.saluki.monitor.web.utils.ConcurrentReferenceHashMap;
 import com.quancheng.saluki.monitor.web.utils.NamedThreadFactory;
 
-@Repository
-public class ConsulRegistry {
+@Service
+public class ConsulRegistryService {
 
-    private static final Logger                                       log                = LoggerFactory.getLogger(ConsulRegistry.class);
+    private static final Logger                                       log                = LoggerFactory.getLogger(ConsulRegistryService.class);
 
     public static final String                                        CONSUL_SERVICE_PRE = "Saluki_";
 
     private final Gson                                                gson               = new Gson();
 
+    @Value("${saluki.monitor.consulhost}")
     private String                                                    agentHost;
 
+    @Value("${saluki.monitor.consulport}")
     private int                                                       agentPort;
 
     private ConsulClient                                              consulClient;
