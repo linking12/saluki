@@ -1,4 +1,14 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+	}
+}
 apply plugin: 'java'
+apply plugin: 'spring-boot'
 sourceSets {
     main {
         java {
@@ -11,11 +21,11 @@ sourceSets {
 }
 description='saluki-monitor-web'
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.0.RELEASE'
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.0.RELEASE'){
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.1.RELEASE'
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.1.RELEASE'){
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.1.RELEASE'
     compile project(':saluki-monitor:saluki-monitor-agent')
     compile project(':spring-boot-starter-saluki')
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
