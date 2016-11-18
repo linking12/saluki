@@ -5,65 +5,66 @@
 
 
 	<sql id="allNoAsOfInvoke">
-		  id, 
-		  invokeDate,
-		  service,
-		  method,  
-		  consumer,
-		  provider,
-		  type,
-		  success,
-		  failure,
-		  elapsed,
-		  concurrent, 
-		  maxInput,
-		  maxOutput, 
-		  maxElapsed, 
-		  maxConcurrent, 
-		  input,
-		  output, 
-		  tps,
-		  kbps
+		id,
+		invokeDate,
+		service,
+		method,
+		consumer,
+		provider,
+		type,
+		success,
+		failure,
+		elapsed,
+		concurrent,
+		maxInput,
+		maxOutput,
+		maxElapsed,
+		maxConcurrent,
+		input,
+		output,
+		tps,
+		kbps
 	</sql>
 
-	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics">
+	<insert id="addInvoke"
+		parameterType="com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics">
 		insert into
 		saluki_invoke_statistics (
 		<include refid="allNoAsOfInvoke" />
 		)
 		values(
-		  #{id}, 
-		  #{invokeDate},
-		  #{service},
-		  #{method},  
-		  #{consumer},
-		  #{provider},
-		  #{type},
-		  #{success},
-		  #{failure},
-		  #{elapsed},  
-		  #{concurrent}, 
-		  #{maxInput},
-		  #{maxOutput}, 
-		  #{maxElapsed}, 
-		  #{maxConcurrent}, 
-		  #{input},
-		  #{output}, 
-		  #{tps},
-		  #{kbps}
+		#{id},
+		#{invokeDate},
+		#{service},
+		#{method},
+		#{consumer},
+		#{provider},
+		#{type},
+		#{success},
+		#{failure},
+		#{elapsed},
+		#{concurrent},
+		#{maxInput},
+		#{maxOutput},
+		#{maxElapsed},
+		#{maxConcurrent},
+		#{input},
+		#{output},
+		#{tps},
+		#{kbps}
 		)
 	</insert>
 
-	<select id="queryDataByService" parameterType="java.lang.String"
+	<select id="queryDataByService" parameterType="string"
 		resultType="com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics">
-		SELECT * 
+		SELECT *
 		FROM saluki_invoke_statistics
 		WHERE
 		1 = 1
-        <if test ="service != null">
-        AND  service=#{service}
-        </if>
-		ORDER BY invoke_date DESC
+		<if test="_parameter != null">
+			AND service=#{_parameter}
+		</if>
+		ORDER BY invokeDate DESC
 	</select>
 
 	<delete id="truncateTable">
