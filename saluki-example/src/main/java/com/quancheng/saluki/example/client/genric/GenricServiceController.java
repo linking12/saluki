@@ -12,15 +12,15 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 @RequestMapping("/genric")
 public class GenricServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "Default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.terra.service.TerraOrderEntryService", group = "Default", version = "1.0.0")
     private GenericService genricService;
 
     @RequestMapping("/hello")
     public HelloReply view() {
-        String serviceName = "com.quancheng.examples.service.HelloService";
+        String serviceName = "com.quancheng.terra.service.TerraOrderEntryService";
         String method = "sayHello";
-        String[] parameterTypes = new String[] { "com.quancheng.examples.model.hello.HelloRequest",
-                                                 "com.quancheng.examples.model.hello.HelloReply" };
+        String[] parameterTypes = new String[] { "com.quancheng.terra.model.orderentry.OrderEntryRequest",
+                                                 "com.quancheng.terra.model.orderentry.WriteOrderEntryResponse" };
         HelloRequest request = new HelloRequest();
         request.setName("liushiming");
         Object[] args1 = new Object[] { request };
