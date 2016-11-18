@@ -11,5 +11,13 @@ CREATE TABLE `saluki_invoke_statistics` (
   `failure` int(11) DEFAULT NULL,
   `elapsed` int(11) DEFAULT NULL,
   `concurrent` int(11) DEFAULT NULL,
+  `maxInput` int(11) DEFAULT NULL,
+  `maxOutput` int(11) DEFAULT NULL,
+  `maxElapsed` double DEFAULT NULL,
+  `maxConcurrent` int(11) DEFAULT NULL,
+  `input` double DEFAULT NULL,
+  `output` double DEFAULT NULL,
+  `tps` double DEFAULT NULL,
+  `kbps` double DEFAULT NULL,
   PRIMARY KEY (`id`)
 );

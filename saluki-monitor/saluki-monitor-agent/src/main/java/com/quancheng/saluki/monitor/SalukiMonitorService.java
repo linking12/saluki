@@ -196,7 +196,7 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 0));
             invoke.setMaxElapsed(statistics.getParameter(MAX_ELAPSED, 0));
             invoke.setMaxConcurrent(statistics.getParameter(MAX_CONCURRENT, 0));
-            invoke.setMaxinput(statistics.getParameter(MAX_INPUT, 0));
+            invoke.setMaxInput(statistics.getParameter(MAX_INPUT, 0));
             invoke.setMaxOutput(statistics.getParameter(MAX_OUTPUT, 0));
             // 计算统计信息
             int failureCount = statistics.getParameter(FAILURE, 0);

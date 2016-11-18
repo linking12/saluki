@@ -26,7 +26,7 @@ public class SalukiInvokeStatistics implements Serializable {
 
     private int               concurrent;
 
-    private int               maxinput;
+    private int               maxInput;
 
     private int               maxOutput;
 
@@ -142,12 +142,12 @@ public class SalukiInvokeStatistics implements Serializable {
         this.concurrent = concurrent;
     }
 
-    public int getMaxinput() {
-        return maxinput;
+    public int getMaxInput() {
+        return maxInput;
     }
 
-    public void setMaxinput(int maxinput) {
-        this.maxinput = maxinput;
+    public void setMaxInput(int maxInput) {
+        this.maxInput = maxInput;
     }
 
     public int getMaxOutput() {
