@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.grpc.GRPCEngine;
 import com.quancheng.saluki.core.utils.NetUtils;
-import com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.DateUtil;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.saluki.monitor.domain.SalukiApplication;
+import com.quancheng.saluki.monitor.SalukiApplication;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
 @RestController

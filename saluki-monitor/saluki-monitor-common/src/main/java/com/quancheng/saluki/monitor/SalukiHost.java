@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.domain;
+package com.quancheng.saluki.monitor;
 
 import java.io.Serializable;
 

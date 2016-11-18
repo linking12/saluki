@@ -16,9 +16,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.monitor.domain.SalukiApplication;
-import com.quancheng.saluki.monitor.domain.SalukiHost;
-import com.quancheng.saluki.monitor.domain.SalukiService;
+import com.quancheng.saluki.monitor.SalukiApplication;
+import com.quancheng.saluki.monitor.SalukiHost;
+import com.quancheng.saluki.monitor.SalukiService;
 import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 
 @Service

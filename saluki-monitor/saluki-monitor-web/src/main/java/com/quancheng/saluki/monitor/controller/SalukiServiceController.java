@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.saluki.monitor.domain.SalukiService;
+import com.quancheng.saluki.monitor.SalukiService;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
 @RestController
