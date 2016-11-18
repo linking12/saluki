@@ -26,7 +26,7 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.1.RELEASE'
-    compile project(':saluki-monitor:saluki-monitor-agent')
+    compile project(':saluki-monitor:saluki-monitor-common')
     compile project(':spring-boot-starter-saluki')
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
     compile group: 'com.ecwid.consul', name: 'consul-api', version:'1.2.1'

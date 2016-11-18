@@ -4,7 +4,7 @@ package com.quancheng.saluki.monitor.domain;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SalukiInvokeStatistics implements Serializable {
 
