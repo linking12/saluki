@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Maps;
+import com.quancheng.saluki.core.grpc.GRPCEngine;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
@@ -31,7 +33,7 @@ public class MonitorController {
     @RequestMapping(value = "/system", method = RequestMethod.GET)
     public Map<String, Object> system() {
         List<String[]> rows = new ArrayList<String[]>();
-        rows.add(new String[] { "Saluki_Version", "1.1" });
+        rows.add(new String[] { "Saluki_Version", getSalukiVersion() });
         String address = NetUtils.getLocalHost();
         rows.add(new String[] { "Host", NetUtils.getHostName(address) + "/" + address });
         rows.add(new String[] { "OS", System.getProperty("os.name") + " " + System.getProperty("os.version") });
@@ -54,6 +56,16 @@ public class MonitorController {
         Map<String, Object> model = Maps.newHashMap();
         model.put("rows", rows);
         return model;
+    }
+
+    private String getSalukiVersion() {
+        String jarPath = GRPCEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String[] versions = StringUtils.split(jarPath, "-");
+        if (versions.length > 1) {
+            return versions[1].split(".")[0];
+        } else {
+            return versions[0];
+        }
     }
 
     @RequestMapping(value = "/data", method = RequestMethod.GET)

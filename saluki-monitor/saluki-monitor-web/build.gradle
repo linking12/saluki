@@ -21,4 +21,5 @@ dependencies {
     compile group: 'com.ecwid.consul', name: 'consul-api', version:'1.2.1'
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.1'
 }
