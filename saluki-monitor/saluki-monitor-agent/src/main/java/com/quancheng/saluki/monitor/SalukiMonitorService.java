@@ -1,7 +1,6 @@
 package com.quancheng.saluki.monitor;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
@@ -19,7 +18,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
-import com.quancheng.saluki.monitor.domain.SalukiInvoke;
+import com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.domain.Statistics;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
@@ -179,22 +178,9 @@ public class SalukiMonitorService implements MonitorService {
         if (!SalukiConstants.MONITOR_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
-        String timestamp = statistics.getParameter(TIMESTAMP);
-        Date invokeTime = null;
-        if (timestamp == null || timestamp.length() == 0) {
-            invokeTime = new Date();
-        } else if (timestamp.length() == "yyyyMMddHHmmss".length()) {
-            try {
-                invokeTime = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
-            } catch (ParseException e) {
-                invokeTime = new Date();
-            }
-        } else {
-            invokeTime = new Date(Long.parseLong(timestamp));
-        }
-        SalukiInvoke invoke = new SalukiInvoke();
-        invoke.setId(UuidUtil.createUUID());
         try {
+            SalukiInvokeStatistics invoke = new SalukiInvokeStatistics();
+            invoke.setId(UuidUtil.createUUID());
             if (statistics.hasParameter(PROVIDER)) {
                 invoke.setType(CONSUMER);
                 invoke.setConsumer(statistics.getHost());
@@ -204,18 +190,41 @@ public class SalukiMonitorService implements MonitorService {
                 invoke.setConsumer(statistics.getParameter(CONSUMER));
                 invoke.setProvider(statistics.getHost());
             }
-            invoke.setInvokeDate(invokeTime);
+            invoke.setInvokeDate(new Date(Long.valueOf(statistics.getParameter(TIMESTAMP))));
             invoke.setService(statistics.getServiceInterface());
             invoke.setMethod(statistics.getParameter(METHOD));
-            invoke.setInvokeTime(statistics.getParameter(TIMESTAMP, System.currentTimeMillis()));
-            invoke.setSuccess(statistics.getParameter(SUCCESS, 0));
-            invoke.setFailure(statistics.getParameter(FAILURE, 0));
-            invoke.setElapsed(statistics.getParameter(ELAPSED, 0));
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 0));
-            if (invoke.getSuccess() == 0 && invoke.getFailure() == 0 && invoke.getElapsed() == 0
-                && invoke.getConcurrent() == 0) {
-                return;
+            invoke.setMaxElapsed(statistics.getParameter(MAX_ELAPSED, 0));
+            invoke.setMaxConcurrent(statistics.getParameter(MAX_CONCURRENT, 0));
+            invoke.setMaxinput(statistics.getParameter(MAX_INPUT, 0));
+            invoke.setMaxOutput(statistics.getParameter(MAX_OUTPUT, 0));
+            // 计算统计信息
+            int failureCount = statistics.getParameter(FAILURE, 0);
+            int successCount = statistics.getParameter(SUCCESS, 0);
+            int totalCount = failureCount + successCount;
+            invoke.setSuccess(successCount);
+            invoke.setFailure(failureCount);
+            invoke.setElapsed(Double.valueOf(statistics.getParameter(ELAPSED, 0) / totalCount));
+            invoke.setInput(Double.valueOf(statistics.getParameter(INPUT, 0) / totalCount));
+            invoke.setOutput(Double.valueOf(statistics.getParameter(OUTPUT, 0) / totalCount));
+            if (invoke.getElapsed() != 0) {
+                // TPS=并发数/响应时间
+                BigDecimal tps = new BigDecimal(invoke.getConcurrent());
+                tps = tps.divide(BigDecimal.valueOf(invoke.getElapsed()), 2, BigDecimal.ROUND_HALF_DOWN);
+                tps = tps.multiply(BigDecimal.valueOf(1000));
+                // 每秒能够处理的请求数量
+                invoke.setTps(tps.doubleValue());
             }
+            BigDecimal kbps = new BigDecimal(invoke.getTps());
+            if (invoke.getInput() != 0 && invoke.getElapsed() != 0) {
+                // kbps=tps*平均每次传输的数据量
+                kbps = kbps.multiply(BigDecimal.valueOf(invoke.getInput()).divide(BigDecimal.valueOf(1024), 2,
+                                                                                  BigDecimal.ROUND_HALF_DOWN));
+            } else if (invoke.getElapsed() != 0) {
+                kbps = kbps.multiply(BigDecimal.valueOf(invoke.getOutput()).divide(BigDecimal.valueOf(1024), 2,
+                                                                                   BigDecimal.ROUND_HALF_DOWN));
+            }
+            invoke.setKbps(kbps.doubleValue());
             invokeMapping.addInvoke(invoke);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);

@@ -4,26 +4,26 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.quancheng.saluki.monitor.domain.SalukiInvoke;
+import com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics;
 
 @Mapper
 public interface SalukiInvokeMapper {
 
-    int addInvoke(SalukiInvoke invoke);
+    int addInvoke(SalukiInvokeStatistics invoke);
 
     int truncateTable();
 
-    List<SalukiInvoke> queryAllInvoke();
+    List<SalukiInvokeStatistics> queryAllInvoke();
 
-    List<SalukiInvoke> countInvoke(SalukiInvoke invoke);
+    List<SalukiInvokeStatistics> countInvoke(SalukiInvokeStatistics invoke);
 
-    List<SalukiInvoke> countInvokeInfo(SalukiInvoke invoke);
+    List<SalukiInvokeStatistics> countInvokeInfo(SalukiInvokeStatistics invoke);
 
-    List<String> getMethodsByService(SalukiInvoke invoke);
+    List<String> getMethodsByService(SalukiInvokeStatistics invoke);
 
-    List<SalukiInvoke> countInvokeSuccessTopTen(SalukiInvoke invoke);
+    List<SalukiInvokeStatistics> countInvokeSuccessTopTen(SalukiInvokeStatistics invoke);
 
-    List<SalukiInvoke> countInvokeFailureTopTen(SalukiInvoke invoke);
+    List<SalukiInvokeStatistics> countInvokeFailureTopTen(SalukiInvokeStatistics invoke);
 
-    List<SalukiInvoke> queryAllInvoke(SalukiInvoke invoke);
+    List<SalukiInvokeStatistics> queryAllInvoke(SalukiInvokeStatistics invoke);
 }
