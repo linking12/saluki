@@ -1,13 +1,18 @@
 package com.quancheng.saluki.monitor.config;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.h2.tools.Server;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -20,6 +25,9 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
 
 @Configuration
 public class MyBatisConfig {
+
+    @Autowired
+    private AbstractApplicationContext applicationContext;
 
     @Bean
     @ConditionalOnMissingBean(EmbeddedDatabase.class)
@@ -47,11 +55,15 @@ public class MyBatisConfig {
         }
     }
 
-    // @Bean(initMethod = "start", destroyMethod = "stop")
-    // @ConditionalOnMissingBean(Server.class)
-    // public Server h2WebServer() throws SQLException {
-    // return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
-    // }
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server h2WebServer() throws SQLException {
+        Server h2Server = applicationContext.getBean(Server.class);
+        if (h2Server != null) {
+            return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
+        } else {
+            return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "9089");
+        }
+    }
 
     @Bean
     public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
