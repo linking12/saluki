@@ -27,7 +27,7 @@
 	</sql>
 
 	<insert id="addInvoke"
-		parameterType="com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics">
+		parameterType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		insert into
 		saluki_invoke_statistics (
 		<include refid="allNoAsOfInvoke" />
@@ -56,7 +56,7 @@
 	</insert>
 
 	<select id="queryDataByService" parameterType="string"
-		resultType="com.quancheng.saluki.monitor.domain.SalukiInvokeStatistics">
+		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		SELECT *
 		FROM saluki_invoke_statistics
 		WHERE
