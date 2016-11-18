@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web.controller;
+package com.quancheng.saluki.monitor.controller;
 
 import javax.annotation.PostConstruct;
 

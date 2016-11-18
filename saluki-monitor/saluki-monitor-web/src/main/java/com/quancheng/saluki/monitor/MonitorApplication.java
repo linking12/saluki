@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web;
+package com.quancheng.saluki.monitor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

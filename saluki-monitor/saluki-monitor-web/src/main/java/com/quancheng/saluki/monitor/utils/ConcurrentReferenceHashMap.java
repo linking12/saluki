@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web.utils;
+package com.quancheng.saluki.monitor.utils;
 
 import java.io.IOException;
 import java.io.Serializable;

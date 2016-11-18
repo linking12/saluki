@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web.controller;
+package com.quancheng.saluki.monitor.controller;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.saluki.monitor.domain.SalukiApplication;
-import com.quancheng.saluki.monitor.web.service.ConsulRegistryService;
+import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
 @RestController
 @RequestMapping(value = "application")

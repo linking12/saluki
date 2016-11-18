@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web.service;
+package com.quancheng.saluki.monitor.service;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 import com.quancheng.saluki.monitor.domain.SalukiApplication;
 import com.quancheng.saluki.monitor.domain.SalukiHost;
 import com.quancheng.saluki.monitor.domain.SalukiService;
-import com.quancheng.saluki.monitor.web.repository.ConsulRegistryRepository;
+import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 
 @Service
 public class ConsulRegistryService {
