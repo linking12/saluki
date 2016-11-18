@@ -28,7 +28,7 @@ public class SalukiMonitorService implements MonitorService {
 
     private static final Logger                                      logger = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    private static final int                                         LENGTH = 10;
+    private static final int                                         LENGTH = 11;
 
     private final SalukiInvokeMapper                                 invokeMapping;
 
@@ -71,6 +71,7 @@ public class SalukiMonitorService implements MonitorService {
     @Override
     public void collect(SalukiURL url) {
         // 读写统计变量
+        long timestamp = url.getParameter(MonitorService.TIMESTAMP, 0L);
         int success = url.getParameter(MonitorService.SUCCESS, 0);
         int failure = url.getParameter(MonitorService.FAILURE, 0);
         int input = url.getParameter(MonitorService.INPUT, 0);
@@ -100,6 +101,7 @@ public class SalukiMonitorService implements MonitorService {
                 update[7] = output;
                 update[8] = elapsed;
                 update[9] = concurrent;
+                update[10] = timestamp;
             } else {
                 update[0] = current[0] + success;
                 update[1] = current[1] + failure;
@@ -111,6 +113,7 @@ public class SalukiMonitorService implements MonitorService {
                 update[7] = current[7] > output ? current[7] : output;
                 update[8] = current[8] > elapsed ? current[8] : elapsed;
                 update[9] = current[9] > concurrent ? current[9] : concurrent;
+                update[10] = (current[10] + timestamp) / 2;
             }
         } while (!reference.compareAndSet(current, update));
     }
@@ -120,7 +123,6 @@ public class SalukiMonitorService implements MonitorService {
     }
 
     public void send() {
-        String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // 获取已统计数据
             Statistics statistics = entry.getKey();
@@ -136,8 +138,9 @@ public class SalukiMonitorService implements MonitorService {
             long maxOutput = numbers[7];
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
+            long timestamp = numbers[10];
             // 发送汇总信息
-            SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, timestamp,
+            SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
                                                               MonitorService.SUCCESS, String.valueOf(success),
                                                               MonitorService.FAILURE, String.valueOf(failure),
                                                               MonitorService.INPUT, String.valueOf(input),
@@ -198,6 +201,10 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setMaxConcurrent(statistics.getParameter(MAX_CONCURRENT, 0));
             invoke.setMaxInput(statistics.getParameter(MAX_INPUT, 0));
             invoke.setMaxOutput(statistics.getParameter(MAX_OUTPUT, 0));
+            if (invoke.getSuccess() == 0 && invoke.getFailure() == 0 && invoke.getElapsed() == 0
+                && invoke.getConcurrent() == 0 && invoke.getMaxElapsed() == 0 && invoke.getMaxConcurrent() == 0) {
+                return;
+            }
             // 计算统计信息
             int failureCount = statistics.getParameter(FAILURE, 0);
             int successCount = statistics.getParameter(SUCCESS, 0);

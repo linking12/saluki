@@ -26,9 +26,6 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
 @Configuration
 public class MyBatisConfig {
 
-    @Autowired
-    private AbstractApplicationContext applicationContext;
-
     @Bean
     @ConditionalOnMissingBean(EmbeddedDatabase.class)
     public DataSource dataSource() {
@@ -57,12 +54,7 @@ public class MyBatisConfig {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public Server h2WebServer() throws SQLException {
-        Server h2Server = applicationContext.getBean(Server.class);
-        if (h2Server != null) {
-            return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
-        } else {
-            return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "9089");
-        }
+        return Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8089");
     }
 
     @Bean

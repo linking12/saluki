@@ -43,7 +43,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
-        this.monitors = this.findMonitor();
+        // this.monitors = this.findMonitor();
+        this.monitors = null;
         this.providerUrl = providerUrl;
     }
 

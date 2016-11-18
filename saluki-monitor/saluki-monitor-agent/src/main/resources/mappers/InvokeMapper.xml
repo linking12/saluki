@@ -6,7 +6,7 @@
 
 	<sql id="allNoAsOfInvoke">
 		  id, 
-		  invoke_date,
+		  invokeDate,
 		  service,
 		  method,  
 		  consumer,
@@ -33,7 +33,7 @@
 		)
 		values(
 		  #{id}, 
-		  #{invoke_date},
+		  #{invokeDate},
 		  #{service},
 		  #{method},  
 		  #{consumer},
