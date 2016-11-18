@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.config;
+package com.quancheng.saluki.monitor.configuration;
 
 import java.sql.SQLException;
 
