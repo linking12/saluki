@@ -33,7 +33,8 @@
 /saluki-serializer/.gradle/
 /saluki-example/.DS_Store
 /saluki-example/.project
-/saluki-example/build
+/saluki-example/saluki-example-client/.*
+/saluki-example/saluki-example-server/.*
 /saluki-example/.classpath
 /saluki-example/.gradle/
 /saluki-example/bin/
@@ -43,11 +44,8 @@
 /spring-boot-starter-saluki/.classpath
 /spring-boot-starter-saluki/.gradle/
 /.gradle/
-<<<<<<< HEAD
 /build/
-=======
 /build/*
 /build/
 /saluki-monitor/saluki-monitor-agent/.*
 /saluki-monitor/saluki-monitor-agent/build
->>>>>>> V0.0.1
