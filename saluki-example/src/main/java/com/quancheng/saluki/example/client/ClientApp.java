@@ -6,7 +6,7 @@ import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletCont
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan({ "com.quancheng.saluki.monitor.web","com.quancheng.saluki.example.client" })
+@ComponentScan({ "com.quancheng.saluki.monitor.web", "com.quancheng.saluki.example.client" })
 @SpringBootApplication
 public class ClientApp implements EmbeddedServletContainerCustomizer {
 
