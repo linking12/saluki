@@ -22,7 +22,7 @@ sourceSets {
     }
 }
 bootRepackage {
-    mainClass = 'com.quancheng.saluki.example.server.ServerApp'
+    mainClass = 'com.quancheng.saluki.example.SalukiExampleApp'
 }
 def tcnative_classifier = osdetector.classifier;
 if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
