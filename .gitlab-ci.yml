@@ -19,13 +19,13 @@ build_images:
     - echo $image
     - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
     - echo "Build Docker Image..."
-    - cd saluki-example/saluki-example-client;
+    - cd saluki-example/saluki-example-client/
     - gradle clean build --refresh-dependencies
     - docker build --no-cache -t $aliimageclient .
     - echo "Push Image:" $aliimageclient " to repository..."
     - docker push $aliimageclient
     - cd ../..;
-    - cd saluki-example/saluki-example-server;
+    - cd saluki-example/saluki-example-server/
     - gradle clean build --refresh-dependencies
     - docker build --no-cache -t $aliimageserver .
     - echo "Push Image:" $aliimageserver " to repository..."
