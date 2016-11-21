@@ -17,8 +17,10 @@ build_images:
    stage: docker-build
 
    script:
+    - echo `git rev-parse --short HEAD` >> saluki/bin/git.tag
     - echo $image
     - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - gradle clean build --refresh-dependencies
     - echo "Build Docker Image..."
     - docker build --no-cache -t $aliimageclient -f saluki-example/saluki-example-client/Dockerfile .
     - echo "Push Image:" $aliimageclient " to repository..."
