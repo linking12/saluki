@@ -1,8 +1,34 @@
 stages:
   - jar-build
+  - docker-build
+before_script:
+  - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:`TZ=CST-8 date '+%Y%m%d'` 
+  - aliimageserver=nexus.quancheng-ec.com:5000/saluki-example-server:`TZ=CST-8 date '+%Y%m%d'`
+  - hostname -i
+  - whoami
 build_jar:
   stage: jar-build
   script:
     - gradle clean uploadArchives --refresh-dependencies
   only:
+    - V0.0.1
+build_images:
+   stage: docker-build
+
+   script:
+    - echo $image
+    - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - echo "Build Docker Image..."
+    - cd saluki-example/saluki-example-client;
+    - gradle clean build --refresh-dependencies
+    - docker build --no-cache -t $aliimageclient .
+    - echo "Push Image:" $aliimageclient " to repository..."
+    - docker push $aliimageclient
+    - cd ../..;
+    - cd saluki-example/saluki-example-server;
+    - gradle clean build --refresh-dependencies
+    - docker build --no-cache -t $aliimageserver .
+    - echo "Push Image:" $aliimageserver " to repository..."
+    
+   only:
     - V0.0.1
