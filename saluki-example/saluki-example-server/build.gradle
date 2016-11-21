@@ -21,13 +21,11 @@ sourceSets {
         }
     }
 }
-bootRepackage {
-    mainClass = 'com.quancheng.saluki.example.SalukiExampleServerApp'
-}
 def tcnative_classifier = osdetector.classifier;
 if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
   tcnative_classifier += "-fedora";
 }
+description='saluki-example-server'
 dependencies {
     compile project(':spring-boot-starter-saluki')
     compile project(':saluki-monitor:saluki-monitor-agent')
