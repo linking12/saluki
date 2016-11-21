@@ -1,0 +1,6 @@
+/.settings/
+/saluki-registry-consul/
+/saluki-registry-etcd3/
+/.classpath
+/.DS_Store
+/.project
