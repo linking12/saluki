@@ -20,10 +20,10 @@ build_images:
     - echo $image
     - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
     - echo "Build Docker Image..."
-    - docker build --no-cache -t $aliimageclient -f $(pwd)/saluki-example/saluki-example-client.Dockefile .
+    - docker build --no-cache -t $aliimageclient -f /saluki-example/saluki-example-client .
     - echo "Push Image:" $aliimageclient " to repository..."
     - docker push $aliimageclient
-    - docker build --no-cache -t $aliimageserver -f $(pwd)/saluki-example/saluki-example-server.Dockefile.
+    - docker build --no-cache -t $aliimageserver -f /saluki-example/saluki-example-server .
     - echo "Push Image:" $aliimageserver " to repository...";
 
    only:
