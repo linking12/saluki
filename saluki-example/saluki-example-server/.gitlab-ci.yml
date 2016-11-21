@@ -1,0 +1,18 @@
+stages:
+  - docker-build
+before_script:
+  - aliimage=nexus.quancheng-ec.com:5000/saluki-example-server:`TZ=CST-8 date '+%Y%m%d'`
+  - hostname -i
+  - whoami
+build_image:
+  stage: docker-build
+  
+  script:
+    - echo `git rev-parse --short HEAD` >> saluki-example-server/bin/git.tag
+    - echo $image
+    - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - gradle clean build --refresh-dependencies
+    - echo "Build Docker Image..."
+    - docker build --no-cache -t $aliimage .
+    - echo "Push Image:" $aliimage " to repository..."
+    - docker push $aliimage
