@@ -12,6 +12,7 @@ build_jar:
     - gradle clean uploadArchives --refresh-dependencies
   only:
     - V0.0.1
+
 build_images:
    stage: docker-build
 
@@ -19,16 +20,11 @@ build_images:
     - echo $image
     - if [ "`docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
     - echo "Build Docker Image..."
-    - cd saluki-example/saluki-example-client/
-    - gradle clean build --refresh-dependencies
-    - docker build --no-cache -t $aliimageclient .
+    - docker build --no-cache -t $aliimageclient --file ./saluki-example/saluki-example-client/Dockefile .
     - echo "Push Image:" $aliimageclient " to repository..."
     - docker push $aliimageclient
-    - cd ../..;
-    - cd saluki-example/saluki-example-server/
-    - gradle clean build --refresh-dependencies
-    - docker build --no-cache -t $aliimageserver .
-    - echo "Push Image:" $aliimageserver " to repository..."
-    
+    - docker build --no-cache -t $aliimageserver --file ./saluki-example/saluki-example-server/Dockefile.
+    - echo "Push Image:" $aliimageserver " to repository...";
+
    only:
     - V0.0.1
