@@ -1,0 +1,41 @@
+buildscript {
+  repositories {
+        mavenLocal()
+		mavenCentral()
+  }
+  dependencies {
+     classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
+     classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+  }
+}
+apply plugin: 'java'
+apply plugin: "com.google.osdetector"
+apply plugin: 'spring-boot'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
+bootRepackage {
+    mainClass = 'com.quancheng.saluki.example.SalukiExampleApp'
+}
+def tcnative_classifier = osdetector.classifier;
+if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
+  tcnative_classifier += "-fedora";
+}
+dependencies {
+    compile project(':spring-boot-starter-saluki')
+    compile project(':saluki-monitor:saluki-monitor-agent')
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version:'1.4.1.RELEASE'
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.1.RELEASE'){
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.1.RELEASE'
+    compile group: 'com.quancheng.shared', name: 'shared.api', version:'1.0.0-SNAPSHOT'
+    compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
+}
