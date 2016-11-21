@@ -31,13 +31,11 @@
 /saluki-serializer/build
 /saluki-serializer/.classpath
 /saluki-serializer/.gradle/
-/saluki-example/.DS_Store
-/saluki-example/.project
+/saluki-example/.*
 /saluki-example/saluki-example-client/.*
 /saluki-example/saluki-example-server/.*
 /saluki-example/.classpath
 /saluki-example/.gradle/
-/saluki-example/bin/
 /spring-boot-starter-saluki/.DS_Store
 /spring-boot-starter-saluki/.project
 /spring-boot-starter-saluki/build
