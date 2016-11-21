@@ -1,4 +1,5 @@
 /com/
 /.gitignore
+/.DS_Store
 /application.properties
 /log4j.properties
