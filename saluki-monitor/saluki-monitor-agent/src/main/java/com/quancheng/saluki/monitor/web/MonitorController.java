@@ -4,6 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -110,8 +111,18 @@ public class MonitorController {
             BigDecimal kbps = new BigDecimal(st.getTps());
             kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
             st.setKbps(kbps.doubleValue());
+            Long invokeDate = st.getInvokeDate();
+            Date invokeTime = new Date(invokeDate);
+            st.setInvokeTime(dateFormate(invokeTime));
         }
         return statistics;
+    }
+
+    private String dateFormate(Date invokeTime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(invokeTime);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(calendar.getTime());
     }
 
 }

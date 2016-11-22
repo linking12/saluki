@@ -25,6 +25,8 @@ public class SalukiInvokeStatistics implements Serializable {
 
     private Double            elapsed;
 
+    private String            invokeTime;
+
     public Long getInvokeDate() {
         return invokeDate;
     }
@@ -95,6 +97,14 @@ public class SalukiInvokeStatistics implements Serializable {
 
     public void setSuminput(Double suminput) {
         this.suminput = suminput;
+    }
+
+    public String getInvokeTime() {
+        return invokeTime;
+    }
+
+    public void setInvokeTime(String invokeTime) {
+        this.invokeTime = invokeTime;
     }
 
 }
