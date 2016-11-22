@@ -1,7 +1,8 @@
 DROP TABLE IF EXISTS `saluki_invoke_statistics`;
-CREATE TABLE `saluki_invoke_statistics` (
+CREATE TABLE `saluki_invoke` (
   `id` varchar(255) PRIMARY KEY,
   `invokeDate` datetime DEFAULT NULL,
+  `invokeTime` BIGINT DEFAULT NULL,
   `service` varchar(255) DEFAULT NULL,
   `method` varchar(255) DEFAULT NULL,
   `consumer` varchar(255) DEFAULT NULL,
@@ -17,7 +18,5 @@ CREATE TABLE `saluki_invoke_statistics` (
   `maxConcurrent` int(11) DEFAULT NULL,
   `input` double DEFAULT NULL,
   `output` double DEFAULT NULL,
-  `tps` double DEFAULT NULL,
-  `kbps` double DEFAULT NULL,
   PRIMARY KEY (`id`)
 );

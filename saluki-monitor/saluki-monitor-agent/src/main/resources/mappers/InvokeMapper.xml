@@ -7,6 +7,7 @@
 	<sql id="allNoAsOfInvoke">
 		id,
 		invokeDate,
+		invokeTime,
 		service,
 		method,
 		consumer,
@@ -21,20 +22,19 @@
 		maxElapsed,
 		maxConcurrent,
 		input,
-		output,
-		tps,
-		kbps
+		output
 	</sql>
 
 	<insert id="addInvoke"
-		parameterType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
+		parameterType="com.quancheng.saluki.monitor.SalukiInvoke">
 		insert into
-		saluki_invoke_statistics (
+		saluki_invoke (
 		<include refid="allNoAsOfInvoke" />
 		)
 		values(
 		#{id},
 		#{invokeDate},
+		#{invokeTime},
 		#{service},
 		#{method},
 		#{consumer},
@@ -49,22 +49,26 @@
 		#{maxElapsed},
 		#{maxConcurrent},
 		#{input},
-		#{output},
-		#{tps},
-		#{kbps}
+		#{output}
 		)
 	</insert>
 
-	<select id="queryDataByService" parameterType="string"
+	<select id="queryDataByService" parameterType="java.util.Map"
 		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
-		SELECT *
-		FROM saluki_invoke_statistics
+		SELECT 
+		 invokeTime/1000 as invokeTime,
+		 SUM(concurrent) / (SUM(success)+SUM(failure)) as tps,
+		 (SUM(concurrent) / (SUM(success)+SUM(failure)))*(SUM(input)/1024) as kbps,
+		FROM saluki_invoke
 		WHERE
 		1 = 1
-		<if test="_parameter != null">
-			AND service=#{_parameter}
+		<if test="service != null">
+			AND service=#{service}
 		</if>
-		ORDER BY invokeDate DESC
+		<if test="type != null">
+			AND type=#{type}
+		</if>
+		GROUP BY invokeTime/1000
 	</select>
 
 	<delete id="truncateTable">

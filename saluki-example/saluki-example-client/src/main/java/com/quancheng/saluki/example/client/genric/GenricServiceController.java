@@ -12,7 +12,7 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 @RequestMapping("/genric")
 public class GenricServiceController {
 
-    @SalukiReference(service = "com.quancheng.terra.service.TerraOrderEntryService", group = "Default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.terra.service.TerraOrderEntryService", group = "Example", version = "1.0.0")
     private GenericService genricService;
 
     @RequestMapping("/hello")

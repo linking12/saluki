@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.grpc.GRPCEngine;
 import com.quancheng.saluki.core.utils.NetUtils;
-import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvoke;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.DateUtil;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
@@ -69,7 +69,7 @@ public class MonitorController {
     }
 
     @RequestMapping(value = "/data", method = RequestMethod.GET)
-    public List<SalukiInvokeStatistics> monitorData(@RequestParam(value = "service", required = true) String service) {
+    public List<SalukiInvoke> monitorData(@RequestParam(value = "service", required = true) String service) {
         return mapper.queryDataByService(service);
     }
 

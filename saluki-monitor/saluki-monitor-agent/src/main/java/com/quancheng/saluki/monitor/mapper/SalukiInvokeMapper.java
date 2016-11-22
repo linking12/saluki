@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvoke;
 
 @Mapper
 public interface SalukiInvokeMapper {
 
-    int addInvoke(SalukiInvokeStatistics invoke);
+    int addInvoke(SalukiInvoke invoke);
 
     int truncateTable();
 
-    List<SalukiInvokeStatistics> queryDataByService(String service);
+    List<SalukiInvoke> queryDataByService(String service);
 
 }

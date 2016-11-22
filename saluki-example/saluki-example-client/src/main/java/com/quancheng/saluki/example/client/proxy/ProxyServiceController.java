@@ -22,18 +22,18 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "Default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "Example", version = "1.0.0")
     private HelloService                           helloService;
 
-    @SalukiReference(service = "com.quancheng.test.service.UserService", group = "Default", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.test.service.UserService", group = "Example", version = "1.0.0")
     private com.quancheng.test.service.UserService userService;
 
     private final ScheduledExecutorService         scheduledExecutorService = Executors.newScheduledThreadPool(3,
                                                                                                                new NamedThreadFactory("scheduleTest",
                                                                                                                                       true));
 
-    @PostConstruct
-    public void init() {
+    @RequestMapping("/hello")
+    public HelloReply hello() {
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -42,10 +42,6 @@ public class ProxyServiceController {
 
             }
         }, 0, 30, TimeUnit.MINUTES);
-    }
-
-    @RequestMapping("/hello")
-    public HelloReply hello() {
         return call();
     }
 

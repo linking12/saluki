@@ -5,7 +5,7 @@ import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
 
-@SalukiService(service = "com.quancheng.examples.service.HelloService", group = "Default", version = "1.0.0")
+@SalukiService(service = "com.quancheng.examples.service.HelloService", group = "Example", version = "1.0.0")
 public class HelloServiceImpl implements HelloService {
 
     @Override

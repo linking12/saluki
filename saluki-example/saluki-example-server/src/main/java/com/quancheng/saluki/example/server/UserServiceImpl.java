@@ -10,7 +10,7 @@ import com.quancheng.test.model.user.UserSetRequest;
 import com.quancheng.test.service.UserService;
 import com.quancheng.zeus.model.basemodel.BaseResponse;
 
-@SalukiService(service = "com.quancheng.test.service.UserService", group = "Default", version = "1.0.0")
+@SalukiService(service = "com.quancheng.test.service.UserService", group = "Example", version = "1.0.0")
 public class UserServiceImpl implements UserService {
 
     @Override
