@@ -22,14 +22,6 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V> implemen
 
     private static final long serialVersionUID = 7249069246763182397L;
 
-    /*
-     * The basic strategy is to subdivide the table among Segments, each of which itself is a concurrently readable hash
-     * table.
-     */
-
-    /**
-     * An option specifying which Java reference type should be used to refer to a key and/or value.
-     */
     public static enum ReferenceType {
                                       /**
                                        * Indicates a normal Java strong reference should be used
