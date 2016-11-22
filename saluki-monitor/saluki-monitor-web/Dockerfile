@@ -8,7 +8,7 @@ ADD saluki-monitor/saluki-monitor-web/build/libs/saluki-monitor-web-1.1-SNAPSHOT
 ADD saluki-monitor/saluki-monitor-web/bin /root/
 RUN chmod +x /root/*.sh;mkdir /root/logs
 ENV JAVA_OPTS ""
-ENV SERVER_PORT 8181
-ENV APP_NAME saluki-example-provider
+ENV SERVER_PORT 9999
+ENV APP_NAME saluki-monitor-web
 WORKDIR /root
 CMD ["./start.sh"]
