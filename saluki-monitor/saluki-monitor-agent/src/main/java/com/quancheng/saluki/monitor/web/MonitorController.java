@@ -1,9 +1,11 @@
 package com.quancheng.saluki.monitor.web;
 
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -84,7 +86,32 @@ public class MonitorController {
         Map<String, String> queryType = Maps.newHashMap();
         queryType.put("service", service);
         queryType.put("type", type);
-        return mapper.queryStatistics(queryType);
+        List<SalukiInvokeStatistics> statistics = mapper.queryStatistics(queryType);
+        for (Iterator<SalukiInvokeStatistics> it = statistics.iterator(); it.hasNext();) {
+            SalukiInvokeStatistics st = it.next();
+            Double sumConsurrent = st.getSumconcurrent();
+            Double sumElapsed = st.getSumelapsed();
+            Double sumSuccess = st.getSumsuccess();
+            Double sumFailure = st.getSumfailure();
+            Double sumInput = st.getSuminput();
+            Double totalCount = sumFailure + sumSuccess;
+
+            BigDecimal averageElapsed = BigDecimal.valueOf(sumElapsed).divide(BigDecimal.valueOf(totalCount), 2,
+                                                                              BigDecimal.ROUND_HALF_DOWN);
+            st.setElapsed(averageElapsed.doubleValue());
+            BigDecimal averageInput = BigDecimal.valueOf(sumInput).divide(BigDecimal.valueOf(totalCount), 2,
+                                                                          BigDecimal.ROUND_HALF_DOWN);
+            // TPS=并发数/平均响应时间
+            BigDecimal tps = new BigDecimal(sumConsurrent);
+            tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
+            tps = tps.multiply(BigDecimal.valueOf(1000));
+            st.setTps(tps.doubleValue());
+            // kbps=tps*平均每次传输的数据量
+            BigDecimal kbps = new BigDecimal(st.getTps());
+            kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
+            st.setKbps(kbps.doubleValue());
+        }
+        return statistics;
     }
 
 }

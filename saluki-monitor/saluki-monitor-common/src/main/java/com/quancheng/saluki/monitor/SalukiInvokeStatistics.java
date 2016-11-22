@@ -8,6 +8,17 @@ public class SalukiInvokeStatistics implements Serializable {
 
     private Long              invokeDate;
 
+    private Double            sumconcurrent;
+
+    private Double            sumelapsed;
+
+    private Double            sumsuccess;
+
+    private Double            sumfailure;
+
+    private Double            suminput;
+
+    // 计算
     private Double            tps;
 
     private Double            kbps;
@@ -44,6 +55,46 @@ public class SalukiInvokeStatistics implements Serializable {
 
     public void setElapsed(Double elapsed) {
         this.elapsed = elapsed;
+    }
+
+    public Double getSumconcurrent() {
+        return sumconcurrent;
+    }
+
+    public void setSumconcurrent(Double sumconcurrent) {
+        this.sumconcurrent = sumconcurrent;
+    }
+
+    public Double getSumelapsed() {
+        return sumelapsed;
+    }
+
+    public void setSumelapsed(Double sumelapsed) {
+        this.sumelapsed = sumelapsed;
+    }
+
+    public Double getSumsuccess() {
+        return sumsuccess;
+    }
+
+    public void setSumsuccess(Double sumsuccess) {
+        this.sumsuccess = sumsuccess;
+    }
+
+    public Double getSumfailure() {
+        return sumfailure;
+    }
+
+    public void setSumfailure(Double sumfailure) {
+        this.sumfailure = sumfailure;
+    }
+
+    public Double getSuminput() {
+        return suminput;
+    }
+
+    public void setSuminput(Double suminput) {
+        this.suminput = suminput;
     }
 
 }
