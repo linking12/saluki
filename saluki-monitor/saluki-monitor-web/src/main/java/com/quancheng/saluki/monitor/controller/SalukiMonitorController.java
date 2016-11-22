@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "monitor")
 public class SalukiMonitorController {
 
-    private Logger     log = Logger.getLogger(ApplicationController.class);
+    private Logger     log = Logger.getLogger(SalukiMonitorController.class);
 
     private HttpClient httpClient;
 
@@ -29,9 +29,30 @@ public class SalukiMonitorController {
     @RequestMapping(value = "data", method = RequestMethod.GET)
     public String data(@RequestParam(value = "ip", required = true) String ip,
                        @RequestParam(value = "port", required = true) String port,
-                       @RequestParam(value = "service", required = true) String service) throws Exception {
+                       @RequestParam(value = "service", required = true) String service,
+                       @RequestParam(value = "type", required = true) String type) throws Exception {
         log.info("Return all monitor data");
-        String monitordataUrl = "http://" + ip + ":" + port + "/salukiMonitor/data?service=" + service;
+        String monitordataUrl = "http://" + ip + ":" + port + "/salukiMonitor/data?service=" + service + "&type="
+                                + type;
+        HttpGet request = new HttpGet(monitordataUrl);
+        request.addHeader("content-type", "application/json");
+        request.addHeader("Accept", "application/json");
+        try {
+            HttpResponse httpResponse = httpClient.execute(request);
+            return EntityUtils.toString(httpResponse.getEntity());
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @RequestMapping(value = "statistics", method = RequestMethod.GET)
+    public String statistics(@RequestParam(value = "ip", required = true) String ip,
+                             @RequestParam(value = "port", required = true) String port,
+                             @RequestParam(value = "service", required = true) String service,
+                             @RequestParam(value = "type", required = true) String type) throws Exception {
+        log.info("Return all monitor data");
+        String monitordataUrl = "http://" + ip + ":" + port + "/salukiMonitor/statistics?service=" + service + "&type="
+                                + type;
         HttpGet request = new HttpGet(monitordataUrl);
         request.addHeader("content-type", "application/json");
         request.addHeader("Accept", "application/json");
