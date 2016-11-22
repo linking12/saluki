@@ -25,7 +25,8 @@ build_images:
     - echo "Push Image:" $aliimageclient " to repository..."
     - docker push $aliimageclient
     - docker build --no-cache -t $aliimageserver -f saluki-example/saluki-example-server/Dockerfile .
-    - echo "Push Image:" $aliimageserver " to repository...";
+    - echo "Push Image:" $aliimageserver " to repository..."
+    - docker push $aliimageserver
 
    only:
     - V0.0.1
