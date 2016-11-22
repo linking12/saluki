@@ -55,7 +55,7 @@
 	<select id="queryStatistics" parameterType="java.util.Map"
 		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		SELECT
-		invokeTime/1000 as invokeDate,
+		invokeTime/1000 as invokeTime,
 		SUM(concurrent) as sumconcurrent,
 		SUM(elapsed) as sumelapsed,
 		SUM(success) as sumsuccess,

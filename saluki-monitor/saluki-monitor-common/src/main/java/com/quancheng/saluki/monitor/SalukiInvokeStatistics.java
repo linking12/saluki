@@ -6,7 +6,7 @@ public class SalukiInvokeStatistics implements Serializable {
 
     private static final long serialVersionUID = -3469058277385014626L;
 
-    private Long              invokeDate;
+    private Long              invokeTime;
 
     private Double            sumconcurrent;
 
@@ -24,16 +24,6 @@ public class SalukiInvokeStatistics implements Serializable {
     private Double            kbps;
 
     private Double            elapsed;
-
-    private String            invokeTime;
-
-    public Long getInvokeDate() {
-        return invokeDate;
-    }
-
-    public void setInvokeDate(Long invokeDate) {
-        this.invokeDate = invokeDate;
-    }
 
     public Double getTps() {
         return tps;
@@ -99,11 +89,11 @@ public class SalukiInvokeStatistics implements Serializable {
         this.suminput = suminput;
     }
 
-    public String getInvokeTime() {
+    public Long getInvokeTime() {
         return invokeTime;
     }
 
-    public void setInvokeTime(String invokeTime) {
+    public void setInvokeTime(Long invokeTime) {
         this.invokeTime = invokeTime;
     }
 
