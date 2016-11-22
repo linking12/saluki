@@ -1,23 +1,22 @@
 package com.quancheng.saluki.monitor;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class SalukiInvokeStatistics implements Serializable {
 
     private static final long serialVersionUID = -3469058277385014626L;
 
-    private Date              invokeDate;
+    private Long              invokeDate;
 
     private Double            tps;
 
     private Double            kbps;
 
-    public Date getInvokeDate() {
+    public Long getInvokeDate() {
         return invokeDate;
     }
 
-    public void setInvokeDate(Date invokeDate) {
+    public void setInvokeDate(Long invokeDate) {
         this.invokeDate = invokeDate;
     }
 

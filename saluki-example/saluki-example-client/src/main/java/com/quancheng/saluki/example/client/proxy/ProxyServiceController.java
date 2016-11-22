@@ -34,14 +34,14 @@ public class ProxyServiceController {
 
     @RequestMapping("/hello")
     public HelloReply hello() {
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                call();
-
-            }
-        }, 0, 30, TimeUnit.MINUTES);
+        // scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        //
+        // @Override
+        // public void run() {
+        // call();
+        //
+        // }
+        // }, 0, 30, TimeUnit.MINUTES);
         return call();
     }
 

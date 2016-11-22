@@ -18,6 +18,7 @@ import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.grpc.GRPCEngine;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.monitor.SalukiInvoke;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.DateUtil;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
@@ -69,8 +70,21 @@ public class MonitorController {
     }
 
     @RequestMapping(value = "/data", method = RequestMethod.GET)
-    public List<SalukiInvoke> monitorData(@RequestParam(value = "service", required = true) String service) {
-        return mapper.queryDataByService(service);
+    public List<SalukiInvoke> data(@RequestParam(value = "service", required = true) String service,
+                                   @RequestParam(value = "type", required = true) String type) {
+        Map<String, String> queryType = Maps.newHashMap();
+        queryType.put("service", service);
+        queryType.put("type", type);
+        return mapper.queryData(queryType);
+    }
+
+    @RequestMapping(value = "/statistics", method = RequestMethod.GET)
+    public List<SalukiInvokeStatistics> statistics(@RequestParam(value = "service", required = true) String service,
+                                                   @RequestParam(value = "type", required = true) String type) {
+        Map<String, String> queryType = Maps.newHashMap();
+        queryType.put("service", service);
+        queryType.put("type", type);
+        return mapper.queryStatistics(queryType);
     }
 
 }
