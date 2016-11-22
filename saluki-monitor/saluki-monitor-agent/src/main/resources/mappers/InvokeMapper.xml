@@ -56,9 +56,9 @@
 		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		SELECT
 		invokeTime/1000 as invokeDate,
-		SUM(concurrent) / (SUM(elapsed) / (SUM(success) +SUM(failure))) * 1000 as tps,
-		SUM(concurrent) / (SUM(elapsed) / (SUM(success) +SUM(failure))) * 1000 * (SUM(input) / (SUM(success) +SUM(failure)) / 1024) as kbps,
-		SUM(elapsed) / (SUM(success)+SUM(failure)) as elapsed
+		ROUNDMAGIC(SUM(concurrent) / (SUM(elapsed) / (SUM(success) +SUM(failure))) * 1000) as tps,
+		ROUNDMAGIC(SUM(concurrent) / (SUM(elapsed) / (SUM(success) +SUM(failure))) * 1000 * (SUM(input) / (SUM(success) +SUM(failure)) / 1024)) as kbps,
+		ROUNDMAGIC(SUM(elapsed) / (SUM(success)+SUM(failure))) as elapsed
 		FROM
 		saluki_invoke
 		WHERE

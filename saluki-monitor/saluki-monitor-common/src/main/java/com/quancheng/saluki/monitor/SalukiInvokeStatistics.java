@@ -12,6 +12,8 @@ public class SalukiInvokeStatistics implements Serializable {
 
     private Double            kbps;
 
+    private Double            elapsed;
+
     public Long getInvokeDate() {
         return invokeDate;
     }
@@ -34,6 +36,14 @@ public class SalukiInvokeStatistics implements Serializable {
 
     public void setKbps(Double kbps) {
         this.kbps = kbps;
+    }
+
+    public Double getElapsed() {
+        return elapsed;
+    }
+
+    public void setElapsed(Double elapsed) {
+        this.elapsed = elapsed;
     }
 
 }
