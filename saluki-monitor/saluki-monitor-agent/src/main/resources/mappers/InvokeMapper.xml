@@ -56,9 +56,9 @@
 	<select id="queryDataByService" parameterType="java.util.Map"
 		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		SELECT 
-		 invokeTime/1000 as invokeTime,
-		 SUM(concurrent) / (SUM(success)+SUM(failure)) as tps,
-		 (SUM(concurrent) / (SUM(success)+SUM(failure)))*(SUM(input)/1024) as kbps,
+		  SUM(concurrent) / (SUM(success)+SUM(failure)) as tps,
+		  (SUM(concurrent) / (SUM(success)+SUM(failure))) *(SUM(input)/1024) as kbps,
+          SUM(elapsed) / (SUM(success)+SUM(failure)) as elapsed
 		FROM saluki_invoke
 		WHERE
 		1 = 1
