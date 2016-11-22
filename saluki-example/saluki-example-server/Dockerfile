@@ -1,4 +1,4 @@
-FROM java:8-jdk-alpine
+FROM yingjunjiao/runtime-image:1.0
 ENV TZ="Asia/Shanghai"
 ENV LANG C.UTF-8
 RUN echo "http://mirrors.ustc.edu.cn/alpine/v3.4/main/" > /etc/apk/repositories;\
