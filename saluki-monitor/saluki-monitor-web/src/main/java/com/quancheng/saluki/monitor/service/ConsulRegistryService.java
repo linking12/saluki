@@ -176,7 +176,7 @@ public class ConsulRegistryService {
                         beAboutToQuery.add(serviceKey);
                     }
                 } else {
-                    if (StringUtils.containsAny(serviceName, search)) {
+                    if (StringUtils.containsIgnoreCase(serviceName, search)) {
                         beAboutToQuery.add(serviceKey);
                     }
                 }
@@ -186,7 +186,7 @@ public class ConsulRegistryService {
                         beAboutToQuery.add(serviceKey);
                     }
                 } else {
-                    if (StringUtils.containsAny(appName, search)) {
+                    if (StringUtils.containsIgnoreCase(appName, search)) {
                         beAboutToQuery.add(serviceKey);
                     }
                 }
