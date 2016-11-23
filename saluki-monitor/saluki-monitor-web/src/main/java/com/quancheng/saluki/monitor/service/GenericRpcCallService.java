@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.quancheng.saluki.monitor.model.MethodDefinition;
-import com.quancheng.saluki.monitor.model.ServiceDefinition;
-import com.quancheng.saluki.monitor.model.TypeDefinition;
-import com.quancheng.saluki.monitor.utils.Jaket;
+import com.quancheng.saluki.monitor.service.support.Jaket;
+import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
+import com.quancheng.saluki.monitor.service.support.model.ServiceDefinition;
+import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
 import com.quancheng.saluki.monitor.utils.MonitorClassLoader;
 
 @Service
@@ -48,26 +48,26 @@ public class GenericRpcCallService {
     public MethodDefinition getMethod(String serviceName, String methodName) {
         try {
             Class<?> clazz = classLoader.loadClass(serviceName);
-            ServiceDefinition sd = Jaket.build(clazz);
-            List<MethodDefinition> mds = sd.getMethods();
-            MethodDefinition targetMethod = null;
-            for (MethodDefinition md : mds) {
-                if (md.getName().equals(methodName)) {
-                    targetMethod = md;
+            ServiceDefinition serviceMeta = Jaket.build(clazz);
+            List<MethodDefinition> methodMetas = serviceMeta.getMethods();
+            MethodDefinition targetMethodMeta = null;
+            for (MethodDefinition methodMeta : methodMetas) {
+                if (methodMeta.getName().equals(methodName)) {
+                    targetMethodMeta = methodMeta;
                     break;
                 }
             }
-            String[] requestTypes = targetMethod.getParameterTypes();
+            String[] requestTypes = targetMethodMeta.getParameterTypes();
             List<TypeDefinition> parameters = new ArrayList<TypeDefinition>();
-            targetMethod.setParameters(parameters);
+            targetMethodMeta.setParameters(parameters);
             for (String requestType : requestTypes) {
-                for (TypeDefinition td : sd.getTypes()) {
-                    if (td.getType().equals(requestType)) {
-                        parameters.add(td);
+                for (TypeDefinition parameterMeta : serviceMeta.getTypes()) {
+                    if (parameterMeta.getType().equals(requestType)) {
+                        parameters.add(parameterMeta);
                     }
                 }
             }
-            return targetMethod;
+            return targetMethodMeta;
         } catch (ClassNotFoundException e) {
             log.error(e.getMessage(), e);
         }

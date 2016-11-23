@@ -1,10 +1,10 @@
-package com.quancheng.saluki.monitor.utils.builder;
+package com.quancheng.saluki.monitor.service.support.builder;
 
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import com.quancheng.saluki.monitor.model.TypeDefinition;
-import com.quancheng.saluki.monitor.utils.JaketTypeBuilder;
+import com.quancheng.saluki.monitor.service.support.JaketTypeBuilder;
+import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
 
 
 /**

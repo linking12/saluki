@@ -3,7 +3,7 @@ package com.quancheng.saluki.monitor.service;
 import java.io.IOException;
 
 import com.google.gson.Gson;
-import com.quancheng.saluki.monitor.model.MethodDefinition;
+import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
 import com.quancheng.saluki.monitor.utils.MonitorClassLoader;
 
 public class TestMain {

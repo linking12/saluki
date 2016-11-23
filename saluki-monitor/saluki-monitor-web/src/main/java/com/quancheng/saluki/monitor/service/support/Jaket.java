@@ -1,13 +1,14 @@
-package com.quancheng.saluki.monitor.utils;
+package com.quancheng.saluki.monitor.service.support;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 
 import com.google.gson.Gson;
-import com.quancheng.saluki.monitor.model.MethodDefinition;
-import com.quancheng.saluki.monitor.model.ServiceDefinition;
-import com.quancheng.saluki.monitor.model.TypeDefinition;
+import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
+import com.quancheng.saluki.monitor.service.support.model.ServiceDefinition;
+import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
+import com.quancheng.saluki.monitor.utils.ClassUtils;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.
@@ -15,7 +16,7 @@ import com.quancheng.saluki.monitor.model.TypeDefinition;
 public final class Jaket {
 
     /**
-     * Describe a Java interface in {@link com.quancheng.saluki.monitor.model.taobao.jaket.model.ServiceDefinition}.
+     * Describe a Java interface in {@link com.quancheng.saluki.monitor.service.support.model.taobao.jaket.model.ServiceDefinition}.
      *
      * @return Service description
      */

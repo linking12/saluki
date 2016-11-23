@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.model;
+package com.quancheng.saluki.monitor.service.support.model;
 
 import java.util.ArrayList;
 import java.util.List;
