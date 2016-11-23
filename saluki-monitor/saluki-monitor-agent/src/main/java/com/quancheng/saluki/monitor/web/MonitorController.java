@@ -95,9 +95,6 @@ public class MonitorController {
             Double sumFailure = st.getSumfailure();
             Double sumInput = st.getSuminput();
             Double totalCount = sumFailure + sumSuccess;
-            if (sumConsurrent.equals(Double.valueOf(0))) {
-                continue;
-            }
             BigDecimal averageElapsed = BigDecimal.valueOf(sumElapsed).divide(BigDecimal.valueOf(totalCount), 2,
                                                                               BigDecimal.ROUND_HALF_DOWN);
             st.setElapsed(averageElapsed.doubleValue());
@@ -105,13 +102,18 @@ public class MonitorController {
                                                                           BigDecimal.ROUND_HALF_DOWN);
             // TPS=并发数/平均响应时间
             BigDecimal tps = new BigDecimal(sumConsurrent);
-            tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
-            tps = tps.multiply(BigDecimal.valueOf(1000));
-            st.setTps(tps.doubleValue());
+            if (!averageElapsed.equals(BigDecimal.ZERO)) {
+                tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
+                tps = tps.multiply(BigDecimal.valueOf(1000));
+                st.setTps(tps.doubleValue());
+            }
             // kbps=tps*平均每次传输的数据量
             BigDecimal kbps = new BigDecimal(st.getTps());
-            kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
-            st.setKbps(kbps.doubleValue());
+            if (!averageElapsed.equals(BigDecimal.ZERO) && !averageInput.equals(BigDecimal.ZERO)) {
+                kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
+                st.setKbps(kbps.doubleValue());
+            }
+
         }
         return statistics;
     }
