@@ -1,7 +1,6 @@
 package com.quancheng.saluki.monitor.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +9,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.saluki.core.grpc.client.SalukiClassLoader;
 import com.quancheng.saluki.monitor.SalukiService;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
+import com.quancheng.saluki.monitor.service.GenericRpcCallService;
+import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
 
 @RestController
 @RequestMapping(value = "service")
@@ -22,6 +22,9 @@ public class SalukiServiceController {
 
     @Autowired
     private ConsulRegistryService registrySerivce;
+
+    @Autowired
+    private GenericRpcCallService genericRpcCallService;
 
     @RequestMapping(value = "/fuzzyapp", method = RequestMethod.GET)
     public List<SalukiService> queryByApp(@RequestParam(value = "search", required = true) String search) {
@@ -47,9 +50,15 @@ public class SalukiServiceController {
         return registrySerivce.queryPassingServiceByService(search, Boolean.TRUE);
     }
 
-    @RequestMapping(value = "/loadServiceParam", method = RequestMethod.GET)
-    public void loadServiceParam(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
+    @RequestMapping(value = "/listAllMethod", method = RequestMethod.GET)
+    public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
+        return genericRpcCallService.getAllMethod(service);
+    }
 
+    @RequestMapping(value = "/getMethod", method = RequestMethod.GET)
+    public MethodDefinition getMethod(@RequestParam(value = "service", required = true) String service,
+                                      @RequestParam(value = "method", required = true) String method) {
+        return genericRpcCallService.getMethod(service, method);
     }
 
 }

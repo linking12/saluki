@@ -34,7 +34,7 @@ public class GenericRpcCallService {
         }
     }
 
-    public List<MethodDefinition> getService(String serviceName) {
+    public List<MethodDefinition> getAllMethod(String serviceName) {
         try {
             Class<?> clazz = classLoader.loadClass(serviceName);
             ServiceDefinition sd = Jaket.build(clazz);
