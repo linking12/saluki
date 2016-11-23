@@ -33,24 +33,11 @@ public class SalukiMonitorService implements MonitorService {
 
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap;
 
-    // 定时清理内存数据
-    private final ScheduledExecutorService                           clearDataExecutor;
-
-    // 定时收集器
     private final ScheduledExecutorService                           scheduledExecutorService;
 
     public SalukiMonitorService(){
         statisticsMap = Maps.newConcurrentMap();
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
-        clearDataExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiClearMonitorData", true));
-        clearDataExecutor.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                clearDataBase();
-
-            }
-        }, 0, 1, TimeUnit.DAYS);
         scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer",
                                                                                               true));
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
@@ -115,7 +102,7 @@ public class SalukiMonitorService implements MonitorService {
         } while (!reference.compareAndSet(current, update));
     }
 
-    private void clearDataBase() {
+    public void clearDataBase() {
         invokeMapping.truncateTable();
     }
 

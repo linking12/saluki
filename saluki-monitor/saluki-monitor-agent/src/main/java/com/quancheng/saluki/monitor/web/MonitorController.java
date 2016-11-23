@@ -116,4 +116,9 @@ public class MonitorController {
         return statistics;
     }
 
+    @RequestMapping(value = "/clean", method = RequestMethod.GET)
+    public void cleanData() {
+        mapper.truncateTable();
+    }
+
 }
