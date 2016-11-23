@@ -1,6 +1,7 @@
 package com.quancheng.saluki.monitor.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.quancheng.saluki.core.grpc.client.SalukiClassLoader;
 import com.quancheng.saluki.monitor.SalukiService;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
@@ -44,4 +46,10 @@ public class SalukiServiceController {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByService(search, Boolean.TRUE);
     }
+
+    @RequestMapping(value = "/loadServiceParam", method = RequestMethod.GET)
+    public void loadServiceParam(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
+
+    }
+
 }
