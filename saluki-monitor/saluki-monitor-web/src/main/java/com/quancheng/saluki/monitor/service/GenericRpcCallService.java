@@ -1,6 +1,8 @@
 package com.quancheng.saluki.monitor.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -8,8 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
+import com.quancheng.saluki.monitor.model.MethodDefinition;
 import com.quancheng.saluki.monitor.model.ServiceDefinition;
+import com.quancheng.saluki.monitor.model.TypeDefinition;
 import com.quancheng.saluki.monitor.utils.Jaket;
 import com.quancheng.saluki.monitor.utils.MonitorClassLoader;
 
@@ -22,19 +25,52 @@ public class GenericRpcCallService {
 
     @PostConstruct
     public void init() {
-        classLoader = new MonitorClassLoader();
-    }
-
-    public String getService(String serviceName) {
         String path = System.getProperty("user.home") + "/saluki";
         try {
+            classLoader = new MonitorClassLoader();
             classLoader.addClassPath();
-            Class<?> clazz = classLoader.loadClass(serviceName);
-            return Jaket.schema(clazz);
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (IOException e) {
             log.error("not find service in the jar of" + path + ",please check serviceName");
+        }
+    }
+
+    public List<MethodDefinition> getService(String serviceName) {
+        try {
+            Class<?> clazz = classLoader.loadClass(serviceName);
+            ServiceDefinition sd = Jaket.build(clazz);
+            return sd.getMethods();
+        } catch (ClassNotFoundException e) {
+            log.error(e.getMessage(), e);
         }
         return null;
     }
 
+    public MethodDefinition getMethod(String serviceName, String methodName) {
+        try {
+            Class<?> clazz = classLoader.loadClass(serviceName);
+            ServiceDefinition sd = Jaket.build(clazz);
+            List<MethodDefinition> mds = sd.getMethods();
+            MethodDefinition targetMethod = null;
+            for (MethodDefinition md : mds) {
+                if (md.getName().equals(methodName)) {
+                    targetMethod = md;
+                    break;
+                }
+            }
+            String[] requestTypes = targetMethod.getParameterTypes();
+            List<TypeDefinition> parameters = new ArrayList<TypeDefinition>();
+            targetMethod.setParameters(parameters);
+            for (String requestType : requestTypes) {
+                for (TypeDefinition td : sd.getTypes()) {
+                    if (td.getType().equals(requestType)) {
+                        parameters.add(td);
+                    }
+                }
+            }
+            return targetMethod;
+        } catch (ClassNotFoundException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
+    }
 }
