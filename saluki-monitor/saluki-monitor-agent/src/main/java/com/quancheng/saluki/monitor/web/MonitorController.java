@@ -95,7 +95,9 @@ public class MonitorController {
             Double sumFailure = st.getSumfailure();
             Double sumInput = st.getSuminput();
             Double totalCount = sumFailure + sumSuccess;
-
+            if (sumConsurrent.equals(Double.valueOf(0))) {
+                continue;
+            }
             BigDecimal averageElapsed = BigDecimal.valueOf(sumElapsed).divide(BigDecimal.valueOf(totalCount), 2,
                                                                               BigDecimal.ROUND_HALF_DOWN);
             st.setElapsed(averageElapsed.doubleValue());
@@ -113,5 +115,5 @@ public class MonitorController {
         }
         return statistics;
     }
- 
+
 }
