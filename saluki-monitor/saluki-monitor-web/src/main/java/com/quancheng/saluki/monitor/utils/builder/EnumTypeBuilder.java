@@ -1,11 +1,11 @@
-package com.quancheng.saluki.monitor.jaket.builder;
+package com.quancheng.saluki.monitor.utils.builder;
 
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import com.quancheng.saluki.monitor.jaket.model.TypeDefinition;
+import com.quancheng.saluki.monitor.model.TypeDefinition;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

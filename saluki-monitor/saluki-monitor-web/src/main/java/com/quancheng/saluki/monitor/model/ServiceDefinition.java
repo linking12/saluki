@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.jaket.model;
+package com.quancheng.saluki.monitor.model;
 
 import java.util.ArrayList;
 import java.util.List;

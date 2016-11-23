@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.jaket.model;
+package com.quancheng.saluki.monitor.model;
 
 import com.google.gson.annotations.SerializedName;
 

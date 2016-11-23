@@ -1,12 +1,12 @@
-package com.quancheng.saluki.monitor.jaket.builder;
+package com.quancheng.saluki.monitor.utils.builder;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import com.quancheng.saluki.monitor.jaket.JaketTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.model.TypeDefinition;
+import com.quancheng.saluki.monitor.model.TypeDefinition;
+import com.quancheng.saluki.monitor.utils.JaketTypeBuilder;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

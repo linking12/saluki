@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.jaket;
+package com.quancheng.saluki.monitor.utils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.quancheng.saluki.monitor.jaket.builder.ArrayTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.builder.CollectionTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.builder.DefaultTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.builder.EnumTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.builder.MapTypeBuilder;
-import com.quancheng.saluki.monitor.jaket.builder.TypeBuilder;
-import com.quancheng.saluki.monitor.jaket.model.TypeDefinition;
+import com.quancheng.saluki.monitor.model.TypeDefinition;
+import com.quancheng.saluki.monitor.utils.builder.ArrayTypeBuilder;
+import com.quancheng.saluki.monitor.utils.builder.CollectionTypeBuilder;
+import com.quancheng.saluki.monitor.utils.builder.DefaultTypeBuilder;
+import com.quancheng.saluki.monitor.utils.builder.EnumTypeBuilder;
+import com.quancheng.saluki.monitor.utils.builder.MapTypeBuilder;
+import com.quancheng.saluki.monitor.utils.builder.TypeBuilder;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

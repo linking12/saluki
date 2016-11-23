@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.jaket.util;
+package com.quancheng.saluki.monitor.utils;
 
 import java.io.InputStream;
 import java.util.Properties;
