@@ -102,7 +102,7 @@ public class MonitorController {
                                                                           BigDecimal.ROUND_HALF_DOWN);
             // TPS=并发数/平均响应时间
             BigDecimal tps = new BigDecimal(sumConsurrent);
-            if (!averageElapsed.equals(BigDecimal.ZERO)) {
+            if (!sumConsurrent.equals(BigDecimal.ZERO) && !averageElapsed.equals(BigDecimal.ZERO)) {
                 tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
                 tps = tps.multiply(BigDecimal.valueOf(1000));
                 st.setTps(tps.doubleValue());
