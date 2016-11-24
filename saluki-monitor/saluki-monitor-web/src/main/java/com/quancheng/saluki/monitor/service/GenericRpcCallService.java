@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.monitor.service.support.Jaket;
 import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
 import com.quancheng.saluki.monitor.service.support.model.ServiceDefinition;
@@ -22,6 +24,9 @@ public class GenericRpcCallService {
     private static final Logger log = LoggerFactory.getLogger(GenericRpcCallService.class);
 
     private MonitorClassLoader  classLoader;
+
+    @SalukiReference(service = "com.quancheng.terra.service.TerraOrderEntryService", group = "Example", version = "1.0.0")
+    private GenericService      genricService;
 
     @PostConstruct
     public void init() {

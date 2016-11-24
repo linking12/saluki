@@ -12,7 +12,7 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 @RequestMapping("/genric")
 public class GenricServiceController {
 
-    @SalukiReference(service = "com.quancheng.terra.service.TerraOrderEntryService", group = "Example", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "Example", version = "1.0.0")
     private GenericService genricService;
 
     @RequestMapping("/hello")
@@ -24,7 +24,8 @@ public class GenricServiceController {
         HelloRequest request = new HelloRequest();
         request.setName("liushiming");
         Object[] args1 = new Object[] { request };
-        HelloReply reply = (HelloReply) genricService.$invoke(serviceName, method, parameterTypes, args1);
+        HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "Example", "1.0.0", method, parameterTypes,
+                                                              args1);
         return reply;
     }
 }

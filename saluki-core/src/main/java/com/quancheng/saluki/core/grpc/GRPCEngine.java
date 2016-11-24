@@ -47,13 +47,18 @@ public class GRPCEngine {
         GrpcProtocolClient.ChannelCall call = new GrpcProtocolClient.ChannelCall() {
 
             @Override
-            public Channel getChannel() {
+            public Channel getChannel(final String serviceName, final String group, final String version) {
+                SalukiURL refUrlReal;
+                refUrlReal = refUrl;
+                refUrlReal = refUrlReal.setPath(serviceName);
+                refUrlReal = refUrlReal.addParameter(SalukiConstants.GROUP_KEY, group);
+                refUrlReal = refUrlReal.addParameter(SalukiConstants.VERSION_KEY, version);
                 Channel channel;
                 if (localProcess) {
                     channel = InProcessChannelBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS).build();
                 } else {
                     channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                 .nameResolverFactory(new SalukiNameResolverProvider(refUrl))//
+                                                 .nameResolverFactory(new SalukiNameResolverProvider(refUrlReal))//
                                                  .loadBalancerFactory(buildLoadBalanceFactory())//
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//
