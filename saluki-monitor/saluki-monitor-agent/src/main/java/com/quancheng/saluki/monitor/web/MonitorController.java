@@ -102,14 +102,14 @@ public class MonitorController {
                                                                           BigDecimal.ROUND_HALF_DOWN);
             // TPS=并发数/平均响应时间
             BigDecimal tps = new BigDecimal(sumConsurrent);
-            if (!sumConsurrent.equals(BigDecimal.ZERO) && !averageElapsed.equals(BigDecimal.ZERO)) {
+            if (!BigDecimal.ZERO.equals(sumConsurrent) && !BigDecimal.ZERO.equals(averageElapsed)) {
                 tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
                 tps = tps.multiply(BigDecimal.valueOf(1000));
                 st.setTps(tps.doubleValue());
             }
             // kbps=tps*平均每次传输的数据量
             BigDecimal kbps = new BigDecimal(st.getTps());
-            if (!averageElapsed.equals(BigDecimal.ZERO) && !averageInput.equals(BigDecimal.ZERO)) {
+            if (!BigDecimal.ZERO.equals(averageElapsed) && !BigDecimal.ZERO.equals(averageInput)) {
                 kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
                 st.setKbps(kbps.doubleValue());
             }
