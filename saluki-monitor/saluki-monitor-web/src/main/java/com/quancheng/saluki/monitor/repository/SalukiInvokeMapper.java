@@ -1,7 +1,6 @@
 package com.quancheng.saluki.monitor.repository;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -12,5 +11,7 @@ public interface SalukiInvokeMapper {
 
     int addInvoke(List<SalukiInvoke> invokes);
 
-    List<SalukiInvoke> queryData(Map<String, String> queryType);
+    List<SalukiInvoke> queryDataBySingleMachine(String service, String type, String ip);
+
+    List<SalukiInvoke> querySumDataByService(String service, String type);
 }

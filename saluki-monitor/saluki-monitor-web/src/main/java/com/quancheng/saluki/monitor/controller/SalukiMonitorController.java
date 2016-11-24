@@ -1,5 +1,6 @@
 package com.quancheng.saluki.monitor.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -12,25 +13,29 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.monitor.SalukiInvoke;
+import com.quancheng.saluki.monitor.service.SalukiMonitorDataService;
 
 @RestController
 @RequestMapping(value = "monitor")
 public class SalukiMonitorController {
 
-    private Logger     log = Logger.getLogger(SalukiMonitorController.class);
+    private Logger                   log = Logger.getLogger(SalukiMonitorController.class);
 
-    private HttpClient httpClient;
+    @Autowired
+    private SalukiMonitorDataService minitorDataService;
 
-    private Gson       gson;
+    private HttpClient               httpClient;
+
+    private Gson                     gson;
 
     @PostConstruct
     public void init() {
@@ -39,27 +44,20 @@ public class SalukiMonitorController {
     }
 
     @RequestMapping(value = "statistics", method = RequestMethod.GET)
-    public Map<String, List<SalukiInvoke>> statistics(@RequestParam(value = "ipPorts", required = true) String ipPorts,
+    public Map<String, List<SalukiInvoke>> statistics(@RequestParam(value = "ips", required = true) String ips,
                                                       @RequestParam(value = "service", required = true) String service,
                                                       @RequestParam(value = "type", required = true) String type) throws Exception {
         log.info("Return statistics monitor data");
-        Map<String, List<SalukiInvoke>> datas = Maps.newHashMap();
-        for (String ipPort : StringUtils.split(ipPorts, ",")) {
-            String monitordataUrl = "http://" + ipPort + "/salukiMonitor/data?service=" + service + "&type=" + type;
-            HttpGet request = new HttpGet(monitordataUrl);
-            request.addHeader("content-type", "application/json");
-            request.addHeader("Accept", "application/json");
-            try {
-                HttpResponse httpResponse = httpClient.execute(request);
-                String minitorJson = EntityUtils.toString(httpResponse.getEntity());
-                List<SalukiInvoke> invokeData = gson.fromJson(minitorJson, new TypeToken<List<SalukiInvoke>>() {
-                }.getType());
-                datas.put(ipPort, invokeData);
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-        return datas;
+        String[] ipArray = StringUtils.split(",");
+        List<String> ipList = Arrays.asList(ipArray);
+        return minitorDataService.queryDataByMachines(service, type, ipList);
+    }
+
+    @RequestMapping(value = "sumstatistics", method = RequestMethod.GET)
+    public List<SalukiInvoke> statistics(@RequestParam(value = "service", required = true) String service,
+                                         @RequestParam(value = "type", required = true) String type) throws Exception {
+        log.info("Return statistics monitor data");
+        return minitorDataService.querySumDataByService(service, type);
     }
 
     @RequestMapping(value = "system", method = RequestMethod.GET)

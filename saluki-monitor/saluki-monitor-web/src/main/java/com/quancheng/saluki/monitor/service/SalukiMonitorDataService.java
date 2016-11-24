@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -48,7 +49,7 @@ public class SalukiMonitorDataService {
     private ConsulRegistryRepository       registryRepository;
 
     @Autowired
-    private SalukiInvokeMapper             mapper;
+    private SalukiInvokeMapper             invokeMapper;
 
     private HttpClient                     httpClient;
 
@@ -101,7 +102,7 @@ public class SalukiMonitorDataService {
                             List<SalukiInvoke> invokes = gson.fromJson(minitorJson,
                                                                        new TypeToken<List<SalukiInvoke>>() {
                                                                        }.getType());
-                            mapper.addInvoke(invokes);
+                            invokeMapper.addInvoke(invokes);
                         } catch (Exception e) {
                             log.error("clean data failed,host is:" + host);
                         }
@@ -120,5 +121,18 @@ public class SalukiMonitorDataService {
                 }
             });
         }
+    }
+
+    public Map<String, List<SalukiInvoke>> queryDataByMachines(String service, String type, List<String> ips) {
+        Map<String, List<SalukiInvoke>> datas = Maps.newHashMap();
+        for (String ip : ips) {
+            List<SalukiInvoke> invokes = invokeMapper.queryDataBySingleMachine(service, type, ip);
+            datas.put(ip, invokes);
+        }
+        return datas;
+    }
+
+    public List<SalukiInvoke> querySumDataByService(String service, String type) {
+        return invokeMapper.querySumDataByService(service, type);
     }
 }
