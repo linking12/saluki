@@ -71,7 +71,7 @@
 		<if test="type != null">
 			AND type=#{type}
 		</if>
-		GROUP BY invokeTime/1000
+		GROUP BY invokeTime/1000 ORDER BY invokeTime/1000 ASC
 	</select>
 
 	<select id="queryData" parameterType="java.util.Map"
