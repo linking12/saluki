@@ -74,9 +74,6 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            if (args.length != 4) {
-                throw new IllegalArgumentException("generic call args invlid" + args + " args " + args);
-            }
             GrpcRequest request = new GrpcRequest.Default(getServiceName(args), getGroup(args), getVersion(args), call);
             GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(this.getMethod(args),
                                                                                     this.getReqAndRepType(args).get(0),
