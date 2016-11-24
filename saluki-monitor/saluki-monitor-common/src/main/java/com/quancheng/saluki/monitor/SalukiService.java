@@ -12,7 +12,7 @@ public class SalukiService implements Serializable {
 
     private final String      serviceName;
 
-    private Set<SalukiHost>   provideHost;
+    private Set<SalukiHost>   providerHost;
 
     private Set<SalukiHost>   consumerHost;
 
@@ -24,19 +24,19 @@ public class SalukiService implements Serializable {
         return serviceName;
     }
 
-    public Set<SalukiHost> getProvideHost() {
-        return provideHost;
+    public Set<SalukiHost> getProviderHost() {
+        return providerHost;
     }
 
-    public void setProvideHost(Set<SalukiHost> provideHost) {
-        this.provideHost = provideHost;
+    public void setProviderHost(Set<SalukiHost> providerHost) {
+        this.providerHost = providerHost;
     }
 
     public void addProviderHosts(Collection<SalukiHost> provideHost) {
-        if (this.provideHost == null) {
-            this.provideHost = Sets.newConcurrentHashSet();
+        if (this.providerHost == null) {
+            this.providerHost = Sets.newConcurrentHashSet();
         }
-        this.provideHost.addAll(provideHost);
+        this.providerHost.addAll(provideHost);
     }
 
     public Set<SalukiHost> getConsumerHost() {
@@ -76,7 +76,7 @@ public class SalukiService implements Serializable {
 
     @Override
     public String toString() {
-        return "SalukiService [serviceName=" + serviceName + ", prividerHost=" + provideHost + ", consumerHost="
+        return "SalukiService [serviceName=" + serviceName + ", prividerHost=" + providerHost + ", consumerHost="
                + consumerHost + "]";
     }
 
