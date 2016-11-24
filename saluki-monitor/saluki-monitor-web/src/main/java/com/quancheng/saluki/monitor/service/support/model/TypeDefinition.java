@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.annotations.Expose;
 
 /**
@@ -13,17 +14,21 @@ import com.google.gson.annotations.Expose;
 public class TypeDefinition {
 
     @Expose(serialize = false, deserialize = false)
+    @JsonIgnore
     private String                      id;
 
     private String                      type;
 
     @Expose(serialize = false, deserialize = false)
+    @JsonIgnore
     private List<TypeDefinition>        items;
 
     @Expose(serialize = false, deserialize = false)
+    @JsonIgnore
     private List<String>                enums;
 
     @Expose(serialize = false, deserialize = false)
+    @JsonIgnore
     private String                      $ref;
 
     private Map<String, TypeDefinition> properties;
