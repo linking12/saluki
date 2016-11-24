@@ -12,18 +12,18 @@ import com.google.gson.annotations.Expose;
  */
 public class TypeDefinition {
 
-    @Expose(deserialize = false)
+    @Expose(serialize = false, deserialize = false)
     private String                      id;
 
     private String                      type;
 
-    @Expose(deserialize = false)
+    @Expose(serialize = false, deserialize = false)
     private List<TypeDefinition>        items;
 
-    @Expose(deserialize = false)
+    @Expose(serialize = false, deserialize = false)
     private List<String>                enums;
 
-    @Expose(deserialize = false)
+    @Expose(serialize = false, deserialize = false)
     private String                      $ref;
 
     private Map<String, TypeDefinition> properties;
