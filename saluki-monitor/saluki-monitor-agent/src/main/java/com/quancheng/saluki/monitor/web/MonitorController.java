@@ -2,6 +2,9 @@ package com.quancheng.saluki.monitor.web;
 
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,13 +64,21 @@ public class MonitorController {
     }
 
     private String getSalukiVersion() {
-        String jarPath = GRPCEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        String[] versions = StringUtils.split(jarPath, "-");
-        if (versions.length > 1) {
-            return versions[1].split(".")[0];
-        } else {
-            return versions[0];
+        Class<?> clazz = GRPCEngine.class;
+        ProtectionDomain protectionDomain = clazz.getProtectionDomain();
+        if (protectionDomain == null || protectionDomain.getCodeSource() == null) {
+            return null;
         }
+        CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
+        URL location = codeSource.getLocation();
+        if (location == null) {
+            return null;
+        }
+        String path = codeSource.getLocation().toExternalForm();
+        if (path.endsWith(".jar") && path.contains("/")) {
+            return path.substring(path.lastIndexOf('/') + 1);
+        }
+        return path;
     }
 
     @RequestMapping(value = "/data", method = RequestMethod.GET)

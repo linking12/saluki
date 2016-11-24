@@ -10,18 +10,25 @@ public class SalukiService implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private final String      application;
+
     private final String      serviceName;
 
     private Set<SalukiHost>   providerHost;
 
     private Set<SalukiHost>   consumerHost;
 
-    public SalukiService(String serviceName){
+    public SalukiService(String application, String serviceName){
+        this.application = application;
         this.serviceName = serviceName;
     }
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public String getApplication() {
+        return application;
     }
 
     public Set<SalukiHost> getProviderHost() {

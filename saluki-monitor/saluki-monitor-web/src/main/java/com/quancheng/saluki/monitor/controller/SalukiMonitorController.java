@@ -90,17 +90,18 @@ public class SalukiMonitorController {
     }
 
     @RequestMapping(value = "system", method = RequestMethod.GET)
-    public String system(@RequestParam(value = "ip", required = true) String ip,
-                         @RequestParam(value = "port", required = true) String port) throws Exception {
+    public Map<String, Object> system(@RequestParam(value = "ipPort", required = true) String ipPort) throws Exception {
         log.info("Return all monitor data");
-        String monitordataUrl = "http://" + ip + ":" + port + "/salukiMonitor/system";
+        String monitordataUrl = "http://" + ipPort + "/salukiMonitor/system";
         HttpGet request = new HttpGet(monitordataUrl);
         request.addHeader("content-type", "application/json");
         request.addHeader("Accept", "application/json");
         try {
             HttpResponse httpResponse = httpClient.execute(request);
-            String response = EntityUtils.toString(httpResponse.getEntity());
-            return response;
+            String minitorJson = EntityUtils.toString(httpResponse.getEntity());
+            Map<String, Object> system = gson.fromJson(minitorJson, new TypeToken<Map<String, Object>>() {
+            }.getType());
+            return system;
         } catch (Exception e) {
             throw e;
         }
