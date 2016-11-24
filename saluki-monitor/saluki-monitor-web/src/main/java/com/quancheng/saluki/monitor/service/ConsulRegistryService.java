@@ -203,7 +203,7 @@ public class ConsulRegistryService {
             Pair<String, String> appNameService = getAppNameService(serviceKey);
             Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = servicesPassing.get(serviceKey);
             SalukiService service = new SalukiService(appNameService.getRight());
-            service.setProvideHost(providerConsumer.getLeft());
+            service.setProviderHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
             services.add(service);
         }
