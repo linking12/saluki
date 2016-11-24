@@ -33,19 +33,19 @@ import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 @Service
 public class ConsulRegistryService {
 
-    private static final Logger      log = LoggerFactory.getLogger(ConsulRegistryService.class);
+    private static final Logger            log               = LoggerFactory.getLogger(ConsulRegistryService.class);
 
+    private final ScheduledExecutorService clearDataExecutor = Executors.newScheduledThreadPool(1,
+                                                                                                new NamedThreadFactory("SalukiClearMonitorData",
+                                                                                                                       true));
     @Autowired
-    private ConsulRegistryRepository registryRepository;
+    private ConsulRegistryRepository       registryRepository;
 
-    private ScheduledExecutorService clearDataExecutor;
-
-    private HttpClient               httpClient;
+    private HttpClient                     httpClient;
 
     @PostConstruct
     public void init() {
         httpClient = HttpClientBuilder.create().build();
-        clearDataExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiClearMonitorData", true));
         clearDataExecutor.scheduleAtFixedRate(new Runnable() {
 
             @Override
