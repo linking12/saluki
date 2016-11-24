@@ -25,17 +25,12 @@ public class GenericRpcCallService {
 
     @PostConstruct
     public void init() {
-        String path = System.getProperty("user.home") + "/saluki";
-        try {
-            classLoader = new MonitorClassLoader();
-            classLoader.addClassPath();
-        } catch (IOException e) {
-            log.error("not find service in the jar of" + path + ",please check serviceName");
-        }
+        classLoader = new MonitorClassLoader();
     }
 
     public List<MethodDefinition> getAllMethod(String serviceName) {
         try {
+            doAddJarIntoClassPath();
             Class<?> clazz = classLoader.loadClass(serviceName);
             ServiceDefinition sd = Jaket.build(clazz);
             return sd.getMethods();
@@ -47,6 +42,7 @@ public class GenericRpcCallService {
 
     public MethodDefinition getMethod(String serviceName, String methodName) {
         try {
+            doAddJarIntoClassPath();
             Class<?> clazz = classLoader.loadClass(serviceName);
             ServiceDefinition serviceMeta = Jaket.build(clazz);
             List<MethodDefinition> methodMetas = serviceMeta.getMethods();
@@ -72,5 +68,14 @@ public class GenericRpcCallService {
             log.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    private void doAddJarIntoClassPath() {
+        String path = System.getProperty("user.home") + "/saluki";
+        try {
+            classLoader.addClassPath();
+        } catch (IOException e) {
+            log.error("not find service in the jar of" + path + ",please check serviceName");
+        }
     }
 }
