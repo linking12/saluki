@@ -22,7 +22,9 @@
 		maxElapsed,
 		maxConcurrent,
 		input,
-		output
+		output,
+		tps,
+		kbps
 	</sql>
 
 	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.SalukiInvoke">
@@ -48,45 +50,15 @@
 		#{maxElapsed},
 		#{maxConcurrent},
 		#{input},
-		#{output}
+		#{output},
+		#{tps},
+		#{kbps}
 		)
 	</insert>
 
-	<select id="queryStatistics" parameterType="java.util.Map"
-		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
-		SELECT
-		invokeTime/1000 as invokeTime,
-		SUM(concurrent) as sumconcurrent,
-		SUM(elapsed) as sumelapsed,
-		SUM(success) as sumsuccess,
-		SUM(failure) as sumfailure,
-		SUM(input) as suminput
-		FROM
-		saluki_invoke
-		WHERE
-		1 = 1
-		<if test="service != null">
-			AND service=#{service}
-		</if>
-		<if test="type != null">
-			AND type=#{type}
-		</if>
-		GROUP BY invokeTime/1000 ORDER BY invokeTime/1000 ASC
-	</select>
-
-	<select id="queryData" parameterType="java.util.Map"
-		resultType="com.quancheng.saluki.monitor.SalukiInvoke">
+	<select id="queryData" resultType="com.quancheng.saluki.monitor.SalukiInvoke">
 		SELECT *
 		FROM saluki_invoke
-		WHERE
-		1 = 1
-		<if test="service != null">
-			AND service=#{service}
-		</if>
-		<if test="type != null">
-			AND type=#{type}
-		</if>
-		ORDER BY invokeDate DESC
 	</select>
 
 	<delete id="truncateTable">

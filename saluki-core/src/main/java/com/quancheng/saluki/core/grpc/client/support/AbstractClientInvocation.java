@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -169,9 +170,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
-            @SuppressWarnings("unchecked")
-            Map<String, String> clientParam = new Gson().fromJson(serverInfo, Map.class);
-            String consumerHost = clientParam.get("serverHost");
+            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
+            String consumerHost = serverProperty.getProperty("serverHost");
             String host = consumerHost != null ? consumerHost : refUrl.getHost();
             for (MonitorService monitor : monitors) {
                 monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -99,9 +100,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
-            @SuppressWarnings("unchecked")
-            Map<String, String> clientParam = new Gson().fromJson(serverInfo, Map.class);
-            String serverhost = clientParam.get("serverHost");
+            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
+            String serverhost = serverProperty.getProperty("serverHost");
             String host = serverhost != null ? serverhost : NetUtils.getLocalHost();
             String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();
             String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT, registryRealPort);

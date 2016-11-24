@@ -39,7 +39,7 @@ public class MyBatisConfig {
     public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dataSource);
-        bean.setTypeAliasesPackage("com.quancheng.saluki.monitor.domain");
+        bean.setTypeAliasesPackage("com.quancheng.saluki.monitor");
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
             bean.setMapperLocations(resolver.getResources("classpath:mappers/*.xml"));

@@ -2,7 +2,7 @@ package com.quancheng.saluki.registry.consul.internal.model;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 import com.ecwid.consul.v1.session.model.NewSession;
@@ -39,10 +39,9 @@ public final class SalukiConsulEphemralNode {
         this.interval = builder.interval;
         this.flag = builder.flag;
         this.rpcPort = builder.rpcPort;
-        @SuppressWarnings("unchecked")
-        Map<String, String> serverParam = gson.fromJson(serverInfo, Map.class);
-        String serverHost = serverParam.get("serverHost");
-        this.httpServerPort = serverParam.get("serverHttpPort");
+        Properties serverParam = gson.fromJson(serverInfo, Properties.class);
+        String serverHost = serverParam.getProperty("serverHost");
+        this.httpServerPort = serverParam.getProperty("serverHttpPort");
         // 如果是docker，ip会变化，需要手动注入下
         if (serverHost != null) {
             this.host = serverHost;

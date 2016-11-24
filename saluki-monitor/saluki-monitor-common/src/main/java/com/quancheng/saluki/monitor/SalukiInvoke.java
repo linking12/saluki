@@ -46,6 +46,11 @@ public class SalukiInvoke implements Serializable {
 
     private double            elapsed;
 
+    // 计算
+    private Double            tps;
+
+    private Double            kbps;
+
     public Date getInvokeDate() {
         return invokeDate;
     }
@@ -191,6 +196,22 @@ public class SalukiInvoke implements Serializable {
 
     public void setInvokeTime(Long invokeTime) {
         this.invokeTime = invokeTime;
+    }
+
+    public Double getTps() {
+        return tps;
+    }
+
+    public void setTps(Double tps) {
+        this.tps = tps;
+    }
+
+    public Double getKbps() {
+        return kbps;
+    }
+
+    public void setKbps(Double kbps) {
+        this.kbps = kbps;
     }
 
 }
