@@ -1,27 +1,35 @@
 package com.quancheng.saluki.monitor.service.support.model;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.
  */
 public class TypeDefinition {
 
-    private String id;
-    private String type;
-    @SerializedName("items")
-    private List<TypeDefinition> items;
-    @SerializedName("enum")
-    private List<String> enums;
-    private String $ref;
+    @Expose(deserialize = false)
+    private String                      id;
+
+    private String                      type;
+
+    @Expose(deserialize = false)
+    private List<TypeDefinition>        items;
+
+    @Expose(deserialize = false)
+    private List<String>                enums;
+
+    @Expose(deserialize = false)
+    private String                      $ref;
+
     private Map<String, TypeDefinition> properties;
 
-    public TypeDefinition(String type) {
+    public TypeDefinition(String type){
         this.type = type;
     }
 
