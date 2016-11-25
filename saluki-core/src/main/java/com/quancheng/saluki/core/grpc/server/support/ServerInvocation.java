@@ -39,7 +39,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
 
     private final SalukiURL      providerUrl;
 
-    private final AtomicInteger  concurrents = new AtomicInteger(0);
+    private AtomicInteger        concurrents = new AtomicInteger(0);
 
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
         this.serviceToInvoke = serviceToInvoke;
@@ -53,10 +53,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message reqProtoBufer = request;
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
-        concurrents.incrementAndGet();
         try {
-            String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
-            log.debug(String.format("receiver %s request from %s", new Gson().toJson(reqProtoBufer), remoteAddress));
+            concurrents.incrementAndGet();
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object reqPojo = PojoProtobufUtils.Protobuf2Pojo(reqProtoBufer, requestType);
             Object[] requestParams = new Object[] { reqPojo };
@@ -81,8 +79,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcFramworkError.getMessage())//
                                                                     .withCause(rpcFramworkError).asRuntimeException();
             responseObserver.onError(statusException);
-        } finally {
-            concurrents.decrementAndGet();
         }
     }
 
@@ -95,6 +91,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
+            if (log.isDebugEnabled()) {
+                log.debug("Receiver %s request from %s,and return s% ", request.toString(), consumer,
+                          response.toString());
+            }
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
             Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
             String serverhost = serverProperty.getProperty("serverHost");
@@ -117,6 +117,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
+        } finally {
+            concurrents.set(0);
         }
     }
 

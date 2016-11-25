@@ -105,11 +105,13 @@ public class SalukiMonitorDataService {
                         request.addHeader("Accept", "application/json");
                         try {
                             HttpResponse httpResponse = httpClient.execute(request);
-                            String minitorJson = EntityUtils.toString(httpResponse.getEntity());
-                            List<SalukiInvoke> invokes = gson.fromJson(minitorJson,
-                                                                       new TypeToken<List<SalukiInvoke>>() {
-                                                                       }.getType());
-                            invokeMapper.addInvoke(invokes);
+                            if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                                String minitorJson = EntityUtils.toString(httpResponse.getEntity());
+                                List<SalukiInvoke> invokes = gson.fromJson(minitorJson,
+                                                                           new TypeToken<List<SalukiInvoke>>() {
+                                                                           }.getType());
+                                invokeMapper.addInvoke(invokes);
+                            }
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
                         }
