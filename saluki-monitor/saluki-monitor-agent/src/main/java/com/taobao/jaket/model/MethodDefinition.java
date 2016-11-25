@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.service.support.model;
+package com.taobao.jaket.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.service.support.model;
+package com.taobao.jaket.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +32,7 @@ public class TypeDefinition {
     private String                      $ref;
 
     private Map<String, TypeDefinition> properties;
-
-    public TypeDefinition(String type){
+    public TypeDefinition(String type) {
         this.type = type;
     }
 

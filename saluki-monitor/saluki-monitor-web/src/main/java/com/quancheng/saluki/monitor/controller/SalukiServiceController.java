@@ -2,8 +2,6 @@ package com.quancheng.saluki.monitor.controller;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,12 +9,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.quancheng.saluki.monitor.SalukiService;
-import com.quancheng.saluki.monitor.model.GenericModel;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
-import com.quancheng.saluki.monitor.service.GenericRpcCallService;
-import com.quancheng.saluki.monitor.service.support.model.MethodDefinition;
 
 @RestController
 @RequestMapping(value = "service")
@@ -26,16 +20,6 @@ public class SalukiServiceController {
 
     @Autowired
     private ConsulRegistryService registrySerivce;
-
-    @Autowired
-    private GenericRpcCallService genericRpcCallService;
-
-    private Gson                  gson;
-
-    @PostConstruct
-    private void init() {
-        gson = new Gson();
-    }
 
     @RequestMapping(value = "/fuzzyapp", method = RequestMethod.GET)
     public List<SalukiService> queryByApp(@RequestParam(value = "search", required = true) String search) {
@@ -59,23 +43,6 @@ public class SalukiServiceController {
     public List<SalukiService> getByService(@RequestParam(value = "search", required = true) String search) {
         log.info("Return all service from registry");
         return registrySerivce.queryPassingServiceByService(search, Boolean.TRUE);
-    }
-
-    @RequestMapping(value = "/listAllMethod", method = RequestMethod.GET)
-    public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
-        return genericRpcCallService.getAllMethod(service);
-    }
-
-    @RequestMapping(value = "/getMethod", method = RequestMethod.GET)
-    public MethodDefinition getMethod(@RequestParam(value = "service", required = true) String service,
-                                      @RequestParam(value = "method", required = true) String method) {
-        return genericRpcCallService.getMethod(service, method);
-    }
-
-    @RequestMapping(value = "/testMethod", method = RequestMethod.POST)
-    public Object testMethod(@RequestParam(value = "args", required = true) String args) throws ClassNotFoundException {
-        GenericModel model = gson.fromJson(args, GenericModel.class);
-        return genericRpcCallService.callRemoteService(model);
     }
 
 }

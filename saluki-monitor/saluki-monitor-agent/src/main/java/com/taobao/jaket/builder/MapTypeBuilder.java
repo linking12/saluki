@@ -1,12 +1,12 @@
-package com.quancheng.saluki.monitor.service.support.builder;
+package com.taobao.jaket.builder;
+
+import com.taobao.jaket.JaketTypeBuilder;
+import com.taobao.jaket.model.TypeDefinition;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Map;
-
-import com.quancheng.saluki.monitor.service.support.JaketTypeBuilder;
-import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.
@@ -30,15 +30,15 @@ public class MapTypeBuilder implements TypeBuilder {
     public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
             throw new IllegalArgumentException(MessageFormat.format("[Jaket] Unexpected type {0}.",
-                                                                    new Object[] { type }));
+                    new Object[]{type}));
         }
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
         if (actualTypeArgs == null || actualTypeArgs.length != 2) {
-            throw new IllegalArgumentException(MessageFormat.format("[Jaket] Map type [{0}] with unexpected amount of arguments [{1}]."
-                                                                    + actualTypeArgs,
-                                                                    new Object[] { type, actualTypeArgs }));
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "[Jaket] Map type [{0}] with unexpected amount of arguments [{1}]." + actualTypeArgs, new Object[] {
+                            type, actualTypeArgs }));
         }
 
         for (Type actualType : actualTypeArgs) {

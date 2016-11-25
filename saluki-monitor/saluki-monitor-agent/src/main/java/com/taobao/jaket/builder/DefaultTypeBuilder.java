@@ -1,14 +1,14 @@
-package com.quancheng.saluki.monitor.service.support.builder;
+package com.taobao.jaket.builder;
+
+import com.taobao.jaket.JaketTypeBuilder;
+import com.taobao.jaket.model.TypeDefinition;
+import com.taobao.jaket.util.ClassUtils;
+import com.taobao.jaket.util.JaketConfigurationUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-
-import com.quancheng.saluki.monitor.service.support.JaketTypeBuilder;
-import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
-import com.quancheng.saluki.monitor.utils.ClassUtils;
-import com.quancheng.saluki.monitor.utils.JaketConfigurationUtils;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.
@@ -40,7 +40,7 @@ public final class DefaultTypeBuilder {
             Class<?> fieldClass = field.getType();
             Type fieldType = field.getGenericType();
 
-            TypeDefinition fieldTd = JaketTypeBuilder.build(fieldType, fieldClass, typeCache);
+            TypeDefinition fieldTd = JaketTypeBuilder.build(fieldType,fieldClass, typeCache);
             td.getProperties().put(name, fieldTd);
         }
 
@@ -48,6 +48,6 @@ public final class DefaultTypeBuilder {
         return td;
     }
 
-    private DefaultTypeBuilder(){
+    private DefaultTypeBuilder() {
     }
 }

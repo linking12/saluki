@@ -1,10 +1,9 @@
-package com.quancheng.saluki.monitor.service.support.builder;
+package com.taobao.jaket.builder;
 
+import com.taobao.jaket.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.Map;
-
-import com.quancheng.saluki.monitor.service.support.model.TypeDefinition;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.
