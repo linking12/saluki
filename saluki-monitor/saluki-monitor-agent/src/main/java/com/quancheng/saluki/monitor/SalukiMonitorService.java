@@ -2,175 +2,66 @@ package com.quancheng.saluki.monitor;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
 import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 import com.quancheng.saluki.monitor.util.UuidUtil;
 
 public class SalukiMonitorService implements MonitorService {
 
-    private static final Logger                                      logger = LoggerFactory.getLogger(SalukiMonitorService.class);
+    private static final Logger            logger = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    private static final int                                         LENGTH = 10;
+    private final SalukiInvokeMapper       invokeMapping;
 
-    private final SalukiInvokeMapper                                 invokeMapping;
+    private final BlockingQueue<SalukiURL> queue  = new LinkedBlockingQueue<SalukiURL>(100000);
 
-    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap;
-
-    private final ScheduledExecutorService                           scheduledExecutorService;
-
-    private volatile ScheduledFuture<?>                              sendFuture;
+    private final Thread                   writeThread;
 
     public SalukiMonitorService(){
-        statisticsMap = Maps.newConcurrentMap();
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
-        scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer",
-                                                                                              true));
-    }
+        writeThread = new Thread(new Runnable() {
 
-    private synchronized void startSend() {
-        if (sendFuture == null) {
-            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
-            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
-            String monitorInterval = serverProperty.getProperty("monitorInterval", "1");
-            sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-
-                public void run() {
+            public void run() {
+                while (true) {
                     try {
-                        send();
+                        writeToDataBase(); // 记录统计日志
                     } catch (Throwable t) {
-                        logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
+                        logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
+                        try {
+                            Thread.sleep(5000);
+                        } catch (Throwable t2) {
+                        }
                     }
                 }
-            }, Integer.valueOf(monitorInterval), Integer.valueOf(monitorInterval), TimeUnit.MINUTES);
-        }
+            }
+        });
+        writeThread.setDaemon(true);
+        writeThread.setName("MonitorAsyncWriteLogThread");
+        writeThread.start();
     }
 
     @Override
     public void collect(SalukiURL url) {
-        // 读写统计变量
-        int success = url.getParameter(MonitorService.SUCCESS, 0);
-        int failure = url.getParameter(MonitorService.FAILURE, 0);
-        int input = url.getParameter(MonitorService.INPUT, 0);
-        int output = url.getParameter(MonitorService.OUTPUT, 0);
-        int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
-        int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
-        // 初始化原子引用
-        Statistics statistics = new Statistics(url);
-        AtomicReference<long[]> reference = statisticsMap.get(statistics);
-        if (reference == null) {
-            statisticsMap.putIfAbsent(statistics, new AtomicReference<long[]>());
-            reference = statisticsMap.get(statistics);
+        queue.offer(url);
+        if (logger.isInfoEnabled()) {
+            logger.info("collect statistics: " + url);
         }
-        // CompareAndSet并发加入统计数据
-        long[] current;
-        long[] update = new long[LENGTH];
-        do {
-            current = reference.get();
-            if (current == null) {
-                update[0] = success;
-                update[1] = failure;
-                update[2] = input;
-                update[3] = output;
-                update[4] = elapsed;
-                update[5] = concurrent;
-                update[6] = input;
-                update[7] = output;
-                update[8] = elapsed;
-                update[9] = concurrent;
-                startSend();
-            } else {
-                update[0] = current[0] + success;
-                update[1] = current[1] + failure;
-                update[2] = current[2] + input;
-                update[3] = current[3] + output;
-                update[4] = current[4] + elapsed;
-                update[5] = (current[5] + concurrent) / 2;
-                update[6] = current[6] > input ? current[6] : input;
-                update[7] = current[7] > output ? current[7] : output;
-                update[8] = current[8] > elapsed ? current[8] : elapsed;
-                update[9] = current[9] > concurrent ? current[9] : concurrent;
-            }
-        } while (!reference.compareAndSet(current, update));
     }
 
     public void clearDataBase() {
         invokeMapping.truncateTable();
     }
 
-    public void send() {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
-            // 获取已统计数据
-            Statistics statistics = entry.getKey();
-            AtomicReference<long[]> reference = entry.getValue();
-            long[] numbers = reference.get();
-            long success = numbers[0];
-            long failure = numbers[1];
-            long input = numbers[2];
-            long output = numbers[3];
-            long elapsed = numbers[4];
-            long concurrent = numbers[5];
-            long maxInput = numbers[6];
-            long maxOutput = numbers[7];
-            long maxElapsed = numbers[8];
-            long maxConcurrent = numbers[9];
-            // 发送汇总信息
-            SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
-                                                              MonitorService.SUCCESS, String.valueOf(success),
-                                                              MonitorService.FAILURE, String.valueOf(failure),
-                                                              MonitorService.INPUT, String.valueOf(input),
-                                                              MonitorService.OUTPUT, String.valueOf(output),
-                                                              MonitorService.ELAPSED, String.valueOf(elapsed),
-                                                              MonitorService.CONCURRENT, String.valueOf(concurrent),
-                                                              MonitorService.MAX_INPUT, String.valueOf(maxInput),
-                                                              MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
-                                                              MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                                                              MonitorService.MAX_CONCURRENT,
-                                                              String.valueOf(maxConcurrent));
-            writeToDataBase(url);
-            // 减掉已统计数据
-            long[] current;
-            long[] update = new long[LENGTH];
-            do {
-                current = reference.get();
-                if (current == null) {
-                    update[0] = 0;
-                    update[1] = 0;
-                    update[2] = 0;
-                    update[3] = 0;
-                    update[4] = 0;
-                    update[5] = 0;
-                } else {
-                    update[0] = current[0] - success;
-                    update[1] = current[1] - failure;
-                    update[2] = current[2] - input;
-                    update[3] = current[3] - output;
-                    update[4] = current[4] - elapsed;
-                    update[5] = current[5] - concurrent;
-                }
-            } while (!reference.compareAndSet(current, update));
-        }
-    }
-
-    private void writeToDataBase(SalukiURL statistics) {
+    private void writeToDataBase() throws Exception {
+        SalukiURL statistics = queue.take();
         if (!SalukiConstants.MONITOR_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
@@ -232,11 +123,4 @@ public class SalukiMonitorService implements MonitorService {
         }
     }
 
-    public void destroy() {
-        try {
-            sendFuture.cancel(true);
-        } catch (Throwable t) {
-            logger.error("Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
-        }
-    }
 }
