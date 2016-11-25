@@ -25,7 +25,7 @@ import com.quancheng.saluki.monitor.util.SpringBeanUtils;
 
 @RestController
 @RequestMapping("/salukiMonitor")
-public class MonitorController {
+public class MonitorDataController {
 
     private SimpleDateFormat         formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 

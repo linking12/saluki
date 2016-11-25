@@ -16,7 +16,7 @@ import com.taobao.jaket.model.TypeDefinition;
 
 @RestController
 @RequestMapping("/serviceMeasure")
-public class ServiceMeasureController {
+public class ServiceMetaController {
 
     @RequestMapping(value = "/getAllMethod", method = RequestMethod.GET)
     public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
@@ -58,4 +58,5 @@ public class ServiceMeasureController {
             throw e;
         }
     }
+
 }
