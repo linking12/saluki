@@ -2,8 +2,6 @@ package com.quancheng.saluki.monitor;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,51 +15,16 @@ import com.quancheng.saluki.monitor.util.UuidUtil;
 
 public class SalukiMonitorService implements MonitorService {
 
-    private static final Logger            logger = LoggerFactory.getLogger(SalukiMonitorService.class);
+    private static final Logger      logger = LoggerFactory.getLogger(SalukiMonitorService.class);
 
-    private final SalukiInvokeMapper       invokeMapping;
-
-    private final BlockingQueue<SalukiURL> queue  = new LinkedBlockingQueue<SalukiURL>(100000);
-
-    private final Thread                   writeThread;
+    private final SalukiInvokeMapper invokeMapping;
 
     public SalukiMonitorService(){
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
-        writeThread = new Thread(new Runnable() {
-
-            public void run() {
-                while (true) {
-                    try {
-                        writeToDataBase(); // 记录统计日志
-                    } catch (Throwable t) {
-                        logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
-                        try {
-                            Thread.sleep(5000);
-                        } catch (Throwable t2) {
-                        }
-                    }
-                }
-            }
-        });
-        writeThread.setDaemon(true);
-        writeThread.setName("MonitorAsyncWriteLogThread");
-        writeThread.start();
     }
 
     @Override
-    public void collect(SalukiURL url) {
-        queue.offer(url);
-        if (logger.isInfoEnabled()) {
-            logger.info("collect statistics: " + url);
-        }
-    }
-
-    public void clearDataBase() {
-        invokeMapping.truncateTable();
-    }
-
-    private void writeToDataBase() throws Exception {
-        SalukiURL statistics = queue.take();
+    public void collect(SalukiURL statistics) {
         if (!SalukiConstants.MONITOR_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
@@ -121,6 +84,10 @@ public class SalukiMonitorService implements MonitorService {
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }
+    }
+
+    public void clearDataBase() {
+        invokeMapping.truncateTable();
     }
 
 }

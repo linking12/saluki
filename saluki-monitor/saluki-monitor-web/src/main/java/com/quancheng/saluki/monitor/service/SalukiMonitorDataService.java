@@ -1,7 +1,6 @@
 package com.quancheng.saluki.monitor.service;
 
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

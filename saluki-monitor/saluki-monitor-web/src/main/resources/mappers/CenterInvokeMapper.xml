@@ -3,34 +3,28 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.quancheng.saluki.monitor.repository.SalukiInvokeMapper">
 
-
-	<sql id="allNoAsOfInvoke">
-		id,
-		invokeDate,
-		invokeTime,
-		service,
-		method,
-		consumer,
-		provider,
-		type,
-		success,
-		failure,
-		elapsed,
-		concurrent,
-		maxInput,
-		maxOutput,
-		maxElapsed,
-		maxConcurrent,
-		input,
-		output,
-		tps,
-		kbps
-	</sql>
-
 	<insert id="addInvoke" parameterType="java.util.List">
-		insert into
-		saluki_invoke (
-		<include refid="allNoAsOfInvoke" />
+		insert into saluki_invoke (
+				id,
+				invokeDate,
+				invokeTime,
+				service,
+				method,
+				consumer,
+				provider,
+				type,
+				success,
+				failure,
+				elapsed,
+				concurrent,
+				maxInput,
+				maxOutput,
+				maxElapsed,
+				maxConcurrent,
+				input,
+				output,
+				tps,
+				kbps
 		)
 		values
 		<foreach collection="list" item="data" separator="," index="index">
@@ -57,8 +51,6 @@
 			#{data.kbps}
 			)
 		</foreach>
-
-
 	</insert>
 
 	<select id="queryData" parameterType="java.util.Map"

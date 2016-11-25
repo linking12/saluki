@@ -72,7 +72,9 @@ public class ConsulRegistryRepository {
             String serviceKey = generateServicekey(group, service);
             if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
                 Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service);
-                servicesPassing.put(serviceKey, providerAndConsumer);
+                if (providerAndConsumer != null) {
+                    servicesPassing.put(serviceKey, providerAndConsumer);
+                }
             } else {
                 Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
                 SalukiHost providerHost = new SalukiHost(host, "0", rpcPort);
@@ -100,26 +102,30 @@ public class ConsulRegistryRepository {
         Set<SalukiHost> providerHosts = Sets.newHashSet();
         Set<SalukiHost> comsumerHosts = Sets.newHashSet();
         List<String> providerAndConsumerKvs = consulClient.getKVKeysOnly(group + "/" + service).getValue();
-        for (String providerAndConsumerKv : providerAndConsumerKvs) {
-            Triple<String, String, String> machineInfo = getmachineInfo(providerAndConsumerKv, group + "/" + service);
-            String appFlag = machineInfo.getLeft();
-            String[] appHostRpcPort = machineInfo.getMiddle().split(":");
-            String appHttpPort = machineInfo.getRight();
-            // 对于provider端，直接取group做为应用名
-            if (appFlag.equals("provider")) {
-                SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, appHostRpcPort[1]);
-                host.setStatus("passing");
-                host.setUrl("service:" + appHostRpcPort[0] + ":" + appHostRpcPort[1] + "-" + service);
-                providerHosts.add(host);
-            } // 对于consumer端，需要取注册的参数做为应用名
-            else if (appFlag.equals("consumer")) {
-                SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, "0");
-                host.setStatus("passing");
-                host.setUrl(null);
-                comsumerHosts.add(host);
+        if (providerAndConsumerKvs != null) {
+            for (String providerAndConsumerKv : providerAndConsumerKvs) {
+                Triple<String, String, String> machineInfo = getmachineInfo(providerAndConsumerKv,
+                                                                            group + "/" + service);
+                String appFlag = machineInfo.getLeft();
+                String[] appHostRpcPort = machineInfo.getMiddle().split(":");
+                String appHttpPort = machineInfo.getRight();
+                // 对于provider端，直接取group做为应用名
+                if (appFlag.equals("provider")) {
+                    SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, appHostRpcPort[1]);
+                    host.setStatus("passing");
+                    host.setUrl("service:" + appHostRpcPort[0] + ":" + appHostRpcPort[1] + "-" + service);
+                    providerHosts.add(host);
+                } // 对于consumer端，需要取注册的参数做为应用名
+                else if (appFlag.equals("consumer")) {
+                    SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, "0");
+                    host.setStatus("passing");
+                    host.setUrl(null);
+                    comsumerHosts.add(host);
+                }
             }
+            return new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(providerHosts, comsumerHosts);
         }
-        return new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(providerHosts, comsumerHosts);
+        return null;
     }
 
     /**
