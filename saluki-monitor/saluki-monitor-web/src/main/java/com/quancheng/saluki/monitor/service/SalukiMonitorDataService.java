@@ -110,7 +110,9 @@ public class SalukiMonitorDataService {
                                 List<SalukiInvoke> invokes = gson.fromJson(minitorJson,
                                                                            new TypeToken<List<SalukiInvoke>>() {
                                                                            }.getType());
-                                invokeMapper.addInvoke(invokes);
+                                if (invokes != null && invokes.size() != 0) {
+                                    invokeMapper.addInvoke(invokes);
+                                }
                             }
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
