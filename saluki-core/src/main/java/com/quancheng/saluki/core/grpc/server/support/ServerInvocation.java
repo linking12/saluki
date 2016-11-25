@@ -3,8 +3,6 @@ package com.quancheng.saluki.core.grpc.server.support;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -31,12 +29,17 @@ import io.grpc.stub.StreamObserver;
 
 public class ServerInvocation implements UnaryMethod<Message, Message> {
 
-    private static final Logger                        log         = LoggerFactory.getLogger(ServerInvocation.class);
-    private final MonitorService                       salukiMonitor;
-    private final Object                               serviceToInvoke;
-    private final Method                               method;
-    private final SalukiURL                            providerUrl;
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private static final Logger  log         = LoggerFactory.getLogger(ServerInvocation.class);
+
+    private final MonitorService salukiMonitor;
+
+    private final Object         serviceToInvoke;
+
+    private final Method         method;
+
+    private final SalukiURL      providerUrl;
+
+    private final AtomicInteger  concurrents = new AtomicInteger(0);
 
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
         this.serviceToInvoke = serviceToInvoke;
@@ -50,7 +53,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message reqProtoBufer = request;
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
-        getConcurrent().incrementAndGet();
+        concurrents.incrementAndGet();
         try {
             String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
             log.debug(String.format("receiver %s request from %s", new Gson().toJson(reqProtoBufer), remoteAddress));
@@ -79,7 +82,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                                                     .withCause(rpcFramworkError).asRuntimeException();
             responseObserver.onError(statusException);
         } finally {
-            getConcurrent().decrementAndGet();
+            concurrents.decrementAndGet();
         }
     }
 
@@ -88,7 +91,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     private void collect(Message request, Message response, long start, boolean error) {
         try {
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
-            int concurrent = getConcurrent().get(); // 当前并发数
+            int concurrent = concurrents.get(); // 当前并发数
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
@@ -115,17 +118,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
         }
-    }
-
-    // 获取并发计数器
-    private AtomicInteger getConcurrent() {
-        String key = serviceToInvoke.getClass().getName() + "." + method.getName();
-        AtomicInteger concurrent = concurrents.get(key);
-        if (concurrent == null) {
-            concurrents.putIfAbsent(key, new AtomicInteger());
-            concurrent = concurrents.get(key);
-        }
-        return concurrent;
     }
 
 }

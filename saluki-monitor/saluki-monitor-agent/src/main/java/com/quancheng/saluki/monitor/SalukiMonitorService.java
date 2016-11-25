@@ -69,17 +69,17 @@ public class SalukiMonitorService implements MonitorService {
                 tps = tps.divide(BigDecimal.valueOf(invoke.getElapsed()), 2, BigDecimal.ROUND_HALF_DOWN);
                 tps = tps.multiply(BigDecimal.valueOf(1000));
                 invoke.setTps(tps.doubleValue());
+                BigDecimal kbps = new BigDecimal(invoke.getTps());
+                if (invoke.getInput() != 0 && invoke.getElapsed() != 0) {
+                    // kbps=tps*平均每次传输的数据量
+                    kbps = kbps.multiply(BigDecimal.valueOf(invoke.getInput()).divide(BigDecimal.valueOf(1024), 2,
+                                                                                      BigDecimal.ROUND_HALF_DOWN));
+                } else if (invoke.getElapsed() != 0) {
+                    kbps = kbps.multiply(BigDecimal.valueOf(invoke.getOutput()).divide(BigDecimal.valueOf(1024), 2,
+                                                                                       BigDecimal.ROUND_HALF_DOWN));
+                }
+                invoke.setKbps(kbps.doubleValue());
             }
-            BigDecimal kbps = new BigDecimal(invoke.getTps());
-            if (invoke.getInput() != 0 && invoke.getElapsed() != 0) {
-                // kbps=tps*平均每次传输的数据量
-                kbps = kbps.multiply(BigDecimal.valueOf(invoke.getInput()).divide(BigDecimal.valueOf(1024), 2,
-                                                                                  BigDecimal.ROUND_HALF_DOWN));
-            } else if (invoke.getElapsed() != 0) {
-                kbps = kbps.multiply(BigDecimal.valueOf(invoke.getOutput()).divide(BigDecimal.valueOf(1024), 2,
-                                                                                   BigDecimal.ROUND_HALF_DOWN));
-            }
-            invoke.setKbps(kbps.doubleValue());
             invokeMapping.addInvoke(invoke);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
