@@ -1,7 +1,9 @@
 package com.quancheng.saluki.core.grpc.server.support;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,6 +24,7 @@ import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
+import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -54,6 +57,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
         try {
+            responseObserverSpecial(responseObserver);
             concurrents.incrementAndGet();
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object reqPojo = PojoProtobufUtils.Protobuf2Pojo(reqProtoBufer, requestType);
@@ -82,8 +86,22 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         }
     }
 
-    // 信息采集
+    private void responseObserverSpecial(StreamObserver<Message> responseObserver) {
+        try {
+            Class<?> classType = responseObserver.getClass();
+            Field field = classType.getDeclaredField("call");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            ServerCall<Message, Message> serverCall = (ServerCall<Message, Message>) field.get(responseObserver);
+            InetSocketAddress remoteAddress = (InetSocketAddress) serverCall.attributes().get(ServerCall.REMOTE_ADDR_KEY);
+            RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.getHostString());
+        } catch (Exception e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
+        }
+    }
 
+    // 信息采集
     private void collect(Message request, Message response, long start, boolean error) {
         try {
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
