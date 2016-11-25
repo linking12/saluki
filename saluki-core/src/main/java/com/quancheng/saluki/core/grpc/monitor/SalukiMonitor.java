@@ -39,7 +39,7 @@ public class SalukiMonitor implements MonitorService {
 
     public SalukiMonitor(SalukiURL url){
         this.monitorServices = findMonitor();
-        this.monitorInterval = url.getParameter("monitorinterval", 1);
+        this.monitorInterval = url.getParameter("monitorinterval", 60);
         // 启动统计信息收集定时器
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
@@ -51,7 +51,7 @@ public class SalukiMonitor implements MonitorService {
                     logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
                 }
             }
-        }, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
+        }, monitorInterval, monitorInterval, TimeUnit.MINUTES);
     }
 
     public void send() {
