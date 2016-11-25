@@ -110,7 +110,6 @@ public class Statistics implements Serializable {
         result = prime * result + ((method == null) ? 0 : method.hashCode());
         result = prime * result + ((server == null) ? 0 : server.hashCode());
         result = prime * result + ((service == null) ? 0 : service.hashCode());
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
         return result;
     }
@@ -139,9 +138,6 @@ public class Statistics implements Serializable {
         if (service == null) {
             if (other.service != null) return false;
         } else if (!service.equals(other.service)) return false;
-        if (url == null) {
-            if (other.url != null) return false;
-        } else if (!url.equals(other.url)) return false;
         if (version == null) {
             if (other.version != null) return false;
         } else if (!version.equals(other.version)) return false;

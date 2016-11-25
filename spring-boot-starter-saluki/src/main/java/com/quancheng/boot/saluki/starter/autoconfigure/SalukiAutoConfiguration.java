@@ -62,7 +62,9 @@ public class SalukiAutoConfiguration {
             if (StringUtils.isNoneBlank(grpcProperty.getServerHost())) {
                 serverInfo.setProperty("serverHost", String.valueOf(grpcProperty.getServerHost()));
             }
-            serverInfo.setProperty("monitorInterval", String.valueOf(grpcProperty.getMonitorInterval()));
+            if (StringUtils.isNoneBlank(grpcProperty.getMonitorInterval())) {
+                serverInfo.setProperty("monitorInterval", String.valueOf(grpcProperty.getMonitorInterval()));
+            }
             serverInfo.setProperty("appName", applicationName);
             System.setProperty(SalukiConstants.REGISTRY_SERVER_PARAM, new Gson().toJson(serverInfo));
         }

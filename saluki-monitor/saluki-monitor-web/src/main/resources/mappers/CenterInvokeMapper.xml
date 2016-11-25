@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper">
+<mapper namespace="com.quancheng.saluki.monitor.repository.SalukiInvokeMapper">
 
 
 	<sql id="allNoAsOfInvoke">
@@ -27,15 +27,15 @@
 		kbps
 	</sql>
 
-	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.SalukiInvoke">
+	<insert id="addInvoke" parameterType="java.util.List">
 		insert into
 		saluki_invoke (
 		<include refid="allNoAsOfInvoke" />
 		)
 		values
-		<foreach collection="list" item="data" separator="," index = "index">
-            (
-            #{data.id},
+		<foreach collection="list" item="data" separator="," index="index">
+			(
+			#{data.id},
 			#{data.invokeDate},
 			#{data.invokeTime},
 			#{data.service},
@@ -55,10 +55,10 @@
 			#{data.output},
 			#{data.tps},
 			#{data.kbps}
-            )
-        </foreach>
-		
-		
+			)
+		</foreach>
+
+
 	</insert>
 
 	<select id="queryData" parameterType="java.util.Map"
@@ -73,8 +73,14 @@
 		<if test="type != null">
 			AND type=#{type}
 		</if>
+		<if test="type == 'consumer' and ip !=null">
+			AND consumer=#{ip}
+		</if>
+		<if test="type == 'provider' and ip !=null">
+			AND provider=#{ip}
+		</if>
 		ORDER BY invokeDate DESC
 	</select>
-	
-	
+
+
 </mapper>

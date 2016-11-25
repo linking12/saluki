@@ -1,5 +1,8 @@
 package com.quancheng.saluki.monitor.service;
 
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +27,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.SalukiHost;
@@ -58,14 +66,14 @@ public class SalukiMonitorDataService {
     @PostConstruct
     public void init() {
         httpClient = HttpClientBuilder.create().build();
-        gson = new Gson();
+        gson = new GsonBuilder().registerTypeAdapter(Date.class, new DateDeserializer()).create();
         scheduledSyncDataExecutor.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
                 syncAndClearData();
             }
-        }, 0, 1, TimeUnit.DAYS);
+        }, 0, 30, TimeUnit.MINUTES);
     }
 
     private void syncAndClearData() {
@@ -104,7 +112,7 @@ public class SalukiMonitorDataService {
                                                                        }.getType());
                             invokeMapper.addInvoke(invokes);
                         } catch (Exception e) {
-                            log.error("clean data failed,host is:" + host);
+                            log.error(e.getMessage(), e);
                         }
                     } finally {
                         String cleanDataUrl = "http://" + host + "/salukiMonitor/clean";
@@ -114,25 +122,45 @@ public class SalukiMonitorDataService {
                         try {
                             httpClient.execute(request);
                         } catch (Exception e) {
-                            log.error("clean data failed,host is:" + host);
+                            log.error(e.getMessage(), e);
                         }
                     }
 
                 }
             });
         }
+
     }
 
     public Map<String, List<SalukiInvoke>> queryDataByMachines(String service, String type, List<String> ips) {
         Map<String, List<SalukiInvoke>> datas = Maps.newHashMap();
+        Map<String, String> paramter = Maps.newHashMap();
+        paramter.put("service", service);
+        paramter.put("type", type);
         for (String ip : ips) {
-            List<SalukiInvoke> invokes = invokeMapper.queryDataBySingleMachine(service, type, ip);
+            paramter.put("ip", ip);
+            List<SalukiInvoke> invokes = invokeMapper.queryData(paramter);
             datas.put(ip, invokes);
         }
         return datas;
     }
 
     public List<SalukiInvoke> querySumDataByService(String service, String type) {
-        return invokeMapper.querySumDataByService(service, type);
+        Map<String, String> paramter = Maps.newHashMap();
+        paramter.put("service", service);
+        paramter.put("type", type);
+        return invokeMapper.queryData(paramter);
+    }
+
+    public class DateDeserializer implements JsonDeserializer<Date> {
+
+        @Override
+        public Date deserialize(JsonElement element, Type arg1,
+                                JsonDeserializationContext arg2) throws JsonParseException {
+            Long timestamp = element.getAsLong();
+            Date date = new Date(timestamp);
+            return date;
+        }
+
     }
 }

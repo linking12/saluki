@@ -19,11 +19,11 @@ import org.springframework.stereotype.Repository;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Check;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.SalukiHost;
-import com.quancheng.saluki.monitor.utils.ConcurrentReferenceHashMap;
 
 @Repository
 public class ConsulRegistryRepository {
@@ -40,9 +40,9 @@ public class ConsulRegistryRepository {
 
     private ConsulClient                                              consulClient;
 
-    private final Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesPassing    = new ConcurrentReferenceHashMap<String, Pair<Set<SalukiHost>, Set<SalukiHost>>>();
+    private final Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesPassing    = Maps.newConcurrentMap();
 
-    private final Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesFailing    = new ConcurrentReferenceHashMap<String, Pair<Set<SalukiHost>, Set<SalukiHost>>>();
+    private final Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesFailing    = Maps.newConcurrentMap();
 
     private final ScheduledExecutorService                            executor           = Executors.newScheduledThreadPool(1,
                                                                                                                             new NamedThreadFactory("ConsulLookUpService",

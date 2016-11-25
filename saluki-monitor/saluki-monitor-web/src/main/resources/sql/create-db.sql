@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS `saluki_invoke_statistics`;
 CREATE TABLE `saluki_invoke` (
-  `id` varchar(255) PRIMARY KEY,
+  `id` varchar(255),
   `invokeDate` datetime DEFAULT NULL,
   `invokeTime` BIGINT DEFAULT NULL,
   `service` varchar(255) DEFAULT NULL,

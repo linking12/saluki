@@ -34,7 +34,7 @@ public class SalukiProperties {
     /**
      * 监控统计时间 (单位为分钟)
      */
-    private int    monitorInterval = 30;
+    private String monitorInterval;
 
     public int getServerStartPort() {
         return serverStartPort;
@@ -116,11 +116,11 @@ public class SalukiProperties {
         this.clientHost = clientHost;
     }
 
-    public int getMonitorInterval() {
+    public String getMonitorInterval() {
         return monitorInterval;
     }
 
-    public void setMonitorInterval(int monitorInterval) {
+    public void setMonitorInterval(String monitorInterval) {
         this.monitorInterval = monitorInterval;
     }
 

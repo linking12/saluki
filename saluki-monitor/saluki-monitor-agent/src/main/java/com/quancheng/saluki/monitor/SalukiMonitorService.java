@@ -32,30 +32,35 @@ public class SalukiMonitorService implements MonitorService {
 
     private final SalukiInvokeMapper                                 invokeMapping;
 
-    private final ScheduledFuture<?>                                 sendFuture;
-
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap;
 
     private final ScheduledExecutorService                           scheduledExecutorService;
 
+    private volatile ScheduledFuture<?>                              sendFuture;
+
     public SalukiMonitorService(){
-        String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
-        Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
-        String monitorInterval = serverProperty.getProperty("monitorInterval", "1");
         statisticsMap = Maps.newConcurrentMap();
         invokeMapping = SpringBeanUtils.getBean(SalukiInvokeMapper.class);
         scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer",
                                                                                               true));
-        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+    }
 
-            public void run() {
-                try {
-                    send();
-                } catch (Throwable t) {
-                    logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
+    private synchronized void startSend() {
+        if (sendFuture == null) {
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
+            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
+            String monitorInterval = serverProperty.getProperty("monitorInterval", "1");
+            sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+
+                public void run() {
+                    try {
+                        send();
+                    } catch (Throwable t) {
+                        logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
+                    }
                 }
-            }
-        }, 0, Integer.valueOf(monitorInterval), TimeUnit.HOURS);
+            }, Integer.valueOf(monitorInterval), Integer.valueOf(monitorInterval), TimeUnit.MINUTES);
+        }
     }
 
     @Override
@@ -90,6 +95,7 @@ public class SalukiMonitorService implements MonitorService {
                 update[7] = output;
                 update[8] = elapsed;
                 update[9] = concurrent;
+                startSend();
             } else {
                 update[0] = current[0] + success;
                 update[1] = current[1] + failure;
