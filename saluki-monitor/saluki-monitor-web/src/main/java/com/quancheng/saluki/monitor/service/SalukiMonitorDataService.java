@@ -75,7 +75,7 @@ public class SalukiMonitorDataService {
             public void run() {
                 syncAndClearData();
             }
-        }, 0, 10, TimeUnit.MINUTES);
+        }, 0, 1, TimeUnit.MINUTES);
     }
 
     private void syncAndClearData() {
