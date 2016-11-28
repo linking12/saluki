@@ -2,6 +2,7 @@ package com.quancheng.saluki.monitor.service;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -175,6 +176,15 @@ public class SalukiMonitorDataService {
     }
 
     private List<SalukiInvokeStatistics> analysisData(Map<String, Object> paramter) {
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (paramter.get("invokeDateFrom") != null) {
+            String from = formatter.format((Date) paramter.get("invokeDateFrom"));
+            paramter.put("invokeDateFrom", from);
+        }
+        if (paramter.get("invokeDateTo") != null) {
+            String to = formatter.format((Date) paramter.get("invokeDateTo"));
+            paramter.put("invokeDateTo", to);
+        }
         List<SalukiInvokeStatistics> statistics = invokeMapper.queryData(paramter);
         for (Iterator<SalukiInvokeStatistics> it = statistics.iterator(); it.hasNext();) {
             SalukiInvokeStatistics st = it.next();
