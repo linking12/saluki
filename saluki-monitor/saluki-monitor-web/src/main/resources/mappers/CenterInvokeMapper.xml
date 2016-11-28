@@ -7,7 +7,6 @@
 		insert into saluki_invoke (
 				id,
 				invokeDate,
-				invokeTime,
 				service,
 				method,
 				consumer,
@@ -22,16 +21,13 @@
 				maxElapsed,
 				maxConcurrent,
 				input,
-				output,
-				tps,
-				kbps
+				output
 		)
 		values
 		<foreach collection="list" item="data" separator="," index="index">
 			(
 			#{data.id},
 			#{data.invokeDate},
-			#{data.invokeTime},
 			#{data.service},
 			#{data.method},
 			#{data.consumer},
@@ -46,9 +42,7 @@
 			#{data.maxElapsed},
 			#{data.maxConcurrent},
 			#{data.input},
-			#{data.output},
-			#{data.tps},
-			#{data.kbps}
+			#{data.output}
 			)
 		</foreach>
 	</insert>

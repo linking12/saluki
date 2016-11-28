@@ -14,8 +14,6 @@ public class SalukiInvoke implements Serializable {
 
     private Date              invokeDate;
 
-    private Long              invokeTime;
-
     private String            service;
 
     private String            method;
@@ -183,14 +181,6 @@ public class SalukiInvoke implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public Long getInvokeTime() {
-        return invokeTime;
-    }
-
-    public void setInvokeTime(Long invokeTime) {
-        this.invokeTime = invokeTime;
     }
 
 }
