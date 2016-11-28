@@ -51,11 +51,11 @@
 		resultType="com.quancheng.saluki.monitor.model.SalukiInvokeStatistics">
 		SELECT 
 		<choose>
-            <when test="interval =='day'">
-                   date_format(invokeDate,"%Y,%m,%d"),
+             <when test="interval =='day'">
+                   date_format(invokeDate,"%Y-%m-%d") as invokeDate,
             </when>
             <otherwise>
-                   date_format(invokeDate,"%Y,%m,%d %H"),
+                   date_format(invokeDate,"%Y-%m-%d %H") as invokeDate,
            </otherwise>
          </choose>
 		sum(concurrent) as sumConcurrent,
@@ -85,10 +85,10 @@
 		</if>
 		<choose>
             <when test="interval =='day'">
-                  group by date_format(invokeDate,"%Y,%m,%d")
+                  group by date_format(invokeDate,"%Y-%m-%d")
             </when>
             <otherwise>
-                  group by date_format(invokeDate,"%Y,%m,%d %H")
+                  group by date_format(invokeDate,"%Y-%m-%d %H")
            </otherwise>
          </choose>
 		ORDER BY invokeDate DESC

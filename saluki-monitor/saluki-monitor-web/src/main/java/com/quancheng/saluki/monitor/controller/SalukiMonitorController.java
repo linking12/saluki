@@ -49,7 +49,7 @@ public class SalukiMonitorController {
                                                                 @RequestParam(value = "type", required = true) String type,
                                                                 @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
         log.info("Return statistics monitor data");
-        String[] ipArray = StringUtils.split(",");
+        String[] ipArray = StringUtils.split(ips,",");
         List<String> ipList = Arrays.asList(ipArray);
         return minitorDataService.queryDataByMachines(service, type, dataType, ipList);
     }
