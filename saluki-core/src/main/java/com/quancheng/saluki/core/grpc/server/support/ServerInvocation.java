@@ -104,6 +104,9 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     // 信息采集
     private void collect(Message request, Message response, long start, boolean error) {
         try {
+            if (request == null || response == null) {
+                return;
+            }
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = concurrents.get(); // 当前并发数
             String service = providerUrl.getServiceInterface(); // 获取服务名称
