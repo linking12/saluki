@@ -51,7 +51,7 @@ public class SalukiConsulClient {
             String sessionId = null;
             if (sessions != null && !sessions.isEmpty()) {
                 for (Session session : sessions) {
-                    if (session.getName().equals(ephemralNode.getServiceName())) {
+                    if (session.getName().equals(ephemralNode.getSessionName())) {
                         sessionId = session.getId();
                     }
                     continue;
