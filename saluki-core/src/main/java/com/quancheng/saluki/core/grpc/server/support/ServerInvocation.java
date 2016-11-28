@@ -42,7 +42,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
 
     private final SalukiURL      providerUrl;
 
-    private AtomicInteger        concurrents = new AtomicInteger(0);
+    private final AtomicInteger  concurrents = new AtomicInteger(0);
 
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
         this.serviceToInvoke = serviceToInvoke;
@@ -98,6 +98,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (Exception e) {
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
             throw rpcFramwork;
+        } finally {
+            concurrents.set(0);
         }
     }
 
@@ -138,8 +140,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
-        } finally {
-            concurrents.set(0);
         }
     }
 

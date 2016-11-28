@@ -7,8 +7,6 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -52,12 +50,12 @@ import io.grpc.MethodDescriptor;
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
-    private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
-    private final MonitorService                       salukiMonitor;
-    private final Cache<String, Channel>               channelCache;
-    private final Map<String, Integer>                 methodRetries;
-    private final SalukiURL                            refUrl;
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private static final Logger          log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
+    private final MonitorService         salukiMonitor;
+    private final Cache<String, Channel> channelCache;
+    private final Map<String, Integer>   methodRetries;
+    private final SalukiURL              refUrl;
+    private AtomicInteger                concurrents = new AtomicInteger(0);
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
         this.salukiMonitor = new SalukiMonitor(refUrl);
@@ -104,7 +102,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         RetryOptions retryConfig = createRetryOption(methodName);
         HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
         long start = System.currentTimeMillis();
-        getConcurrent(serviceName, methodName).incrementAndGet();
+        concurrents.incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
@@ -135,7 +133,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                 throw rpcService;
             }
         } finally {
-            getConcurrent(serviceName, methodName).decrementAndGet();
+            concurrents.set(0);
         }
     }
 
@@ -162,7 +160,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             }
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
-            int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
+            int concurrent = concurrents.get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
@@ -185,16 +183,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
         }
-    }
-
-    private AtomicInteger getConcurrent(String servcieName, String methodName) {
-        String key = servcieName + "." + methodName;
-        AtomicInteger concurrent = concurrents.get(key);
-        if (concurrent == null) {
-            concurrents.putIfAbsent(key, new AtomicInteger());
-            concurrent = concurrents.get(key);
-        }
-        return concurrent;
     }
 
 }
