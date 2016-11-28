@@ -55,7 +55,7 @@ public class SalukiMonitorController {
         log.info("Return statistics monitor data");
         String[] ipArray = StringUtils.split(ips, ",");
         List<String> ipList = Arrays.asList(ipArray);
-        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date from = formatter.parse(invokeDateFrom);
         Date to = formatter.parse(invokeDateTo);
         return minitorDataService.queryDataByMachines(service, type, dataType, ipList, from, to);
@@ -68,7 +68,7 @@ public class SalukiMonitorController {
                                                    @RequestParam(value = "invokeDateFrom", required = true) String invokeDateFrom,
                                                    @RequestParam(value = "invokeDateTo", required = true) String invokeDateTo) throws Exception {
         log.info("Return statistics monitor data");
-        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date from = formatter.parse(invokeDateFrom);
         Date to = formatter.parse(invokeDateTo);
         return minitorDataService.querySumDataByService(service, type, dataType, from, to);

@@ -84,10 +84,10 @@
 			AND provider=#{ip}
 		</if>
 		<if test="invokeDateFrom != null">
-            AND invokeDate &gt;= DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+            AND invokeDate &gt;= DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d %H:%i:%s')
         </if>
         <if test="invokeDateTo != null">
-            AND invokeDate &lt;= DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+            AND invokeDate &lt;= DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d %H:%i:%s')
         </if>
 		<choose>
             <when test="interval =='day'">
