@@ -80,6 +80,7 @@ public class SalukiMonitorDataService {
     }
 
     private void syncAndClearData() {
+        log.info("scheule to sys data froom consumer and provider begin");
         Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesPassing = registryRepository.getAllPassingService();
         if (servicesPassing.isEmpty()) {
             registryRepository.loadAllServiceFromConsul();
@@ -136,7 +137,7 @@ public class SalukiMonitorDataService {
                 }
             });
         }
-
+        log.info("scheule to sys data froom consumer and provider end");
     }
 
     public Map<String, List<SalukiInvokeStatistics>> queryDataByMachines(String service, String type, String dataType,
