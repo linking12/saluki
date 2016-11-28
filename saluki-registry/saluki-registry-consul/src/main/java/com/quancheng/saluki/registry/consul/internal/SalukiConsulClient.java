@@ -67,9 +67,8 @@ public class SalukiConsulClient {
     }
 
     private String generateNewSession(SalukiConsulEphemralNode ephemralNode) {
-        String sessionId;
         NewSession newSession = ephemralNode.getNewSession();
-        sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
+        String sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
         ttlScheduler.addHeartbeatSession(sessionId);
         return sessionId;
     }
