@@ -61,9 +61,6 @@ public class SalukiMonitor implements MonitorService {
             Statistics statistics = entry.getKey();
             AtomicReference<long[]> reference = entry.getValue();
             long[] numbers = reference.get();
-            if (numbers == null || isArrayZero(numbers)) {
-                continue;
-            }
             long success = numbers[0];
             long failure = numbers[1];
             long input = numbers[2];
