@@ -54,8 +54,26 @@
 	</insert>
 
 	<select id="queryData" parameterType="java.util.Map"
-		resultType="com.quancheng.saluki.monitor.SalukiInvoke">
-		SELECT *
+		resultType="com.quancheng.saluki.monitor.model.SalukiInvokeStatistics">
+		SELECT 
+		<choose>
+            <when test="interval =='day'">
+                   date_format(invokeDate,"%Y,%m,%d"),
+            </when>
+            <otherwise>
+                   date_format(invokeDate,"%Y,%m,%d %H"),
+           </otherwise>
+         </choose>
+		sum(concurrent) as sumConcurrent,
+		sum(success) as sumSuccess,
+		sum(failure) as sumFailure,
+		sum(input) as sumInput,
+		sum(output) as sumOutput,
+		sum(elapsed) as sumElapsed,
+		max(maxInput) as maxInput,
+		max(maxOutput) as maxOutput,
+		max(maxElapsed) as maxElapsed,
+		max(maxConcurrent) as maxConcurrent
 		FROM saluki_invoke
 		WHERE
 		1 = 1
@@ -71,6 +89,14 @@
 		<if test="type == 'provider' and ip !=null">
 			AND provider=#{ip}
 		</if>
+		<choose>
+            <when test="interval =='day'">
+                  group by date_format(invokeDate,"%Y,%m,%d")
+            </when>
+            <otherwise>
+                  group by date_format(invokeDate,"%Y,%m,%d %H")
+           </otherwise>
+         </choose>
 		ORDER BY invokeDate DESC
 	</select>
 

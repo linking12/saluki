@@ -75,7 +75,7 @@ public class SalukiMonitorDataService {
             public void run() {
                 syncAndClearData();
             }
-        }, 0, 1, TimeUnit.DAYS);
+        }, 0, 10, TimeUnit.MINUTES);
     }
 
     private void syncAndClearData() {
@@ -159,6 +159,11 @@ public class SalukiMonitorDataService {
 
     public List<SalukiInvokeStatistics> querySumDataByService(String service, String type, String dataType) {
         Map<String, String> paramter = Maps.newHashMap();
+        if ("day".equals(dataType)) {
+            paramter.put("interval", "day");
+        } else if ("hour".equals(dataType)) {
+            paramter.put("interval", "hour");
+        }
         paramter.put("service", service);
         paramter.put("type", type);
         return analysisData(paramter);

@@ -1,10 +1,13 @@
 package com.quancheng.saluki.monitor.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class SalukiInvokeStatistics implements Serializable {
 
     private static final long serialVersionUID = -2143317389694773902L;
+
+    private Date              invokeDate;
 
     private int               sumConcurrent;
 
@@ -125,6 +128,14 @@ public class SalukiInvokeStatistics implements Serializable {
 
     public void setKbps(Double kbps) {
         this.kbps = kbps;
+    }
+
+    public Date getInvokeDate() {
+        return invokeDate;
+    }
+
+    public void setInvokeDate(Date invokeDate) {
+        this.invokeDate = invokeDate;
     }
 
 }
