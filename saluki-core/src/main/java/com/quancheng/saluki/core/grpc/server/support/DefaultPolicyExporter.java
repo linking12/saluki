@@ -2,6 +2,9 @@ package com.quancheng.saluki.core.grpc.server.support;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +40,13 @@ public class DefaultPolicyExporter implements GrpcProtocolExporter {
             throw new IllegalStateException("protocolClass " + serviceName + " not have export method"
                                             + serivce.getClass());
         }
+        final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
         for (Method method : methods) {
             MethodDescriptor<Message, Message> methodDescriptor = MethodDescriptorUtils.createMethodDescriptor(serivce,
                                                                                                                method);
             serviceDefBuilder.addMethod(methodDescriptor,
-                                        ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method,
-                                                                                        providerUrl)));
+                                        ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method, providerUrl,
+                                                                                        concurrents)));
         }
         log.info("'{}' service has been registered.", serviceName);
         return serviceDefBuilder.build();

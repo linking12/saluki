@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -32,23 +33,25 @@ import io.grpc.stub.StreamObserver;
 
 public class ServerInvocation implements UnaryMethod<Message, Message> {
 
-    private static final Logger  log         = LoggerFactory.getLogger(ServerInvocation.class);
+    private static final Logger                        log = LoggerFactory.getLogger(ServerInvocation.class);
 
-    private final MonitorService salukiMonitor;
+    private final MonitorService                       salukiMonitor;
 
-    private final Object         serviceToInvoke;
+    private final Object                               serviceToInvoke;
 
-    private final Method         method;
+    private final Method                               method;
 
-    private final SalukiURL      providerUrl;
+    private final SalukiURL                            providerUrl;
 
-    private final AtomicInteger  concurrents = new AtomicInteger(0);
+    private final ConcurrentMap<String, AtomicInteger> concurrents;
 
-    public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
+    public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl,
+                            ConcurrentMap<String, AtomicInteger> concurrents){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
         this.salukiMonitor = new SalukiMonitor(providerUrl);
         this.providerUrl = providerUrl;
+        this.concurrents = concurrents;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         long start = System.currentTimeMillis();
         try {
             responseObserverSpecial(responseObserver);
-            concurrents.incrementAndGet();
+            getConcurrent().getAndIncrement();
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object reqPojo = PojoProtobufUtils.Protobuf2Pojo(reqProtoBufer, requestType);
             Object[] requestParams = new Object[] { reqPojo };
@@ -83,6 +86,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcFramworkError.getMessage())//
                                                                     .withCause(rpcFramworkError).asRuntimeException();
             responseObserver.onError(statusException);
+        } finally {
+            getConcurrent().decrementAndGet();
         }
     }
 
@@ -98,8 +103,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (Exception e) {
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
             throw rpcFramwork;
-        } finally {
-            concurrents.set(0);
         }
     }
 
@@ -110,7 +113,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                 return;
             }
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
-            int concurrent = concurrents.get(); // 当前并发数
+            int concurrent = getConcurrent().get(); // 当前并发数
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
@@ -141,6 +144,16 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
         }
+
     }
 
+    private AtomicInteger getConcurrent() {
+        String key = serviceToInvoke.getClass().getName() + "." + method.getName();
+        AtomicInteger concurrent = concurrents.get(key);
+        if (concurrent == null) {
+            concurrents.putIfAbsent(key, new AtomicInteger());
+            concurrent = concurrents.get(key);
+        }
+        return concurrent;
+    }
 }
