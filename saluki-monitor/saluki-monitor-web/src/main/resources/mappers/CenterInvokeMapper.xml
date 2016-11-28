@@ -52,10 +52,10 @@
 		SELECT 
 		<choose>
              <when test="interval =='day'">
-                   date_format(invokeDate,"%Y-%m-%d") as invokeDate,
+                   date_format(invokeDate,'%Y-%m-%d') as invokeDate,
             </when>
             <otherwise>
-                   date_format(invokeDate,"%Y-%m-%d %H") as invokeDate,
+                   date_format(invokeDate,'%Y-%m-%d %H:00:00') as invokeDate,
            </otherwise>
          </choose>
 		sum(concurrent) as sumConcurrent,
