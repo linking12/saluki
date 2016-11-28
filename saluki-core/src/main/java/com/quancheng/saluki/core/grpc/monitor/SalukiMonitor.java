@@ -61,53 +61,59 @@ public class SalukiMonitor implements MonitorService {
             Statistics statistics = entry.getKey();
             AtomicReference<long[]> reference = entry.getValue();
             long[] numbers = reference.get();
-            long success = numbers[0];
-            long failure = numbers[1];
-            long input = numbers[2];
-            long output = numbers[3];
-            long elapsed = numbers[4];
-            long concurrent = numbers[5];
-            long maxInput = numbers[6];
-            long maxOutput = numbers[7];
-            long maxElapsed = numbers[8];
-            long maxConcurrent = numbers[9];
-            // 发送汇总信息
-            SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
-                                                              MonitorService.SUCCESS, String.valueOf(success),
-                                                              MonitorService.FAILURE, String.valueOf(failure),
-                                                              MonitorService.INPUT, String.valueOf(input),
-                                                              MonitorService.OUTPUT, String.valueOf(output),
-                                                              MonitorService.ELAPSED, String.valueOf(elapsed),
-                                                              MonitorService.CONCURRENT, String.valueOf(concurrent),
-                                                              MonitorService.MAX_INPUT, String.valueOf(maxInput),
-                                                              MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
-                                                              MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                                                              MonitorService.MAX_CONCURRENT,
-                                                              String.valueOf(maxConcurrent));
-            for (MonitorService monitor : monitorServices) {
-                monitor.collect(url);
-            }
-            // 减掉已统计数据
-            long[] current;
-            long[] update = new long[LENGTH];
-            do {
-                current = reference.get();
-                if (current == null) {
-                    update[0] = 0;
-                    update[1] = 0;
-                    update[2] = 0;
-                    update[3] = 0;
-                    update[4] = 0;
-                    update[5] = 0;
-                } else {
-                    update[0] = current[0] - success;
-                    update[1] = current[1] - failure;
-                    update[2] = current[2] - input;
-                    update[3] = current[3] - output;
-                    update[4] = current[4] - elapsed;
-                    update[5] = current[5] - concurrent;
+            // 如果是0，需要等下次的数据
+            if (!isZero(numbers)) {
+                long success = numbers[0];
+                long failure = numbers[1];
+                long input = numbers[2];
+                long output = numbers[3];
+                long elapsed = numbers[4];
+                long concurrent = numbers[5];
+                long maxInput = numbers[6];
+                long maxOutput = numbers[7];
+                long maxElapsed = numbers[8];
+                long maxConcurrent = numbers[9];
+                // 发送汇总信息
+                SalukiURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
+                                                                  MonitorService.SUCCESS, String.valueOf(success),
+                                                                  MonitorService.FAILURE, String.valueOf(failure),
+                                                                  MonitorService.INPUT, String.valueOf(input),
+                                                                  MonitorService.OUTPUT, String.valueOf(output),
+                                                                  MonitorService.ELAPSED, String.valueOf(elapsed),
+                                                                  MonitorService.CONCURRENT,
+                                                                  String.valueOf(concurrent / (success + failure)),
+                                                                  MonitorService.MAX_INPUT, String.valueOf(maxInput),
+                                                                  MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
+                                                                  MonitorService.MAX_ELAPSED,
+                                                                  String.valueOf(maxElapsed),
+                                                                  MonitorService.MAX_CONCURRENT,
+                                                                  String.valueOf(maxConcurrent));
+                for (MonitorService monitor : monitorServices) {
+                    monitor.collect(url);
                 }
-            } while (!reference.compareAndSet(current, update));
+                // 减掉已统计数据
+                long[] current;
+                long[] update = new long[LENGTH];
+                do {
+                    current = reference.get();
+                    if (current == null) {
+                        update[0] = 0;
+                        update[1] = 0;
+                        update[2] = 0;
+                        update[3] = 0;
+                        update[4] = 0;
+                        update[5] = 0;
+                    } else {
+                        update[0] = current[0] - success;
+                        update[1] = current[1] - failure;
+                        update[2] = current[2] - input;
+                        update[3] = current[3] - output;
+                        update[4] = current[4] - elapsed;
+                        update[5] = current[5] - concurrent;
+                    }
+                } while (!reference.compareAndSet(current, update));
+            }
+
         }
     }
 
@@ -132,7 +138,7 @@ public class SalukiMonitor implements MonitorService {
         long[] update = new long[LENGTH];
         do {
             current = reference.get();
-            if (current == null || isArrayZero(current)) {
+            if (current == null) {
                 update[0] = success;
                 update[1] = failure;
                 update[2] = input;
@@ -149,7 +155,7 @@ public class SalukiMonitor implements MonitorService {
                 update[2] = current[2] + input;
                 update[3] = current[3] + output;
                 update[4] = current[4] + elapsed;
-                update[5] = (current[5] + concurrent) / 2;
+                update[5] = current[5] + concurrent;
                 update[6] = current[6] > input ? current[6] : input;
                 update[7] = current[7] > output ? current[7] : output;
                 update[8] = current[8] > elapsed ? current[8] : elapsed;
@@ -158,7 +164,7 @@ public class SalukiMonitor implements MonitorService {
         } while (!reference.compareAndSet(current, update));
     }
 
-    private boolean isArrayZero(long[] current) {
+    private boolean isZero(long[] current) {
         return current[0] == 0l && current[1] == 0l && current[2] == 0l && current[3] == 0l && current[4] == 0l
                && current[5] == 0l && current[6] == 0l && current[7] == 0l && current[8] == 0l && current[9] == 0l;
     }
