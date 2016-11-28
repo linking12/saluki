@@ -39,7 +39,7 @@ public class SalukiMonitor implements MonitorService {
 
     public SalukiMonitor(SalukiURL url){
         this.monitorServices = findMonitor();
-        this.monitorInterval = url.getParameter("monitorinterval", 60);
+        this.monitorInterval = url.getParameter("monitorinterval", 5);
         // 启动统计信息收集定时器
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 

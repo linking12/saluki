@@ -6,12 +6,13 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.quancheng.saluki.monitor.SalukiInvoke;
+import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
 
 @Mapper
 public interface SalukiInvokeMapper {
 
     void addInvoke(List<SalukiInvoke> invokes);
 
-    List<SalukiInvoke> queryData(Map<String, String> paramter);
+    List<SalukiInvokeStatistics> queryData(Map<String, String> paramter);
 
 }

@@ -46,7 +46,8 @@ public class SalukiMonitorController {
     @RequestMapping(value = "statistics", method = RequestMethod.GET)
     public Map<String, List<SalukiInvoke>> statistics(@RequestParam(value = "ips", required = true) String ips,
                                                       @RequestParam(value = "service", required = true) String service,
-                                                      @RequestParam(value = "type", required = true) String type) throws Exception {
+                                                      @RequestParam(value = "type", required = true) String type,
+                                                      @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
         log.info("Return statistics monitor data");
         String[] ipArray = StringUtils.split(",");
         List<String> ipList = Arrays.asList(ipArray);
@@ -55,7 +56,8 @@ public class SalukiMonitorController {
 
     @RequestMapping(value = "sumstatistics", method = RequestMethod.GET)
     public List<SalukiInvoke> statistics(@RequestParam(value = "service", required = true) String service,
-                                         @RequestParam(value = "type", required = true) String type) throws Exception {
+                                         @RequestParam(value = "type", required = true) String type,
+                                         @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
         log.info("Return statistics monitor data");
         return minitorDataService.querySumDataByService(service, type);
     }

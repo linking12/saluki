@@ -7,7 +7,6 @@
 	<sql id="allNoAsOfInvoke">
 		id,
 		invokeDate,
-		invokeTime,
 		service,
 		method,
 		consumer,
@@ -22,9 +21,7 @@
 		maxElapsed,
 		maxConcurrent,
 		input,
-		output,
-		tps,
-		kbps
+		output
 	</sql>
 
 	<insert id="addInvoke" parameterType="com.quancheng.saluki.monitor.SalukiInvoke">
@@ -35,7 +32,6 @@
 		values(
 		#{id},
 		#{invokeDate},
-		#{invokeTime},
 		#{service},
 		#{method},
 		#{consumer},
@@ -50,9 +46,7 @@
 		#{maxElapsed},
 		#{maxConcurrent},
 		#{input},
-		#{output},
-		#{tps},
-		#{kbps}
+		#{output}
 		)
 	</insert>
 
