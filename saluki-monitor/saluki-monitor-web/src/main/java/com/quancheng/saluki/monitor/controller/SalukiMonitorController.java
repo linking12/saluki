@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.quancheng.saluki.monitor.SalukiInvoke;
+import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.service.SalukiMonitorDataService;
 
 @RestController
@@ -44,22 +44,22 @@ public class SalukiMonitorController {
     }
 
     @RequestMapping(value = "statistics", method = RequestMethod.GET)
-    public Map<String, List<SalukiInvoke>> statistics(@RequestParam(value = "ips", required = true) String ips,
-                                                      @RequestParam(value = "service", required = true) String service,
-                                                      @RequestParam(value = "type", required = true) String type,
-                                                      @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
+    public Map<String, List<SalukiInvokeStatistics>> statistics(@RequestParam(value = "ips", required = true) String ips,
+                                                                @RequestParam(value = "service", required = true) String service,
+                                                                @RequestParam(value = "type", required = true) String type,
+                                                                @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
         log.info("Return statistics monitor data");
         String[] ipArray = StringUtils.split(",");
         List<String> ipList = Arrays.asList(ipArray);
-        return minitorDataService.queryDataByMachines(service, type, ipList);
+        return minitorDataService.queryDataByMachines(service, type, dataType, ipList);
     }
 
     @RequestMapping(value = "sumstatistics", method = RequestMethod.GET)
-    public List<SalukiInvoke> statistics(@RequestParam(value = "service", required = true) String service,
-                                         @RequestParam(value = "type", required = true) String type,
-                                         @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
+    public List<SalukiInvokeStatistics> statistics(@RequestParam(value = "service", required = true) String service,
+                                                   @RequestParam(value = "type", required = true) String type,
+                                                   @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
         log.info("Return statistics monitor data");
-        return minitorDataService.querySumDataByService(service, type);
+        return minitorDataService.querySumDataByService(service, type, dataType);
     }
 
     @RequestMapping(value = "system", method = RequestMethod.GET)
