@@ -104,13 +104,9 @@ public class Statistics implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((application == null) ? 0 : application.hashCode());
-        result = prime * result + ((client == null) ? 0 : client.hashCode());
         result = prime * result + ((group == null) ? 0 : group.hashCode());
         result = prime * result + ((method == null) ? 0 : method.hashCode());
-        result = prime * result + ((server == null) ? 0 : server.hashCode());
         result = prime * result + ((service == null) ? 0 : service.hashCode());
-        result = prime * result + ((version == null) ? 0 : version.hashCode());
         return result;
     }
 
@@ -120,27 +116,15 @@ public class Statistics implements Serializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         Statistics other = (Statistics) obj;
-        if (application == null) {
-            if (other.application != null) return false;
-        } else if (!application.equals(other.application)) return false;
-        if (client == null) {
-            if (other.client != null) return false;
-        } else if (!client.equals(other.client)) return false;
         if (group == null) {
             if (other.group != null) return false;
         } else if (!group.equals(other.group)) return false;
         if (method == null) {
             if (other.method != null) return false;
         } else if (!method.equals(other.method)) return false;
-        if (server == null) {
-            if (other.server != null) return false;
-        } else if (!server.equals(other.server)) return false;
         if (service == null) {
             if (other.service != null) return false;
         } else if (!service.equals(other.service)) return false;
-        if (version == null) {
-            if (other.version != null) return false;
-        } else if (!version.equals(other.version)) return false;
         return true;
     }
 

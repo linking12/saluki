@@ -61,6 +61,9 @@ public class SalukiMonitor implements MonitorService {
             Statistics statistics = entry.getKey();
             AtomicReference<long[]> reference = entry.getValue();
             long[] numbers = reference.get();
+            if (numbers != null && !isArrayZero(numbers)) {
+                continue;
+            }
             long success = numbers[0];
             long failure = numbers[1];
             long input = numbers[2];
@@ -132,7 +135,7 @@ public class SalukiMonitor implements MonitorService {
         long[] update = new long[LENGTH];
         do {
             current = reference.get();
-            if (current == null) {
+            if (current == null || isArrayZero(current)) {
                 update[0] = success;
                 update[1] = failure;
                 update[2] = input;
@@ -156,6 +159,11 @@ public class SalukiMonitor implements MonitorService {
                 update[9] = current[9] > concurrent ? current[9] : concurrent;
             }
         } while (!reference.compareAndSet(current, update));
+    }
+
+    private boolean isArrayZero(long[] current) {
+        return current[0] == 0l && current[1] == 0l && current[2] == 0l && current[3] == 0l && current[4] == 0l
+               && current[5] == 0l && current[6] == 0l && current[7] == 0l && current[8] == 0l && current[9] == 0l;
     }
 
     public void destroy() {
