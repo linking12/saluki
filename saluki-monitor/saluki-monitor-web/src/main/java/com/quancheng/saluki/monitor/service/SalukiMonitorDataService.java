@@ -2,7 +2,9 @@ package com.quancheng.saluki.monitor.service;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -142,11 +144,12 @@ public class SalukiMonitorDataService {
     public Map<String, List<SalukiInvokeStatistics>> queryDataByMachines(String service, String type, String dataType,
                                                                          List<String> ips, Date from, Date to) {
         Map<String, List<SalukiInvokeStatistics>> datas = Maps.newHashMap();
-        Map<String, Object> paramter = Maps.newHashMap();
+        Map<String, String> paramter = Maps.newHashMap();
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         paramter.put("service", service);
         paramter.put("type", type);
-        paramter.put("invokeDateFrom", from);
-        paramter.put("invokeDateTo", to);
+        paramter.put("invokeDateFrom", formatter.format(from));
+        paramter.put("invokeDateTo", formatter.format(to));
         if ("day".equals(dataType)) {
             paramter.put("interval", "day");
         } else if ("hour".equals(dataType)) {
@@ -162,29 +165,21 @@ public class SalukiMonitorDataService {
 
     public List<SalukiInvokeStatistics> querySumDataByService(String service, String type, String dataType, Date from,
                                                               Date to) {
-        Map<String, Object> paramter = Maps.newHashMap();
+        Map<String, String> paramter = Maps.newHashMap();
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if ("day".equals(dataType)) {
             paramter.put("interval", "day");
         } else if ("hour".equals(dataType)) {
             paramter.put("interval", "hour");
         }
-        paramter.put("invokeDateFrom", from);
-        paramter.put("invokeDateTo", to);
+        paramter.put("invokeDateFrom", formatter.format(from));
+        paramter.put("invokeDateTo", formatter.format(to));
         paramter.put("service", service);
         paramter.put("type", type);
         return analysisData(paramter);
     }
 
-    private List<SalukiInvokeStatistics> analysisData(Map<String, Object> paramter) {
-        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if (paramter.get("invokeDateFrom") != null) {
-            String from = formatter.format((Date) paramter.get("invokeDateFrom"));
-            paramter.put("invokeDateFrom", from);
-        }
-        if (paramter.get("invokeDateTo") != null) {
-            String to = formatter.format((Date) paramter.get("invokeDateTo"));
-            paramter.put("invokeDateTo", to);
-        }
+    private List<SalukiInvokeStatistics> analysisData(Map<String, String> paramter) {
         List<SalukiInvokeStatistics> statistics = invokeMapper.queryData(paramter);
         for (Iterator<SalukiInvokeStatistics> it = statistics.iterator(); it.hasNext();) {
             SalukiInvokeStatistics st = it.next();
