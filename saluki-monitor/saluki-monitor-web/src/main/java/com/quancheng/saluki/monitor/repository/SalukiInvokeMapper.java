@@ -13,6 +13,6 @@ public interface SalukiInvokeMapper {
 
     void addInvoke(List<SalukiInvoke> invokes);
 
-    List<SalukiInvokeStatistics> queryData(Map<String, String> paramter);
+    List<SalukiInvokeStatistics> queryData(Map<String, Object> paramter);
 
 }

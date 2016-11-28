@@ -1,6 +1,8 @@
 package com.quancheng.saluki.monitor.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -47,19 +49,29 @@ public class SalukiMonitorController {
     public Map<String, List<SalukiInvokeStatistics>> statistics(@RequestParam(value = "ips", required = true) String ips,
                                                                 @RequestParam(value = "service", required = true) String service,
                                                                 @RequestParam(value = "type", required = true) String type,
-                                                                @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
+                                                                @RequestParam(value = "datatype", required = true) String dataType,
+                                                                @RequestParam(value = "invokeDateFrom", required = true) String invokeDateFrom,
+                                                                @RequestParam(value = "invokeDateTo", required = true) String invokeDateTo) throws Exception {
         log.info("Return statistics monitor data");
-        String[] ipArray = StringUtils.split(ips,",");
+        String[] ipArray = StringUtils.split(ips, ",");
         List<String> ipList = Arrays.asList(ipArray);
-        return minitorDataService.queryDataByMachines(service, type, dataType, ipList);
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date from = formatter.parse(invokeDateFrom);
+        Date to = formatter.parse(invokeDateTo);
+        return minitorDataService.queryDataByMachines(service, type, dataType, ipList, from, to);
     }
 
     @RequestMapping(value = "sumstatistics", method = RequestMethod.GET)
     public List<SalukiInvokeStatistics> statistics(@RequestParam(value = "service", required = true) String service,
                                                    @RequestParam(value = "type", required = true) String type,
-                                                   @RequestParam(value = "datatype", required = true) String dataType) throws Exception {
+                                                   @RequestParam(value = "datatype", required = true) String dataType,
+                                                   @RequestParam(value = "invokeDateFrom", required = true) String invokeDateFrom,
+                                                   @RequestParam(value = "invokeDateTo", required = true) String invokeDateTo) throws Exception {
         log.info("Return statistics monitor data");
-        return minitorDataService.querySumDataByService(service, type, dataType);
+        java.text.SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date from = formatter.parse(invokeDateFrom);
+        Date to = formatter.parse(invokeDateTo);
+        return minitorDataService.querySumDataByService(service, type, dataType, from, to);
     }
 
     @RequestMapping(value = "system", method = RequestMethod.GET)

@@ -83,6 +83,12 @@
 		<if test="type == 'provider' and ip !=null">
 			AND provider=#{ip}
 		</if>
+		<if test="invokeDateFrom != null">
+            AND invokeDate &gt;= DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d')
+        </if>
+        <if test="invokeDateTo != null">
+            AND invokeDate &lt;= DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d')
+        </if>
 		<choose>
             <when test="interval =='day'">
                   group by date_format(invokeDate,"%Y-%m-%d")

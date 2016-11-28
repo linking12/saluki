@@ -139,11 +139,13 @@ public class SalukiMonitorDataService {
     }
 
     public Map<String, List<SalukiInvokeStatistics>> queryDataByMachines(String service, String type, String dataType,
-                                                                         List<String> ips) {
+                                                                         List<String> ips, Date from, Date to) {
         Map<String, List<SalukiInvokeStatistics>> datas = Maps.newHashMap();
-        Map<String, String> paramter = Maps.newHashMap();
+        Map<String, Object> paramter = Maps.newHashMap();
         paramter.put("service", service);
         paramter.put("type", type);
+        paramter.put("invokeDateFrom", from);
+        paramter.put("invokeDateTo", to);
         if ("day".equals(dataType)) {
             paramter.put("interval", "day");
         } else if ("hour".equals(dataType)) {
@@ -157,19 +159,22 @@ public class SalukiMonitorDataService {
         return datas;
     }
 
-    public List<SalukiInvokeStatistics> querySumDataByService(String service, String type, String dataType) {
-        Map<String, String> paramter = Maps.newHashMap();
+    public List<SalukiInvokeStatistics> querySumDataByService(String service, String type, String dataType, Date from,
+                                                              Date to) {
+        Map<String, Object> paramter = Maps.newHashMap();
         if ("day".equals(dataType)) {
             paramter.put("interval", "day");
         } else if ("hour".equals(dataType)) {
             paramter.put("interval", "hour");
         }
+        paramter.put("invokeDateFrom", from);
+        paramter.put("invokeDateTo", to);
         paramter.put("service", service);
         paramter.put("type", type);
         return analysisData(paramter);
     }
 
-    private List<SalukiInvokeStatistics> analysisData(Map<String, String> paramter) {
+    private List<SalukiInvokeStatistics> analysisData(Map<String, Object> paramter) {
         List<SalukiInvokeStatistics> statistics = invokeMapper.queryData(paramter);
         for (Iterator<SalukiInvokeStatistics> it = statistics.iterator(); it.hasNext();) {
             SalukiInvokeStatistics st = it.next();
