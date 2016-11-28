@@ -82,12 +82,12 @@ public class ConsulRegistry extends FailbackRegistry {
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
+            // 注册本机地址到consul中
+            SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
+            client.registerEphemralNode(ephemralNode);
         }
         // 如果缓存中有，先把缓存中的数据吐出去
         notifyListener(url, listener);
-        // 注册本机地址到consul中
-        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
-        client.registerEphemralNode(ephemralNode);
     }
 
     @Override
@@ -101,9 +101,6 @@ public class ConsulRegistry extends FailbackRegistry {
                                        SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
         url = url.removeParameters(keys);
         String group = url.getGroup();
-        // 注册本机地址到consul中
-        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
-        client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
