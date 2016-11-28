@@ -119,7 +119,7 @@ public class SalukiMonitor implements MonitorService {
         int input = url.getParameter(MonitorService.INPUT, 0);
         int output = url.getParameter(MonitorService.OUTPUT, 0);
         int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
-        int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
+        int concurrent = url.getParameter(MonitorService.CONCURRENT, 1);
         // 初始化原子引用
         Statistics statistics = new Statistics(url);
         AtomicReference<long[]> reference = statisticsMap.get(statistics);
