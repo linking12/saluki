@@ -14,6 +14,7 @@ dependencies {
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version:'1.4.0.RELEASE'){
         exclude group: 'org.apache.tomcat',module: 'tomcat-jdbc'
     }
+    compile 'org.webjars:webjars-locator:0.32'
     compileOnly (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.0.RELEASE'){
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }

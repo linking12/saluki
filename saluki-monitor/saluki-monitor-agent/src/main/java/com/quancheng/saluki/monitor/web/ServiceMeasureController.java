@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+import org.webjars.WebJarAssetLocator;
 
 import com.google.gson.Gson;
 import com.quancheng.boot.saluki.starter.SalukiReference;
@@ -22,10 +24,17 @@ import com.taobao.jaket.model.ServiceDefinition;
 @RequestMapping("/serviceMeasure")
 public class ServiceMeasureController {
 
-    private final Gson     gson = new Gson();
+    private final Gson               gson         = new Gson();
 
     @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "Default", version = "1.0.0")
-    private GenericService genricService;
+    private GenericService           genricService;
+
+    private final WebJarAssetLocator assetLocator = new WebJarAssetLocator();
+
+    @RequestMapping(method = RequestMethod.GET)
+    public ModelAndView serviceMeasure() {
+        return new ModelAndView("/serviceMeasure.html");
+    }
 
     @RequestMapping(value = "/getAllMethod", method = RequestMethod.GET)
     public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
