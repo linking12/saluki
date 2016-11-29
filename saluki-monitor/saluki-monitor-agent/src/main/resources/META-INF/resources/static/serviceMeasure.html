@@ -38,7 +38,7 @@
 		        <div class="form-group">
 		            <label for="inputPassword3" class="col-sm-2 control-label">Method</label>
 		            <div class="col-sm-10">
-		                <input type="password" class="form-control" id="inputPassword3" placeholder="请输入你要测试的方法及方法入参,以~分割"/>
+		                <input type="password" class="form-control" id="inputPassword3" placeholder="请输入你要测试的方法"/>
 		            </div>`
 		        </div>
 		        <div class="form-group">
@@ -63,7 +63,7 @@
 	        var editor = new JSONEditor(container, options);
 	        $('#editor_btn').click(function() {
                 $.getJSON("serviceMeasure/getMethod",
-                    { service: "com.quancheng.test.service.UserService", method: "create~com.quancheng.test.model.user.UserCreateRequest" },
+                    { service: "com.quancheng.test.service.UserService", method: "create" },
                     function(result){
                         //取第一个入参，目前grpc仅支持一个入参
 					    editor.set(result.parameterTypes[0]);
