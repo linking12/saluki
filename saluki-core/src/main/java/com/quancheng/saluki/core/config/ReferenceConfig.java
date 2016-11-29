@@ -201,6 +201,9 @@ public class ReferenceConfig extends BasicConfig {
         if (this.reties != 0) {
             params.put(SalukiConstants.METHOD_RETRY_KEY, Integer.valueOf(this.reties).toString());
         }
+        if (StringUtils.isNotBlank(this.getMonitorinterval())) {
+            params.put("monitorinterval", Integer.valueOf(this.getMonitorinterval()).toString());
+        }
         String interfaceClassName = interfaceClass != null ? interfaceClass.getName() : this.interfaceName;
         params.put(SalukiConstants.INTERFACECLASS_KEY, interfaceClassName);
         SalukiURL refUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, NetUtils.getLocalHost(), 0, interfaceName,

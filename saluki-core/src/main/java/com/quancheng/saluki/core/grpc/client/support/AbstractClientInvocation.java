@@ -4,9 +4,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,9 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
@@ -34,7 +31,7 @@ import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
-import com.quancheng.saluki.core.utils.ClassHelper;
+import com.quancheng.saluki.core.grpc.monitor.SalukiMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
@@ -56,14 +53,14 @@ import io.grpc.MethodDescriptor;
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
-    private final List<MonitorService>                 monitors;
+    private final MonitorService                       salukiMonitor;
     private final Cache<String, Channel>               channelCache;
     private final Map<String, Integer>                 methodRetries;
     private final SalukiURL                            refUrl;
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
-        this.monitors = this.findMonitor();
+        this.salukiMonitor = new SalukiMonitor(refUrl);
         this.channelCache = CacheBuilder.newBuilder()//
                                         .maximumSize(1000L)//
                                         .softValues()//
@@ -160,38 +157,31 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {
-            if (monitors == null || monitors.isEmpty()) {
+            if (request == null || response == null) {
                 return;
             }
-            Gson gson = new Gson();
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
             String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
-            String req = gson.toJson(request);// 入参
-            String rep = gson.toJson(response);// 出参
-            Map<String, String> clientParam = new Gson().fromJson(System.getProperty(SalukiConstants.REGISTRY_CLIENT_PARAM),
-                                                                  new TypeToken<Map<String, String>>() {
-                                                                  }.getType());
-            String consumerHost = clientParam.get("consumerHost");
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
+            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
+            String consumerHost = serverProperty.getProperty("serverHost");
             String host = consumerHost != null ? consumerHost : refUrl.getHost();
-            for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
-                                              service + "/" + method, //
-                                              MonitorService.TIMESTAMP, String.valueOf(start), //
-                                              MonitorService.APPLICATION, //
-                                              refUrl.getGroup(), //
-                                              MonitorService.INTERFACE, service, //
-                                              MonitorService.METHOD, method, //
-                                              MonitorService.PROVIDER, provider, //
-                                              error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
-                                              MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                              MonitorService.INPUT, req, //
-                                              MonitorService.OUTPUT, rep));
-            }
+            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
+                                                service + "/" + method, //
+                                                MonitorService.TIMESTAMP, String.valueOf(start), //
+                                                MonitorService.APPLICATION, refUrl.getGroup(), //
+                                                MonitorService.INTERFACE, service, //
+                                                MonitorService.METHOD, method, //
+                                                MonitorService.PROVIDER, provider, //
+                                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
+                                                MonitorService.ELAPSED, String.valueOf(elapsed), //
+                                                MonitorService.CONCURRENT, String.valueOf(concurrent), //
+                                                MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
+                                                MonitorService.OUTPUT, String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
         }
@@ -207,12 +197,4 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return concurrent;
     }
 
-    private List<MonitorService> findMonitor() {
-        Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
-        List<MonitorService> list = Lists.newArrayList();
-        for (MonitorService current : candidates) {
-            list.add(current);
-        }
-        return list;
-    }
 }

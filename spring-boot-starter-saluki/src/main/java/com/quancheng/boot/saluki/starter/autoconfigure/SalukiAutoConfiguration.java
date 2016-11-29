@@ -1,6 +1,6 @@
 package com.quancheng.boot.saluki.starter.autoconfigure;
 
-import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.boot.saluki.starter.runner.SalukiReferenceRunner;
@@ -52,16 +51,19 @@ public class SalukiAutoConfiguration {
 
         @Override
         public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
-            Map<String, String> consumerParam = Maps.newHashMap();
+            Properties serverInfo = new Properties();
             int httpPort = event.getEmbeddedServletContainer().getPort();
             if (httpPort != 0) {
-                consumerParam.put("consumerPort", String.valueOf(httpPort));
+                serverInfo.setProperty("serverHttpPort", String.valueOf(httpPort));
             }
             if (StringUtils.isNotBlank(grpcProperty.getClientHost())) {
-                consumerParam.put("consumerHost", String.valueOf(grpcProperty.getClientHost()));
+                serverInfo.setProperty("serverHost", String.valueOf(grpcProperty.getClientHost()));
             }
-            consumerParam.put("appName", applicationName);
-            System.setProperty(SalukiConstants.REGISTRY_CLIENT_PARAM, new Gson().toJson(consumerParam));
+            if (StringUtils.isNoneBlank(grpcProperty.getServerHost())) {
+                serverInfo.setProperty("serverHost", String.valueOf(grpcProperty.getServerHost()));
+            }
+            serverInfo.setProperty("appName", applicationName);
+            System.setProperty(SalukiConstants.REGISTRY_SERVER_PARAM, new Gson().toJson(serverInfo));
         }
     }
 

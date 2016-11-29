@@ -1,0 +1,7 @@
+/com/
+/.DS_Store
+/application.properties
+/log4j.properties
+/log4j.xml
+/mappers
+/sql

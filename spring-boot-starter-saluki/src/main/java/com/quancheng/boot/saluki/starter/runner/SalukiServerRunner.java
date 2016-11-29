@@ -99,6 +99,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
         Preconditions.checkState(serverPort != 0, "ServerPort can not be null", serverPort);
         serviceConfig.setPort(serverPort);
         serviceConfig.setHost(grpcProperties.getServerHost());
+        serviceConfig.setMonitorinterval(grpcProperties.getMonitorInterval());
         return serviceConfig;
     }
 

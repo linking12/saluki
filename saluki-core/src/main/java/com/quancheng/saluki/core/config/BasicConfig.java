@@ -29,6 +29,9 @@ public class BasicConfig implements Serializable {
     // 拦截器
     protected String                        interceptor;
 
+    // 监控统计时间间隔
+    protected String                        monitorinterval;
+
     protected transient volatile GRPCEngine grpcEngine;
 
     public String getRegistryName() {
@@ -77,6 +80,14 @@ public class BasicConfig implements Serializable {
 
     public void setApplication(String application) {
         this.application = application;
+    }
+
+    public String getMonitorinterval() {
+        return monitorinterval;
+    }
+
+    public void setMonitorinterval(String monitorinterval) {
+        this.monitorinterval = monitorinterval;
     }
 
     protected void loadRegistry() {

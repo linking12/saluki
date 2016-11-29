@@ -1,15 +1,16 @@
 package com.quancheng.saluki.core.grpc.server.support;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
+import java.net.InetSocketAddress;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Lists;
+
 import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.RpcContext;
@@ -18,11 +19,13 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
+import com.quancheng.saluki.core.grpc.monitor.SalukiMonitor;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
-import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
+
+import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -30,18 +33,25 @@ import io.grpc.stub.StreamObserver;
 
 public class ServerInvocation implements UnaryMethod<Message, Message> {
 
-    private static final Logger                        log         = LoggerFactory.getLogger(ServerInvocation.class);
-    private final List<MonitorService>                 monitors;
-    private final Object                               serviceToInvoke;
-    private final Method                               method;
-    private final SalukiURL                            providerUrl;
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private static final Logger                        log = LoggerFactory.getLogger(ServerInvocation.class);
 
-    public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl){
+    private final MonitorService                       salukiMonitor;
+
+    private final Object                               serviceToInvoke;
+
+    private final Method                               method;
+
+    private final SalukiURL                            providerUrl;
+
+    private final ConcurrentMap<String, AtomicInteger> concurrents;
+
+    public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl,
+                            ConcurrentMap<String, AtomicInteger> concurrents){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
-        this.monitors = this.findMonitor();
+        this.salukiMonitor = new SalukiMonitor(providerUrl);
         this.providerUrl = providerUrl;
+        this.concurrents = concurrents;
     }
 
     @Override
@@ -49,10 +59,9 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message reqProtoBufer = request;
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
-        getConcurrent().incrementAndGet();
         try {
-            String remoteAddress = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
-            log.debug(String.format("receiver %s request from %s", new Gson().toJson(reqProtoBufer), remoteAddress));
+            responseObserverSpecial(responseObserver);
+            getConcurrent().getAndIncrement();
             Class<?> requestType = ReflectUtil.getTypedReq(method);
             Object reqPojo = PojoProtobufUtils.Protobuf2Pojo(reqProtoBufer, requestType);
             Object[] requestParams = new Object[] { reqPojo };
@@ -82,44 +91,62 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         }
     }
 
+    private void responseObserverSpecial(StreamObserver<Message> responseObserver) {
+        try {
+            Class<?> classType = responseObserver.getClass();
+            Field field = classType.getDeclaredField("call");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            ServerCall<Message, Message> serverCall = (ServerCall<Message, Message>) field.get(responseObserver);
+            InetSocketAddress remoteAddress = (InetSocketAddress) serverCall.attributes().get(ServerCall.REMOTE_ADDR_KEY);
+            RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.getHostString());
+        } catch (Exception e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
+        }
+    }
+
     // 信息采集
     private void collect(Message request, Message response, long start, boolean error) {
         try {
-            if (monitors == null || monitors.isEmpty()) {
+            if (request == null || response == null) {
                 return;
             }
-            // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent().get(); // 当前并发数
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);// 远程服务器地址
+            if (log.isDebugEnabled()) {
+                log.debug("Receiver %s request from %s,and return s% ", request.toString(), consumer,
+                          response.toString());
+            }
+            String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
+            Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
+            String serverhost = serverProperty.getProperty("serverHost");
+            String host = serverhost != null ? serverhost : NetUtils.getLocalHost();
             String registryRealPort = Integer.valueOf(providerUrl.getPort()).toString();
             String registryPort = System.getProperty(SalukiConstants.REGISTRY_SERVER_PORT, registryRealPort);
-            String req = new Gson().toJson(request);// 入参
-            String rep = new Gson().toJson(response);// 出参
-            for (MonitorService monitor : monitors) {
-                monitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), //
-                                              Integer.valueOf(registryPort), //
-                                              service + "/" + method, //
-                                              MonitorService.TIMESTAMP, String.valueOf(start), //
-                                              MonitorService.APPLICATION, providerUrl.getGroup(), //
-                                              MonitorService.INTERFACE, service, //
-                                              MonitorService.METHOD, method, //
-                                              MonitorService.CONSUMER, consumer, //
-                                              error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
-                                              MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                              MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                              MonitorService.INPUT, req, //
-                                              MonitorService.OUTPUT, rep));
-            }
+            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, //
+                                                Integer.valueOf(registryPort), //
+                                                service + "/" + method, //
+                                                MonitorService.TIMESTAMP, String.valueOf(start), //
+                                                MonitorService.APPLICATION, providerUrl.getGroup(), //
+                                                MonitorService.INTERFACE, service, //
+                                                MonitorService.METHOD, method, //
+                                                MonitorService.CONSUMER, consumer, //
+                                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
+                                                MonitorService.ELAPSED, String.valueOf(elapsed), //
+                                                MonitorService.CONCURRENT, String.valueOf(concurrent), //
+                                                MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
+                                                MonitorService.OUTPUT, String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
         }
+
     }
 
-    // 获取并发计数器
     private AtomicInteger getConcurrent() {
         String key = serviceToInvoke.getClass().getName() + "." + method.getName();
         AtomicInteger concurrent = concurrents.get(key);
@@ -128,14 +155,5 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             concurrent = concurrents.get(key);
         }
         return concurrent;
-    }
-
-    private List<MonitorService> findMonitor() {
-        Iterable<MonitorService> candidates = ServiceLoader.load(MonitorService.class, ClassHelper.getClassLoader());
-        List<MonitorService> list = Lists.newArrayList();
-        for (MonitorService current : candidates) {
-            list.add(current);
-        }
-        return list;
     }
 }

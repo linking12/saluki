@@ -53,7 +53,7 @@ public class StubPolicyClient<AbstractStub> implements GrpcProtocolClient<Abstra
                         method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
                         break;
                 }
-                Channel channel = channelCall.getChannel();
+                Channel channel = channelCall.getChannel(null, null, null);
                 @SuppressWarnings("unchecked")
                 AbstractStub stubInstance = (AbstractStub) method.invoke(null, channel);
                 return stubInstance;

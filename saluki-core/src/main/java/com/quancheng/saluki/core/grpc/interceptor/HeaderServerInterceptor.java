@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
@@ -28,14 +29,14 @@ public class HeaderServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, final Metadata headers,
                                                       ServerCallHandler<ReqT, RespT> next) {
-        InetSocketAddress remoteAddress = (InetSocketAddress) call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-        RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.getHostString());
-        copyMetadataToThreadLocal(headers);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
 
             @Override
-            public void sendHeaders(Metadata responseHeaders) {
-                super.sendHeaders(responseHeaders);
+            public void request(int numMessages) {
+                InetSocketAddress remoteAddress = (InetSocketAddress) call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
+                RpcContext.getContext().setAttachment(SalukiConstants.REMOTE_ADDRESS, remoteAddress.getHostString());
+                copyMetadataToThreadLocal(headers);
+                super.request(numMessages);
             }
 
             @Override
@@ -56,11 +57,14 @@ public class HeaderServerInterceptor implements ServerInterceptor {
         String values = headers.get(MarshallersUtils.GRPC_CONTEXT_VALUES);
         try {
             if (attachments != null) {
-                Map<String, String> attachmentsMap = new Gson().fromJson(attachments, Map.class);
+                Map<String, String> attachmentsMap = new Gson().fromJson(attachments,
+                                                                         new TypeToken<Map<String, String>>() {
+                                                                         }.getType());
                 RpcContext.getContext().setAttachments(attachmentsMap);
             }
             if (values != null) {
-                Map<String, Object> valuesMap = new Gson().fromJson(values, Map.class);
+                Map<String, Object> valuesMap = new Gson().fromJson(values, new TypeToken<Map<String, Object>>() {
+                }.getType());
                 for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
                     RpcContext.getContext().set(entry.getKey(), entry.getValue());
                 }

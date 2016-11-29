@@ -1,0 +1,11 @@
+FROM yingjunjiao/runtime-image:1.0
+ENV TZ="Asia/Shanghai"
+ENV LANG C.UTF-8
+ADD saluki-example/saluki-example-server/build/libs/saluki-example-server-1.1-SNAPSHOT.jar /root/app.jar
+ADD saluki-example/saluki-example-server/bin /root/
+RUN chmod +x /root/*.sh;mkdir /root/logs
+ENV JAVA_OPTS ""
+ENV SERVER_PORT 8181
+ENV APP_NAME saluki-example-provider
+WORKDIR /root
+CMD ["./start.sh"]

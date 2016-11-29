@@ -79,7 +79,8 @@ public class DefaultPolicyClient<T> implements GrpcProtocolClient<T> {
                                                    + args.length);
             }
             Object arg = args[0];
-            GrpcRequest request = new GrpcRequest.Default(interfaceName, interfaceClass, call);
+            GrpcRequest request = new GrpcRequest.Default(refUrl.getServiceInterface(), refUrl.getGroup(),
+                                                          refUrl.getVersion(), call);
             GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(method.getName(), arg.getClass(),
                                                                                     method.getReturnType(), arg,
                                                                                     callType, callTimeout);

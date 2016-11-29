@@ -20,8 +20,6 @@ public interface GrpcRequest {
 
     public String getServiceName();
 
-    public Class<?> getServiceClass();
-
     public GrpcProtocolClient.ChannelCall getCall();
 
     public MethodRequest getMethodRequest();
@@ -30,12 +28,23 @@ public interface GrpcRequest {
 
     public static class Default implements GrpcRequest, Serializable {
 
-        private static final long serialVersionUID = 1L;
+        private static final long                    serialVersionUID = 1L;
 
-        public Default(String serviceName, Class<?> serviceClass, GrpcProtocolClient.ChannelCall call){
+        private final String                         serviceName;
+
+        private final String                         group;
+
+        private final String                         version;
+
+        private final GrpcProtocolClient.ChannelCall call;
+
+        private MethodRequest                        methodRequest;
+
+        public Default(String serviceName, String group, String version, GrpcProtocolClient.ChannelCall call){
             super();
             this.serviceName = serviceName;
-            this.serviceClass = serviceClass;
+            this.group = group;
+            this.version = version;
             this.call = call;
         }
 
@@ -53,23 +62,19 @@ public interface GrpcRequest {
         }
 
         public Channel getChannel() {
-            return this.getCall().getChannel();
+            return this.getCall().getChannel(this.serviceName, this.group, this.version);
         }
-
-        private final String                         serviceName;
-
-        private final Class<?>                       serviceClass;
-
-        private final GrpcProtocolClient.ChannelCall call;
-
-        private MethodRequest                        methodRequest;
 
         public String getServiceName() {
             return serviceName;
         }
 
-        public Class<?> getServiceClass() {
-            return serviceClass;
+        public String getGroup() {
+            return group;
+        }
+
+        public String getVersion() {
+            return version;
         }
 
         public GrpcProtocolClient.ChannelCall getCall() {

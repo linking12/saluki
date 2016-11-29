@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -55,6 +57,9 @@ public class ConsulRegistry extends FailbackRegistry {
     protected void doRegister(SalukiURL url) {
         SalukiConsulService service = this.buildService(url);
         client.registerService(service);
+        // 注册本机地址到consul中
+        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "provider");
+        client.registerEphemralNode(ephemralNode);
     }
 
     @Override
@@ -77,12 +82,12 @@ public class ConsulRegistry extends FailbackRegistry {
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
+            // 注册本机地址到consul中
+            SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
+            client.registerEphemralNode(ephemralNode);
         }
         // 如果缓存中有，先把缓存中的数据吐出去
         notifyListener(url, listener);
-        // 注册本机地址到consul中
-        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
-        client.registerEphemralNode(ephemralNode);
     }
 
     @Override
@@ -96,9 +101,6 @@ public class ConsulRegistry extends FailbackRegistry {
                                        SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
         url = url.removeParameters(keys);
         String group = url.getGroup();
-        // 注册本机地址到consul中
-        // SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url);
-        // client.registerEphemralNode(ephemralNode);
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
@@ -211,12 +213,15 @@ public class ConsulRegistry extends FailbackRegistry {
                                   .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
 
-    private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url) {
+    private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url, String flag) {
         return SalukiConsulEphemralNode.newEphemralNode()//
+                                       .withHost(url.getHost())//
+                                       .withRpcPort(Integer.valueOf(url.getPort()).toString())//
+                                       .withFlag(flag)//
                                        .withGroup(url.getGroup())//
-                                       .withIp(url.getHost())//
                                        .withServiceName(url.getServiceInterface())//
                                        .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
+
     }
 
     private SalukiURL buildSalukiURL(SalukiConsulService service) {
