@@ -12,7 +12,7 @@ build_jar:
   script:
     - gradle clean uploadArchives --refresh-dependencies
   only:
-    - V0.0.1
+    - develop
 
 build_images:
    stage: docker-build
