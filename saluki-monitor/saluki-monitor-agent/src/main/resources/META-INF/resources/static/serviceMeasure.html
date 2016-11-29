@@ -1,29 +1,75 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Service Measure</title>
+    <link rel="stylesheet" href="http://www.atlasestateagents.co.uk/css/tether.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap-theme.min.css">
     <link href="/serviceMeasure/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="/webjars/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link href="/serviceMeasure/dist/default.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class="site-wrapper">
+      <div class="site-wrapper-inner">
+        <div class="cover-container">
+          <div class="inner cover">
+             <form class="form-horizontal" role="form">
+                <div class="form-group">
+		            <label for="inputEmail3" class="col-sm-2 control-label">Group</label>
+		            <div class="col-sm-10">
+		                <input type="email" class="form-control" id="inputEmail3" placeholder="请输入服务的所属应用"/>
+		            </div>
+		        </div>
+		        <div class="form-group">
+		            <label for="inputPassword3" class="col-sm-2 control-label">Version</label>
+		            <div class="col-sm-10">
+		                <input type="password" class="form-control" id="inputPassword3" placeholder="请输入服务的版本"/>
+		            </div>
+		        </div>
+		        <div class="form-group">
+		            <label for="inputEmail3" class="col-sm-2 control-label">Service</label>
+		            <div class="col-sm-10">
+		                <input type="email" class="form-control" id="inputEmail3" placeholder="请输入服务的名称"/>
+		            </div>
+		        </div>
+		        <div class="form-group">
+		            <label for="inputPassword3" class="col-sm-2 control-label">Method</label>
+		            <div class="col-sm-10">
+		                <input type="password" class="form-control" id="inputPassword3" placeholder="请输入你要测试的方法及方法入参数,以~分割"/>
+		            </div>`
+		        </div>
+		        <div class="form-group">
+		            <div class="col-sm-offset-2 col-sm-10">
+		                <button type="submit" class="btn btn-default">获取服务请求参数</button>
+		            </div>
+	            </div>
+              </form>
+              <div id="jsoneditor" class="form-group"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="/serviceMeasure/dist/jsoneditor.min.js"></script>
-    <script src="/webjars/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-    
-</head>
-<body>
-    <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
+    <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://www.atlasestateagents.co.uk/javascript/tether.min.js"></script>
     <script>
-        var container = document.getElementById("jsoneditor");
-        var options = {};
-        var editor = new JSONEditor(container, options);
-        var json = {
-            "Array": [1, 2, 3],
-            "Boolean": true,
-            "Null": null,
-            "Number": 123,
-            "Object": {"a": "b", "c": "d"},
-            "String": "Hello World"
-        };
-        editor.set(json);
-        var json = editor.get();
-    </script>
-</body>
+	    var container = document.getElementById("jsoneditor");
+	    var options = {};
+	    var editor = new JSONEditor(container, options);
+	    var json = {
+	        "Array": [1, 2, 3],
+	        "Boolean": true,
+	        "Null": null,
+	        "Number": 123,
+	        "Object": {"a": "b", "c": "d"},
+	        "String": "Hello World"
+	    };
+	    editor.set(json);
+	    var json = editor.get();
+	</script>
+  </body>
 </html>
