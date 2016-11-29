@@ -65,10 +65,11 @@
                 $.getJSON("serviceMeasure/getMethod",
                     { service: "com.quancheng.test.service.UserService", method: "create~com.quancheng.test.model.user.UserCreateRequest" },
                     function(result){
-					    editor.set(result.parameterTypes);
+                        //取第一个入参，目前grpc仅支持一个入参
+					    editor.set(result.parameterTypes[0]);
 			        });
             });
-	        //var json = editor.get();
+	        var json = editor.get();
         }); 
     </script>
   </body>
