@@ -31,10 +31,10 @@ public class ServiceMeasureController {
 
     private final WebJarAssetLocator assetLocator = new WebJarAssetLocator();
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ModelAndView serviceMeasure() {
-        return new ModelAndView("/serviceMeasure.html");
-    }
+    // @RequestMapping(method = RequestMethod.GET)
+    // public ModelAndView serviceMeasure() {
+    // return new ModelAndView("/serviceMeasure.html");
+    // }
 
     @RequestMapping(value = "/getAllMethod", method = RequestMethod.GET)
     public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {

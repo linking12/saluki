@@ -2,18 +2,18 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <link href="dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
-    <script src="dist/jsoneditor.min.js"></script>
+    <link href="/serviceMeasure/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script src="/serviceMeasure/dist/jsoneditor.min.js"></script>
+    <script src="/webjars/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    
 </head>
 <body>
     <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
     <script>
-        // create the editor
         var container = document.getElementById("jsoneditor");
         var options = {};
         var editor = new JSONEditor(container, options);
-
-        // set json
         var json = {
             "Array": [1, 2, 3],
             "Boolean": true,
@@ -23,8 +23,6 @@
             "String": "Hello World"
         };
         editor.set(json);
-
-        // get json
         var json = editor.get();
     </script>
 </body>
