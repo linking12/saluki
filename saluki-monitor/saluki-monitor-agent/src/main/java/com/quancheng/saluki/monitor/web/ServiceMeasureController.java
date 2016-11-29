@@ -44,14 +44,15 @@ public class ServiceMeasureController {
         try {
             Class<?> clazz = ReflectUtil.name2class(service);
             ServiceDefinition serviceMeta = Jaket.build(clazz);
-            String _method = method;
-            for (MethodDefinition methodDef : serviceMeta.getMethods()) {
-                if (methodDef.getName().equals(method)) {
-                    _method = _method + "~" + methodDef.getParameterTypes()[0];
-                    break;
+            if (!method.contains("~")) {
+                for (MethodDefinition methodDef : serviceMeta.getMethods()) {
+                    if (methodDef.getName().equals(method)) {
+                        method = method + "~" + methodDef.getParameterTypes()[0];
+                        break;
+                    }
                 }
             }
-            GenericInvokeMetadata meta = GenericInvokeUtils.getGenericInvokeMetadata(serviceMeta, _method,
+            GenericInvokeMetadata meta = GenericInvokeUtils.getGenericInvokeMetadata(serviceMeta, method,
                                                                                      MetadataType.DEFAULT_VALUE);
             return meta;
         } catch (ClassNotFoundException e) {
