@@ -1,6 +1,5 @@
 package com.quancheng.saluki.monitor.web;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,14 +11,16 @@ import com.google.gson.Gson;
 import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.monitor.invoke.GenericInvokeMetadata;
+import com.quancheng.saluki.monitor.invoke.GenericInvokeUtils;
+import com.quancheng.saluki.monitor.invoke.MetadataType;
 import com.taobao.jaket.Jaket;
 import com.taobao.jaket.model.MethodDefinition;
 import com.taobao.jaket.model.ServiceDefinition;
-import com.taobao.jaket.model.TypeDefinition;
 
 @RestController
 @RequestMapping("/serviceMeasure")
-public class ServiceMetaController {
+public class ServiceMeasureController {
 
     private final Gson     gson = new Gson();
 
@@ -38,30 +39,14 @@ public class ServiceMetaController {
     }
 
     @RequestMapping(value = "/getMethod", method = RequestMethod.GET)
-    public MethodDefinition getMethod(@RequestParam(value = "service", required = true) String service,
-                                      @RequestParam(value = "method", required = true) String method) throws ClassNotFoundException {
+    public GenericInvokeMetadata getMethod(@RequestParam(value = "service", required = true) String service,
+                                           @RequestParam(value = "method", required = true) String method) throws ClassNotFoundException {
         try {
             Class<?> clazz = ReflectUtil.name2class(service);
             ServiceDefinition serviceMeta = Jaket.build(clazz);
-            List<MethodDefinition> methodMetas = serviceMeta.getMethods();
-            MethodDefinition targetMethodMeta = null;
-            for (MethodDefinition methodMeta : methodMetas) {
-                if (methodMeta.getName().equals(method)) {
-                    targetMethodMeta = methodMeta;
-                    break;
-                }
-            }
-            String[] requestTypes = targetMethodMeta.getParameterTypes();
-            List<TypeDefinition> parameters = new ArrayList<TypeDefinition>();
-            targetMethodMeta.setParameters(parameters);
-            for (String requestType : requestTypes) {
-                for (TypeDefinition parameterMeta : serviceMeta.getTypes()) {
-                    if (parameterMeta.getType().equals(requestType)) {
-                        parameters.add(parameterMeta);
-                    }
-                }
-            }
-            return targetMethodMeta;
+            GenericInvokeMetadata meta = GenericInvokeUtils.getGenericInvokeMetadata(serviceMeta, method,
+                                                                                     MetadataType.DEFAULT_VALUE);
+            return meta;
         } catch (ClassNotFoundException e) {
             throw e;
         }
