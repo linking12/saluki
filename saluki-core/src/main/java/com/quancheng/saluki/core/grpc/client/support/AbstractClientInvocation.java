@@ -165,12 +165,14 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
+            InetSocketAddress remote = (InetSocketAddress) remoteAddress;
+            String provider = remote.getHostName();// 服务端主机
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
             Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
             String consumerHost = serverProperty.getProperty("serverHost");
-            String host = consumerHost != null ? consumerHost : refUrl.getHost();
-            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
+            String consumerPort = serverProperty.getProperty("serverHttpPort");
+            String host = (consumerHost != null ? consumerHost : refUrl.getHost());
+            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, Integer.valueOf(consumerPort), //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //
                                                 MonitorService.APPLICATION, refUrl.getGroup(), //

@@ -32,12 +32,12 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setId(UuidUtil.createUUID());
             if (statistics.hasParameter(PROVIDER)) {
                 invoke.setType(CONSUMER);
-                invoke.setConsumer(statistics.getHost());
+                invoke.setConsumer(statistics.getHost() + ":" + statistics.getPort());
                 invoke.setProvider(statistics.getParameter(PROVIDER));
             } else {
                 invoke.setType(PROVIDER);
                 invoke.setConsumer(statistics.getParameter(CONSUMER));
-                invoke.setProvider(statistics.getHost());
+                invoke.setProvider(statistics.getHost() + ":" + statistics.getPort());
             }
             invoke.setInvokeDate(new Date(Long.valueOf(statistics.getParameter(TIMESTAMP))));
             invoke.setService(statistics.getServiceInterface());
