@@ -1,7 +1,12 @@
 package com.quancheng.saluki.monitor.web;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.boot.saluki.starter.SalukiService;
+import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtil;
 import com.quancheng.saluki.monitor.invoke.GenericInvokeMetadata;
@@ -19,15 +26,21 @@ import com.taobao.jaket.model.MethodDefinition;
 import com.taobao.jaket.model.ServiceDefinition;
 
 @RestController
-@RequestMapping("/serviceMeasure")
+@RequestMapping("serviceMeasure")
 public class ServiceMeasureController {
 
-    private final Gson     gson = new Gson();
+    private final Gson                 gson = new Gson();
+
+    @Autowired
+    private SalukiProperties           salukiProperties;
+
+    @Autowired
+    private AbstractApplicationContext applicationContext;
 
     @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "Default", version = "1.0.0")
-    private GenericService genricService;
+    private GenericService             genricService;
 
-    @RequestMapping(value = "/getAllMethod", method = RequestMethod.GET)
+    @RequestMapping(value = "getAllMethod", method = RequestMethod.GET)
     public List<MethodDefinition> getAllMethod(@RequestParam(value = "service", required = true) String service) throws ClassNotFoundException {
         try {
             Class<?> clazz = ReflectUtil.name2class(service);
@@ -38,7 +51,7 @@ public class ServiceMeasureController {
         }
     }
 
-    @RequestMapping(value = "/getMethod", method = RequestMethod.GET)
+    @RequestMapping(value = "getMethod", method = RequestMethod.GET)
     public GenericInvokeMetadata getMethod(@RequestParam(value = "service", required = true) String service,
                                            @RequestParam(value = "method", required = true) String method) throws ClassNotFoundException {
         try {
@@ -60,25 +73,48 @@ public class ServiceMeasureController {
         }
     }
 
-    @RequestMapping(value = "/testService", method = RequestMethod.POST)
-    public Object testService(@RequestParam(value = "group", required = true) String group,
-                              @RequestParam(value = "version", required = true) String version,
-                              @RequestParam(value = "service", required = true) String service,
-                              @RequestParam(value = "method", required = true) String method,
-                              @RequestParam(value = "parameterType", required = true) String parameterType,
-                              @RequestParam(value = "returnType", required = true) String returnType,
-                              @RequestParam(value = "parameter", required = true) String parameter) throws ClassNotFoundException {
+    @RequestMapping(value = "testService", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object testService(@RequestBody ServiceMeasureModel model) throws ClassNotFoundException {
         try {
-            Class<?> requestClass = ReflectUtil.name2class(parameterType);
-            Object request = gson.fromJson(parameter, requestClass);
-            String[] paramTypes = new String[] { parameterType, returnType };
+            Class<?> requestClass = ReflectUtil.name2class(model.getParameterType());
+            Object request = gson.fromJson(model.getParameter(), requestClass);
+            String[] paramTypes = new String[] { model.getParameterType(), model.getReturnType() };
             Object[] args = new Object[] { request };
-            Object reply = genricService.$invoke(service, group, version, method, paramTypes, args);
+            Object reply = genricService.$invoke(model.getService(), findGroup(model.getService()),
+                                                 findVersion(model.getService()), model.getMethod(), paramTypes, args);
             return reply;
         } catch (ClassNotFoundException e) {
             throw e;
         }
-
     }
 
+    private String findGroup(String interfaceClassName) throws ClassNotFoundException {
+        if (salukiProperties.getServiceGroup() != null) {
+            return salukiProperties.getServiceGroup();
+        } else {
+            Class<?> interfaceClass = ReflectUtil.name2class(interfaceClassName);
+            SalukiService annotation = getSalukiAnnotation(interfaceClass);
+            return annotation.group();
+        }
+    }
+
+    private String findVersion(String interfaceClassName) throws ClassNotFoundException {
+        if (salukiProperties.getServcieVersion() != null) {
+            return salukiProperties.getServcieVersion();
+        } else {
+            Class<?> interfaceClass = ReflectUtil.name2class(interfaceClassName);
+            SalukiService annotation = getSalukiAnnotation(interfaceClass);
+            return annotation.version();
+        }
+    }
+
+    private SalukiService getSalukiAnnotation(Class<?> beanType) {
+        Map<String, ?> beanMap = applicationContext.getBeansOfType(beanType);
+        for (Map.Entry<String, ?> entry : beanMap.entrySet()) {
+            Object obj = entry.getValue();
+            SalukiService salukiAnnotation = obj.getClass().getAnnotation(SalukiService.class);
+            return salukiAnnotation;
+        }
+        throw new IllegalArgumentException("There no bean in spring container,pls check again ");
+    }
 }
