@@ -2,4 +2,5 @@ apply plugin: 'java'
 description='saluki-monitor-common'
 dependencies {
      compileOnly project(':saluki-core')
+     compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.0'
 }

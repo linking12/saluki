@@ -18,12 +18,13 @@ import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtil;
+import com.quancheng.saluki.monitor.ServiceMeasureModel;
 import com.quancheng.saluki.monitor.invoke.GenericInvokeMetadata;
-import com.quancheng.saluki.monitor.invoke.GenericInvokeUtils;
 import com.quancheng.saluki.monitor.invoke.MetadataType;
+import com.quancheng.saluki.monitor.invoke.MethodDefinition;
+import com.quancheng.saluki.monitor.invoke.ServiceDefinition;
 import com.taobao.jaket.Jaket;
-import com.taobao.jaket.model.MethodDefinition;
-import com.taobao.jaket.model.ServiceDefinition;
+import com.taobao.jaket.util.GenericInvokeUtils;
 
 @RestController
 @RequestMapping("serviceMeasure")

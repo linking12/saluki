@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.invoke;
+package com.taobao.jaket.util;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,9 +17,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.taobao.jaket.model.MethodDefinition;
-import com.taobao.jaket.model.ServiceDefinition;
-import com.taobao.jaket.model.TypeDefinition;
+import com.quancheng.saluki.monitor.invoke.GenericInvokeMetadata;
+import com.quancheng.saluki.monitor.invoke.MetadataType;
+import com.quancheng.saluki.monitor.invoke.MethodDefinition;
+import com.quancheng.saluki.monitor.invoke.ServiceDefinition;
+import com.quancheng.saluki.monitor.invoke.TypeDefinition;
+
 
 /**
  * @author bw on 11/25/15.

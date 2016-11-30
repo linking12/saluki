@@ -1,14 +1,14 @@
 package com.taobao.jaket;
 
-import com.google.gson.Gson;
-import com.taobao.jaket.model.MethodDefinition;
-import com.taobao.jaket.model.ServiceDefinition;
-import com.taobao.jaket.model.TypeDefinition;
-import com.taobao.jaket.util.ClassUtils;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.quancheng.saluki.monitor.invoke.MethodDefinition;
+import com.quancheng.saluki.monitor.invoke.ServiceDefinition;
+import com.quancheng.saluki.monitor.invoke.TypeDefinition;
+import com.taobao.jaket.util.ClassUtils;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

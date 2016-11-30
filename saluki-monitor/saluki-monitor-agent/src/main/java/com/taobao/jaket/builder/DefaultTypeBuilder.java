@@ -1,14 +1,14 @@
 package com.taobao.jaket.builder;
 
-import com.taobao.jaket.JaketTypeBuilder;
-import com.taobao.jaket.model.TypeDefinition;
-import com.taobao.jaket.util.ClassUtils;
-import com.taobao.jaket.util.JaketConfigurationUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+
+import com.quancheng.saluki.monitor.invoke.TypeDefinition;
+import com.taobao.jaket.JaketTypeBuilder;
+import com.taobao.jaket.util.ClassUtils;
+import com.taobao.jaket.util.JaketConfigurationUtils;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

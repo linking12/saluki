@@ -1,13 +1,13 @@
 package com.taobao.jaket.builder;
 
-import com.taobao.jaket.JaketTypeBuilder;
-import com.taobao.jaket.model.TypeDefinition;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
+
+import com.quancheng.saluki.monitor.invoke.TypeDefinition;
+import com.taobao.jaket.JaketTypeBuilder;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

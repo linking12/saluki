@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.web;
+package com.quancheng.saluki.monitor;
 
 public class ServiceMeasureModel {
 
