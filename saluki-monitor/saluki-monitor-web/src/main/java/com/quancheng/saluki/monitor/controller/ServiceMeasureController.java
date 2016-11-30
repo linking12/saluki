@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.service;
+package com.quancheng.saluki.monitor.controller;
 
 import java.util.List;
 
