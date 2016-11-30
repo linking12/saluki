@@ -209,7 +209,8 @@ public class ConsulRegistry extends FailbackRegistry {
                                   .withPort(Integer.valueOf(url.getPort()).toString())//
                                   .withName(toServiceName(url.getGroup()))//
                                   .withTag(toUrlPath(url))//
-                                  .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath())//
+                                  .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath() + "-"
+                                          + url.getVersion())//
                                   .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
 
@@ -218,6 +219,7 @@ public class ConsulRegistry extends FailbackRegistry {
                                        .withHost(url.getHost())//
                                        .withRpcPort(Integer.valueOf(url.getPort()).toString())//
                                        .withFlag(flag)//
+                                       .withVersion(url.getVersion())//
                                        .withGroup(url.getGroup())//
                                        .withServiceName(url.getServiceInterface())//
                                        .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
