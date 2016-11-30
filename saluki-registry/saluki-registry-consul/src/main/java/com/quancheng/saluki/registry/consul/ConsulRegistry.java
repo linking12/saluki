@@ -87,7 +87,26 @@ public class ConsulRegistry extends FailbackRegistry {
             client.registerEphemralNode(ephemralNode);
         }
         // 如果缓存中有，先把缓存中的数据吐出去
-        notifyListener(url, listener);
+        /**
+         * 如果这里缓存小的话，需要再次通知，这里缓存已经设置为1000了，所以没必要再次通知
+         */
+        // notifyListener(url, listener);
+    }
+
+    /**
+     * 如果这里缓存小的话，需要再次通知，这里缓存已经设置为1000了，所以没必要再次通知
+     */
+    private void notifyListener(SalukiURL url, NotifyListener listener) {
+        Map<String, List<SalukiURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
+        if (groupCacheUrls != null) {
+            for (Map.Entry<String, List<SalukiURL>> entry : groupCacheUrls.entrySet()) {
+                String cacheServiceKey = entry.getKey();
+                if (url.getServiceKey().equals(cacheServiceKey)) {
+                    List<SalukiURL> newUrls = entry.getValue();
+                    ConsulRegistry.this.notify(url, listener, newUrls);
+                }
+            }
+        }
     }
 
     @Override
@@ -129,19 +148,6 @@ public class ConsulRegistry extends FailbackRegistry {
             }
         }
         return null;
-    }
-
-    private void notifyListener(SalukiURL url, NotifyListener listener) {
-        Map<String, List<SalukiURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
-        if (groupCacheUrls != null) {
-            for (Map.Entry<String, List<SalukiURL>> entry : groupCacheUrls.entrySet()) {
-                String cacheServiceKey = entry.getKey();
-                if (url.getServiceKey().equals(cacheServiceKey)) {
-                    List<SalukiURL> newUrls = entry.getValue();
-                    ConsulRegistry.this.notify(url, listener, newUrls);
-                }
-            }
-        }
     }
 
     private class ServiceLookUper extends Thread {
