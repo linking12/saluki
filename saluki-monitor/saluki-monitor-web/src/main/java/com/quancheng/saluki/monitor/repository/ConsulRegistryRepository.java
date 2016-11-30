@@ -147,10 +147,13 @@ public class ConsulRegistryRepository {
     }
 
     private Triple<String, String, String> getPortHostService(String serviceId) {
-        String[] args = serviceId.split("-");
+        String[] args = StringUtils.split(serviceId, "-");
         String hostRpcPort = args[0];
         String service = args[1];
-        String version = args[2];
+        String version = "1.0.0";
+        if (args.length > 2) {
+            version = args[2];
+        }
         return new ImmutableTriple<String, String, String>(hostRpcPort, service, version);
     }
 
