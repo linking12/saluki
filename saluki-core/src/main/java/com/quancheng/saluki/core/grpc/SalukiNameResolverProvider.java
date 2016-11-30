@@ -89,6 +89,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         public final synchronized void refresh() {
             Preconditions.checkState(listener != null, "not started");
             List<SalukiURL> urls = registry.discover(subscribeUrl);
+            if (log.isInfoEnabled()) {
+                log.info("Grpc nameresolve refreshed,Receive notify from registry, prividerUrl is"
+                         + Arrays.toString(urls.toArray()));
+            }
             notifyLoadBalance(urls);
         }
 
@@ -96,6 +100,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
             @Override
             public void notify(List<SalukiURL> urls) {
+                if (log.isInfoEnabled()) {
+                    log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
+                             + Arrays.toString(urls.toArray()));
+                }
                 notifyLoadBalance(urls);
             }
 
@@ -103,9 +111,6 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<SalukiURL> urls) {
             if (urls != null && !urls.isEmpty()) {
-                if (log.isInfoEnabled()) {
-                    log.info("Receive notify from registry, prividerUrl is" + Arrays.toString(urls.toArray()));
-                }
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
