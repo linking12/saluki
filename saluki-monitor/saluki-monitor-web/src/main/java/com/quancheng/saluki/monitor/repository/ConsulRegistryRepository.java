@@ -140,8 +140,9 @@ public class ConsulRegistryRepository {
         Map<String, String> machineInfo = gson.fromJson(serverInfo, Map.class);
         String flagAndIp = StringUtils.remove(providerAndConsumerKv, groupService + "/");
         String[] serverInfos = StringUtils.split(flagAndIp, "/");
-        String machineFlag = serverInfos[0];
-        String machineIpAndRpcPort = serverInfos[1];
+        String version = serverInfos[0];
+        String machineFlag = serverInfos[1];
+        String machineIpAndRpcPort = serverInfos[2];
         String machineHttpPort = machineInfo.get("serverHttpPort");
         return new ImmutableTriple<String, String, String>(machineFlag, machineIpAndRpcPort, machineHttpPort);
     }
