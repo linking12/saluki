@@ -122,16 +122,14 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                     int port = url.getPort();
                     if (NetUtils.isIP(host)) {
                         SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
-                        ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
-                        servers.add(serverInfo);
-                        addresses.add(sock);
+                        addSocketAddress(servers, addresses, sock);
                     } else {
                         try {
                             InetAddress[] inetAddrs = getAllByName(host);
                             for (int j = 0; j < inetAddrs.length; j++) {
                                 InetAddress inetAddr = inetAddrs[j];
-                                servers.add(new ResolvedServerInfo(new InetSocketAddress(inetAddr, port),
-                                                                   Attributes.EMPTY));
+                                SocketAddress sock = new InetSocketAddress(inetAddr, port);
+                                addSocketAddress(servers, addresses, sock);
                             }
                         } catch (UnknownHostException e) {
                             SalukiNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
@@ -145,6 +143,13 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                 SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                           + subscribeUrl.toFullString()));
             }
+        }
+
+        private void addSocketAddress(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+                                      SocketAddress sock) {
+            ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
+            servers.add(serverInfo);
+            addresses.add(sock);
         }
 
         private InetAddress[] getAllByName(String host) throws UnknownHostException {
