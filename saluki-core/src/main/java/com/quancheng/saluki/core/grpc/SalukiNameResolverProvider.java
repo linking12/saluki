@@ -1,8 +1,10 @@
 package com.quancheng.saluki.core.grpc;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +23,7 @@ import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
+import com.quancheng.saluki.core.utils.NetUtils;
 
 import io.grpc.Attributes;
 import io.grpc.NameResolver;
@@ -115,12 +118,25 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
                     SalukiURL url = urls.get(i);
-                    String ip = url.getHost();
+                    String host = url.getHost();
                     int port = url.getPort();
-                    SocketAddress sock = new InetSocketAddress(InetAddresses.forString(ip), port);
-                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
-                    servers.add(serverInfo);
-                    addresses.add(sock);
+                    if (NetUtils.isIP(host)) {
+                        SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
+                        ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
+                        servers.add(serverInfo);
+                        addresses.add(sock);
+                    } else {
+                        try {
+                            InetAddress[] inetAddrs = getAllByName(host);
+                            for (int j = 0; j < inetAddrs.length; j++) {
+                                InetAddress inetAddr = inetAddrs[j];
+                                servers.add(new ResolvedServerInfo(new InetSocketAddress(inetAddr, port),
+                                                                   Attributes.EMPTY));
+                            }
+                        } catch (UnknownHostException e) {
+                            SalukiNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
+                        }
+                    }
                 }
                 this.addresses = addresses;
                 Attributes config = this.buildNameResolverConfig();
@@ -129,6 +145,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
                 SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                           + subscribeUrl.toFullString()));
             }
+        }
+
+        private InetAddress[] getAllByName(String host) throws UnknownHostException {
+            return InetAddress.getAllByName(host);
         }
 
         private Attributes buildNameResolverConfig() {
