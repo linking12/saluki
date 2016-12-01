@@ -63,6 +63,9 @@ public class SalukiMonitor implements MonitorService {
             long[] numbers = reference.get();
             // 如果是0，需要等下次的数据
             if (!isZero(numbers)) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("saluki send monitor data to collector begin");
+                }
                 long success = numbers[0];
                 long failure = numbers[1];
                 long input = numbers[2];
@@ -113,7 +116,9 @@ public class SalukiMonitor implements MonitorService {
                     }
                 } while (!reference.compareAndSet(current, update));
             }
-
+            if (logger.isInfoEnabled()) {
+                logger.info("saluki send monitor data to collector end");
+            }
         }
     }
 
