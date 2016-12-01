@@ -101,8 +101,11 @@ public class ProtobufSerializer implements IProtobufSerializer {
                     Object potoValue = fromProtobuf((Message) protobufValue, pojoClzz);
                     setPojoFieldValue(pojo, setter, potoValue, protobufAttribute);
                 } else if (protobufValue instanceof ProtocolMessageEnum) {
+                    Class<?> enumClzz = field.getType();
                     ProtocolMessageEnum protocolEnum = (ProtocolMessageEnum) protobufValue;
-                    int enumValue = protocolEnum.getNumber();
+                    Object enumValue = JReflectionUtils.runStaticMethod(enumClzz, "forNumber",
+                                                                        protocolEnum.getNumber());
+                    setPojoFieldValue(pojo, setter, enumValue, protobufAttribute);
                 } else {
                     setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute);
                 }
