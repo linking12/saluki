@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.quancheng.saluki.serializer.converter.NullConverter;
 import com.quancheng.saluki.serializer.exception.ProtobufAnnotationException;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
@@ -60,6 +61,9 @@ public class ProtobufSerializer implements IProtobufSerializer {
                 }
                 // 4. Determine the setter name
                 final String setter = ProtobufSerializerUtils.getProtobufSetter(gpbAnnotation, field, value);
+                if (value instanceof Enum) {
+                    value = JReflectionUtils.runMethod(value, "getNumber");
+                }
                 // 5. Finally, set the value on the Builder
                 setProtobufFieldValue(gpbAnnotation, protoObjBuilder, setter, value);
             }
@@ -96,6 +100,8 @@ public class ProtobufSerializer implements IProtobufSerializer {
                     Class<?> pojoClzz = field.getType();
                     Object potoValue = fromProtobuf((Message) protobufValue, pojoClzz);
                     setPojoFieldValue(pojo, setter, potoValue, protobufAttribute);
+                } else if (protobufValue instanceof ProtocolMessageEnum) {
+
                 } else {
                     setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute);
                 }

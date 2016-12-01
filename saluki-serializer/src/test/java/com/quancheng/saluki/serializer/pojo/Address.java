@@ -31,6 +31,9 @@ public class Address {
     @ProtobufAttribute(pojoGetter = "getIsCanada", pojoSetter = "setIsCanada", protobufSetter = "setIsCanada", protobufGetter = "getIsCanada", converter = StringBooleanConverter.class)
     private String              isCanadaBooleanAsStr;
 
+    @ProtobufAttribute
+    private PhoneType           phoneType;
+
     /**
      * @param street the street to set
      */
@@ -121,6 +124,14 @@ public class Address {
 
     public void setMapTest(Map<String, String> mapTest) {
         this.mapTest = mapTest;
+    }
+
+    public PhoneType getPhoneType() {
+        return phoneType;
+    }
+
+    public void setPhoneType(PhoneType phoneType) {
+        this.phoneType = phoneType;
     }
 
     /**
