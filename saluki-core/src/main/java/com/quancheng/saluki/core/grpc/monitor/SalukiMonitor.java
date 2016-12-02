@@ -25,7 +25,7 @@ public class SalukiMonitor implements MonitorService {
 
     private static final int                                         LENGTH                   = 10;
 
-    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(3,
+    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(1,
                                                                                                                                  new NamedThreadFactory("SalukiMonitorSendTimer",
                                                                                                                                                         true));
 
