@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.model;
+package com.quancheng.saluki.monitor;
 
 import java.io.Serializable;
 import java.util.Date;

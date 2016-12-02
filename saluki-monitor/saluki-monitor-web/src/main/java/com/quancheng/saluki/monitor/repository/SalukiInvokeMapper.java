@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.quancheng.saluki.monitor.SalukiInvoke;
-import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 
 @Mapper
 public interface SalukiInvokeMapper {

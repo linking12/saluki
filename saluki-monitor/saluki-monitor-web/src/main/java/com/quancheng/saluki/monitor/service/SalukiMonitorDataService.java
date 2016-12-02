@@ -38,7 +38,7 @@ import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.SalukiHost;
 import com.quancheng.saluki.monitor.SalukiInvoke;
-import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
