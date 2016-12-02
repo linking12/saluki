@@ -38,7 +38,7 @@ import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
 /**
- * <strong>描述：</strong>TODO 描述 <br>
+ * <strong>描述：</strong><br>
  * <strong>功能：</strong><br>
  * <strong>使用场景：</strong><br>
  * <strong>注意事项：</strong>
@@ -47,15 +47,20 @@ import io.grpc.MethodDescriptor;
  * </ul>
  * 
  * @author shimingliu 2016年10月18日 下午11:20:15
- * @version $Id: AbstractClientInvocation.java, v 0.0.1 2016年10月18日 下午11:20:15 shimingliu Exp $
+ * @version : AbstractClientInvocation.java, v 0.0.1 2016年10月18日 下午11:20:15 shimingliu
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
+
     private final MonitorService                       salukiMonitor;
+
     private final Cache<String, Channel>               channelCache;
+
     private final Map<String, Integer>                 methodRetries;
+
     private final SalukiURL                            refUrl;
+
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
@@ -122,7 +127,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
-            // 收集监控信息
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
                     false);
             return respPojo;
@@ -155,7 +159,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
-    // 信息采集
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {

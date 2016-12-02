@@ -32,16 +32,25 @@ import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
-    protected final static Logger                              LOG              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
+    protected final static Logger                              log              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
+
     private final RetryOptions                                 retryOptions;
+
     private final AsyncCallClientInternal<RequestT, ResponseT> rpc;
+
     private final RequestT                                     request;
+
     private final CallOptions                                  callOptions;
+
     private final ScheduledExecutorService                     retryExecutorService;
-    private int                                                retryCount;
+
     private final Metadata                                     originalMetadata;
+
     protected final GrpcFuture<ResultT>                        completionFuture = new GrpcFuture<>();
+
     protected ClientCall<RequestT, ResponseT>                  call;
+
+    private int                                                retryCount;
 
     public AbstractRetryingRpcListener(RetryOptions retryOptions, RequestT request,
                                        AsyncCallClientInternal<RequestT, ResponseT> retryableRpc,
@@ -73,7 +82,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                 notify.resetChannel();
                 return;
             } else {
-                LOG.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
+                log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
                 call = null;
                 notify.onRefreshChannel();
                 retryExecutorService.schedule(this, retryOptions.nextBackoffMillis(), TimeUnit.MILLISECONDS);
@@ -132,7 +141,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         }
     }
 
-    private class GrpcNotify {
+    private static class GrpcNotify {
 
         private final List<SocketAddress>   servers;
 
@@ -183,7 +192,8 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                 List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
                 Attributes config = Attributes.newBuilder()//
                                               .set(MarshallersAttributesUtils.NAMERESOVER_LISTENER, listener)//
-                                              .set(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY, registryServers)//
+                                              .set(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY,
+                                                   registryServers)//
                                               .build();
                 for (SocketAddress sock : servers) {
                     ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);

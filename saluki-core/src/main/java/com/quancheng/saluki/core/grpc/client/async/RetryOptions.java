@@ -9,14 +9,22 @@ import java.util.concurrent.TimeUnit;
 public class RetryOptions implements Serializable {
 
     private static final long serialVersionUID     = 1L;
+
     private final int         reties;
+
     private final boolean     enableRetry;
-    private Random            random               = new Random();
-    private long              initialBackoffMillis = TimeUnit.SECONDS.toMillis(1);
-    private long              maxBackoffMillis     = TimeUnit.MINUTES.toMillis(2);
+
+    private final Random      random               = new Random();
+
     private double            multiplier           = 1.6;
+
     private double            jitter               = .2;
+
+    private long              initialBackoffMillis = TimeUnit.SECONDS.toMillis(1);
+
     private long              nextBackoffMillis    = initialBackoffMillis;
+
+    private long              maxBackoffMillis     = TimeUnit.MINUTES.toMillis(2);
 
     public RetryOptions(int reties, boolean enableRetry){
         super();
