@@ -26,7 +26,7 @@ import com.quancheng.saluki.monitor.invoke.GenericInvokeMetadata;
 import com.quancheng.saluki.monitor.invoke.MethodDefinition;
 
 @RestController
-@RequestMapping("serviceMeasure")
+@RequestMapping("/api/serviceMeasure")
 public class ServiceMeasureController {
 
     private HttpClient httpClient;

@@ -27,7 +27,7 @@ import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.service.SalukiMonitorDataService;
 
 @RestController
-@RequestMapping(value = "monitor")
+@RequestMapping(value = "/api/monitor")
 public class SalukiMonitorController {
 
     private Logger                   log = Logger.getLogger(SalukiMonitorController.class);

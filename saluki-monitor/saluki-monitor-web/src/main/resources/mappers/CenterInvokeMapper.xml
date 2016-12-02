@@ -48,7 +48,7 @@
 	</insert>
 
 	<select id="queryData" parameterType="java.util.Map"
-		resultType="com.quancheng.saluki.monitor.model.SalukiInvokeStatistics">
+		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
 		SELECT 
 		<choose>
              <when test="interval =='day'">
