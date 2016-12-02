@@ -67,6 +67,7 @@ public class GRPCEngine {
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//
                                                  .negotiationType(NegotiationType.TLS)//
+                                                 .eventLoopGroup(createWorkEventLoopGroup())//
                                                  .build();//
                 }
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
