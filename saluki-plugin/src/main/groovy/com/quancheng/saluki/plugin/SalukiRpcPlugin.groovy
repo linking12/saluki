@@ -2,11 +2,8 @@ package com.quancheng.saluki.plugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import groovy.io.FileType
-
-
 class SalukiRpcPlugin implements Plugin<Project> {
     void apply(Project project) {
-
         project.task('generateProtoInterface') << {
             def dir = new File(project.projectDir.path + "/src/main/proto")
             dir.traverse(type: FileType.FILES,
@@ -18,7 +15,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                 def methodName = []
                 def note = []
                 def methodClassName = [:]
-
                 List files = getImportFiles(it.path, project, [])
                 files.reverse().each { file ->
                     def packageName1 = ""
@@ -33,7 +29,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         if (java_outer_classname_filter.size() > 0) {
                             java_outer_classname = java_outer_classname_filter[0][1]
                         }
-
                         def param_filter = line =~ /^message\s+(.+)\{/
                         if (param_filter.size() > 0) {
                             massageName = packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim()
@@ -41,7 +36,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         }
                     }
                 }
-
                 new File(it.path).eachLine { line, nb ->
                     def noteDetail = line =~ /^\s*\/\/(.*)/
                     if (noteDetail.size() > 0) {
@@ -73,7 +67,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         serviceName << service[0][1]
                         serviceName << nb
                     }
-
                     // lizhuliang, fix regex not match when lack of emptys
                     def method = line =~ /^\s*rpc\s+(.+)\s*\((.+)\)\s*returns\s*\((.+)\)/
                     if (method.size() > 0) {
@@ -84,7 +77,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         methodNameList[2] = methodClassName[methodNameList[2]]
                         methodName << methodNameList
                     }
-
                 }
                 if (path) {
                     def file = new File(path)
@@ -113,11 +105,8 @@ class SalukiRpcPlugin implements Plugin<Project> {
                     printWriter.flush()
                     printWriter.close()
                 }
-
             }
-
         }
-
         project.task('generateProtoModel') << {
             def dir = new File(project.projectDir.path + "/src/main/proto")
             dir.traverse(type: FileType.FILES,
@@ -137,12 +126,10 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         if (java_package1.size() > 0) {
                             packageName1 = java_package1[0][1]
                         }
-
                         def java_outer_classname_filter = line =~ /^option\s+java_outer_classname\s*=\s*\"(.+)\"/
                         if (java_outer_classname_filter.size() > 0) {
                             java_outer_classname = java_outer_classname_filter[0][1]
                         }
-
                         def param_filter = line =~ /^message\s+(.+)\{/
                         if (param_filter.size() > 0) {
                             massageName = packageName1 + "." + java_outer_classname.toLowerCase() + "." + param_filter[0][1].trim()
@@ -154,7 +141,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                 massageParamList.add(massageParam[0])
                             }
                         }
-
                         def massageParamEnd = line =~ /^\s*\}$/
                         if (massageParamEnd.size() > 0) {
                             if (massageName) {
@@ -164,8 +150,6 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                 massageName = ""
                             }
                         }
-
-
                     }
                 }
                 if (message) {
@@ -206,6 +190,16 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                     printGet("Boolean", param[2], printWriter)
                                     printSet("Boolean", param[2], printWriter)
                                 }
+                                if (param[1].trim() == "double") {
+                                    printParam("Double", param[2], printWriter)
+                                    printGet("Double", param[2], printWriter)
+                                    printSet("Double", param[2], printWriter)
+                                }
+                                if (param[1].trim() == "float") {
+                                    printParam("Float", param[2], printWriter)
+                                    printGet("Float", param[2], printWriter)
+                                    printSet("Float", param[2], printWriter)
+                                }
                                 if (methodClassName[param[1]] != null) {
                                     printParam(methodClassName[param[1]], param[2], printWriter)
                                     printGet(methodClassName[param[1]], param[2], printWriter)
@@ -239,9 +233,14 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                                 printGet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
                                                 printSet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
                                             }
-
-                                        }
-                                    }
+                                        }//end param[1].trim().split(" ")[1].trim() == "string"
+                                    }//param[1].trim().split(" ")[0] == "repeated"    
+                                } 
+                                def mapMatch = param[1].trim() =~ /^(map){1}(.*)/
+                                if(mapMatch.size()>0){
+                                    printParam("java.util.Map<String,String>", param[2], printWriter)
+                                    printGet("java.util.Map<String,String> ", param[2], printWriter)
+                                    printSet("java.util.Map<String,String> ", param[2], printWriter)
                                 }
                             }
                             printWriter.write("} \n")
@@ -250,12 +249,9 @@ class SalukiRpcPlugin implements Plugin<Project> {
                         }
                     }
                 }
-
             }
         }
-
     }
-
     List getImportFiles(file, project, files) {
         files.add(file)
         new File(file).eachLine { line, nb ->
@@ -266,20 +262,17 @@ class SalukiRpcPlugin implements Plugin<Project> {
         }
         return files
     }
-
     void printParam(type, name, printWriter) {
         printWriter.write("\n")
         printWriter.write("    @ProtobufAttribute\n")
         printWriter.write("    private " + type + " " + name + ";\n")
     }
-
     void printGet(type, name, printWriter) {
         printWriter.write("\n")
         printWriter.write("    public " + type + " get" + name.capitalize() + "() {\n")
         printWriter.write("        return this." + name + ";\n")
         printWriter.write("    }\n")
     }
-
     void printSet(type, name, printWriter) {
         printWriter.write("\n")
         printWriter.write("    public void set" + name.capitalize() + "(" + type + " " + name + ") {\n")

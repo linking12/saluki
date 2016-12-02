@@ -5,25 +5,36 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "grpc")
 public class SalukiProperties {
 
+    /**
+     * consumer param
+     */
     private String clientHost;
 
+    private String referenceGroup;
+
+    private String referenceVersion;
+
+    /**
+     * provider param
+     */
     private String serverHost;
 
     private int    serverStartPort;
 
     private int    serverRegistryPort;
 
+    private String serviceGroup;
+
+    private String servcieVersion;
+
     private String consulIp;
 
     private int    consulPort;
 
-    private String referenceGroup;
-
-    private String referenceVersion;
-
-    private String serviceGroup;
-
-    private String servcieVersion;
+    /**
+     * 监控统计时间 (单位为分钟)
+     */
+    private String monitorInterval;
 
     public int getServerStartPort() {
         return serverStartPort;
@@ -103,6 +114,14 @@ public class SalukiProperties {
 
     public void setClientHost(String clientHost) {
         this.clientHost = clientHost;
+    }
+
+    public String getMonitorInterval() {
+        return monitorInterval;
+    }
+
+    public void setMonitorInterval(String monitorInterval) {
+        this.monitorInterval = monitorInterval;
     }
 
 }

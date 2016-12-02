@@ -61,6 +61,30 @@ public class JReflectionUtils {
         }
     }
 
+    /**
+     * 执行静态方法
+     */
+    public static Object runStaticMethod(Class<?> clzz, String method, Object... args) throws JException {
+        try {
+            Class<?>[] parameterTypes = null;
+            if (args.length != 0) {
+                parameterTypes = new Class[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    parameterTypes[i] = args[i].getClass();
+                }
+            }
+            Method m;
+            if (parameterTypes == null) {
+                m = clzz.getMethod(method);
+            } else {
+                m = clzz.getMethod(method, parameterTypes);
+            }
+            return m.invoke(null, args);
+        } catch (Exception e) {
+            throw new JException(e);
+        }
+    }
+
     public static List<Field> getAllFields(List<Field> fields, Class<?> clazz) {
         for (Field field : clazz.getDeclaredFields()) {
             fields.add(field);

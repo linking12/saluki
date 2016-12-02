@@ -8,7 +8,7 @@ public interface GrpcProtocolClient<T> {
 
     public interface ChannelCall {
 
-        public abstract Channel getChannel();
+        public abstract Channel getChannel(final String serviceName, final String group, final String version);
     }
 
 }

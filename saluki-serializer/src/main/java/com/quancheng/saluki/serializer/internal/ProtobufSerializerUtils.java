@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.serializer.ProtobufAttribute;
@@ -33,6 +32,9 @@ public final class ProtobufSerializerUtils {
         }
         if (value instanceof List) {
             return Iterable.class;
+        }
+        if (value instanceof Map) {
+            return Map.class;
         }
         return protobufClass;
     }
@@ -82,22 +84,24 @@ public final class ProtobufSerializerUtils {
 
     public static final String getProtobufSetter(ProtobufAttribute protobufAttribute, Field field, Object fieldValue) {
         final String fieldName = field.getName();
-        Map<String, String> map = new ConcurrentHashMap<>();
         String setter = "set" + JStringUtils.upperCaseFirst(fieldName);
         if (fieldValue instanceof Collection) {
             setter = "addAll" + JStringUtils.upperCaseFirst(fieldName);
+        }
+        if (fieldValue instanceof Map) {
+            setter = "putAll" + JStringUtils.upperCaseFirst(fieldName);
+        }
+        if (fieldValue instanceof Enum) {
+            setter = "set" + JStringUtils.upperCaseFirst(fieldName) + "Value";
         }
         final String configedSetter = protobufAttribute.protobufSetter();
         if (!configedSetter.equals(JStringUtils.EMPTY)) {
             setter = configedSetter;
         }
-        map.put(fieldName, setter);
         return setter;
     }
 
     public static final String getProtobufGetter(ProtobufAttribute protobufAttribute, Field field) {
-        final String fieldName = field.getName();
-        Map<String, String> map = new ConcurrentHashMap<>();
         final String upperCaseFirstFieldName = JStringUtils.upperCaseFirst(field.getName());
         String getter = "get" + upperCaseFirstFieldName;
 
@@ -107,20 +111,15 @@ public final class ProtobufSerializerUtils {
         if (!protobufAttribute.protobufGetter().isEmpty()) {
             return protobufAttribute.protobufGetter();
         }
-
-        map.put(fieldName, getter);
         return getter;
     }
 
     public static final String getPojoSetter(ProtobufAttribute protobufAttribute, Field field) {
-        final String fieldName = field.getName();
-        Map<String, String> map = new ConcurrentHashMap<>();
         final String upperCaseFirstFieldName = JStringUtils.upperCaseFirst(field.getName());
         String setter = "set" + upperCaseFirstFieldName;
         if (!protobufAttribute.pojoSetter().isEmpty()) {
             return protobufAttribute.pojoSetter();
         }
-        map.put(fieldName, setter);
         return setter;
     }
 }

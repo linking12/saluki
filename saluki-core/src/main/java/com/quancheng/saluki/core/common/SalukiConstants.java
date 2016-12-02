@@ -20,6 +20,7 @@ public class SalukiConstants {
     public static final String  METHODS_KEY                   = "methods";
     public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
+    public static final String  APPLICATION_NAME              = "applicationName";
 
     public static final String  REGISTRY_RETRY_PERIOD_KEY     = "retry.period";
     public static final int     DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
@@ -43,7 +44,6 @@ public class SalukiConstants {
     public static final String  GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
     public static final String  REMOTE_ADDRESS                = "RmoteAddress";
     public static final String  REGISTRY_SERVER_PORT          = "provider_port";
-    public static final String  REGISTRY_CLIENT_HOST          = "consumer_host";
-    public static final String  REGISTRY_CLIENT_PORT          = "consumer_port";
+    public static final String  REGISTRY_SERVER_PARAM         = "server_info";
 
 }

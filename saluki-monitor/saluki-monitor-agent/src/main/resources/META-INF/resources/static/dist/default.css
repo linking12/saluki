@@ -1,0 +1,25 @@
+body {
+	background-color: #eee
+}
+
+.container {
+	border: 50px solid rgba(255,255,255,0)
+}
+
+.method-info {
+}
+
+.method-test {
+	border-left: 10px solid #d8d8d8
+}
+
+hr {
+	border-width: 10px 0 0 0
+}
+
+.jsoneditor {
+	word-wrap: break-word;
+	word-break: break-all;
+	display: block;
+	width: 100%;
+}

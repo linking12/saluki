@@ -2,8 +2,8 @@ package com.quancheng.saluki.monitor.util;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.quancheng.saluki.monitor.config.MyBatisConfig;
-import com.quancheng.saluki.monitor.config.MyBatisMapperScannerConfig;
+import com.quancheng.saluki.monitor.configuration.MyBatisConfig;
+import com.quancheng.saluki.monitor.configuration.MyBatisMapperScannerConfig;
 
 public class SpringBeanUtils {
 

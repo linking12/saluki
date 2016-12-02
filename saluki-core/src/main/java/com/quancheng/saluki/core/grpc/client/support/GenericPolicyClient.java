@@ -74,10 +74,7 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
 
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            if (args.length != 4) {
-                throw new IllegalArgumentException("generic call args invlid" + args + " args " + args);
-            }
-            GrpcRequest request = new GrpcRequest.Default(this.getServiceName(args), GenericService.class, call);
+            GrpcRequest request = new GrpcRequest.Default(getServiceName(args), getGroup(args), getVersion(args), call);
             GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(this.getMethod(args),
                                                                                     this.getReqAndRepType(args).get(0),
                                                                                     this.getReqAndRepType(args).get(1),
@@ -91,12 +88,20 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
             return (String) args[0];
         }
 
-        private String getMethod(Object[] args) {
+        private String getGroup(Object[] args) {
             return (String) args[1];
         }
 
+        private String getVersion(Object[] args) {
+            return (String) args[2];
+        }
+
+        private String getMethod(Object[] args) {
+            return (String) args[3];
+        }
+
         private List<Class<?>> getReqAndRepType(Object[] args) {
-            String[] paramType = (String[]) args[2];
+            String[] paramType = (String[]) args[4];
             int length = paramType.length;
             if (length != 2) {
                 throw new IllegalArgumentException("generic call request type and response type must transmit"
@@ -124,7 +129,7 @@ public class GenericPolicyClient<T> implements GrpcProtocolClient<T> {
         }
 
         private Object getArg(Object[] args) {
-            Object[] param = (Object[]) args[3];
+            Object[] param = (Object[]) args[5];
             if (param.length != 1) {
                 throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
                                                    + args.length);
