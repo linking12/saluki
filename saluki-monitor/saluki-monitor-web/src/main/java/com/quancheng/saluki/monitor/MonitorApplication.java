@@ -14,6 +14,7 @@ public class MonitorApplication implements EmbeddedServletContainerCustomizer {
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
+        container.setSessionTimeout(30);
         container.setPort(9999);
     }
 

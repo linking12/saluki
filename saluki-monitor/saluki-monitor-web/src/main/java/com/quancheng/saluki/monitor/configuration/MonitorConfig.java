@@ -27,7 +27,7 @@ import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
 
 @Configuration
-public class MonitorDbAndCrosConfig {
+public class MonitorConfig {
 
     private CorsConfiguration buildConfig() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -35,6 +35,15 @@ public class MonitorDbAndCrosConfig {
         corsConfiguration.addAllowedHeader("*"); // 2
         corsConfiguration.addAllowedMethod("*"); // 3
         return corsConfiguration;
+    }
+
+    @Bean
+    public FilterRegistrationBean filterRegistrationBean(LoginFilter loginFilter) {
+        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
+        filterRegistrationBean.setFilter(loginFilter);
+        filterRegistrationBean.setEnabled(true);
+        filterRegistrationBean.addUrlPatterns("/*");
+        return filterRegistrationBean;
     }
 
     @Bean
