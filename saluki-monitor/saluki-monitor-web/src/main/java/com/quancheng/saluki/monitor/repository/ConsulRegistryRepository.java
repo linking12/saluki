@@ -65,29 +65,32 @@ public class ConsulRegistryRepository {
         for (Map.Entry<String, Check> entry : allServices.entrySet()) {
             Check serviceCheck = entry.getValue();
             String group = serviceCheck.getServiceName();
-            Triple<String, String, String> hostPortServiceVersion = getPortHostService(serviceCheck.getServiceId());
-            String hostRpcPort = hostPortServiceVersion.getLeft();
-            String service = hostPortServiceVersion.getMiddle();
-            String version = hostPortServiceVersion.getRight();
-            String serviceKey = generateServicekey(group, service, version);
-            if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
-                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service,
-                                                                                                    version);
-                if (providerAndConsumer != null) {
-                    servicesPassing.put(serviceKey, providerAndConsumer);
+            if (StringUtils.startsWith(group, CONSUL_SERVICE_PRE)) {
+                Triple<String, String, String> hostPortServiceVersion = getPortHostService(serviceCheck.getServiceId());
+                String hostRpcPort = hostPortServiceVersion.getLeft();
+                String service = hostPortServiceVersion.getMiddle();
+                String version = hostPortServiceVersion.getRight();
+                String serviceKey = generateServicekey(group, service, version);
+                if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
+                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service,
+                                                                                                        version);
+                    if (providerAndConsumer != null) {
+                        servicesPassing.put(serviceKey, providerAndConsumer);
+                    }
+                } else {
+                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
+                    SalukiHost providerHost = new SalukiHost(hostRpcPort, "0");
+                    providerHost.setStatus("failing");
+                    providerHost.setUrl("service:" + hostRpcPort + "-" + service);
+                    if (servicesFailing.get(serviceKey) == null) {
+                        Set<SalukiHost> provider = Sets.newHashSet(providerHost);
+                        providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
+                        servicesFailing.put(serviceKey, providerAndConsumer);
+                    }
+                    providerAndConsumer.getLeft().add(providerHost);
                 }
-            } else {
-                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
-                SalukiHost providerHost = new SalukiHost(hostRpcPort, "0");
-                providerHost.setStatus("failing");
-                providerHost.setUrl("service:" + hostRpcPort + "-" + service);
-                if (servicesFailing.get(serviceKey) == null) {
-                    Set<SalukiHost> provider = Sets.newHashSet(providerHost);
-                    providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
-                    servicesFailing.put(serviceKey, providerAndConsumer);
-                }
-                providerAndConsumer.getLeft().add(providerHost);
             }
+
         }
     }
 
