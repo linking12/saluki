@@ -85,12 +85,9 @@ public class ConsulRegistry extends FailbackRegistry {
             // 注册本机地址到consul中
             SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
             client.registerEphemralNode(ephemralNode);
+        } else {
+            notifyListener(url, listener);
         }
-        // 如果缓存中有，先把缓存中的数据吐出去
-        /**
-         * 如果这里缓存小的话，需要再次通知，这里缓存已经设置为1000了，所以没必要再次通知
-         */
-        // notifyListener(url, listener);
     }
 
     /**

@@ -28,20 +28,9 @@ public class ProxyServiceController {
     @SalukiReference(service = "com.quancheng.test.service.UserService", group = "Example", version = "1.0.0")
     private com.quancheng.test.service.UserService userService;
 
-    private final ScheduledExecutorService         scheduledExecutorService = Executors.newScheduledThreadPool(3,
-                                                                                                               new NamedThreadFactory("scheduleTest",
-                                                                                                                                      true));
-
     @RequestMapping("/hello")
     public HelloReply hello() {
-        // scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-        //
-        // @Override
-        // public void run() {
-        // call();
-        //
-        // }
-        // }, 0, 30, TimeUnit.MINUTES);
+
         return call();
     }
 
