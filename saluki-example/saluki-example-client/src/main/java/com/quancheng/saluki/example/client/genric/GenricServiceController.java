@@ -11,7 +11,7 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/genric")
 public class GenricServiceController {
 
-    @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "Example", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "monitor", version = "1.0.0")
     private GenericService genricService;
 
     @RequestMapping("/hello")
