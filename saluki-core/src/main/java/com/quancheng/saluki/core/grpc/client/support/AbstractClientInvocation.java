@@ -114,14 +114,14 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             switch (request.getMethodRequest().getCallType()) {
                 case SalukiConstants.RPCTYPE_ASYNC:
                     respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
-                                                                                              TimeUnit.SECONDS);
+                                                                                              TimeUnit.MILLISECONDS);
                     break;
                 case SalukiConstants.RPCTYPE_BLOCKING:
                     respProtoBufer = grpcAsyncCall.blockingUnaryResult(reqProtoBufer, methodDesc);
                     break;
                 default:
                     respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
-                                                                                              TimeUnit.SECONDS);
+                                                                                              TimeUnit.MILLISECONDS);
                     break;
             }
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
