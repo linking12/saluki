@@ -194,14 +194,16 @@ public class SalukiMonitorDataService {
                                                                           BigDecimal.ROUND_HALF_DOWN);
             // TPS=并发数/平均响应时间
             BigDecimal tps = new BigDecimal(sumConsurrent);
-            if (!averageElapsed.equals(BigDecimal.ZERO)) {
+            if (!(averageElapsed.doubleValue() == 0)) {
                 tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
                 tps = tps.multiply(BigDecimal.valueOf(1000));
                 st.setTps(tps.doubleValue());
+            } else {
+                st.setTps(Double.valueOf(0));
             }
             // kbps=tps*平均每次传输的数据量
             BigDecimal kbps = new BigDecimal(st.getTps());
-            if (!averageElapsed.equals(BigDecimal.ZERO) && !averageInput.equals(BigDecimal.ZERO)) {
+            if (!(averageElapsed.doubleValue() == 0) && !(averageInput.doubleValue() == 0)) {
                 kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
                 st.setKbps(kbps.doubleValue());
             }
