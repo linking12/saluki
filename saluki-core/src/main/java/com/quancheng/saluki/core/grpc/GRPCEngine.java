@@ -2,6 +2,8 @@ package com.quancheng.saluki.core.grpc;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.SSLException;
 
@@ -28,8 +30,10 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 public class GRPCEngine {
 
@@ -98,9 +102,21 @@ public class GRPCEngine {
         }
     }
 
+    private NioEventLoopGroup createBossEventLoopGroup() {
+        ThreadFactory threadFactory = new DefaultThreadFactory("grpc-default-boss-ELG", true);
+        return new NioEventLoopGroup(1, Executors.newCachedThreadPool(threadFactory));
+    }
+
+    private NioEventLoopGroup createWorkEventLoopGroup() {
+        ThreadFactory threadFactory = new DefaultThreadFactory("grpc-default-worker-ELG", true);
+        return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
+    }
+
     public SalukiServer getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception {
         final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(port)//
-                                                                  .sslContext(buildServerSslContext());
+                                                                  .sslContext(buildServerSslContext())//
+                                                                  .bossEventLoopGroup(createBossEventLoopGroup())//
+                                                                  .workerEventLoopGroup(createWorkEventLoopGroup());
         final InProcessServerBuilder injvmServer = InProcessServerBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS);
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();
