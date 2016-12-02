@@ -8,8 +8,8 @@ import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Supplier;
-import com.quancheng.saluki.core.grpc.client.calls.ha.CallOptionsFactory;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.utils.MarshallersAttributesUtils;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
@@ -87,20 +87,20 @@ public class SalukiRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
-            NameResolver.Listener listener = this.nameResolver_Config.get(CallOptionsFactory.NAMERESOVER_LISTENER);
-            List<SocketAddress> registryaddresses = this.nameResolver_Config.get(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY);
+            NameResolver.Listener listener = this.nameResolver_Config.get(MarshallersAttributesUtils.NAMERESOVER_LISTENER);
+            List<SocketAddress> registryaddresses = this.nameResolver_Config.get(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY);
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
             if (listener != null) {
-                data.put(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
+                data.put(MarshallersAttributesUtils.NAMERESOVER_LISTENER, listener);
             }
             if (currentAddress != null) {
-                data.put(CallOptionsFactory.REMOTE_ADDR_KEY, currentAddress);
+                data.put(MarshallersAttributesUtils.REMOTE_ADDR_KEY, currentAddress);
             }
             if (addresses != null) {
-                data.put(CallOptionsFactory.REMOTE_ADDR_KEYS, addresses);
+                data.put(MarshallersAttributesUtils.REMOTE_ADDR_KEYS, addresses);
             }
             if (registryaddresses != null) {
-                data.put(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
+                data.put(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
             }
             /**
              * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处

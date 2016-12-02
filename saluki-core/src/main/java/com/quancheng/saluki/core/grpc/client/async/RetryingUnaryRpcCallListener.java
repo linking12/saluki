@@ -1,7 +1,6 @@
-package com.quancheng.saluki.core.grpc.client.calls.ha;
+package com.quancheng.saluki.core.grpc.client.async;
 
-import com.quancheng.saluki.core.grpc.client.calls.HaAsyncRpc;
-import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
 
 import io.grpc.CallOptions;
 import io.grpc.Metadata;
@@ -15,8 +14,8 @@ public class RetryingUnaryRpcCallListener<RequestT, ResponseT> extends AbstractR
     private ResponseT                   value;
 
     public RetryingUnaryRpcCallListener(RetryOptions retryOptions, RequestT request,
-                                        HaAsyncRpc<RequestT, ResponseT> retryableRpc, CallOptions callOptions,
-                                        Metadata metadata){
+                                        AsyncCallClientInternal<RequestT, ResponseT> retryableRpc,
+                                        CallOptions callOptions, Metadata metadata){
         super(retryOptions, request, retryableRpc, callOptions, metadata);
     }
 

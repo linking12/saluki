@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
+import com.quancheng.saluki.core.grpc.utils.MarshallersAttributesUtils;
 
 import io.grpc.ForwardingServerCall.SimpleForwardingServerCall;
 import io.grpc.Metadata;
@@ -44,7 +44,7 @@ public class HeaderServerInterceptor implements ServerInterceptor {
                 if (status.getCause() != null) {
                     StringWriter sw = new StringWriter();
                     status.getCause().printStackTrace(new PrintWriter(sw));
-                    trailers.put(MarshallersUtils.GRPC_ERRORCAUSE_VALUE, sw.toString());
+                    trailers.put(MarshallersAttributesUtils.GRPC_ERRORCAUSE_VALUE, sw.toString());
                 }
                 super.close(status, trailers);
 
@@ -53,8 +53,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
     }
 
     private void copyMetadataToThreadLocal(Metadata headers) {
-        String attachments = headers.get(MarshallersUtils.GRPC_CONTEXT_ATTACHMENTS);
-        String values = headers.get(MarshallersUtils.GRPC_CONTEXT_VALUES);
+        String attachments = headers.get(MarshallersAttributesUtils.GRPC_CONTEXT_ATTACHMENTS);
+        String values = headers.get(MarshallersAttributesUtils.GRPC_CONTEXT_VALUES);
         try {
             if (attachments != null) {
                 Map<String, String> attachmentsMap = new Gson().fromJson(attachments,

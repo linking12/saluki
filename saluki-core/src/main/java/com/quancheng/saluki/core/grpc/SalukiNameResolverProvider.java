@@ -18,8 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.calls.ha.CallOptionsFactory;
-import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
+import com.quancheng.saluki.core.grpc.utils.MarshallersAttributesUtils;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
@@ -38,7 +37,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
     private final Attributes    attributesParams;
 
     public SalukiNameResolverProvider(SalukiURL refUrl){
-        attributesParams = Attributes.newBuilder().set(MarshallersUtils.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
+        attributesParams = Attributes.newBuilder().set(MarshallersAttributesUtils.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
     }
 
     @Override
@@ -80,7 +79,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         public SalukiNameResolver(URI targetUri, Attributes params){
             SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-            subscribeUrl = params.get(MarshallersUtils.PARAMS_DEFAULT_SUBCRIBE);
+            subscribeUrl = params.get(MarshallersAttributesUtils.PARAMS_DEFAULT_SUBCRIBE);
         }
 
         @Override
@@ -159,10 +158,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         private Attributes buildNameResolverConfig() {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
-                builder.set(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
+                builder.set(MarshallersAttributesUtils.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, addresses);
+                builder.set(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY, addresses);
             }
             return builder.build();
         }

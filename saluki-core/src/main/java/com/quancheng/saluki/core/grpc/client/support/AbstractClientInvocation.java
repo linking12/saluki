@@ -26,8 +26,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
-import com.quancheng.saluki.core.grpc.client.calls.HaClientCalls;
-import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
@@ -102,31 +101,34 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = getChannel(request);
         RetryOptions retryConfig = createRetryOption(methodName);
-        HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
                 case SalukiConstants.RPCTYPE_ASYNC:
-                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
+                    respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
+                                                                                              TimeUnit.SECONDS);
                     break;
                 case SalukiConstants.RPCTYPE_BLOCKING:
-                    respProtoBufer = grpcClient.blockingUnaryResult(reqProtoBufer, methodDesc);
+                    respProtoBufer = grpcAsyncCall.blockingUnaryResult(reqProtoBufer, methodDesc);
                     break;
                 default:
-                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
+                    respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
+                                                                                              TimeUnit.SECONDS);
                     break;
             }
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
             // 收集监控信息
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start,
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
                     false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, true);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
+                    true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;

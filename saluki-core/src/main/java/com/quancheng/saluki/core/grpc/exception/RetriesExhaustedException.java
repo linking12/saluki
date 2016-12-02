@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.calls.ha;
+package com.quancheng.saluki.core.grpc.exception;
 
 import java.io.IOException;
 

@@ -1,11 +1,5 @@
 package com.quancheng.saluki.example.client.proxy;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +8,6 @@ import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.test.model.user.UserCreateRequest;
 import com.quancheng.test.model.user.UserCreateResponse;
 
@@ -22,7 +15,7 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "Example", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "Example", version = "1.0.0", retries = 3)
     private HelloService                           helloService;
 
     @SalukiReference(service = "com.quancheng.test.service.UserService", group = "Example", version = "1.0.0")
