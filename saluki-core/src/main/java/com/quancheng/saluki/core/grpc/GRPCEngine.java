@@ -18,6 +18,7 @@ import com.quancheng.saluki.core.grpc.server.GrpcServerContext;
 import com.quancheng.saluki.core.grpc.utils.SSLUtils;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
+import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
@@ -33,7 +34,6 @@ import io.grpc.netty.NettyServerBuilder;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 public class GRPCEngine {
 
@@ -104,12 +104,12 @@ public class GRPCEngine {
     }
 
     private NioEventLoopGroup createBossEventLoopGroup() {
-        ThreadFactory threadFactory = new DefaultThreadFactory("grpc-default-boss-ELG", true);
+        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-boss-ELG", true);
         return new NioEventLoopGroup(1, Executors.newCachedThreadPool(threadFactory));
     }
 
     private NioEventLoopGroup createWorkEventLoopGroup() {
-        ThreadFactory threadFactory = new DefaultThreadFactory("grpc-default-worker-ELG", true);
+        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-worker-ELG", true);
         return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
     }
 

@@ -1,56 +1,133 @@
 package com.quancheng.saluki.core.utils;
 
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Locale;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.util.concurrent.FastThreadLocal;
+import io.netty.util.concurrent.FastThreadLocalThread;
+import io.netty.util.internal.StringUtil;
 
 public class NamedThreadFactory implements ThreadFactory {
 
-    protected final Logger             logger     = LoggerFactory.getLogger(getClass());
+    private static final AtomicInteger poolId = new AtomicInteger();
 
-    private static final AtomicInteger POOL_SEQ   = new AtomicInteger(1);
+    private final AtomicInteger        nextId = new AtomicInteger();
+    private final String               prefix;
+    private final boolean              daemon;
+    private final int                  priority;
+    protected final ThreadGroup        threadGroup;
 
-    private final AtomicInteger        mThreadNum = new AtomicInteger(1);
-
-    private final String               mPrefix;
-
-    private final boolean              mDaemo;
-
-    private final ThreadGroup          mGroup;
-
-    public NamedThreadFactory(){
-        this("pool-" + POOL_SEQ.getAndIncrement(), false);
+    public NamedThreadFactory(Class<?> poolType){
+        this(poolType, false, Thread.NORM_PRIORITY);
     }
 
-    public NamedThreadFactory(String prefix){
-        this(prefix, false);
+    public NamedThreadFactory(String poolName){
+        this(poolName, false, Thread.NORM_PRIORITY);
     }
 
-    public NamedThreadFactory(String prefix, boolean daemo){
-        mPrefix = prefix + "-thread-";
-        mDaemo = daemo;
-        SecurityManager s = System.getSecurityManager();
-        mGroup = (s == null) ? Thread.currentThread().getThreadGroup() : s.getThreadGroup();
+    public NamedThreadFactory(Class<?> poolType, boolean daemon){
+        this(poolType, daemon, Thread.NORM_PRIORITY);
     }
 
-    public Thread newThread(Runnable runnable) {
-        String name = mPrefix + mThreadNum.getAndIncrement();
-        Thread ret = new Thread(mGroup, runnable, name, 0);
-        ret.setDaemon(mDaemo);
-        ret.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+    public NamedThreadFactory(String poolName, boolean daemon){
+        this(poolName, daemon, Thread.NORM_PRIORITY);
+    }
 
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                logger.error(t.getName() + " excutor failed", e);
+    public NamedThreadFactory(Class<?> poolType, int priority){
+        this(poolType, false, priority);
+    }
+
+    public NamedThreadFactory(String poolName, int priority){
+        this(poolName, false, priority);
+    }
+
+    public NamedThreadFactory(Class<?> poolType, boolean daemon, int priority){
+        this(toPoolName(poolType), daemon, priority);
+    }
+
+    public static String toPoolName(Class<?> poolType) {
+        if (poolType == null) {
+            throw new NullPointerException("poolType");
+        }
+
+        String poolName = StringUtil.simpleClassName(poolType);
+        switch (poolName.length()) {
+            case 0:
+                return "unknown";
+            case 1:
+                return poolName.toLowerCase(Locale.US);
+            default:
+                if (Character.isUpperCase(poolName.charAt(0)) && Character.isLowerCase(poolName.charAt(1))) {
+                    return Character.toLowerCase(poolName.charAt(0)) + poolName.substring(1);
+                } else {
+                    return poolName;
+                }
+        }
+    }
+
+    public NamedThreadFactory(String poolName, boolean daemon, int priority, ThreadGroup threadGroup){
+        if (poolName == null) {
+            throw new NullPointerException("poolName");
+        }
+        if (priority < Thread.MIN_PRIORITY || priority > Thread.MAX_PRIORITY) {
+            throw new IllegalArgumentException("priority: " + priority
+                                               + " (expected: Thread.MIN_PRIORITY <= priority <= Thread.MAX_PRIORITY)");
+        }
+
+        prefix = poolName + '-' + poolId.incrementAndGet() + '-';
+        this.daemon = daemon;
+        this.priority = priority;
+        this.threadGroup = threadGroup;
+    }
+
+    public NamedThreadFactory(String poolName, boolean daemon, int priority){
+        this(poolName, daemon, priority,
+             System.getSecurityManager() == null ? Thread.currentThread().getThreadGroup() : System.getSecurityManager().getThreadGroup());
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread t = newThread(new DefaultRunnableDecorator(r), prefix + nextId.incrementAndGet());
+        try {
+            if (t.isDaemon()) {
+                if (!daemon) {
+                    t.setDaemon(false);
+                }
+            } else {
+                if (daemon) {
+                    t.setDaemon(true);
+                }
             }
-        });
-        return ret;
+
+            if (t.getPriority() != priority) {
+                t.setPriority(priority);
+            }
+        } catch (Exception ignored) {
+            // Doesn't matter even if failed to set.
+        }
+        return t;
     }
 
-    public ThreadGroup getThreadGroup() {
-        return mGroup;
+    protected Thread newThread(Runnable r, String name) {
+        return new FastThreadLocalThread(threadGroup, r, name);
+    }
+
+    private static final class DefaultRunnableDecorator implements Runnable {
+
+        private final Runnable r;
+
+        DefaultRunnableDecorator(Runnable r){
+            this.r = r;
+        }
+
+        @Override
+        public void run() {
+            try {
+                r.run();
+            } finally {
+                FastThreadLocal.removeAll();
+            }
+        }
     }
 }
