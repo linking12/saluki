@@ -47,7 +47,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
     public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
         String serviceDefinPath = grpcProperties.getReferenceDefinition();
-        if (serviceDefinPath != null) {
+        if (StringUtils.isNoneBlank(serviceDefinPath)) {
             InputStream in = SalukiReferenceRunner.class.getClassLoader().getResourceAsStream(serviceDefinPath);
             servcieReferenceDefintions = new Gson().fromJson(new InputStreamReader(in),
                                                              new TypeToken<List<Map<String, String>>>() {
