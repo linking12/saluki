@@ -130,7 +130,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                                 Integer.valueOf(registryPort), //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //
-                                                MonitorService.APPLICATION, providerUrl.getGroup(), //
+                                                MonitorService.APPLICATION,
+                                                providerUrl.getParameter(SalukiConstants.APPLICATION_NAME), //
                                                 MonitorService.INTERFACE, service, //
                                                 MonitorService.METHOD, method, //
                                                 MonitorService.CONSUMER, consumer, //
