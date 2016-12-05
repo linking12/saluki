@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS `saluki_invoke_statistics`;
+DROP TABLE IF EXISTS `saluki_invoke`;
 CREATE TABLE `saluki_invoke` (
   `id` varchar(255),
   `invokeDate` datetime DEFAULT NULL,
