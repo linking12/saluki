@@ -1,5 +1,8 @@
 package com.quancheng.boot.saluki.starter.runner;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -32,14 +35,14 @@ import io.grpc.stub.AbstractStub;
 
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger             logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger        logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
-    private final SalukiProperties          grpcProperties;
-
-    private final List<Map<String, String>> servcieReferenceDefintions;
+    private final SalukiProperties     grpcProperties;
 
     @Autowired
-    private AbstractApplicationContext      applicationContext;
+    private AbstractApplicationContext applicationContext;
+
+    private List<Map<String, String>>  servcieReferenceDefintions;
 
     public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
@@ -50,7 +53,16 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
                                                              new TypeToken<List<Map<String, String>>>() {
                                                              }.getType());
         } else {
-            servcieReferenceDefintions = Lists.newArrayList();
+            String referenceJson = System.getProperty("user.home") + "/saluki/salukireference.json";
+            try {
+                InputStream in = new FileInputStream(new File(referenceJson));
+                servcieReferenceDefintions = new Gson().fromJson(new InputStreamReader(in),
+                                                                 new TypeToken<List<Map<String, String>>>() {
+                                                                 }.getType());
+            } catch (FileNotFoundException e) {
+                logger.warn("There is no file in the path:" + referenceJson);
+                servcieReferenceDefintions = Lists.newArrayList();
+            }
         }
     }
 
