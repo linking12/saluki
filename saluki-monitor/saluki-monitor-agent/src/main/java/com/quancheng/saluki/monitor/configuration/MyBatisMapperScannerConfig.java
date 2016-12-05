@@ -13,7 +13,7 @@ public class MyBatisMapperScannerConfig {
     public MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-        mapperScannerConfigurer.setBasePackage("com.quancheng.saluki.monitor.mapper");
+        mapperScannerConfigurer.setBasePackage("com.quancheng.saluki.monitor.repository");
         return mapperScannerConfigurer;
     }
 }
