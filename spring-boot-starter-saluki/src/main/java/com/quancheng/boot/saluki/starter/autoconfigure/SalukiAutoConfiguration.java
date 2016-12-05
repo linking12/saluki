@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.boot.saluki.starter.runner.SalukiReferenceRunner;
@@ -27,12 +26,12 @@ public class SalukiAutoConfiguration {
 
     private final SalukiProperties grpcProperty;
 
-    private final String           applicationName;
-
     public SalukiAutoConfiguration(SalukiProperties grpcProperty, Environment env){
         this.grpcProperty = grpcProperty;
-        applicationName = env.getProperty("spring.application.name");
-        Preconditions.checkNotNull(applicationName, "spring.application.name can not be null");
+        if (StringUtils.isBlank(grpcProperty.getApplication())) {
+            String appName = env.getProperty("spring.application.name");
+            grpcProperty.setApplication(appName);
+        }
     }
 
     @Bean
@@ -53,16 +52,14 @@ public class SalukiAutoConfiguration {
         public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
             Properties serverInfo = new Properties();
             int httpPort = event.getEmbeddedServletContainer().getPort();
-            if (httpPort != 0) {
-                serverInfo.setProperty("serverHttpPort", String.valueOf(httpPort));
-            }
+            String realHttpPort = System.getProperty("HTTP_PORT", String.valueOf(httpPort));
+            serverInfo.setProperty("serverHttpPort", realHttpPort);
             if (StringUtils.isNotBlank(grpcProperty.getClientHost())) {
                 serverInfo.setProperty("serverHost", String.valueOf(grpcProperty.getClientHost()));
             }
             if (StringUtils.isNoneBlank(grpcProperty.getServerHost())) {
                 serverInfo.setProperty("serverHost", String.valueOf(grpcProperty.getServerHost()));
             }
-            serverInfo.setProperty("appName", applicationName);
             System.setProperty(SalukiConstants.REGISTRY_SERVER_PARAM, new Gson().toJson(serverInfo));
         }
     }

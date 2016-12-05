@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "grpc")
 public class SalukiProperties {
 
+    private String application;
     /**
      * consumer param
      */
@@ -25,6 +26,9 @@ public class SalukiProperties {
 
     private String servcieVersion;
 
+    /**
+     * consul注册中心
+     */
     private String consulIp;
 
     private int    consulPort;
@@ -112,6 +116,14 @@ public class SalukiProperties {
 
     public void setReferenceDefinition(String referenceDefinition) {
         this.referenceDefinition = referenceDefinition;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
     }
 
 }

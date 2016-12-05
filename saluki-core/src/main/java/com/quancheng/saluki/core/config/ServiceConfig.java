@@ -67,6 +67,9 @@ public class ServiceConfig extends BasicConfig {
             if (StringUtils.isNotBlank(config.getVersion())) {
                 params.put(SalukiConstants.VERSION_KEY, config.getVersion());
             }
+            if (StringUtils.isNotBlank(this.application)) {
+                params.put(SalukiConstants.APPLICATION_NAME, this.application);
+            }
             if (StringUtils.isNotBlank(this.getMonitorinterval())) {
                 params.put("monitorinterval", Integer.valueOf(this.getMonitorinterval()).toString());
             }

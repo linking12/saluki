@@ -118,6 +118,7 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
 
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
         ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setApplication(grpcProperties.getApplication());
         String interfaceName = reference.service();
         Pair<String, String> groupVersion = findGroupAndVersion(interfaceName);
         if (StringUtils.isNoneBlank(reference.group())) {

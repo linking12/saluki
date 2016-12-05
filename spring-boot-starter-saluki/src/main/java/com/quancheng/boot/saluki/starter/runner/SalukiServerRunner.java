@@ -88,6 +88,7 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
 
     private ServiceConfig newServiceConfig() {
         ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setApplication(grpcProperties.getApplication());
         serviceConfig.setRegistryName("consul");
         String registryAddress = grpcProperties.getConsulIp();
         Preconditions.checkNotNull(registryAddress, "RegistryAddress can not be null", registryAddress);

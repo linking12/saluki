@@ -180,7 +180,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, Integer.valueOf(consumerPort), //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //
-                                                MonitorService.APPLICATION, refUrl.getGroup(), //
+                                                MonitorService.APPLICATION,
+                                                refUrl.getParameter(SalukiConstants.APPLICATION_NAME), //
                                                 MonitorService.INTERFACE, service, //
                                                 MonitorService.METHOD, method, //
                                                 MonitorService.PROVIDER, provider, //

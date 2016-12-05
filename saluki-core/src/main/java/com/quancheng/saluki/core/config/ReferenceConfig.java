@@ -191,6 +191,9 @@ public class ReferenceConfig extends BasicConfig {
         if (StringUtils.isNotBlank(this.version)) {
             params.put(SalukiConstants.VERSION_KEY, version);
         }
+        if (StringUtils.isNotBlank(this.application)) {
+            params.put(SalukiConstants.APPLICATION_NAME, this.application);
+        }
         if (this.requestTimeout != 0) {
             params.put(SalukiConstants.RPCTIMEOUT_KEY, Integer.valueOf(requestTimeout).toString());
         }
