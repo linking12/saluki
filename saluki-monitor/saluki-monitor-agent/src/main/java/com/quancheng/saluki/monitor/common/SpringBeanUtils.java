@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.util;
+package com.quancheng.saluki.monitor.common;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 

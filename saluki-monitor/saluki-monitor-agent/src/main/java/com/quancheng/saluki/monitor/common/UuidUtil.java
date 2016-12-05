@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.quancheng.saluki.monitor.util;
+package com.quancheng.saluki.monitor.common;
 
 import java.util.UUID;
 
