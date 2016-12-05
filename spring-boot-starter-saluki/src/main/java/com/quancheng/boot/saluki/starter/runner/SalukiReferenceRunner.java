@@ -1,10 +1,16 @@
 package com.quancheng.boot.saluki.starter.runner;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -14,6 +20,9 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.context.support.AbstractApplicationContext;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.config.ReferenceConfig;
@@ -23,15 +32,26 @@ import io.grpc.stub.AbstractStub;
 
 public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final Logger        logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
+    private static final Logger             logger = LoggerFactory.getLogger(SalukiReferenceRunner.class);
 
-    private final SalukiProperties     grpcProperties;
+    private final SalukiProperties          grpcProperties;
+
+    private final List<Map<String, String>> servcieReferenceDefintions;
 
     @Autowired
-    private AbstractApplicationContext applicationContext;
+    private AbstractApplicationContext      applicationContext;
 
     public SalukiReferenceRunner(SalukiProperties grpcProperties){
         this.grpcProperties = grpcProperties;
+        String serviceDefinPath = grpcProperties.getReferenceDefinition();
+        if (serviceDefinPath != null) {
+            InputStream in = SalukiReferenceRunner.class.getClassLoader().getResourceAsStream(serviceDefinPath);
+            servcieReferenceDefintions = new Gson().fromJson(new InputStreamReader(in),
+                                                             new TypeToken<List<Map<String, String>>>() {
+                                                             }.getType());
+        } else {
+            servcieReferenceDefintions = Lists.newArrayList();
+        }
     }
 
     @Override
@@ -72,21 +92,35 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
         }
     }
 
+    private Pair<String, String> findGroupAndVersion(String serviceName) {
+        for (Map<String, String> referenceDefintion : servcieReferenceDefintions) {
+            String servcieDefineName = referenceDefintion.get("service");
+            if (servcieDefineName.equals(serviceName)) {
+                String group = referenceDefintion.get("group");
+                String version = referenceDefintion.get("version");
+                return new ImmutablePair<String, String>(group, version);
+            }
+        }
+        return null;
+    }
+
     private Object refer(SalukiReference reference, Class<?> referenceClass) {
         ReferenceConfig referenceConfig = new ReferenceConfig();
+        String interfaceName = reference.service();
+        Pair<String, String> groupVersion = findGroupAndVersion(interfaceName);
         if (StringUtils.isNoneBlank(reference.group())) {
             referenceConfig.setGroup(reference.group());
         } else {
-            String group = grpcProperties.getReferenceGroup();
-            Preconditions.checkNotNull(group, "Group can not be null", group);
+            Preconditions.checkNotNull(groupVersion, "Group can not be null");
+            String group = groupVersion.getLeft();
             referenceConfig.setGroup(group);
         }
         if (StringUtils.isNoneBlank(reference.version())) {
             referenceConfig.setVersion(reference.version());
         } else {
-            String version = grpcProperties.getReferenceVersion();
-            Preconditions.checkNotNull(version, "Version can not be null", version);
-            referenceConfig.setVersion(version);
+            Preconditions.checkNotNull(groupVersion, "version can not be null");
+            String group = groupVersion.getRight();
+            referenceConfig.setGroup(group);
         }
         if (reference.retries() > 1
             && (reference.hastrategyMethod() == null || reference.hastrategyMethod().length == 0)) {
@@ -94,7 +128,6 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             referenceConfig.setMethodNames(new HashSet<String>(Arrays.asList(reference.hastrategyMethod())));
             referenceConfig.setReties(reference.retries());
         }
-        String interfaceName = reference.service();
         Preconditions.checkNotNull(interfaceName, "interfaceName can not be null", interfaceName);
         referenceConfig.setInterfaceName(interfaceName);
         referenceConfig.setRegistryName("consul");

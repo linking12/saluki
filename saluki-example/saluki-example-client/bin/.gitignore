@@ -3,3 +3,5 @@
 /.DS_Store
 /application.properties
 /log4j.properties
+/salukidefinitions.json
+/SalukiServiceDefinition.json
