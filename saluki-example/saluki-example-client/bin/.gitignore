@@ -5,3 +5,6 @@
 /log4j.properties
 /salukidefinitions.json
 /SalukiServiceDefinition.json
+/SalukiReferenceDefinition.json
+/salukireference.json
+/META-INF/
