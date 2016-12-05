@@ -21,7 +21,7 @@ import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.monitor.SalukiInvoke;
 import com.quancheng.saluki.monitor.common.DateUtil;
 import com.quancheng.saluki.monitor.common.SpringBeanUtils;
-import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
+import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
 @RestController
 @RequestMapping("/salukiMonitor")

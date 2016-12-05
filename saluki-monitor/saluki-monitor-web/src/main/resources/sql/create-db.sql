@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `saluki_invoke`;
 CREATE TABLE `saluki_invoke` (
   `id` varchar(255),
   `invokeDate` datetime DEFAULT NULL,
+  `application` varchar(255) DEFAULT NULL,
   `service` varchar(255) DEFAULT NULL,
   `method` varchar(255) DEFAULT NULL,
   `consumer` varchar(255) DEFAULT NULL,

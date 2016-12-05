@@ -1,4 +1,4 @@
-package com.quancheng.saluki.monitor.mapper;
+package com.quancheng.saluki.monitor.repository;
 
 import java.util.List;
 

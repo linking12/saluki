@@ -14,6 +14,8 @@ public class SalukiInvoke implements Serializable {
 
     private Date              invokeDate;
 
+    private String            application;
+
     private String            service;
 
     private String            method;
@@ -181,6 +183,14 @@ public class SalukiInvoke implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
     }
 
 }

@@ -10,7 +10,7 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
 import com.quancheng.saluki.monitor.common.SpringBeanUtils;
 import com.quancheng.saluki.monitor.common.UuidUtil;
-import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
+import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
 public class SalukiMonitorService implements MonitorService {
 
