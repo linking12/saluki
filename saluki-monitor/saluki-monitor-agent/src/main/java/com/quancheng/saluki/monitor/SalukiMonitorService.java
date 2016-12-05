@@ -40,6 +40,7 @@ public class SalukiMonitorService implements MonitorService {
                 invoke.setProvider(statistics.getAddress());
             }
             invoke.setInvokeDate(new Date(Long.valueOf(statistics.getParameter(TIMESTAMP))));
+            invoke.setApplication(statistics.getParameter(APPLICATION));
             invoke.setService(statistics.getServiceInterface());
             invoke.setMethod(statistics.getParameter(METHOD));
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 1));

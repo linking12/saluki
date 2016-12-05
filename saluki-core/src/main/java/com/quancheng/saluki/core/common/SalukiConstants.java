@@ -20,7 +20,7 @@ public class SalukiConstants {
     public static final String  METHODS_KEY                   = "methods";
     public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
-    public static final String  APPLICATION_NAME              = "applicationName";
+    public static final String  APPLICATION_NAME              = "application";
 
     public static final String  REGISTRY_RETRY_PERIOD_KEY     = "retry.period";
     public static final int     DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
