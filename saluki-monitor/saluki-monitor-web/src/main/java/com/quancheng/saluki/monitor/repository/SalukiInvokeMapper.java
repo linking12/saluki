@@ -15,4 +15,8 @@ public interface SalukiInvokeMapper {
 
     List<SalukiInvokeStatistics> queryData(Map<String, String> paramter);
 
+    List<Map<String, String>> queryConsumer();
+
+    Map<String, String> queryProvider(Map<String, String> paramter);
+
 }
