@@ -136,5 +136,5 @@ dependencies {
 * monitor
 引入monitor agent
 ```
-gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.1+
+gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.5+
 ```
