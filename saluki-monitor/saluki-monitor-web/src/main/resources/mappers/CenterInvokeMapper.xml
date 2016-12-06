@@ -5,24 +5,24 @@
 
 	<insert id="addInvoke" parameterType="java.util.List">
 		insert into saluki_invoke (
-				id,
-				invokeDate,
-				application,
-				service,
-				method,
-				consumer,
-				provider,
-				type,
-				success,
-				failure,
-				elapsed,
-				concurrent,
-				maxInput,
-				maxOutput,
-				maxElapsed,
-				maxConcurrent,
-				input,
-				output
+		id,
+		invokeDate,
+		application,
+		service,
+		method,
+		consumer,
+		provider,
+		type,
+		success,
+		failure,
+		elapsed,
+		concurrent,
+		maxInput,
+		maxOutput,
+		maxElapsed,
+		maxConcurrent,
+		input,
+		output
 		)
 		values
 		<foreach collection="list" item="data" separator="," index="index">
@@ -51,20 +51,21 @@
 
 	<select id="queryData" parameterType="java.util.Map"
 		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
-		SELECT 
+		SELECT
 		<choose>
-             <when test="interval =='day'">
-                   date_format(invokeDate,'%Y-%m-%d') as invokeDate,
-            </when>
-            <otherwise>
-                   date_format(invokeDate,'%Y-%m-%d %H:00:00') as invokeDate,
-           </otherwise>
-         </choose>
+			<when test="interval =='day'">
+				date_format(invokeDate,'%Y-%m-%d') as invokeDate,
+			</when>
+			<otherwise>
+				date_format(invokeDate,'%Y-%m-%d %H:00:00') as invokeDate,
+			</otherwise>
+		</choose>
 		sum(concurrent) as sumConcurrent,
 		sum(success) as sumSuccess,
 		sum(failure) as sumFailure,
 		sum(input) as sumInput,
-		sum(output) as sumOutput,
+		sum(output) as
+		sumOutput,
 		sum(elapsed) as sumElapsed,
 		max(maxInput) as maxInput,
 		max(maxOutput) as maxOutput,
@@ -86,21 +87,46 @@
 			AND provider=#{ip}
 		</if>
 		<if test="invokeDateFrom != null">
-            AND invokeDate &gt;= DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d %H:%i:%s')
-        </if>
-        <if test="invokeDateTo != null">
-            AND invokeDate &lt;= DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d %H:%i:%s')
-        </if>
+			AND invokeDate &gt;=
+			DATE_FORMAT(#{invokeDateFrom},'%Y-%m-%d %H:%i:%s')
+		</if>
+		<if test="invokeDateTo != null">
+			AND invokeDate &lt;= DATE_FORMAT(#{invokeDateTo},'%Y-%m-%d
+			%H:%i:%s')
+		</if>
 		<choose>
-            <when test="interval =='day'">
-                  group by date_format(invokeDate,"%Y-%m-%d")
-            </when>
-            <otherwise>
-                  group by date_format(invokeDate,"%Y-%m-%d %H")
-           </otherwise>
-         </choose>
+			<when test="interval =='day'">
+				group by date_format(invokeDate,"%Y-%m-%d")
+			</when>
+			<otherwise>
+				group by date_format(invokeDate,"%Y-%m-%d %H")
+			</otherwise>
+		</choose>
 		ORDER BY invokeDate DESC
 	</select>
+
+
+	<select id="queryConsumer" resultType="java.util.Map">
+		SELECT
+		sum(success)+sum(failure) as callCount,
+		application,
+		provider,
+		service 
+	    FROM
+		saluki_invoke 
+		where type='consumer' 
+		group by application,service;
+	</select>
+	
+	<select id="queryProvider" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT * from saluki_invoke 
+		where 
+		type='provider'
+		and service=#{service}
+		and provider like CONCAT('${provider}','%' )
+		group by application;
+	</select>
+	
 
 
 </mapper>
