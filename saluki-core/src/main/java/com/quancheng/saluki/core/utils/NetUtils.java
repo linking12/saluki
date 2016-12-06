@@ -113,12 +113,19 @@ public class NetUtils {
         return isInvalidLocalHost(host) ? new InetSocketAddress(port) : new InetSocketAddress(host, port);
     }
 
-    private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
+    private static final Pattern IP_PATTERN = Pattern.compile("([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}");
 
     private static boolean isValidAddress(InetAddress address) {
         if (address == null || address.isLoopbackAddress()) return false;
         String name = address.getHostAddress();
-        return (name != null && !ANYHOST.equals(name) && !LOCALHOST.equals(name) && IP_PATTERN.matcher(name).matches());
+        return (name != null && !ANYHOST.equals(name) && !LOCALHOST.equals(name) && isIP(name));
+    }
+
+    public static boolean isIP(String addr) {
+        if (addr.length() < 7 || addr.length() > 15 || "".equals(addr)) {
+            return false;
+        }
+        return IP_PATTERN.matcher(addr).find();
     }
 
     public static String getLocalHost() {

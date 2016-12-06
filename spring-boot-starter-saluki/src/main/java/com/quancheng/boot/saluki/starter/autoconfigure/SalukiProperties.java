@@ -5,14 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "grpc")
 public class SalukiProperties {
 
+    private String application;
     /**
      * consumer param
      */
     private String clientHost;
 
-    private String referenceGroup;
-
-    private String referenceVersion;
+    private String referenceDefinition;
 
     /**
      * provider param
@@ -27,6 +26,9 @@ public class SalukiProperties {
 
     private String servcieVersion;
 
+    /**
+     * consul注册中心
+     */
     private String consulIp;
 
     private int    consulPort;
@@ -84,22 +86,6 @@ public class SalukiProperties {
         this.servcieVersion = servcieVersion;
     }
 
-    public String getReferenceGroup() {
-        return referenceGroup;
-    }
-
-    public void setReferenceGroup(String referenceGroup) {
-        this.referenceGroup = referenceGroup;
-    }
-
-    public String getReferenceVersion() {
-        return referenceVersion;
-    }
-
-    public void setReferenceVersion(String referenceVersion) {
-        this.referenceVersion = referenceVersion;
-    }
-
     public String getServerHost() {
         return serverHost;
     }
@@ -122,6 +108,22 @@ public class SalukiProperties {
 
     public void setMonitorInterval(String monitorInterval) {
         this.monitorInterval = monitorInterval;
+    }
+
+    public String getReferenceDefinition() {
+        return referenceDefinition;
+    }
+
+    public void setReferenceDefinition(String referenceDefinition) {
+        this.referenceDefinition = referenceDefinition;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
     }
 
 }

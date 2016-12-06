@@ -25,7 +25,7 @@ public class SalukiMonitor implements MonitorService {
 
     private static final int                                         LENGTH                   = 10;
 
-    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(3,
+    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(1,
                                                                                                                                  new NamedThreadFactory("SalukiMonitorSendTimer",
                                                                                                                                                         true));
 
@@ -39,7 +39,7 @@ public class SalukiMonitor implements MonitorService {
 
     public SalukiMonitor(SalukiURL url){
         this.monitorServices = findMonitor();
-        this.monitorInterval = url.getParameter("monitorinterval", 1);
+        this.monitorInterval = url.getParameter("monitorinterval", 60);
         // 启动统计信息收集定时器
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
@@ -113,7 +113,6 @@ public class SalukiMonitor implements MonitorService {
                     }
                 } while (!reference.compareAndSet(current, update));
             }
-
         }
     }
 

@@ -2,6 +2,8 @@ package com.quancheng.saluki.core.grpc;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.SSLException;
 
@@ -16,6 +18,7 @@ import com.quancheng.saluki.core.grpc.server.GrpcServerContext;
 import com.quancheng.saluki.core.grpc.utils.SSLUtils;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
+import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
@@ -28,6 +31,7 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 
@@ -63,6 +67,7 @@ public class GRPCEngine {
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//
                                                  .negotiationType(NegotiationType.TLS)//
+                                                 .eventLoopGroup(createWorkEventLoopGroup())//
                                                  .build();//
                 }
                 return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
@@ -98,9 +103,21 @@ public class GRPCEngine {
         }
     }
 
+    private NioEventLoopGroup createBossEventLoopGroup() {
+        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-boss-ELG", true);
+        return new NioEventLoopGroup(1, Executors.newCachedThreadPool(threadFactory));
+    }
+
+    private NioEventLoopGroup createWorkEventLoopGroup() {
+        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-worker-ELG", true);
+        return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
+    }
+
     public SalukiServer getServer(Map<SalukiURL, Object> providerUrls, int port) throws Exception {
         final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(port)//
-                                                                  .sslContext(buildServerSslContext());
+                                                                  .sslContext(buildServerSslContext())//
+                                                                  .bossEventLoopGroup(createBossEventLoopGroup())//
+                                                                  .workerEventLoopGroup(createWorkEventLoopGroup());
         final InProcessServerBuilder injvmServer = InProcessServerBuilder.forName(SalukiConstants.GRPC_IN_LOCAL_PROCESS);
         for (Map.Entry<SalukiURL, Object> entry : providerUrls.entrySet()) {
             SalukiURL providerUrl = entry.getKey();

@@ -20,7 +20,7 @@ public class SalukiConstants {
     public static final String  METHODS_KEY                   = "methods";
     public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
-    public static final String  APPLICATION_NAME              = "applicationName";
+    public static final String  APPLICATION_NAME              = "application";
 
     public static final String  REGISTRY_RETRY_PERIOD_KEY     = "retry.period";
     public static final int     DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
@@ -39,7 +39,7 @@ public class SalukiConstants {
     public static final int     RPCTYPE_ASYNC                 = 1;
     public static final int     RPCTYPE_BLOCKING              = 2;
 
-    public static final int     DEFAULT_TIMEOUT               = 60;
+    public static final int     DEFAULT_TIMEOUT               = 5000;
     public static final boolean DEFAULT_GENERIC               = false;
     public static final String  GRPC_IN_LOCAL_PROCESS         = "LocalProcess";
     public static final String  REMOTE_ADDRESS                = "RmoteAddress";

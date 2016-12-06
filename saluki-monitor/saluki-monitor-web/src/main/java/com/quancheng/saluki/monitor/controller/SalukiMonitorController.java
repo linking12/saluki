@@ -23,11 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.service.SalukiMonitorDataService;
 
 @RestController
-@RequestMapping(value = "monitor")
+@RequestMapping(value = "/api/monitor")
 public class SalukiMonitorController {
 
     private Logger                   log = Logger.getLogger(SalukiMonitorController.class);

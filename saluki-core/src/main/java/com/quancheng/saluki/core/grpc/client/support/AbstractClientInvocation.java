@@ -26,8 +26,7 @@ import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
-import com.quancheng.saluki.core.grpc.client.calls.HaClientCalls;
-import com.quancheng.saluki.core.grpc.client.calls.RetryOptions;
+import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
@@ -39,7 +38,7 @@ import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
 /**
- * <strong>描述：</strong>TODO 描述 <br>
+ * <strong>描述：</strong><br>
  * <strong>功能：</strong><br>
  * <strong>使用场景：</strong><br>
  * <strong>注意事项：</strong>
@@ -48,15 +47,20 @@ import io.grpc.MethodDescriptor;
  * </ul>
  * 
  * @author shimingliu 2016年10月18日 下午11:20:15
- * @version $Id: AbstractClientInvocation.java, v 0.0.1 2016年10月18日 下午11:20:15 shimingliu Exp $
+ * @version : AbstractClientInvocation.java, v 0.0.1 2016年10月18日 下午11:20:15 shimingliu
  */
 public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
+
     private final MonitorService                       salukiMonitor;
+
     private final Cache<String, Channel>               channelCache;
+
     private final Map<String, Integer>                 methodRetries;
+
     private final SalukiURL                            refUrl;
+
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries, SalukiURL refUrl){
@@ -102,31 +106,33 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = getChannel(request);
         RetryOptions retryConfig = createRetryOption(methodName);
-        HaClientCalls grpcClient = new HaClientCalls.Default(channel, retryConfig);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
                 case SalukiConstants.RPCTYPE_ASYNC:
-                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
+                    respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
+                                                                                              TimeUnit.MILLISECONDS);
                     break;
                 case SalukiConstants.RPCTYPE_BLOCKING:
-                    respProtoBufer = grpcClient.blockingUnaryResult(reqProtoBufer, methodDesc);
+                    respProtoBufer = grpcAsyncCall.blockingUnaryResult(reqProtoBufer, methodDesc);
                     break;
                 default:
-                    respProtoBufer = grpcClient.unaryFuture(reqProtoBufer, methodDesc).get(timeOut, TimeUnit.SECONDS);
+                    respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
+                                                                                              TimeUnit.MILLISECONDS);
                     break;
             }
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
-            // 收集监控信息
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start,
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
                     false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcClient.getRemoteAddress(), start, true);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
+                    true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -153,7 +159,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
-    // 信息采集
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {
@@ -165,15 +170,18 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = ((InetSocketAddress) remoteAddress).getHostName();// 服务端主机
+            InetSocketAddress remote = (InetSocketAddress) remoteAddress;
+            String provider = remote.getHostName();// 服务端主机
             String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
             Properties serverProperty = new Gson().fromJson(serverInfo, Properties.class);
             String consumerHost = serverProperty.getProperty("serverHost");
-            String host = consumerHost != null ? consumerHost : refUrl.getHost();
-            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, 0, //
+            String consumerPort = serverProperty.getProperty("serverHttpPort");
+            String host = (consumerHost != null ? consumerHost : refUrl.getHost());
+            salukiMonitor.collect(new SalukiURL(SalukiConstants.MONITOR_PROTOCOL, host, Integer.valueOf(consumerPort), //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //
-                                                MonitorService.APPLICATION, refUrl.getGroup(), //
+                                                MonitorService.APPLICATION,
+                                                refUrl.getParameter(SalukiConstants.APPLICATION_NAME), //
                                                 MonitorService.INTERFACE, service, //
                                                 MonitorService.METHOD, method, //
                                                 MonitorService.PROVIDER, provider, //

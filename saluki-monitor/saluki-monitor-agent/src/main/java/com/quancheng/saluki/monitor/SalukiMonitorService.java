@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
-import com.quancheng.saluki.monitor.mapper.SalukiInvokeMapper;
-import com.quancheng.saluki.monitor.util.SpringBeanUtils;
-import com.quancheng.saluki.monitor.util.UuidUtil;
+import com.quancheng.saluki.monitor.common.SpringBeanUtils;
+import com.quancheng.saluki.monitor.common.UuidUtil;
+import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
 public class SalukiMonitorService implements MonitorService {
 
@@ -32,14 +32,15 @@ public class SalukiMonitorService implements MonitorService {
             invoke.setId(UuidUtil.createUUID());
             if (statistics.hasParameter(PROVIDER)) {
                 invoke.setType(CONSUMER);
-                invoke.setConsumer(statistics.getHost());
+                invoke.setConsumer(statistics.getAddress());
                 invoke.setProvider(statistics.getParameter(PROVIDER));
             } else {
                 invoke.setType(PROVIDER);
                 invoke.setConsumer(statistics.getParameter(CONSUMER));
-                invoke.setProvider(statistics.getHost());
+                invoke.setProvider(statistics.getAddress());
             }
             invoke.setInvokeDate(new Date(Long.valueOf(statistics.getParameter(TIMESTAMP))));
+            invoke.setApplication(statistics.getParameter(APPLICATION));
             invoke.setService(statistics.getServiceInterface());
             invoke.setMethod(statistics.getParameter(METHOD));
             invoke.setConcurrent(statistics.getParameter(CONCURRENT, 1));

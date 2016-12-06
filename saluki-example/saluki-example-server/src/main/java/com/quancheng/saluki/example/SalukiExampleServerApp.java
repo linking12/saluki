@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class SalukiExampleServerApp implements EmbeddedServletContainerCustomizer {
 
     public static void main(String[] args) {
-
+        
         SpringApplication.run(SalukiExampleServerApp.class, args);
     }
 

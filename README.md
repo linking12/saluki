@@ -58,13 +58,13 @@ public abstract interface UserService
 * 添加spring-boot-saluki依赖
 
 ```
-        gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.1+
+        gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.5+
         
         maven:
         <dependency>
 			<groupId>com.quancheng</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.5.0-SNAPSHOT</version>
 		</dependency>
 		
 		 
@@ -137,24 +137,4 @@ dependencies {
 引入monitor agent
 ```
 gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.1+
-```
-
-产生监控数据
-jdbc:mysql://db004.qc.com:3306/saluki-monitor
-
-```
-  `id`  调用uuid
-  `invoke_date` 拦截时间  
-  `service`  服务名
-  `method`   服务方法名
-  `consumer`  客户端ip
-  `provider`  服务端ip
-  `type`      此次调用是属于客户端的数据还是服务端的数据
-  `invoke_time` 拦截时间
-  `success`  是否成功
-  `failure`  是否失败
-  `elapsed`  消耗时间
-  `concurrent`  并发数
-  `max_elapsed`  最大消耗时间  未启用
-  `max_concurrent`  最大并发数 未启用
 ```

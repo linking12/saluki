@@ -19,7 +19,6 @@ import com.quancheng.saluki.core.common.SalukiURL;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.monitor.MonitorService;
-import com.quancheng.saluki.core.grpc.monitor.SalukiMonitor;
 import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 import com.quancheng.saluki.core.utils.NetUtils;
 import com.quancheng.saluki.core.utils.ReflectUtil;
@@ -46,10 +45,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     private final ConcurrentMap<String, AtomicInteger> concurrents;
 
     public ServerInvocation(Object serviceToInvoke, Method method, SalukiURL providerUrl,
-                            ConcurrentMap<String, AtomicInteger> concurrents){
+                            ConcurrentMap<String, AtomicInteger> concurrents, MonitorService salukiMonitor){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
-        this.salukiMonitor = new SalukiMonitor(providerUrl);
+        this.salukiMonitor = salukiMonitor;
         this.providerUrl = providerUrl;
         this.concurrents = concurrents;
     }
@@ -131,7 +130,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                                 Integer.valueOf(registryPort), //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //
-                                                MonitorService.APPLICATION, providerUrl.getGroup(), //
+                                                MonitorService.APPLICATION,
+                                                providerUrl.getParameter(SalukiConstants.APPLICATION_NAME), //
                                                 MonitorService.INTERFACE, service, //
                                                 MonitorService.METHOD, method, //
                                                 MonitorService.CONSUMER, consumer, //

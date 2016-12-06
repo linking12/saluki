@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,12 +57,13 @@ public class ConsulRegistryService {
 
     private void processApplication(Map<String, SalukiApplication> appCache,
                                     Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry) {
-        Pair<String, String> appNameService = getAppNameService(entry.getKey());
+        Triple<String, String, String> appNameServiceVersion = getAppNameServiceVersion(entry.getKey());
         Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = entry.getValue();
-        String appName = appNameService.getLeft();
-        String serviceName = appNameService.getRight();
+        String appName = appNameServiceVersion.getLeft();
+        String serviceName = appNameServiceVersion.getMiddle();
+        String version = appNameServiceVersion.getRight();
         SalukiApplication application = new SalukiApplication(appName);
-        SalukiService service = new SalukiService(appName, serviceName);
+        SalukiService service = new SalukiService(appName, version, serviceName);
         if (providerConsumer.getLeft() != null) {
             service.addProviderHosts(providerConsumer.getLeft());
         }
@@ -109,9 +111,9 @@ public class ConsulRegistryService {
         Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesPassing = registryRepository.getAllPassingService();
         for (Map.Entry<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> entry : servicesPassing.entrySet()) {
             String serviceKey = entry.getKey();
-            Pair<String, String> appNameService = getAppNameService(serviceKey);
-            String appName = appNameService.getLeft();
-            String serviceName = appNameService.getRight();
+            Triple<String, String, String> appNameServiceVersion = getAppNameServiceVersion(serviceKey);
+            String appName = appNameServiceVersion.getLeft();
+            String serviceName = appNameServiceVersion.getMiddle();
             if (dimension.equals("service")) {
                 if (accurate) {
                     if (StringUtils.equalsIgnoreCase(serviceName, search)) {
@@ -142,9 +144,10 @@ public class ConsulRegistryService {
         Map<String, Pair<Set<SalukiHost>, Set<SalukiHost>>> servicesPassing = registryRepository.getAllPassingService();
         for (Iterator<String> it = queryCondition.iterator(); it.hasNext();) {
             String serviceKey = it.next();
-            Pair<String, String> appNameService = getAppNameService(serviceKey);
+            Triple<String, String, String> appNameServiceVersion = getAppNameServiceVersion(serviceKey);
             Pair<Set<SalukiHost>, Set<SalukiHost>> providerConsumer = servicesPassing.get(serviceKey);
-            SalukiService service = new SalukiService(appNameService.getLeft(), appNameService.getRight());
+            SalukiService service = new SalukiService(appNameServiceVersion.getLeft(), appNameServiceVersion.getRight(),
+                                                      appNameServiceVersion.getMiddle());
             service.setProviderHost(providerConsumer.getLeft());
             service.setConsumerHost(providerConsumer.getRight());
             services.add(service);
@@ -155,9 +158,9 @@ public class ConsulRegistryService {
     /**
      * ==============help method=============
      */
-    private Pair<String, String> getAppNameService(String serviceKey) {
+    private Triple<String, String, String> getAppNameServiceVersion(String serviceKey) {
         String[] args = serviceKey.split(":");
-        return new ImmutablePair<String, String>(args[0], args[1]);
+        return new ImmutableTriple<String, String, String>(args[0], args[1], args[2]);
     }
 
 }

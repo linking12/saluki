@@ -22,6 +22,13 @@ public class SalukiHost implements Serializable {
         this.rpcPort = rpcPort;
     }
 
+    public SalukiHost(String hostRpcPort, String httpPort){
+        String[] hostRpcPort_ = hostRpcPort.split(":");
+        this.host = hostRpcPort_[0];
+        this.httpPort = httpPort;
+        this.rpcPort = hostRpcPort_[1];
+    }
+
     public String getStatus() {
         return status;
     }

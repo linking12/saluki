@@ -1,8 +1,10 @@
 package com.quancheng.saluki.core.grpc;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,11 +18,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.SalukiURL;
-import com.quancheng.saluki.core.grpc.client.calls.ha.CallOptionsFactory;
-import com.quancheng.saluki.core.grpc.utils.MarshallersUtils;
+import com.quancheng.saluki.core.grpc.utils.MarshallersAttributesUtils;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
+import com.quancheng.saluki.core.utils.NetUtils;
 
 import io.grpc.Attributes;
 import io.grpc.NameResolver;
@@ -35,7 +37,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
     private final Attributes    attributesParams;
 
     public SalukiNameResolverProvider(SalukiURL refUrl){
-        attributesParams = Attributes.newBuilder().set(MarshallersUtils.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
+        attributesParams = Attributes.newBuilder().set(MarshallersAttributesUtils.PARAMS_DEFAULT_SUBCRIBE, refUrl).build();
     }
 
     @Override
@@ -77,7 +79,7 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         public SalukiNameResolver(URI targetUri, Attributes params){
             SalukiURL registryUrl = SalukiURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-            subscribeUrl = params.get(MarshallersUtils.PARAMS_DEFAULT_SUBCRIBE);
+            subscribeUrl = params.get(MarshallersAttributesUtils.PARAMS_DEFAULT_SUBCRIBE);
         }
 
         @Override
@@ -89,6 +91,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
         public final synchronized void refresh() {
             Preconditions.checkState(listener != null, "not started");
             List<SalukiURL> urls = registry.discover(subscribeUrl);
+            if (log.isInfoEnabled()) {
+                log.info("Grpc nameresolve refreshed,Receive notify from registry, prividerUrl is"
+                         + Arrays.toString(urls.toArray()));
+            }
             notifyLoadBalance(urls);
         }
 
@@ -96,6 +102,10 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
             @Override
             public void notify(List<SalukiURL> urls) {
+                if (log.isInfoEnabled()) {
+                    log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
+                             + Arrays.toString(urls.toArray()));
+                }
                 notifyLoadBalance(urls);
             }
 
@@ -103,19 +113,27 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<SalukiURL> urls) {
             if (urls != null && !urls.isEmpty()) {
-                if (log.isInfoEnabled()) {
-                    log.info("Receive notify from registry, prividerUrl is" + Arrays.toString(urls.toArray()));
-                }
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
                     SalukiURL url = urls.get(i);
-                    String ip = url.getHost();
+                    String host = url.getHost();
                     int port = url.getPort();
-                    SocketAddress sock = new InetSocketAddress(InetAddresses.forString(ip), port);
-                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
-                    servers.add(serverInfo);
-                    addresses.add(sock);
+                    if (NetUtils.isIP(host)) {
+                        SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
+                        addSocketAddress(servers, addresses, sock);
+                    } else {
+                        try {
+                            InetAddress[] inetAddrs = getAllByName(host);
+                            for (int j = 0; j < inetAddrs.length; j++) {
+                                InetAddress inetAddr = inetAddrs[j];
+                                SocketAddress sock = new InetSocketAddress(inetAddr, port);
+                                addSocketAddress(servers, addresses, sock);
+                            }
+                        } catch (UnknownHostException e) {
+                            SalukiNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
+                        }
+                    }
                 }
                 this.addresses = addresses;
                 Attributes config = this.buildNameResolverConfig();
@@ -126,13 +144,24 @@ public class SalukiNameResolverProvider extends NameResolverProvider {
             }
         }
 
+        private void addSocketAddress(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+                                      SocketAddress sock) {
+            ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
+            servers.add(serverInfo);
+            addresses.add(sock);
+        }
+
+        private InetAddress[] getAllByName(String host) throws UnknownHostException {
+            return InetAddress.getAllByName(host);
+        }
+
         private Attributes buildNameResolverConfig() {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
-                builder.set(CallOptionsFactory.NAMERESOVER_LISTENER, listener);
+                builder.set(MarshallersAttributesUtils.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(CallOptionsFactory.REMOTE_ADDR_KEYS_REGISTRY, addresses);
+                builder.set(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY, addresses);
             }
             return builder.build();
         }

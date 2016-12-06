@@ -65,28 +65,32 @@ public class ConsulRegistryRepository {
         for (Map.Entry<String, Check> entry : allServices.entrySet()) {
             Check serviceCheck = entry.getValue();
             String group = serviceCheck.getServiceName();
-            Triple<String, String, String> PortHostService = getPortHostService(serviceCheck.getServiceId());
-            String host = PortHostService.getMiddle();
-            String rpcPort = PortHostService.getLeft();
-            String service = PortHostService.getRight();
-            String serviceKey = generateServicekey(group, service);
-            if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
-                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service);
-                if (providerAndConsumer != null) {
-                    servicesPassing.put(serviceKey, providerAndConsumer);
+            if (StringUtils.startsWith(group, CONSUL_SERVICE_PRE)) {
+                Triple<String, String, String> hostPortServiceVersion = getPortHostService(serviceCheck.getServiceId());
+                String hostRpcPort = hostPortServiceVersion.getLeft();
+                String service = hostPortServiceVersion.getMiddle();
+                String version = hostPortServiceVersion.getRight();
+                String serviceKey = generateServicekey(group, service, version);
+                if (serviceCheck.getStatus() == Check.CheckStatus.PASSING) {
+                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = getProviderAndConsumer(group, service,
+                                                                                                        version);
+                    if (providerAndConsumer != null) {
+                        servicesPassing.put(serviceKey, providerAndConsumer);
+                    }
+                } else {
+                    Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
+                    SalukiHost providerHost = new SalukiHost(hostRpcPort, "0");
+                    providerHost.setStatus("failing");
+                    providerHost.setUrl("service:" + hostRpcPort + "-" + service);
+                    if (servicesFailing.get(serviceKey) == null) {
+                        Set<SalukiHost> provider = Sets.newHashSet(providerHost);
+                        providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
+                        servicesFailing.put(serviceKey, providerAndConsumer);
+                    }
+                    providerAndConsumer.getLeft().add(providerHost);
                 }
-            } else {
-                Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
-                SalukiHost providerHost = new SalukiHost(host, "0", rpcPort);
-                providerHost.setStatus("failing");
-                providerHost.setUrl("service:" + host + ":" + rpcPort + "-" + service);
-                if (servicesFailing.get(serviceKey) == null) {
-                    Set<SalukiHost> provider = Sets.newHashSet(providerHost);
-                    providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
-                    servicesFailing.put(serviceKey, providerAndConsumer);
-                }
-                providerAndConsumer.getLeft().add(providerHost);
             }
+
         }
     }
 
@@ -98,10 +102,12 @@ public class ConsulRegistryRepository {
         return this.servicesFailing;
     }
 
-    private Pair<Set<SalukiHost>, Set<SalukiHost>> getProviderAndConsumer(String group, String service) {
+    private Pair<Set<SalukiHost>, Set<SalukiHost>> getProviderAndConsumer(String group, String service,
+                                                                          String version) {
         Set<SalukiHost> providerHosts = Sets.newHashSet();
         Set<SalukiHost> comsumerHosts = Sets.newHashSet();
-        List<String> providerAndConsumerKvs = consulClient.getKVKeysOnly(group + "/" + service).getValue();
+        List<String> providerAndConsumerKvs = consulClient.getKVKeysOnly(group + "/" + service + "/"
+                                                                         + version).getValue();
         if (providerAndConsumerKvs != null) {
             for (String providerAndConsumerKv : providerAndConsumerKvs) {
                 Triple<String, String, String> machineInfo = getmachineInfo(providerAndConsumerKv,
@@ -137,24 +143,27 @@ public class ConsulRegistryRepository {
         Map<String, String> machineInfo = gson.fromJson(serverInfo, Map.class);
         String flagAndIp = StringUtils.remove(providerAndConsumerKv, groupService + "/");
         String[] serverInfos = StringUtils.split(flagAndIp, "/");
-        String machineFlag = serverInfos[0];
-        String machineIpAndRpcPort = serverInfos[1];
+        String version = serverInfos[0];
+        String machineFlag = serverInfos[1];
+        String machineIpAndRpcPort = serverInfos[2];
         String machineHttpPort = machineInfo.get("serverHttpPort");
         return new ImmutableTriple<String, String, String>(machineFlag, machineIpAndRpcPort, machineHttpPort);
     }
 
     private Triple<String, String, String> getPortHostService(String serviceId) {
-        String[] args = serviceId.split("-");
-        String[] hostRpcPort = StringUtils.split(args[0], ":");
-        String host = hostRpcPort[0];
-        String port = hostRpcPort[1];
+        String[] args = StringUtils.split(serviceId, "-");
+        String hostRpcPort = args[0];
         String service = args[1];
-        return new ImmutableTriple<String, String, String>(port, host, service);
+        String version = "1.0.0";
+        if (args.length > 2) {
+            version = args[2];
+        }
+        return new ImmutableTriple<String, String, String>(hostRpcPort, service, version);
     }
 
-    private String generateServicekey(String group, String service) {
-        // 含义是在某一个应用下有某一个服务
-        return StringUtils.remove(group, CONSUL_SERVICE_PRE) + ":" + service;
+    private String generateServicekey(String group, String service, String version) {
+        // 含义是在某一个应用下有某一个服务,其版本是多少
+        return StringUtils.remove(group, CONSUL_SERVICE_PRE) + ":" + service + ":" + version;
     }
 
     /**

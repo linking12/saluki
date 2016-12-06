@@ -21,6 +21,8 @@ public final class SalukiConsulEphemralNode {
 
     private final String      group;
 
+    private final String      version;
+
     private final String      serviceName;
 
     private final String      interval;
@@ -35,6 +37,7 @@ public final class SalukiConsulEphemralNode {
         String serverInfo = System.getProperty(SalukiConstants.REGISTRY_SERVER_PARAM);
         this.serverInfo = serverInfo;
         this.group = builder.group;
+        this.version = builder.version;
         this.serviceName = builder.serviceName;
         this.interval = builder.interval;
         this.flag = builder.flag;
@@ -62,11 +65,11 @@ public final class SalukiConsulEphemralNode {
     public String getSessionName() {
         String key;
         if (this.flag.equals("provider")) {
-            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_provider" + "_"
-                  + this.host + "_" + this.rpcPort;
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_" + this.version
+                  + "_provider" + "_" + this.host + "_" + this.rpcPort;
         } else {
-            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_consumer" + "_"
-                  + this.host + "_" + this.httpServerPort;
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "_" + this.serviceName + "_" + this.version
+                  + "_consumer" + "_" + this.host + "_" + this.httpServerPort;
         }
         try {
             return URLEncoder.encode(key, "UTF-8");
@@ -80,11 +83,11 @@ public final class SalukiConsulEphemralNode {
     public String getKey() {
         String key;
         if (this.flag.equals("provider")) {
-            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/provider" + "/"
-                  + this.host + ":" + this.rpcPort;
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/" + this.version
+                  + "/provider" + "/" + this.host + ":" + this.rpcPort;
         } else {
-            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/consumer" + "/"
-                  + this.host + ":" + this.httpServerPort;
+            key = ConsulRegistry.CONSUL_SERVICE_PRE + this.group + "/" + this.serviceName + "/" + this.version
+                  + "/consumer" + "/" + this.host + ":" + this.httpServerPort;
         }
         return key;
     }
@@ -123,11 +126,18 @@ public final class SalukiConsulEphemralNode {
 
         private String group;
 
+        private String version;
+
         private String serviceName;
 
         private String interval;
 
         private String flag;
+
+        public Builder withVersion(String version) {
+            this.version = substituteEnvironmentVariables(version);
+            return this;
+        }
 
         public Builder withFlag(String flag) {
             this.flag = substituteEnvironmentVariables(flag);

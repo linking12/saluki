@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.quancheng.saluki.serializer.exception.ProtobufException;
+import com.quancheng.saluki.serializer.pojo.PhoneType;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ProtobufSerializerToProtobufTest {
@@ -35,6 +36,7 @@ public class ProtobufSerializerToProtobufTest {
         Map<String, String> mapTest = new HashMap<String, String>();
         mapTest.put("123", "123");
         address.setMapTest(mapTest);
+        address.setPhoneType(PhoneType.HOME);
         // Setup POJO Person
         person = new com.quancheng.saluki.serializer.pojo.Person();
         person.setName("Erick");

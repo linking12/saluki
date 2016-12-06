@@ -9,12 +9,12 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomi
 public class MonitorApplication implements EmbeddedServletContainerCustomizer {
 
     public static void main(String[] args) {
-
         SpringApplication.run(MonitorApplication.class, args);
     }
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
+        container.setSessionTimeout(30);
         container.setPort(9999);
     }
 

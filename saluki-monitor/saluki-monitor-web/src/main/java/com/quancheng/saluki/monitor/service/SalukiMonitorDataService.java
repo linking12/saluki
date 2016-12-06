@@ -38,7 +38,7 @@ import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.utils.NamedThreadFactory;
 import com.quancheng.saluki.monitor.SalukiHost;
 import com.quancheng.saluki.monitor.SalukiInvoke;
-import com.quancheng.saluki.monitor.model.SalukiInvokeStatistics;
+import com.quancheng.saluki.monitor.SalukiInvokeStatistics;
 import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
@@ -76,7 +76,7 @@ public class SalukiMonitorDataService {
             public void run() {
                 syncAndClearData();
             }
-        }, 0, 1, TimeUnit.MINUTES);
+        }, 0, 120, TimeUnit.MINUTES);
     }
 
     private void syncAndClearData() {
@@ -194,14 +194,16 @@ public class SalukiMonitorDataService {
                                                                           BigDecimal.ROUND_HALF_DOWN);
             // TPS=并发数/平均响应时间
             BigDecimal tps = new BigDecimal(sumConsurrent);
-            if (!averageElapsed.equals(BigDecimal.ZERO)) {
+            if (!(averageElapsed.doubleValue() == 0)) {
                 tps = tps.divide(averageElapsed, 2, BigDecimal.ROUND_HALF_DOWN);
                 tps = tps.multiply(BigDecimal.valueOf(1000));
                 st.setTps(tps.doubleValue());
+            } else {
+                st.setTps(Double.valueOf(0));
             }
             // kbps=tps*平均每次传输的数据量
             BigDecimal kbps = new BigDecimal(st.getTps());
-            if (!averageElapsed.equals(BigDecimal.ZERO) && !averageInput.equals(BigDecimal.ZERO)) {
+            if (!(averageElapsed.doubleValue() == 0) && !(averageInput.doubleValue() == 0)) {
                 kbps = kbps.multiply(averageInput.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_DOWN));
                 st.setKbps(kbps.doubleValue());
             }

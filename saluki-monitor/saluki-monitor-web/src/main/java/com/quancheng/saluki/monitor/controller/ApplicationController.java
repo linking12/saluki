@@ -12,7 +12,7 @@ import com.quancheng.saluki.monitor.SalukiApplication;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
 @RestController
-@RequestMapping(value = "application")
+@RequestMapping(value = "/api/application")
 public class ApplicationController {
 
     private Logger                log = Logger.getLogger(ApplicationController.class);

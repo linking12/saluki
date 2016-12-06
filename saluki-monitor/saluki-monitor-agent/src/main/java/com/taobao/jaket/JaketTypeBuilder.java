@@ -1,13 +1,18 @@
 package com.taobao.jaket;
 
-import com.taobao.jaket.builder.*;
-import com.taobao.jaket.model.TypeDefinition;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.quancheng.saluki.monitor.invoke.TypeDefinition;
+import com.taobao.jaket.builder.ArrayTypeBuilder;
+import com.taobao.jaket.builder.CollectionTypeBuilder;
+import com.taobao.jaket.builder.DefaultTypeBuilder;
+import com.taobao.jaket.builder.EnumTypeBuilder;
+import com.taobao.jaket.builder.MapTypeBuilder;
+import com.taobao.jaket.builder.TypeBuilder;
 
 /**
  * Created by huangsheng.hs on 2015/1/27.

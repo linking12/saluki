@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.quancheng.saluki.serializer.converter.NullConverter;
 import com.quancheng.saluki.serializer.exception.ProtobufAnnotationException;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
@@ -34,36 +35,39 @@ public class ProtobufSerializer implements IProtobufSerializer {
             }
 
             final Map<Field, ProtobufAttribute> protoBufFields = ProtobufSerializerUtils.getAllProtbufFields(fromClazz);
-            if (protoBufFields.isEmpty()) {
-                return null;
-            }
-
             final Method newBuilderMethod = protoClazz.getMethod("newBuilder");
             final Builder protoObjBuilder = (Builder) newBuilderMethod.invoke(null);
-            for (Entry<Field, ProtobufAttribute> entry : protoBufFields.entrySet()) {
-                final Field field = entry.getKey();
-                final ProtobufAttribute gpbAnnotation = entry.getValue();
-                // 1. Determine validity of value
-                Object value = getPojoFieldValue(pojo, gpbAnnotation, field);
-                // If value is null and it is not required, skip, as the default for Protobuf values is null
-                if (value == null) {
-                    continue;
-                }
-                // 2. Call recursively if this is a ProtobufEntity
-                value = serializeToProtobufEntity(value);
-                // 3. Handle POJO Collections/Lists
-                if (value instanceof Collection) {
-                    value = convertCollectionToProtobufs((Collection<Object>) value);
-                    if (((Collection) value).isEmpty()) {
+            if (protoBufFields.isEmpty()) {
+                return protoObjBuilder.build();
+            } else {
+                for (Entry<Field, ProtobufAttribute> entry : protoBufFields.entrySet()) {
+                    final Field field = entry.getKey();
+                    final ProtobufAttribute gpbAnnotation = entry.getValue();
+                    // 1. Determine validity of value
+                    Object value = getPojoFieldValue(pojo, gpbAnnotation, field);
+                    // If value is null and it is not required, skip, as the default for Protobuf values is null
+                    if (value == null) {
                         continue;
                     }
+                    // 2. Call recursively if this is a ProtobufEntity
+                    value = serializeToProtobufEntity(value);
+                    // 3. Handle POJO Collections/Lists
+                    if (value instanceof Collection) {
+                        value = convertCollectionToProtobufs((Collection<Object>) value);
+                        if (((Collection) value).isEmpty()) {
+                            continue;
+                        }
+                    }
+                    // 4. Determine the setter name
+                    final String setter = ProtobufSerializerUtils.getProtobufSetter(gpbAnnotation, field, value);
+                    if (value instanceof Enum) {
+                        value = JReflectionUtils.runMethod(value, "getNumber");
+                    }
+                    // 5. Finally, set the value on the Builder
+                    setProtobufFieldValue(gpbAnnotation, protoObjBuilder, setter, value);
                 }
-                // 4. Determine the setter name
-                final String setter = ProtobufSerializerUtils.getProtobufSetter(gpbAnnotation, field, value);
-                // 5. Finally, set the value on the Builder
-                setProtobufFieldValue(gpbAnnotation, protoObjBuilder, setter, value);
+                return protoObjBuilder.build();
             }
-            return protoObjBuilder.build();
 
         } catch (Exception e) {
             throw new ProtobufException("Could not generate Protobuf object for " + pojo.getClass() + ": " + e, e);
@@ -79,28 +83,35 @@ public class ProtobufSerializer implements IProtobufSerializer {
             }
 
             final Map<Field, ProtobufAttribute> protobufFields = ProtobufSerializerUtils.getAllProtbufFields(pojoClazz);
-            if (protobufFields.isEmpty()) {
-                throw new ProtobufException("No protoBuf fields have been annotated on the class " + pojoClazz
-                                            + ", thus cannot continue.");
-            }
             Object pojo = pojoClazz.newInstance();
-            for (Entry<Field, ProtobufAttribute> entry : protobufFields.entrySet()) {
-                final Field field = entry.getKey();
-                final ProtobufAttribute protobufAttribute = entry.getValue();
-                final String setter = ProtobufSerializerUtils.getPojoSetter(protobufAttribute, field);
-                Object protobufValue = getProtobufFieldValue(protobuf, protobufAttribute, field);
-                if (protobufValue == null) {
-                    continue;
+            // 如果是空对象，直接构造一个空对象返回出去
+            if (protobufFields.isEmpty()) {
+                return pojo;
+            } else {
+                for (Entry<Field, ProtobufAttribute> entry : protobufFields.entrySet()) {
+                    final Field field = entry.getKey();
+                    final ProtobufAttribute protobufAttribute = entry.getValue();
+                    final String setter = ProtobufSerializerUtils.getPojoSetter(protobufAttribute, field);
+                    Object protobufValue = getProtobufFieldValue(protobuf, protobufAttribute, field);
+                    if (protobufValue == null) {
+                        continue;
+                    }
+                    if (protobufValue instanceof Message) {
+                        Class<?> pojoClzz = field.getType();
+                        Object potoValue = fromProtobuf((Message) protobufValue, pojoClzz);
+                        setPojoFieldValue(pojo, setter, potoValue, protobufAttribute);
+                    } else if (protobufValue instanceof ProtocolMessageEnum) {
+                        Class<?> enumClzz = field.getType();
+                        ProtocolMessageEnum protocolEnum = (ProtocolMessageEnum) protobufValue;
+                        Object enumValue = JReflectionUtils.runStaticMethod(enumClzz, "forNumber",
+                                                                            protocolEnum.getNumber());
+                        setPojoFieldValue(pojo, setter, enumValue, protobufAttribute);
+                    } else {
+                        setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute);
+                    }
                 }
-                if (protobufValue instanceof Message) {
-                    Class<?> pojoClzz = field.getType();
-                    Object potoValue = fromProtobuf((Message) protobufValue, pojoClzz);
-                    setPojoFieldValue(pojo, setter, potoValue, protobufAttribute);
-                } else {
-                    setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute);
-                }
+                return pojo;
             }
-            return pojo;
         } catch (Exception e) {
             throw new ProtobufException("Could not generate POJO of type " + pojoClazz + " from Protobuf object "
                                         + protobuf.getClass() + ": " + e, e);
