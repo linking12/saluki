@@ -81,7 +81,7 @@ public class ConsulRegistryRepository {
                     Pair<Set<SalukiHost>, Set<SalukiHost>> providerAndConsumer = servicesFailing.get(serviceKey);
                     SalukiHost providerHost = new SalukiHost(hostRpcPort, "0");
                     providerHost.setStatus("failing");
-                    providerHost.setUrl("service:" + hostRpcPort + "-" + service);
+                    providerHost.setUrl("service:" + hostRpcPort + "-" + service + "-" + version);
                     if (servicesFailing.get(serviceKey) == null) {
                         Set<SalukiHost> provider = Sets.newHashSet(providerHost);
                         providerAndConsumer = new ImmutablePair<Set<SalukiHost>, Set<SalukiHost>>(provider, null);
@@ -119,7 +119,8 @@ public class ConsulRegistryRepository {
                 if (appFlag.equals("provider")) {
                     SalukiHost host = new SalukiHost(appHostRpcPort[0], appHttpPort, appHostRpcPort[1]);
                     host.setStatus("passing");
-                    host.setUrl("service:" + appHostRpcPort[0] + ":" + appHostRpcPort[1] + "-" + service);
+                    host.setUrl("service:" + appHostRpcPort[0] + ":" + appHostRpcPort[1] + "-" + service + "-"
+                                + version);
                     providerHosts.add(host);
                 } // 对于consumer端，需要取注册的参数做为应用名
                 else if (appFlag.equals("consumer")) {
