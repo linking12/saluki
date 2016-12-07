@@ -24,9 +24,9 @@ public class SalukiMonitorDataDependcy {
     private static final int   PAGE_SIZE = 5;
 
     public List<SalukiAppDependcy> queryApplicationDependcy(int pageNum) {
-        Map<String, String> consumerParam = Maps.newHashMap();
+        Map<String, Integer> consumerParam = Maps.newHashMap();
         consumerParam.put("p1", getPageStart(pageNum));
-        consumerParam.put("p2", Integer.valueOf(PAGE_SIZE).toString());
+        consumerParam.put("p2", PAGE_SIZE);
         List<Map<String, String>> allConsumers = invokeMapper.queryConsumer(consumerParam);
         Map<String, Set<String>> depencyApp = Maps.newHashMap();
         Map<String, Set<Pair<String, Integer>>> depencyService = Maps.newHashMap();
@@ -66,12 +66,12 @@ public class SalukiMonitorDataDependcy {
         return appDepency;
     }
 
-    private String getPageStart(int pageNum) {
+    private int getPageStart(int pageNum) {
         int pageStart = (pageNum - 1) * PAGE_SIZE;
         if (pageStart <= 0) {
             pageStart = 0;
         }
-        return Integer.valueOf(pageStart).toString();
+        return pageStart;
     }
 
 }
