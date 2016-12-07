@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import com.quancheng.saluki.monitor.SalukiAppDependcy;
 import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
@@ -24,14 +21,13 @@ public class SalukiMonitorDataDependcy {
     @Autowired
     private SalukiInvokeMapper invokeMapper;
 
-    @PostConstruct
-    public void init() {
-        List<SalukiAppDependcy> dependcys = queryApplicationDependcy();
-        System.out.println(new Gson().toJson(dependcys));
-    }
+    private static final int   PAGE_SIZE = 5;
 
-    public List<SalukiAppDependcy> queryApplicationDependcy() {
-        List<Map<String, String>> allConsumers = invokeMapper.queryConsumer();
+    public List<SalukiAppDependcy> queryApplicationDependcy(int pageNum) {
+        Map<String, String> consumerParam = Maps.newHashMap();
+        consumerParam.put("p1", getPageStart(pageNum));
+        consumerParam.put("p2", Integer.valueOf(PAGE_SIZE).toString());
+        List<Map<String, String>> allConsumers = invokeMapper.queryConsumer(consumerParam);
         Map<String, Set<String>> depencyApp = Maps.newHashMap();
         Map<String, Set<Pair<String, Integer>>> depencyService = Maps.newHashMap();
         for (Map<String, String> consumer : allConsumers) {
@@ -69,6 +65,13 @@ public class SalukiMonitorDataDependcy {
         }
         return appDepency;
     }
-    
-    
+
+    private String getPageStart(int pageNum) {
+        int pageStart = (pageNum - 1) * PAGE_SIZE;
+        if (pageStart <= 0) {
+            pageStart = 0;
+        }
+        return Integer.valueOf(pageStart).toString();
+    }
+
 }

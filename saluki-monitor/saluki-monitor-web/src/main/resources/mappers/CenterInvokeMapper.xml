@@ -106,7 +106,7 @@
 	</select>
 
 
-	<select id="queryConsumer" resultType="java.util.Map">
+	<select id="queryConsumer" parameterType="java.util.Map" resultType="java.util.Map">
 		SELECT
 		sum(success)+sum(failure) as callCount,
 		application,
@@ -115,7 +115,7 @@
 	    FROM
 		saluki_invoke 
 		where type='consumer' 
-		group by application,service;
+		group by application,service limit #{p1},#{p2}
 	</select>
 	
 	<select id="queryProvider" parameterType="java.util.Map" resultType="java.util.Map">
