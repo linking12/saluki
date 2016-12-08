@@ -102,7 +102,7 @@
 				group by date_format(invokeDate,"%Y-%m-%d %H")
 			</otherwise>
 		</choose>
-		ORDER BY invokeDate DESC
+		ORDER BY invokeDate ASC
 	</select>
 
 
