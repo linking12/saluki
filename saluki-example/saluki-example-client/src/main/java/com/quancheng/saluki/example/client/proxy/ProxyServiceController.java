@@ -15,15 +15,14 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "monitor", version = "1.0.0", retries = 3)
+    @SalukiReference(service = "com.quancheng.examples.service.HelloService", retries = 3)
     private HelloService                           helloService;
 
-    @SalukiReference(service = "com.quancheng.test.service.UserService", group = "monitor", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.test.service.UserService")
     private com.quancheng.test.service.UserService userService;
 
     @RequestMapping("/hello")
     public HelloReply hello() {
-
         return call();
     }
 

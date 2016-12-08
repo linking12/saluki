@@ -132,8 +132,8 @@ public class SalukiReferenceRunner extends InstantiationAwareBeanPostProcessorAd
             referenceConfig.setVersion(reference.version());
         } else {
             Preconditions.checkNotNull(groupVersion, "version can not be null");
-            String group = groupVersion.getRight();
-            referenceConfig.setGroup(group);
+            String version = groupVersion.getRight();
+            referenceConfig.setVersion(version);
         }
         if (reference.retries() > 1
             && (reference.hastrategyMethod() == null || reference.hastrategyMethod().length == 0)) {
