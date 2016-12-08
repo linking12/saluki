@@ -1,12 +1,13 @@
 package com.quancheng.saluki.monitor.web;
 
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-@EnableWebMvc
 @Configuration
+@AutoConfigureAfter(WebMvcAutoConfiguration.class)
 public class MonitorWebConfig extends WebMvcConfigurerAdapter {
 
     @Override
