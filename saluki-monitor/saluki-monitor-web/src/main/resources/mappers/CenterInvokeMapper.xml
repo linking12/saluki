@@ -64,8 +64,7 @@
 		sum(success) as sumSuccess,
 		sum(failure) as sumFailure,
 		sum(input) as sumInput,
-		sum(output) as
-		sumOutput,
+		sum(output) as sumOutput,
 		sum(elapsed) as sumElapsed,
 		max(maxInput) as maxInput,
 		max(maxOutput) as maxOutput,
