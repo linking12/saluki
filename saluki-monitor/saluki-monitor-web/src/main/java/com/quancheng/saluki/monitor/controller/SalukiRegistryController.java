@@ -14,9 +14,9 @@ import com.quancheng.saluki.monitor.service.ConsulRegistryService;
 
 @RestController
 @RequestMapping(value = "/api/service")
-public class SalukiServiceController {
+public class SalukiRegistryController {
 
-    private Logger                log = Logger.getLogger(ApplicationController.class);
+    private Logger                log = Logger.getLogger(SalukiRegistryController.class);
 
     @Autowired
     private ConsulRegistryService registrySerivce;
