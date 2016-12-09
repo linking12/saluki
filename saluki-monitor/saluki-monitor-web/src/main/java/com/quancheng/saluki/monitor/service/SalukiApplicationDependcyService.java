@@ -16,7 +16,7 @@ import com.quancheng.saluki.monitor.SalukiAppDependcy;
 import com.quancheng.saluki.monitor.repository.SalukiInvokeMapper;
 
 @Service
-public class SalukiMonitorDataDependcy {
+public class SalukiApplicationDependcyService {
 
     @Autowired
     private SalukiInvokeMapper invokeMapper;

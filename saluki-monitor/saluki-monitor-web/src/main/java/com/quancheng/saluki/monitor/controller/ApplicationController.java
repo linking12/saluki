@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.quancheng.saluki.monitor.SalukiAppDependcy;
 import com.quancheng.saluki.monitor.SalukiApplication;
 import com.quancheng.saluki.monitor.service.ConsulRegistryService;
-import com.quancheng.saluki.monitor.service.SalukiMonitorDataDependcy;
+import com.quancheng.saluki.monitor.service.SalukiApplicationDependcyService;
 
 @RestController
 @RequestMapping(value = "/api/application")
@@ -24,7 +24,7 @@ public class ApplicationController {
     private ConsulRegistryService     registrySerivce;
 
     @Autowired
-    private SalukiMonitorDataDependcy appDependcyService;
+    private SalukiApplicationDependcyService appDependcyService;
 
     @RequestMapping(value = "list", method = RequestMethod.GET)
     public List<SalukiApplication> listAllApps() {
