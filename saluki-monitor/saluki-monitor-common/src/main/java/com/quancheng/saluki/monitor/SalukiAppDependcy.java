@@ -12,6 +12,10 @@ public class SalukiAppDependcy {
 
     private Set<SalukiAppDependcyParent> dependcyApps;
 
+    public SalukiAppDependcy(String appName){
+        this.appName = appName;
+    }
+
     public String getAppName() {
         return appName;
     }
@@ -35,7 +39,7 @@ public class SalukiAppDependcy {
         this.dependcyApps.add(dependcyApp);
     }
 
-    public void addDependcyService(String parentApp, Set<Pair<String, Integer>> serviceCallCounts) {
+    public void addDependcyService(String parentApp, Pair<String, Integer> serviceCallCount) {
         if (this.dependcyApps == null) {
             this.dependcyApps = Sets.newHashSet();
         }
@@ -49,7 +53,7 @@ public class SalukiAppDependcy {
             parentToAdd = new SalukiAppDependcyParent();
             parentToAdd.setAppName(parentApp);
         }
-        parentToAdd.addDependcyService(serviceCallCounts);
+        parentToAdd.addDependcyService(serviceCallCount);
     }
 
     public static class SalukiAppDependcyParent {
@@ -74,14 +78,12 @@ public class SalukiAppDependcy {
             this.dependcyServices = dependcyServices;
         }
 
-        public void addDependcyService(Set<Pair<String, Integer>> serviceCallCounts) {
+        public void addDependcyService(Pair<String, Integer> serviceCallCount) {
             if (this.dependcyServices == null) {
                 this.dependcyServices = Sets.newHashSet();
             }
-            for (Pair<String, Integer> serviceCallCount : serviceCallCounts) {
-                this.dependcyServices.add(new SalukiServiceDependcy(serviceCallCount.getLeft(),
-                                                                    serviceCallCount.getRight()));
-            }
+            this.dependcyServices.add(new SalukiServiceDependcy(serviceCallCount.getLeft(),
+                                                                serviceCallCount.getRight()));
 
         }
     }
