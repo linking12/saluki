@@ -59,8 +59,8 @@ public class SalukiApplicationDependcyService {
             SalukiAppDependcy salukiAppDependcy = new SalukiAppDependcy();
             String appName = entry.getKey();
             salukiAppDependcy.setAppName(appName);
-            salukiAppDependcy.setDependcyApps(depencyApp.get(appName));
-            salukiAppDependcy.addDependcyService(depencyService.get(appName));
+            // salukiAppDependcy.setDependcyApps(depencyApp.get(appName));
+            // salukiAppDependcy.addDependcyService(depencyService.get(appName));
             appDepency.add(salukiAppDependcy);
         }
         return appDepency;
