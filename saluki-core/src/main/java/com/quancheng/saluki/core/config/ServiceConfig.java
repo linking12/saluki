@@ -73,8 +73,8 @@ public class ServiceConfig extends BasicConfig {
             if (StringUtils.isNotBlank(this.getMonitorinterval())) {
                 params.put("monitorinterval", Integer.valueOf(this.getMonitorinterval()).toString());
             }
-            Boolean isNotLocalHost = !(NetUtils.LOCALHOST.equals(this.host));
-            String localIp = isNotLocalHost ? this.host : NetUtils.getLocalHost();
+            Boolean isLocalHost = NetUtils.isLocalHost(this.host);
+            String localIp = isLocalHost || StringUtils.isBlank(this.host) ? NetUtils.getLocalHost() : this.host;
             SalukiURL providerUrl = new SalukiURL(SalukiConstants.DEFATULT_PROTOCOL, localIp, port, protocol, params);
             providerUrls.put(providerUrl, protocolImpl);
         }

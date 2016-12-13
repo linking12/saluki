@@ -176,17 +176,6 @@ public class NetUtils {
 
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
-        /**
-         * 这里如果装了虚拟机，本地获取ip是错误的
-         */
-        // try {
-        // localAddress = InetAddress.getLocalHost();
-        // if (isValidAddress(localAddress)) {
-        // return localAddress;
-        // }
-        // } catch (Throwable e) {
-        // logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
-        // }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             if (interfaces != null) {
@@ -284,4 +273,9 @@ public class NetUtils {
         return sb.toString();
     }
 
+    public static void main(String[] args) {
+        String ip = "";
+        System.out.println(isLocalHost(ip));
+
+    }
 }
