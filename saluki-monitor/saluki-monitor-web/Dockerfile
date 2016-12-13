@@ -7,6 +7,5 @@ RUN chmod +x /root/*.sh;mkdir /root/logs
 ENV JAVA_OPTS ""
 ENV APP_NAME saluki-monitor-web
 ENV SPRING-
-ENV SPRING_PROFILES_ACTIVE local
 WORKDIR /root
 CMD ["./start.sh"]
