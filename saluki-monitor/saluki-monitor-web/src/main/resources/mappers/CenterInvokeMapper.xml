@@ -114,7 +114,7 @@
 	    FROM
 		saluki_invoke 
 		where type='consumer' 
-		group by application,service limit #{p1},#{p2}
+		group by application,service
 	</select>
 	
 	<select id="queryProvider" parameterType="java.util.Map" resultType="java.util.Map">

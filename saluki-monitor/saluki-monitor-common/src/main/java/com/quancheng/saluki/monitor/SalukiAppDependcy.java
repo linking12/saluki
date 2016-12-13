@@ -54,6 +54,7 @@ public class SalukiAppDependcy {
             parentToAdd.setAppName(parentApp);
         }
         parentToAdd.addDependcyService(serviceCallCount);
+        this.dependcyApps.add(parentToAdd);
     }
 
     public static class SalukiAppDependcyParent {

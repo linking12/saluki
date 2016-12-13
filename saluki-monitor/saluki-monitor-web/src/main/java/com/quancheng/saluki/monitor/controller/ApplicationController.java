@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.saluki.monitor.SalukiAppDependcy;
@@ -18,10 +17,10 @@ import com.quancheng.saluki.monitor.service.SalukiAppDependcyService;
 @RequestMapping(value = "/api/application")
 public class ApplicationController {
 
-    private Logger                    log = Logger.getLogger(ApplicationController.class);
+    private Logger                   log = Logger.getLogger(ApplicationController.class);
 
     @Autowired
-    private ConsulRegistryService     registrySerivce;
+    private ConsulRegistryService    registrySerivce;
 
     @Autowired
     private SalukiAppDependcyService appDependcyService;
@@ -33,9 +32,8 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "dependcy", method = RequestMethod.GET)
-    public List<SalukiAppDependcy> listDependcyApps(@RequestParam(value = "pageNo", required = true) String pageNo) {
-        Integer pageNum = Integer.valueOf(pageNo);
-        return appDependcyService.queryApplicationDependcy(pageNum);
+    public List<SalukiAppDependcy> listDependcyApps() {
+        return appDependcyService.queryApplicationDependcy();
     }
 
 }

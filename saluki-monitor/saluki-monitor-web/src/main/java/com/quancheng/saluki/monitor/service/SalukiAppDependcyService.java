@@ -18,13 +18,8 @@ public class SalukiAppDependcyService {
     @Autowired
     private SalukiInvokeMapper invokeMapper;
 
-    private static final int   PAGE_SIZE = 5;
-
-    public List<SalukiAppDependcy> queryApplicationDependcy(int pageNum) {
-        Map<String, Integer> consumerParam = Maps.newHashMap();
-        consumerParam.put("p1", getPageStart(pageNum));
-        consumerParam.put("p2", PAGE_SIZE);
-        List<Map<String, String>> allConsumers = invokeMapper.queryConsumer(consumerParam);
+    public List<SalukiAppDependcy> queryApplicationDependcy() {
+        List<Map<String, String>> allConsumers = invokeMapper.queryConsumer();
         List<SalukiAppDependcy> appDepencys = Lists.newArrayList();
         for (Map<String, String> consumer : allConsumers) {
             String appName = consumer.get("application");
@@ -49,14 +44,6 @@ public class SalukiAppDependcyService {
                                            new ImmutablePair<String, Integer>(service, Integer.valueOf(callCount)));
         }
         return appDepencys;
-    }
-
-    private int getPageStart(int pageNum) {
-        int pageStart = (pageNum - 1) * PAGE_SIZE;
-        if (pageStart <= 0) {
-            pageStart = 0;
-        }
-        return pageStart;
     }
 
 }
