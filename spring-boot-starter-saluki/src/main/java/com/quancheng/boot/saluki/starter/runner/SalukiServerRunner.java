@@ -22,6 +22,7 @@ import com.quancheng.boot.saluki.starter.SalukiService;
 import com.quancheng.boot.saluki.starter.autoconfigure.SalukiProperties;
 import com.quancheng.saluki.core.common.SalukiConstants;
 import com.quancheng.saluki.core.config.ServiceConfig;
+import com.quancheng.saluki.core.utils.NetUtils;
 
 @Order(value = 0)
 public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
@@ -99,7 +100,10 @@ public class SalukiServerRunner implements CommandLineRunner, DisposableBean {
         int serverPort = grpcProperties.getServerStartPort();
         Preconditions.checkState(serverPort != 0, "ServerPort can not be null", serverPort);
         serviceConfig.setPort(serverPort);
-        serviceConfig.setHost(grpcProperties.getServerHost());
+        String serverHost = grpcProperties.getServerHost();
+        if (NetUtils.isLocalHost(serverHost)) {
+            serviceConfig.setHost(NetUtils.getLocalHost());
+        }
         serviceConfig.setMonitorinterval(grpcProperties.getMonitorInterval());
         return serviceConfig;
     }
