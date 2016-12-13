@@ -2,7 +2,8 @@
 /.DS_Store
 /application.properties
 /log4j.properties
-/log4j.xml
+/mybatis.properties
+/log4j2.xml
 /sql/
 /mappers/
 /static/*
