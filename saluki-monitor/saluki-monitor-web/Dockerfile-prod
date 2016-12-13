@@ -5,7 +5,8 @@ ADD saluki-monitor/saluki-monitor-web/build/libs/saluki-monitor-web-1.5-SNAPSHOT
 ADD saluki-monitor/saluki-monitor-web/bin /root/
 RUN chmod +x /root/*.sh;mkdir /root/logs
 ENV JAVA_OPTS ""
-ENV SERVER_PORT 9999
 ENV APP_NAME saluki-monitor-web
+ENV SPRING-
+ENV SPRING_PROFILES_ACTIVE local
 WORKDIR /root
 CMD ["./start.sh"]

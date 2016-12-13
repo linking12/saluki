@@ -12,4 +12,4 @@ JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true"
 JAVA_OPTS="${JAVA_OPTS} -Dsun.net.client.defaultConnectTimeout=10000"
 JAVA_OPTS="${JAVA_OPTS} -Dsun.net.client.defaultReadTimeout=30000"
 JAVA_OPTS="${JAVA_OPTS} -DAPP_NAME=${APP_NAME}"
-java -agentlib:jdwp=transport=dt_socket,server=y,address=8001,suspend=n -Djava.security.egd=file:/dev/./urandom $JAVA_OPTS -jar ./app.jar
+java -agentlib:jdwp=transport=dt_socket,server=y,address=8001,suspend=n -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} $JAVA_OPTS -jar ./app.jar

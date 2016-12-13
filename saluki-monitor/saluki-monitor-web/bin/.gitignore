@@ -10,3 +10,4 @@
 /application-dev.properties
 /application-prod.properties
 /bootstrap.properties
+/application-local.properties
