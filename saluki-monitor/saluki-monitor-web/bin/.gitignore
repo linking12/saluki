@@ -7,3 +7,6 @@
 /mappers/
 /static/*
 /static/
+/application-dev.properties
+/application-prod.properties
+/bootstrap.properties
