@@ -48,18 +48,16 @@ public class SalukiConsulClient {
             client.setKVValue(ephemralNode.getKey(), "");
         } finally {
             List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
-            String sessionId = null;
             if (sessions != null && !sessions.isEmpty()) {
                 for (Session session : sessions) {
                     if (session.getName().equals(ephemralNode.getSessionName())) {
-                        sessionId = session.getId();
+                        client.sessionDestroy(session.getId(), QueryParams.DEFAULT);
+                        continue;
                     }
-                    continue;
                 }
             }
-            if (sessionId == null) {
-                sessionId = generateNewSession(ephemralNode);
-            }
+            // 这里由于临时节点只注册一次，所以重新注册就是新建session
+            String sessionId = generateNewSession(ephemralNode);
             PutParams kvPutParams = new PutParams();
             kvPutParams.setAcquireSession(sessionId);
             client.setKVValue(ephemralNode.getKey(), ephemralNode.getServerInfo(), kvPutParams);
