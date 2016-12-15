@@ -266,13 +266,12 @@ class SalukiRpcPlugin implements Plugin<Project> {
                                     printGet("Float", param[2], printWriter)
                                     printSet("Float", param[2], printWriter)
                                 }else {
-                                    if (methodClassName[param[1]] != null) {
+                                     def paramtemp = param[1].trim();
+                                     if (methodClassName[param[1]] != null) {
 	                                    printParam(methodClassName[param[1]], param[2], printWriter)
 	                                    printGet(methodClassName[param[1]], param[2], printWriter)
 	                                    printSet(methodClassName[param[1]], param[2], printWriter)
-                                     }
-                                    else if (param[1].trim().split(" ").size() == 2) {
-	                                    if (param[1].trim().split(" ")[0] == "repeated") {
+                                     }else if (paramtemp.startsWith("repeated")) {
 	                                        if (param[1].trim().split(" ")[1].trim() == "string") {
 	                                            printParam("java.util.ArrayList<String>", param[2], printWriter)
 	                                            printGet("java.util.ArrayList<String>", param[2], printWriter)
@@ -299,22 +298,21 @@ class SalukiRpcPlugin implements Plugin<Project> {
 	                                                printGet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
 	                                                printSet("java.util.ArrayList<" + param[1].trim().split(" ")[1] + "> ", param[2], printWriter)
 	                                            }
-	                                        }//end param[1].trim().split(" ")[1].trim() == "string"
-	                                    }//param[1].trim().split(" ")[0] == "repeated"    
-                                    }else{
-                                        def mapMatch = param[1].trim() =~ /^(map){1}(.*)/
-		                                if(mapMatch.size()>0){
-		                                    printParam("java.util.Map<String,String>", param[2], printWriter)
+	                                        } 
+	                                  }else if(paramtemp.startsWith("map")){
+	                                        printParam("java.util.Map<String,String>", param[2], printWriter)
 		                                    printGet("java.util.Map<String,String> ", param[2], printWriter)
 		                                    printSet("java.util.Map<String,String> ", param[2], printWriter)
-		                                }else{
-		                                    def type = importedFileClassNamePackageNameMap.get(param[1].trim())+"."+param[1].trim();
+	                                  }else{
+	                                    def typetemp = importedFileClassNamePackageNameMap.get(param[1].trim());
+	                                    if(typetemp!=null){
+	                                        def type = importedFileClassNamePackageNameMap.get(param[1].trim())+"."+param[1].trim();
 		                                    printParam(type, param[2], printWriter)
 		                                    printGet(type, param[2], printWriter)
 		                                    printSet(type, param[2], printWriter)
-		                                }
-                                    } 
-                                }
+	                                    }
+                                      } 
+                                 }
                             }
                             printWriter.write("} \n")
                             printWriter.flush()
