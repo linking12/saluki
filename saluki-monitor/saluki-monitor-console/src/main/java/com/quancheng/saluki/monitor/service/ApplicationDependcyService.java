@@ -39,7 +39,13 @@ public class ApplicationDependcyService {
             Map<String, String> providerParam = Maps.newHashMap();
             providerParam.put("provider", providerHost);
             providerParam.put("service", service);
-            String parentAppName = invokeMapper.queryProvider(providerParam).get("application");
+            Map<String, String> providerAppMap = invokeMapper.queryProvider(providerParam);
+            String parentAppName = null;
+            if (providerAppMap != null) {
+                parentAppName = providerAppMap.get("application");
+            } else {
+                parentAppName = "No monitor provider data";
+            }
             hasAddedApp.addDependcyService(parentAppName,
                                            new ImmutablePair<String, Integer>(service, Integer.valueOf(callCount)));
         }
