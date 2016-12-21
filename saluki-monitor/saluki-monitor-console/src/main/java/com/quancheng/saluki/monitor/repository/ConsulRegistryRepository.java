@@ -29,20 +29,18 @@ import com.quancheng.saluki.core.common.GrpcURL;
 @Repository
 public class ConsulRegistryRepository {
 
-    public static final String                                    CONSUL_SERVICE_PRE = "thrall_";
-
     @Value("${thrall.monitor.consulhost}")
     private String                                                agentHost;
 
     private ConsulClient                                          consulClient;
 
-    private final Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesPassing    = Maps.newConcurrentMap();
+    private final Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesPassing = Maps.newConcurrentMap();
 
-    private final Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesFailing    = Maps.newConcurrentMap();
+    private final Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesFailing = Maps.newConcurrentMap();
 
-    private final ScheduledExecutorService                        executor           = Executors.newScheduledThreadPool(1,
-                                                                                                                        new NamedThreadFactory("ConsulLookUpService",
-                                                                                                                                               true));;
+    private final ScheduledExecutorService                        executor        = Executors.newScheduledThreadPool(1,
+                                                                                                                     new NamedThreadFactory("ConsulLookUpService",
+                                                                                                                                            true));;
 
     @PostConstruct
     public void init() {
@@ -61,7 +59,7 @@ public class ConsulRegistryRepository {
         for (Map.Entry<String, Check> entry : allServices.entrySet()) {
             Check serviceCheck = entry.getValue();
             String group = serviceCheck.getServiceName();
-            if (StringUtils.startsWith(group, CONSUL_SERVICE_PRE)) {
+            if (StringUtils.startsWith(group, Constants.CONSUL_SERVICE_PRE)) {
                 Triple<String, String, String> hostPortServiceVersion = getPortHostService(serviceCheck.getServiceId());
                 String hostRpcPort = hostPortServiceVersion.getLeft();
                 String service = hostPortServiceVersion.getMiddle();
@@ -153,7 +151,7 @@ public class ConsulRegistryRepository {
     }
 
     private String generateServicekey(String group, String service, String version) {
-        return StringUtils.remove(group, CONSUL_SERVICE_PRE) + ":" + service + ":" + version;
+        return StringUtils.remove(group, Constants.CONSUL_SERVICE_PRE) + ":" + service + ":" + version;
     }
 
     public String getAgentHost() {

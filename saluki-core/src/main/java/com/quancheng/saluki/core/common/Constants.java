@@ -30,7 +30,7 @@ public class Constants {
     public static final String  ENABLED_KEY                   = "enabled";
     public static final String  DISABLED_KEY                  = "disabled";
 
-    public static final String  CONSUL_SERVICE_PRE            = "thrall_";
+    public static final String  CONSUL_SERVICE_PRE            = "saluki_";
     public static final String  PATH_SEPARATOR                = "/";
     public static final String  PROVIDERS_CATEGORY            = "providers";
     public static final String  CONSUMERS_CATEGORY            = "consumers";
@@ -45,4 +45,5 @@ public class Constants {
     public static final int     RPC_ASYNC_DEFAULT_TIMEOUT     = 5000;
 
     public static final String  REMOTE_ADDRESS                = "remoteaddress";
+
 }
