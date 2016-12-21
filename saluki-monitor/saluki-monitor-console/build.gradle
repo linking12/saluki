@@ -24,11 +24,10 @@ configurations {
   all*.exclude group: 'ch.qos.logback', module: 'logback'
   all*.exclude group: 'ch.qos.logback', module: 'logback-core'
   all*.exclude group: 'ch.qos.logback', module: 'logback-classic'
+  all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 }
 dependencies {
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.1.RELEASE'){
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
-    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.1.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.1.RELEASE'
     compile group: 'com.ecwid.consul', name: 'consul-api', version:'1.2.1'
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
@@ -40,7 +39,6 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version:'2.2'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version:'2.2'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version:'2.2'
-    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.10'
     compile project(':saluki-core')
     compile project(':saluki-monitor:spring-boot-starter-saluki-monitor')
 }
