@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
@@ -59,7 +59,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         this.methodRetries = methodRetries;
     }
 
-    protected abstract ThrallURL getSourceRefUrl();
+    protected abstract GrpcURL getSourceRefUrl();
 
     protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
 
@@ -150,7 +150,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String provider = remote.getHostName();// 服务端主机
             String host = getSourceRefUrl().getHost();
             Integer port = getSourceRefUrl().getPort();
-            clientServerMonitor.collect(new ThrallURL(Constants.MONITOR_PROTOCOL, host, port, //
+            clientServerMonitor.collect(new GrpcURL(Constants.MONITOR_PROTOCOL, host, port, //
                                                       service + "/" + method, //
                                                       MonitorService.TIMESTAMP, String.valueOf(start), //
                                                       MonitorService.APPLICATION,

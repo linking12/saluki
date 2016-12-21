@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -36,11 +36,11 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
 
     private static final Logger  log = LoggerFactory.getLogger(DefaultProxyExporter.class);
 
-    private final ThrallURL      providerUrl;
+    private final GrpcURL      providerUrl;
 
     private final MonitorService clientServerMonitor;
 
-    public DefaultProxyExporter(ThrallURL providerUrl){
+    public DefaultProxyExporter(GrpcURL providerUrl){
         this.clientServerMonitor = new ClientServerMonitor(providerUrl);
         this.providerUrl = providerUrl;
     }

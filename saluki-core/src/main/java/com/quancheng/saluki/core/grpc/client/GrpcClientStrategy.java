@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.internal.DefaultProxyClient;
 import com.quancheng.saluki.core.grpc.client.internal.GenericProxyClient;
 import com.quancheng.saluki.core.grpc.client.internal.GrpcStubClient;
@@ -35,14 +35,14 @@ public class GrpcClientStrategy {
 
     private final int                            callTimeout;
 
-    public GrpcClientStrategy(ThrallURL refUrl, GrpcProtocolClient.ChannelPool call){
+    public GrpcClientStrategy(GrpcURL refUrl, GrpcProtocolClient.ChannelPool call){
         this.call = call;
         this.callType = refUrl.getParameter(Constants.ASYNC_KEY, Constants.RPCTYPE_ASYNC);
         this.callTimeout = refUrl.getParameter(Constants.TIMEOUT, Constants.RPC_ASYNC_DEFAULT_TIMEOUT);
         this.grpcClient = buildProtoClient(refUrl);
     }
 
-    private GrpcProtocolClient<Object> buildProtoClient(ThrallURL refUrl) {
+    private GrpcProtocolClient<Object> buildProtoClient(GrpcURL refUrl) {
         boolean isGeneric = refUrl.getParameter(Constants.GENERIC_KEY, Boolean.FALSE);
         boolean isGrpcStub = refUrl.getParameter(Constants.GRPC_STUB_KEY, Boolean.FALSE);
         if (isGeneric) {

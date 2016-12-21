@@ -21,7 +21,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -48,11 +48,11 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
 
     private final Method                               method;
 
-    private final ThrallURL                            providerUrl;
+    private final GrpcURL                            providerUrl;
 
     private final ConcurrentMap<String, AtomicInteger> concurrents;
 
-    public ServerInvocation(Object serviceToInvoke, Method method, ThrallURL providerUrl,
+    public ServerInvocation(Object serviceToInvoke, Method method, GrpcURL providerUrl,
                             ConcurrentMap<String, AtomicInteger> concurrents, MonitorService salukiMonitor){
         this.serviceToInvoke = serviceToInvoke;
         this.method = method;
@@ -132,7 +132,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String host = providerUrl.getHost();
             int rpcPort = providerUrl.getPort();
             int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);
-            salukiMonitor.collect(new ThrallURL(Constants.MONITOR_PROTOCOL, host, //
+            salukiMonitor.collect(new GrpcURL(Constants.MONITOR_PROTOCOL, host, //
                                                 registryRpcPort, //
                                                 service + "/" + method, //
                                                 MonitorService.TIMESTAMP, String.valueOf(start), //

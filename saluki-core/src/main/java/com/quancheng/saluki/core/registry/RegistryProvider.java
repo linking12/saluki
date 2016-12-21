@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.support.RegistryFactory;
 
 import io.grpc.Internal;
@@ -75,7 +75,7 @@ public abstract class RegistryProvider extends RegistryFactory {
         }
 
         @Override
-        public Registry newRegistry(ThrallURL url) {
+        public Registry newRegistry(GrpcURL url) {
             url = url.setPath(Registry.class.getName())//
                      .addParameter(Constants.INTERFACE_KEY, Registry.class.getName());
             String key = url.toServiceString();

@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 public class NetUtils {
 
@@ -138,7 +138,7 @@ public class NetUtils {
             return host;
         }
         if (host.contains("://")) {
-            ThrallURL u = ThrallURL.valueOf(host);
+            GrpcURL u = GrpcURL.valueOf(host);
             if (NetUtils.isInvalidLocalHost(u.getHost())) {
                 return u.setHost(NetUtils.getLocalHost()).toFullString();
             }

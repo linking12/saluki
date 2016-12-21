@@ -34,14 +34,14 @@ import io.grpc.TransportManager.InterimTransport;
  */
 
 @Internal
-public class ThrallRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
+public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
-    private static final ThrallRoundRobinLoadBalanceFactory instance = new ThrallRoundRobinLoadBalanceFactory();
+    private static final GrpcRoundRobinLoadBalanceFactory instance = new GrpcRoundRobinLoadBalanceFactory();
 
-    private ThrallRoundRobinLoadBalanceFactory(){
+    private GrpcRoundRobinLoadBalanceFactory(){
     }
 
-    public static ThrallRoundRobinLoadBalanceFactory getInstance() {
+    public static GrpcRoundRobinLoadBalanceFactory getInstance() {
         return instance;
     }
 

@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
@@ -30,9 +30,9 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
 
     private final Class<?>             interfaceClass;
 
-    private final ThrallURL            refUrl;
+    private final GrpcURL            refUrl;
 
-    public DefaultProxyClient(String interfaceName, Map<String, Integer> methodRetries, ThrallURL refUrl){
+    public DefaultProxyClient(String interfaceName, Map<String, Integer> methodRetries, GrpcURL refUrl){
         this.interfaceName = interfaceName;
         try {
             this.interfaceClass = ReflectUtils.name2class(interfaceName);
@@ -87,7 +87,7 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
         }
 
         @Override
-        protected ThrallURL getSourceRefUrl() {
+        protected GrpcURL getSourceRefUrl() {
             return DefaultProxyClient.this.refUrl;
         }
 

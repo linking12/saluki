@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
-import com.quancheng.saluki.boot.ThrallReference;
-import com.quancheng.saluki.boot.ThrallService;
+import com.quancheng.saluki.boot.SalukiReference;
+import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.ThrallProperties;
 import com.quancheng.saluki.boot.domain.GrpcServiceTestModel;
 import com.quancheng.saluki.core.grpc.service.GenericService;
@@ -41,7 +41,7 @@ public class TestController {
     @Autowired
     private AbstractApplicationContext applicationContext;
 
-    @ThrallReference(group = "default", version = "1.0.0")
+    @SalukiReference(group = "default", version = "1.0.0")
     private GenericService             genricService;
 
     @RequestMapping(value = "getAllMethod", method = RequestMethod.GET)
@@ -99,7 +99,7 @@ public class TestController {
         Map<String, ?> beanMap = applicationContext.getBeansOfType(beanType);
         for (Map.Entry<String, ?> entry : beanMap.entrySet()) {
             Object obj = entry.getValue();
-            ThrallService salukiAnnotation = obj.getClass().getAnnotation(ThrallService.class);
+            SalukiService salukiAnnotation = obj.getClass().getAnnotation(SalukiService.class);
             return new ImmutablePair<String, String>(salukiAnnotation.group(), salukiAnnotation.version());
         }
         String group = prop.getGroup();

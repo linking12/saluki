@@ -24,7 +24,7 @@ import com.google.common.collect.Sets;
 import com.quancheng.saluki.boot.domain.GrpcHost;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 @Repository
 public class ConsulRegistryRepository {
@@ -133,7 +133,7 @@ public class ConsulRegistryRepository {
      */
     private Triple<String, String, String> getmachineInfo(String providerAndConsumerKv, String groupService) {
         String thralUrl = consulClient.getKVValue(providerAndConsumerKv).getValue().getDecodedValue();
-        ThrallURL url = ThrallURL.valueOf(thralUrl);
+        GrpcURL url = GrpcURL.valueOf(thralUrl);
         String flagAndIp = StringUtils.remove(providerAndConsumerKv, groupService + "/");
         String[] serverInfos = StringUtils.split(flagAndIp, "/");
         String machineFlag = serverInfos[1];

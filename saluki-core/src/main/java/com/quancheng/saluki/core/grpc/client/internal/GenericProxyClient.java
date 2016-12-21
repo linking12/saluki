@@ -14,7 +14,7 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.ThrallClassLoader;
@@ -32,9 +32,9 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
     private final ThrallClassLoader    classLoader;
 
-    private final ThrallURL            refUrl;
+    private final GrpcURL            refUrl;
 
-    public GenericProxyClient(ThrallClassLoader classLoader, Map<String, Integer> methodRetries, ThrallURL refUrl){
+    public GenericProxyClient(ThrallClassLoader classLoader, Map<String, Integer> methodRetries, GrpcURL refUrl){
         this.classLoader = classLoader;
         this.methodRetries = methodRetries;
         this.refUrl = refUrl;
@@ -73,7 +73,7 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            ThrallURL resetRefUrl = GenericProxyClient.this.refUrl;
+            GrpcURL resetRefUrl = GenericProxyClient.this.refUrl;
             resetRefUrl = resetRefUrl.setServiceInterface(getServiceName(args));
             resetRefUrl = resetRefUrl.addParameter(Constants.GROUP_KEY, getGroup(args));
             resetRefUrl = resetRefUrl.addParameter(Constants.VERSION_KEY, getVersion(args));
@@ -142,7 +142,7 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
         }
 
         @Override
-        protected ThrallURL getSourceRefUrl() {
+        protected GrpcURL getSourceRefUrl() {
             return GenericProxyClient.this.refUrl;
         }
 

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
@@ -43,15 +43,15 @@ import io.grpc.Status;
  * @version ThrallNameResolverProvider1.java, v 0.0.1 2016年12月14日 下午5:15:00 shimingliu
  */
 @Internal
-public class ThrallNameResolverProvider extends NameResolverProvider {
+public class GrpcNameResolverProvider extends NameResolverProvider {
 
     private static final Logger                    log                  = LoggerFactory.getLogger(NameResolverProvider.class);
 
-    private static final Attributes.Key<ThrallURL> DEFAULT_SUBCRIBE_URL = Attributes.Key.of("subscribe-url");
+    private static final Attributes.Key<GrpcURL> DEFAULT_SUBCRIBE_URL = Attributes.Key.of("subscribe-url");
 
     private final Attributes                       attributesParams;
 
-    public ThrallNameResolverProvider(ThrallURL refUrl){
+    public GrpcNameResolverProvider(GrpcURL refUrl){
         attributesParams = Attributes.newBuilder().set(DEFAULT_SUBCRIBE_URL, refUrl).build();
     }
 
@@ -80,7 +80,7 @@ public class ThrallNameResolverProvider extends NameResolverProvider {
 
         private final Registry               registry;
 
-        private final ThrallURL              subscribeUrl;
+        private final GrpcURL              subscribeUrl;
 
         @GuardedBy("this")
         private boolean                      shutdown;
@@ -92,7 +92,7 @@ public class ThrallNameResolverProvider extends NameResolverProvider {
         private volatile List<SocketAddress> addresses;
 
         public SalukiNameResolver(URI targetUri, Attributes params){
-            ThrallURL registryUrl = ThrallURL.valueOf(targetUri.toString());
+            GrpcURL registryUrl = GrpcURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
             subscribeUrl = params.get(DEFAULT_SUBCRIBE_URL);
         }
@@ -105,7 +105,7 @@ public class ThrallNameResolverProvider extends NameResolverProvider {
         @Override
         public final synchronized void refresh() {
             Preconditions.checkState(listener != null, "not started");
-            List<ThrallURL> urls = registry.discover(subscribeUrl);
+            List<GrpcURL> urls = registry.discover(subscribeUrl);
             if (log.isInfoEnabled()) {
                 log.info("Grpc nameresolve refreshed,Receive notify from registry, prividerUrl is"
                          + Arrays.toString(urls.toArray()));
@@ -116,7 +116,7 @@ public class ThrallNameResolverProvider extends NameResolverProvider {
         private NotifyListener notifyListener = new NotifyListener() {
 
             @Override
-            public void notify(List<ThrallURL> urls) {
+            public void notify(List<GrpcURL> urls) {
                 if (log.isInfoEnabled()) {
                     log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
                              + Arrays.toString(urls.toArray()));
@@ -126,12 +126,12 @@ public class ThrallNameResolverProvider extends NameResolverProvider {
 
         };
 
-        private void notifyLoadBalance(List<ThrallURL> urls) {
+        private void notifyLoadBalance(List<GrpcURL> urls) {
             if (urls != null && !urls.isEmpty()) {
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
                 List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
                 for (int i = 0; i < urls.size(); i++) {
-                    ThrallURL url = urls.get(i);
+                    GrpcURL url = urls.get(i);
                     String host = url.getHost();
                     int port = url.getPort();
                     if (NetUtils.isIP(host)) {

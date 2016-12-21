@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 public class ClientServerMonitor implements MonitorService {
@@ -37,7 +37,7 @@ public class ClientServerMonitor implements MonitorService {
 
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap            = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
-    public ClientServerMonitor(ThrallURL url){
+    public ClientServerMonitor(GrpcURL url){
         this.monitorServices = findMonitor();
         this.monitorInterval = url.getParameter("monitorinterval", 60);
         // 启动统计信息收集定时器
@@ -74,7 +74,7 @@ public class ClientServerMonitor implements MonitorService {
                 long maxElapsed = numbers[8];
                 long maxConcurrent = numbers[9];
                 // 发送汇总信息
-                ThrallURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
+                GrpcURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
                                                                   MonitorService.SUCCESS, String.valueOf(success),
                                                                   MonitorService.FAILURE, String.valueOf(failure),
                                                                   MonitorService.INPUT, String.valueOf(input),
@@ -117,7 +117,7 @@ public class ClientServerMonitor implements MonitorService {
     }
 
     @Override
-    public void collect(ThrallURL url) {
+    public void collect(GrpcURL url) {
         // 读写统计变量
         int success = url.getParameter(MonitorService.SUCCESS, 0);
         int failure = url.getParameter(MonitorService.FAILURE, 0);

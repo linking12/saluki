@@ -7,7 +7,7 @@
  */
 package com.quancheng.saluki.core.grpc.server;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.server.internal.DefaultProxyExporter;
 import com.quancheng.saluki.core.grpc.server.internal.GrpcStubServerExporter;
 import com.quancheng.saluki.core.utils.ReflectUtils;
@@ -27,7 +27,7 @@ public class GrpcServerStrategy {
 
     private final Object               protocolImpl;
 
-    public GrpcServerStrategy(ThrallURL providerUrl, Object protocolImpl){
+    public GrpcServerStrategy(GrpcURL providerUrl, Object protocolImpl){
         if (protocolImpl instanceof BindableService) {
             this.exporter = new GrpcStubServerExporter();
             this.protocolClass = protocolImpl.getClass();

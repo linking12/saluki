@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.utils.CollectionUtils;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -154,7 +154,7 @@ public class RpcReferenceConfig extends RpcBaseConfig {
                 this.addAsync(params);
                 this.addMonitorInterval(params);
                 this.addHttpPort(params);
-                ThrallURL refUrl = new ThrallURL(Constants.REMOTE_PROTOCOL, super.getHost(), super.getHttpPort(),
+                GrpcURL refUrl = new GrpcURL(Constants.REMOTE_PROTOCOL, super.getHost(), super.getHttpPort(),
                                                  serviceName, params);
                 ref = super.getGrpcEngine().getClient(refUrl);
             } catch (Exception e) {

@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.quancheng.saluki.core.utils.CollectionUtils;
 import com.quancheng.saluki.core.utils.NetUtils;
 
-public class ThrallURL implements Serializable {
+public class GrpcURL implements Serializable {
 
     private static final long                         serialVersionUID = -1985165475234910535L;
 
@@ -41,7 +41,7 @@ public class ThrallURL implements Serializable {
 
     private volatile transient Map<String, Number>    numbers;
 
-    private volatile transient Map<String, ThrallURL> urls;
+    private volatile transient Map<String, GrpcURL> urls;
 
     private volatile transient String                 ip;
 
@@ -53,7 +53,7 @@ public class ThrallURL implements Serializable {
 
     private volatile transient String                 string;
 
-    protected ThrallURL(){
+    protected GrpcURL(){
         this.protocol = null;
         this.username = null;
         this.password = null;
@@ -63,40 +63,40 @@ public class ThrallURL implements Serializable {
         this.parameters = null;
     }
 
-    public ThrallURL(String protocol, String host, int port){
+    public GrpcURL(String protocol, String host, int port){
         this(protocol, null, null, host, port, null, (Map<String, String>) null);
     }
 
-    public ThrallURL(String protocol, String host, int port, String[] pairs){
+    public GrpcURL(String protocol, String host, int port, String[] pairs){
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
 
-    public ThrallURL(String protocol, String host, int port, Map<String, String> parameters){
+    public GrpcURL(String protocol, String host, int port, Map<String, String> parameters){
         this(protocol, null, null, host, port, null, parameters);
     }
 
-    public ThrallURL(String protocol, String host, int port, String path){
+    public GrpcURL(String protocol, String host, int port, String path){
         this(protocol, null, null, host, port, path, (Map<String, String>) null);
     }
 
-    public ThrallURL(String protocol, String host, int port, String path, String... pairs){
+    public GrpcURL(String protocol, String host, int port, String path, String... pairs){
         this(protocol, null, null, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public ThrallURL(String protocol, String host, int port, String path, Map<String, String> parameters){
+    public GrpcURL(String protocol, String host, int port, String path, Map<String, String> parameters){
         this(protocol, null, null, host, port, path, parameters);
     }
 
-    public ThrallURL(String protocol, String username, String password, String host, int port, String path){
+    public GrpcURL(String protocol, String username, String password, String host, int port, String path){
         this(protocol, username, password, host, port, path, (Map<String, String>) null);
     }
 
-    public ThrallURL(String protocol, String username, String password, String host, int port, String path,
+    public GrpcURL(String protocol, String username, String password, String host, int port, String path,
                      String... pairs){
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public ThrallURL(String protocol, String username, String password, String host, int port, String path,
+    public GrpcURL(String protocol, String username, String password, String host, int port, String path,
                      Map<String, String> parameters){
         if ((username == null || username.length() == 0) && password != null && password.length() > 0) {
             throw new IllegalArgumentException("Invalid url, password without username!");
@@ -126,7 +126,7 @@ public class ThrallURL implements Serializable {
         this.parameters = Collections.unmodifiableMap(parameters);
     }
 
-    public static ThrallURL valueOf(String url) {
+    public static GrpcURL valueOf(String url) {
         if (url == null || (url = url.trim()).length() == 0) {
             throw new IllegalArgumentException("url == null");
         }
@@ -190,7 +190,7 @@ public class ThrallURL implements Serializable {
             url = url.substring(0, i);
         }
         if (url.length() > 0) host = url;
-        return new ThrallURL(protocol, username, password, host, port, path, parameters);
+        return new GrpcURL(protocol, username, password, host, port, path, parameters);
     }
 
     public String getProtocol() {
@@ -246,19 +246,19 @@ public class ThrallURL implements Serializable {
         return path;
     }
 
-    public ThrallURL setProtocol(String protocol) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setProtocol(String protocol) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setUsername(String username) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setUsername(String username) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setPassword(String password) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setPassword(String password) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setAddress(String address) {
+    public GrpcURL setAddress(String address) {
         int i = address.lastIndexOf(':');
         String host;
         int port = this.port;
@@ -268,19 +268,19 @@ public class ThrallURL implements Serializable {
         } else {
             host = address;
         }
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setHost(String host) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setHost(String host) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setPort(int port) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setPort(int port) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public ThrallURL setPath(String path) {
-        return new ThrallURL(protocol, username, password, host, port, path, getParameters());
+    public GrpcURL setPath(String path) {
+        return new GrpcURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public Map<String, String> getParameters() {
@@ -323,15 +323,15 @@ public class ThrallURL implements Serializable {
         return numbers;
     }
 
-    private Map<String, ThrallURL> getUrls() {
+    private Map<String, GrpcURL> getUrls() {
         if (urls == null) { // 允许并发重复创建
-            urls = new ConcurrentHashMap<String, ThrallURL>();
+            urls = new ConcurrentHashMap<String, GrpcURL>();
         }
         return urls;
     }
 
-    public ThrallURL getUrlParameter(String key) {
-        ThrallURL u = getUrls().get(key);
+    public GrpcURL getUrlParameter(String key) {
+        GrpcURL u = getUrls().get(key);
         if (u != null) {
             return u;
         }
@@ -339,7 +339,7 @@ public class ThrallURL implements Serializable {
         if (value == null || value.length() == 0) {
             return null;
         }
-        u = ThrallURL.valueOf(value);
+        u = GrpcURL.valueOf(value);
         getUrls().put(key, u);
         return u;
     }
@@ -457,61 +457,61 @@ public class ThrallURL implements Serializable {
         return Constants.ANYHOST_VALUE.equals(host) || getParameter(Constants.ANYHOST_KEY, false);
     }
 
-    public ThrallURL addParameterAndEncoded(String key, String value) {
+    public GrpcURL addParameterAndEncoded(String key, String value) {
         if (value == null || value.length() == 0) {
             return this;
         }
         return addParameter(key, encode(value));
     }
 
-    public ThrallURL addParameter(String key, boolean value) {
+    public GrpcURL addParameter(String key, boolean value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, char value) {
+    public GrpcURL addParameter(String key, char value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, byte value) {
+    public GrpcURL addParameter(String key, byte value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, short value) {
+    public GrpcURL addParameter(String key, short value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, int value) {
+    public GrpcURL addParameter(String key, int value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, long value) {
+    public GrpcURL addParameter(String key, long value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, float value) {
+    public GrpcURL addParameter(String key, float value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, double value) {
+    public GrpcURL addParameter(String key, double value) {
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, Enum<?> value) {
+    public GrpcURL addParameter(String key, Enum<?> value) {
         if (value == null) return this;
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, Number value) {
+    public GrpcURL addParameter(String key, Number value) {
         if (value == null) return this;
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, CharSequence value) {
+    public GrpcURL addParameter(String key, CharSequence value) {
         if (value == null || value.length() == 0) return this;
         return addParameter(key, String.valueOf(value));
     }
 
-    public ThrallURL addParameter(String key, String value) {
+    public GrpcURL addParameter(String key, String value) {
         if (key == null || key.length() == 0 || value == null || value.length() == 0) {
             return this;
         }
@@ -521,10 +521,10 @@ public class ThrallURL implements Serializable {
         }
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.put(key, value);
-        return new ThrallURL(protocol, username, password, host, port, path, map);
+        return new GrpcURL(protocol, username, password, host, port, path, map);
     }
 
-    public ThrallURL addParameterIfAbsent(String key, String value) {
+    public GrpcURL addParameterIfAbsent(String key, String value) {
         if (key == null || key.length() == 0 || value == null || value.length() == 0) {
             return this;
         }
@@ -533,10 +533,10 @@ public class ThrallURL implements Serializable {
         }
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.put(key, value);
-        return new ThrallURL(protocol, username, password, host, port, path, map);
+        return new GrpcURL(protocol, username, password, host, port, path, map);
     }
 
-    public ThrallURL addParameters(Map<String, String> parameters) {
+    public GrpcURL addParameters(Map<String, String> parameters) {
         if (parameters == null || parameters.size() == 0) {
             return this;
         }
@@ -553,19 +553,19 @@ public class ThrallURL implements Serializable {
 
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.putAll(parameters);
-        return new ThrallURL(protocol, username, password, host, port, path, map);
+        return new GrpcURL(protocol, username, password, host, port, path, map);
     }
 
-    public ThrallURL addParametersIfAbsent(Map<String, String> parameters) {
+    public GrpcURL addParametersIfAbsent(Map<String, String> parameters) {
         if (parameters == null || parameters.size() == 0) {
             return this;
         }
         Map<String, String> map = new HashMap<String, String>(parameters);
         map.putAll(getParameters());
-        return new ThrallURL(protocol, username, password, host, port, path, map);
+        return new GrpcURL(protocol, username, password, host, port, path, map);
     }
 
-    public ThrallURL addParameters(String... pairs) {
+    public GrpcURL addParameters(String... pairs) {
         if (pairs == null || pairs.length == 0) {
             return this;
         }
@@ -580,28 +580,28 @@ public class ThrallURL implements Serializable {
         return addParameters(map);
     }
 
-    public ThrallURL addParameterString(String query) {
+    public GrpcURL addParameterString(String query) {
         if (query == null || query.length() == 0) {
             return this;
         }
-        return addParameters(ThrallURLUtils.parseQueryString(query));
+        return addParameters(GrpcURLUtils.parseQueryString(query));
     }
 
-    public ThrallURL removeParameter(String key) {
+    public GrpcURL removeParameter(String key) {
         if (key == null || key.length() == 0) {
             return this;
         }
         return removeParameters(key);
     }
 
-    public ThrallURL removeParameters(Collection<String> keys) {
+    public GrpcURL removeParameters(Collection<String> keys) {
         if (keys == null || keys.size() == 0) {
             return this;
         }
         return removeParameters(keys.toArray(new String[0]));
     }
 
-    public ThrallURL removeParameters(String... keys) {
+    public GrpcURL removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
         }
@@ -612,11 +612,11 @@ public class ThrallURL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new ThrallURL(protocol, username, password, host, port, path, map);
+        return new GrpcURL(protocol, username, password, host, port, path, map);
     }
 
-    public ThrallURL clearParameters() {
-        return new ThrallURL(protocol, username, password, host, port, path, new HashMap<String, String>());
+    public GrpcURL clearParameters() {
+        return new GrpcURL(protocol, username, password, host, port, path, new HashMap<String, String>());
     }
 
     public String getRawParameter(String key) {
@@ -805,7 +805,7 @@ public class ThrallURL implements Serializable {
         return buildString(true, false, true, true);
     }
 
-    public ThrallURL setServiceInterface(String service) {
+    public GrpcURL setServiceInterface(String service) {
         return addParameter(Constants.INTERFACE_KEY, service);
     }
 
@@ -852,7 +852,7 @@ public class ThrallURL implements Serializable {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        ThrallURL other = (ThrallURL) obj;
+        GrpcURL other = (GrpcURL) obj;
         if (host == null) {
             if (other.host != null) return false;
         } else if (!host.equals(other.host)) return false;

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class ThrallURLUtils {
+public class GrpcURLUtils {
 
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)");
 
@@ -23,7 +23,7 @@ public class ThrallURLUtils {
         return map;
     }
 
-    public static boolean isMatch(ThrallURL subscribedUrl, ThrallURL providerUrl) {
+    public static boolean isMatch(GrpcURL subscribedUrl, GrpcURL providerUrl) {
         String subscribedInterface = subscribedUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
         if (StringUtils.equals(subscribedInterface, providerInterface)) {
@@ -40,7 +40,7 @@ public class ThrallURLUtils {
                && StringUtils.equals(subscribedVersion, providerVersion);
     }
 
-    private ThrallURLUtils(){
+    private GrpcURLUtils(){
 
     }
 

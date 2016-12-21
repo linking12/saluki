@@ -7,7 +7,7 @@
  */
 package com.quancheng.saluki.core.grpc.client;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 import io.grpc.Channel;
 
@@ -21,9 +21,9 @@ public interface GrpcProtocolClient<T> {
 
     public interface ChannelPool {
 
-        public Channel borrowChannel(final ThrallURL refUrl);
+        public Channel borrowChannel(final GrpcURL refUrl);
 
-        public void returnChannel(final ThrallURL refUrl, final Channel channel);
+        public void returnChannel(final GrpcURL refUrl, final Channel channel);
     }
 
 }

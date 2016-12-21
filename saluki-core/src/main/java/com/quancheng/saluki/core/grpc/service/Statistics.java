@@ -2,13 +2,13 @@ package com.quancheng.saluki.core.grpc.service;
 
 import java.io.Serializable;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 public class Statistics implements Serializable {
 
     private static final long serialVersionUID = 8843156162686978653L;
 
-    private ThrallURL         url;
+    private GrpcURL         url;
 
     private String            application;
 
@@ -24,7 +24,7 @@ public class Statistics implements Serializable {
 
     private String            server;
 
-    public Statistics(ThrallURL url){
+    public Statistics(GrpcURL url){
         this.url = url;
         this.application = url.getParameter(MonitorService.APPLICATION);
         this.service = url.getParameter(MonitorService.INTERFACE);
@@ -35,11 +35,11 @@ public class Statistics implements Serializable {
         this.server = url.getParameter(MonitorService.PROVIDER, url.getAddress());
     }
 
-    public ThrallURL getUrl() {
+    public GrpcURL getUrl() {
         return url;
     }
 
-    public void setUrl(ThrallURL url) {
+    public void setUrl(GrpcURL url) {
         this.url = url;
     }
 

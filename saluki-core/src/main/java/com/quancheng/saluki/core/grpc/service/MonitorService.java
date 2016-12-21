@@ -1,6 +1,6 @@
 package com.quancheng.saluki.core.grpc.service;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 public interface MonitorService {
 
@@ -51,6 +51,6 @@ public interface MonitorService {
      * 
      * @param statistics
      */
-    void collect(ThrallURL statistics);
+    void collect(GrpcURL statistics);
 
 }

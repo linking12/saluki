@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
 
@@ -42,13 +42,13 @@ public interface GrpcRequest {
 
         private static final long                    serialVersionUID = 1L;
 
-        private final ThrallURL                      refUrl;
+        private final GrpcURL                      refUrl;
 
         private final GrpcProtocolClient.ChannelPool chanelPool;
 
         private MethodRequest                        methodRequest;
 
-        public Default(ThrallURL refUrl, GrpcProtocolClient.ChannelPool chanelPool){
+        public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelPool chanelPool){
             super();
             this.refUrl = refUrl;
             this.chanelPool = chanelPool;

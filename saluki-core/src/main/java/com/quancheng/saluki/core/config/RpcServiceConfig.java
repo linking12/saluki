@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 /**
  * @author shimingliu 2016年12月14日 下午2:14:34
@@ -49,7 +49,7 @@ public class RpcServiceConfig extends RpcBaseConfig {
     }
 
     public synchronized void export() {
-        Map<ThrallURL, Object> providerUrls = Maps.newHashMap();
+        Map<GrpcURL, Object> providerUrls = Maps.newHashMap();
         for (RpcServiceSingleConfig<Object> singleServiceConfig : singleServiceConfigs) {
             String serviceName = singleServiceConfig.getServiceName();
             Object serviceRef = singleServiceConfig.getRef();
@@ -60,7 +60,7 @@ public class RpcServiceConfig extends RpcBaseConfig {
             this.addInterval(params);
             this.addRegistryRpcPort(params);
             this.addHttpPort(params);
-            ThrallURL providerUrl = new ThrallURL(Constants.REMOTE_PROTOCOL, super.getHost(), super.getRealityRpcPort(),
+            GrpcURL providerUrl = new GrpcURL(Constants.REMOTE_PROTOCOL, super.getHost(), super.getRealityRpcPort(),
                                                   serviceName, params);
             providerUrls.put(providerUrl, serviceRef);
         }

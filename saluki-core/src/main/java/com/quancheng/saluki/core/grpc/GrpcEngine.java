@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcClientStrategy;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -58,13 +58,13 @@ public final class GrpcEngine {
 
     private static final Logger                     log = LoggerFactory.getLogger(GrpcEngine.class);
 
-    private final ThrallURL                         registryUrl;
+    private final GrpcURL                         registryUrl;
 
     private final Registry                          registry;
 
     private GenericKeyedObjectPool<String, Channel> channelPool;
 
-    public GrpcEngine(ThrallURL registryUrl){
+    public GrpcEngine(GrpcURL registryUrl){
         this.registryUrl = registryUrl;
         this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
     }
@@ -86,15 +86,15 @@ public final class GrpcEngine {
         this.channelPool = new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
     }
 
-    public Object getClient(ThrallURL refUrl) throws Exception {
+    public Object getClient(GrpcURL refUrl) throws Exception {
         if (channelPool == null) {
             initChannelPool();
         }
         GrpcProtocolClient.ChannelPool hannelPool = new GrpcProtocolClient.ChannelPool() {
 
             @Override
-            public Channel borrowChannel(final ThrallURL realRefUrl) {
-                ThrallURL realRefUrltemp = realRefUrl;
+            public Channel borrowChannel(final GrpcURL realRefUrl) {
+                GrpcURL realRefUrltemp = realRefUrl;
                 if (realRefUrltemp == null) {
                     realRefUrltemp = refUrl;
                 }
@@ -106,8 +106,8 @@ public final class GrpcEngine {
             }
 
             @Override
-            public void returnChannel(final ThrallURL realRefUrl, final Channel channel) {
-                ThrallURL realRefUrltemp = realRefUrl;
+            public void returnChannel(final GrpcURL realRefUrl, final Channel channel) {
+                GrpcURL realRefUrltemp = realRefUrl;
                 if (realRefUrltemp == null) {
                     realRefUrltemp = refUrl;
                 }
@@ -119,14 +119,14 @@ public final class GrpcEngine {
         return strategy.getGrpcClient();
     }
 
-    public io.grpc.Server getServer(Map<ThrallURL, Object> providerUrls, int rpcPort) throws Exception {
+    public io.grpc.Server getServer(Map<GrpcURL, Object> providerUrls, int rpcPort) throws Exception {
 
         final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(rpcPort)//
                                                                   .sslContext(buildServerSslContext())//
                                                                   .bossEventLoopGroup(createBossEventLoopGroup())//
                                                                   .workerEventLoopGroup(createWorkEventLoopGroup());
-        for (Map.Entry<ThrallURL, Object> entry : providerUrls.entrySet()) {
-            ThrallURL providerUrl = entry.getKey();
+        for (Map.Entry<GrpcURL, Object> entry : providerUrls.entrySet()) {
+            GrpcURL providerUrl = entry.getKey();
             Object protocolImpl = entry.getValue();
             GrpcServerStrategy strategy = new GrpcServerStrategy(providerUrl, protocolImpl);
             ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(strategy.getServerDefintion(),
@@ -153,7 +153,7 @@ public final class GrpcEngine {
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {
-        return ThrallRoundRobinLoadBalanceFactory.getInstance();
+        return GrpcRoundRobinLoadBalanceFactory.getInstance();
     }
 
     private SslContext buildServerSslContext() {
@@ -180,9 +180,9 @@ public final class GrpcEngine {
 
         @Override
         public Channel create(String refUrlFullString) throws Exception {
-            ThrallURL refUrl = ThrallURL.valueOf(refUrlFullString);
+            GrpcURL refUrl = GrpcURL.valueOf(refUrlFullString);
             Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                 .nameResolverFactory(new ThrallNameResolverProvider(refUrl))//
+                                                 .nameResolverFactory(new GrpcNameResolverProvider(refUrl))//
                                                  .loadBalancerFactory(buildLoadBalanceFactory())//
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//

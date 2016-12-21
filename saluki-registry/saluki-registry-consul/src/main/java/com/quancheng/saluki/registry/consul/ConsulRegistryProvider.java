@@ -7,7 +7,7 @@
  */
 package com.quancheng.saluki.registry.consul;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
@@ -28,7 +28,7 @@ public class ConsulRegistryProvider extends RegistryProvider {
     }
 
     @Override
-    public Registry newRegistry(ThrallURL url) {
+    public Registry newRegistry(GrpcURL url) {
         return new ConsulRegistry(url);
     }
 

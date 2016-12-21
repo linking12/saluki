@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.GrpcEngine;
 import com.quancheng.saluki.core.utils.NetUtils;
 
@@ -207,7 +207,7 @@ public class RpcBaseConfig implements Serializable {
                 }
                 Preconditions.checkNotNull(registryAddress, "registryAddress  is not Null", registryAddress);
                 Preconditions.checkState(registryPort != 0, "RegistryPort can not be zero", registryPort);
-                ThrallURL registryUrl = new ThrallURL(Constants.REGISTRY_PROTOCOL, registryAddress, registryPort);
+                GrpcURL registryUrl = new GrpcURL(Constants.REGISTRY_PROTOCOL, registryAddress, registryPort);
                 engine = new GrpcEngine(registryUrl);
                 ENGINES.put(key, engine);
                 return engine;

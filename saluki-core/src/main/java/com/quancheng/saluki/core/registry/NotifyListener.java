@@ -9,7 +9,7 @@ package com.quancheng.saluki.core.registry;
 
 import java.util.List;
 
-import com.quancheng.saluki.core.common.ThrallURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 /**
  * @author shimingliu 2016年12月14日 下午1:47:55
@@ -17,5 +17,5 @@ import com.quancheng.saluki.core.common.ThrallURL;
  */
 public interface NotifyListener {
 
-    void notify(List<ThrallURL> urls);
+    void notify(List<GrpcURL> urls);
 }
