@@ -57,15 +57,11 @@ public class LoginFilter implements Filter {
         List<String> result = Arrays.asList(whiteListArr);
         int count = 0;
         for (String item : result) {
-            // 创建 Pattern 对象
             Pattern r = Pattern.compile(item);
-            // 现在创建 matcher 对象
             Matcher m = r.matcher(req.getRequestURI());
-            log.warn("item:" + item);
             while (m.find()) {
                 count++;
             }
-            log.warn("count:" + count);
         }
         if (count == 0) {
             if (Uid != null) {
