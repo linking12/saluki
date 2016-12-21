@@ -4,23 +4,16 @@ include ':saluki-serializer'
 include ':saluki-plugin'
 include ':saluki-registry:saluki-registry-consul'
 include ':saluki-registry:saluki-registry-etcd3'
-include ':saluki-monitor:saluki-monitor-common'
-include ':saluki-monitor:saluki-monitor-agent'
 include ':saluki-monitor:saluki-monitor-web'
 include ':spring-boot-starter-saluki'
-include ':saluki-example:saluki-example-client'
-include ':saluki-example:saluki-example-server'
-
+include ':saluki-monitor:spring-boot-starter-saluki-monitor'
 
 project(':saluki-core').projectDir = "$rootDir/saluki-core" as File
 project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
 project(':saluki-plugin').projectDir = "$rootDir/saluki-plugin" as File
-project(':saluki-example:saluki-example-client').projectDir = "$rootDir/saluki-example/saluki-example-client" as File
-project(':saluki-example:saluki-example-server').projectDir = "$rootDir/saluki-example/saluki-example-server" as File
 project(':saluki-registry:saluki-registry-consul').projectDir = "$rootDir/saluki-registry/saluki-registry-consul" as File
 project(':saluki-registry:saluki-registry-etcd3').projectDir = "$rootDir/saluki-registry/saluki-registry-etcd3" as File
-project(':saluki-monitor:saluki-monitor-agent').projectDir = "$rootDir/saluki-monitor/saluki-monitor-agent" as File
-project(':saluki-monitor:saluki-monitor-common').projectDir = "$rootDir/saluki-monitor/saluki-monitor-common" as File
 project(':saluki-monitor:saluki-monitor-web').projectDir = "$rootDir/saluki-monitor/saluki-monitor-web" as File
+project(':saluki-monitor:spring-boot-starter-saluki-monitor').projectDir = "$rootDir/saluki-monitor/spring-boot-starter-saluki-monitor" as File
 project(':spring-boot-starter-saluki').projectDir = "$rootDir/spring-boot-starter-saluki" as File
 

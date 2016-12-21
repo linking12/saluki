@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.quancheng.boot.saluki.starter.autoconfigure.SalukiAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.quancheng.saluki.boot.autoconfigure.WebAppAutoConfiguration,\
+com.quancheng.saluki.boot.autoconfigure.ThrallAutoConfiguration
