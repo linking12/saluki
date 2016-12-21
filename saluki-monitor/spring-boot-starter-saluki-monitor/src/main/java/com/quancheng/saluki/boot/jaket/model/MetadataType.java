@@ -1,4 +1,4 @@
-package com.quancheng.saluki.jaket.model;
+package com.quancheng.saluki.boot.jaket.model;
 
 /**
  * @author bw on 12/7/15.

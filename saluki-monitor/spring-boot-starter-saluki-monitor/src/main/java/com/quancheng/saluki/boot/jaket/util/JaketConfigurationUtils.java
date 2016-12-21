@@ -1,4 +1,4 @@
-package com.quancheng.saluki.jaket.util;
+package com.quancheng.saluki.boot.jaket.util;
 
 import java.io.InputStream;
 import java.util.Properties;

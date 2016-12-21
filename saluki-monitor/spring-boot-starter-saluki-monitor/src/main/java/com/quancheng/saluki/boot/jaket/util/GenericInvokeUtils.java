@@ -1,4 +1,4 @@
-package com.quancheng.saluki.jaket.util;
+package com.quancheng.saluki.boot.jaket.util;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,11 +17,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.quancheng.saluki.jaket.model.GenericInvokeMetadata;
-import com.quancheng.saluki.jaket.model.MetadataType;
-import com.quancheng.saluki.jaket.model.MethodDefinition;
-import com.quancheng.saluki.jaket.model.ServiceDefinition;
-import com.quancheng.saluki.jaket.model.TypeDefinition;
+import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
+import com.quancheng.saluki.boot.jaket.model.MetadataType;
+import com.quancheng.saluki.boot.jaket.model.MethodDefinition;
+import com.quancheng.saluki.boot.jaket.model.ServiceDefinition;
+import com.quancheng.saluki.boot.jaket.model.TypeDefinition;
 
 /**
  * @author bw on 11/25/15.

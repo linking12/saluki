@@ -22,12 +22,12 @@ import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.domain.GrpcServiceTestModel;
-import com.quancheng.saluki.jaket.Jaket;
-import com.quancheng.saluki.jaket.model.GenericInvokeMetadata;
-import com.quancheng.saluki.jaket.model.MetadataType;
-import com.quancheng.saluki.jaket.model.MethodDefinition;
-import com.quancheng.saluki.jaket.model.ServiceDefinition;
-import com.quancheng.saluki.jaket.util.GenericInvokeUtils;
+import com.quancheng.saluki.boot.jaket.Jaket;
+import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
+import com.quancheng.saluki.boot.jaket.model.MetadataType;
+import com.quancheng.saluki.boot.jaket.model.MethodDefinition;
+import com.quancheng.saluki.boot.jaket.model.ServiceDefinition;
+import com.quancheng.saluki.boot.jaket.util.GenericInvokeUtils;
 
 @RestController
 @RequestMapping("service")

@@ -22,8 +22,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.domain.GrpcServiceTestModel;
-import com.quancheng.saluki.jaket.model.GenericInvokeMetadata;
-import com.quancheng.saluki.jaket.model.MethodDefinition;
+import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
+import com.quancheng.saluki.boot.jaket.model.MethodDefinition;
 
 @RestController
 @RequestMapping("/api/serviceMeasure")

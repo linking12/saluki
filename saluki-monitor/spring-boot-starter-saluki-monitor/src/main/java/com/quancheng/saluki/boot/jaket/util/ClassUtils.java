@@ -1,4 +1,4 @@
-package com.quancheng.saluki.jaket.util;
+package com.quancheng.saluki.boot.jaket.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
