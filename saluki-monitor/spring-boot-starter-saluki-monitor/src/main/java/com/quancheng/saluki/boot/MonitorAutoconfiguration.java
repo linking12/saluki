@@ -28,7 +28,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @version MonitorAutoconfiguration.java, v 0.0.1 2016年12月20日 下午3:44:35 shimingliu
  */
 @Configuration
-@ConditionalOnExpression("${thrall.monitor.enabled:true}")
+@ConditionalOnExpression("${saluki.monitor.enabled:true}")
 public class MonitorAutoconfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(MonitorAutoconfiguration.class);
@@ -44,7 +44,7 @@ public class MonitorAutoconfiguration {
                         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
                         ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
                         scanner.setResourceLoader(applicationContext);
-                        scanner.scan("com.quancheng.saluki.boot.monitor");
+                        scanner.scan("com.quancheng.saluki.boot.web");
                     } catch (Throwable e) {
                         log.error(e.getMessage(), e);
                     }

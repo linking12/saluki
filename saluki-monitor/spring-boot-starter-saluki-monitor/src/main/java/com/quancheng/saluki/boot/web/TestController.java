@@ -1,4 +1,4 @@
-package com.quancheng.saluki.boot;
+package com.quancheng.saluki.boot.web;
 
 import java.util.List;
 import java.util.Map;
