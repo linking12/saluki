@@ -7,7 +7,7 @@ import com.quancheng.saluki.registry.consul.GrpcURLUtils;
 
 public final class ConsulEphemralNode {
 
-    private final GrpcURL      url;
+    private final GrpcURL        url;
 
     private final String         interval;
 
@@ -23,7 +23,7 @@ public final class ConsulEphemralNode {
         NewSession newSersson = new NewSession();
         newSersson.setName(getSessionName());
         newSersson.setLockDelay(0);
-        newSersson.setBehavior(Session.Behavior.DELETE);
+        newSersson.setBehavior(Session.Behavior.RELEASE);
         newSersson.setTtl(this.interval + "s");
         return newSersson;
     }
@@ -46,7 +46,7 @@ public final class ConsulEphemralNode {
 
     public static class Builder extends AbstractBuilder {
 
-        private GrpcURL      url;
+        private GrpcURL        url;
 
         private String         interval;
 
