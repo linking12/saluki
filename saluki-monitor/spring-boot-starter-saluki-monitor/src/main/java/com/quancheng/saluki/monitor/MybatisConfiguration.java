@@ -7,8 +7,6 @@
  */
 package com.quancheng.saluki.monitor;
 
-import javax.sql.DataSource;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -36,7 +34,7 @@ public class MybatisConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(EmbeddedDatabase.class)
-    public DataSource dataSource() {
+    public EmbeddedDatabase dataSource() {
         EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
         EmbeddedDatabase db = builder.setType(EmbeddedDatabaseType.H2) //
                                      .setName("grpcmonitor")//
@@ -46,7 +44,7 @@ public class MybatisConfiguration {
     }
 
     @Bean(name = "sqlSessionFactory")
-    public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) {
+    public SqlSessionFactory sqlSessionFactoryBean(EmbeddedDatabase dataSource) {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dataSource);
         bean.setTypeAliasesPackage("com.quancheng.saluki.domain");
@@ -69,9 +67,9 @@ public class MybatisConfiguration {
     @ConditionalOnExpression("${saluki.monitor.enabled:true}")
     public static class TransactionConfig implements TransactionManagementConfigurer {
 
-        private DataSource dataSource;
+        private EmbeddedDatabase dataSource;
 
-        public TransactionConfig(DataSource dataSource){
+        public TransactionConfig(EmbeddedDatabase dataSource){
             this.dataSource = dataSource;
         }
 
