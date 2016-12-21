@@ -4,6 +4,7 @@
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki-maven-plugin</artifactId>
 	<version>1.5.1-SNAPSHOT</version>
+	<packaging>maven-plugin</packaging>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
@@ -24,6 +25,7 @@
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
 			<version>3.2</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -102,4 +104,16 @@
 			</build>
 		</profile>
 	</profiles>
+	<distributionManagement>
+		<repository>
+			<id>nexus</id>
+			<name>Nexus Release Repository</name>
+			<url>http://repo.quancheng-ec.com/repository/maven-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus</id>
+			<name>Nexus Snapshot Repository</name>
+			<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
