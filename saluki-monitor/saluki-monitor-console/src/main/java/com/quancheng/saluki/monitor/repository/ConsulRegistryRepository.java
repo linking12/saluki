@@ -21,9 +21,9 @@ import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Check;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.boot.domain.GrpcHost;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.domain.GrpcHost;
 import com.quancheng.saluki.core.common.GrpcURL;
 
 @Repository

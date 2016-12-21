@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.quancheng.saluki.boot.respository.InvokeMapper">
+<mapper namespace="com.quancheng.saluki.monitor.InvokeMapper">
 
 
 	<sql id="allNoAsOfInvoke">
@@ -25,7 +25,7 @@
 		output
 	</sql>
 
-	<insert id="addInvoke" parameterType="com.quancheng.saluki.boot.domain.GrpcInvoke">
+	<insert id="addInvoke" parameterType="com.quancheng.saluki.domain.GrpcInvoke">
 		insert into
 		saluki_invoke (
 		<include refid="allNoAsOfInvoke" />
@@ -52,7 +52,7 @@
 		)
 	</insert>
 
-	<select id="queryData" resultType="com.quancheng.saluki.boot.domain.GrpcInvoke">
+	<select id="queryData" resultType="com.quancheng.saluki.domain.GrpcInvoke">
 		SELECT *
 		FROM saluki_invoke
 	</select>

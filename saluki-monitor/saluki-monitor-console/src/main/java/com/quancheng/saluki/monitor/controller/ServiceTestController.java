@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.quancheng.saluki.boot.domain.GrpcServiceTestModel;
+import com.quancheng.saluki.domain.GrpcServiceTestModel;
 import com.quancheng.saluki.jaket.model.GenericInvokeMetadata;
 import com.quancheng.saluki.jaket.model.MethodDefinition;
 

@@ -35,10 +35,10 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-import com.quancheng.saluki.boot.domain.GrpcInvoke;
-import com.quancheng.saluki.boot.domain.GrpcnvokeStatistics;
-import com.quancheng.saluki.boot.domain.GrpcHost;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.domain.GrpcHost;
+import com.quancheng.saluki.domain.GrpcInvoke;
+import com.quancheng.saluki.domain.GrpcnvokeStatistics;
 import com.quancheng.saluki.monitor.repository.ConsulRegistryRepository;
 import com.quancheng.saluki.monitor.repository.InvokeMapper;
 

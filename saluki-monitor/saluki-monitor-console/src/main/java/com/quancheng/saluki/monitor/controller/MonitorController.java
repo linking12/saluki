@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.quancheng.saluki.boot.domain.GrpcnvokeStatistics;
+import com.quancheng.saluki.domain.GrpcnvokeStatistics;
 import com.quancheng.saluki.monitor.service.MonitorDataService;
 
 @RestController

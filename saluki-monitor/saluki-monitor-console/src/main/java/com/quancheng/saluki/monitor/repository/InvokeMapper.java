@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.quancheng.saluki.boot.domain.GrpcInvoke;
-import com.quancheng.saluki.boot.domain.GrpcnvokeStatistics;
+import com.quancheng.saluki.domain.GrpcInvoke;
+import com.quancheng.saluki.domain.GrpcnvokeStatistics;
 
 @Mapper
 public interface InvokeMapper {

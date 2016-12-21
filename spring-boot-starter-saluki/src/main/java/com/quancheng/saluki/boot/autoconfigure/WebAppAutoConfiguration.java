@@ -19,9 +19,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class WebAppAutoConfiguration implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
-    private final ThrallProperties thrallProperties;
+    private final GrpcProperties thrallProperties;
 
-    public WebAppAutoConfiguration(ThrallProperties thrallProperties){
+    public WebAppAutoConfiguration(GrpcProperties thrallProperties){
         this.thrallProperties = thrallProperties;
     }
 

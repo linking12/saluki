@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.quancheng.saluki.boot.domain.ApplicationDependcy;
+import com.quancheng.saluki.domain.ApplicationDependcy;
 import com.quancheng.saluki.monitor.repository.InvokeMapper;
 
 @Service
