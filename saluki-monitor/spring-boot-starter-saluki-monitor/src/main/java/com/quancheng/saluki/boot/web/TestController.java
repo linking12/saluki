@@ -36,7 +36,7 @@ public class TestController {
     private final Gson                 gson = new Gson();
 
     @Autowired
-    private GrpcProperties           prop;
+    private GrpcProperties             prop;
 
     @Autowired
     private AbstractApplicationContext applicationContext;
@@ -97,17 +97,19 @@ public class TestController {
     private Pair<String, String> getAnnotation(String className) throws ClassNotFoundException {
         Class<?> beanType = ReflectUtils.name2class(className);
         Map<String, ?> beanMap = applicationContext.getBeansOfType(beanType);
+        String group = null;
+        String version = null;
         for (Map.Entry<String, ?> entry : beanMap.entrySet()) {
             Object obj = entry.getValue();
             SalukiService salukiAnnotation = obj.getClass().getAnnotation(SalukiService.class);
-            return new ImmutablePair<String, String>(salukiAnnotation.group(), salukiAnnotation.version());
+            group = salukiAnnotation.group();
+            version = salukiAnnotation.version();
         }
-        String group = prop.getGroup();
-        String version = prop.getVersion();
-        if (StringUtils.isBlank(group)|| StringUtils.isBlank(version)) {
-            throw new IllegalArgumentException("There no bean in spring container,pls check again ");
-        } else {
-            return new ImmutablePair<String, String>(group, version);
+        if (StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
+            group = prop.getGroup();
+            version = prop.getVersion();
         }
+        return new ImmutablePair<String, String>(group, version);
+
     }
 }
