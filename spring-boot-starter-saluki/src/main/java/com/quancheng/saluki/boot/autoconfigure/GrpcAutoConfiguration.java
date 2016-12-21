@@ -24,7 +24,7 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
  * @version ThrallAutoConfiguration.java, v 0.0.1 2016年12月16日 下午2:12:42 shimingliu
  */
 @Configuration
-@ConditionalOnProperty(prefix = "thrall.grpc", name = "registryAddress")
+@ConditionalOnProperty(prefix = "saluki.grpc", name = "registryAddress")
 @AutoConfigureAfter(WebAppAutoConfiguration.class)
 @EnableConfigurationProperties(GrpcProperties.class)
 public class GrpcAutoConfiguration {

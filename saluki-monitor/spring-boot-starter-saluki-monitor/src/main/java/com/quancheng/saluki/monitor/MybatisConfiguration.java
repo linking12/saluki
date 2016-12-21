@@ -12,8 +12,6 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.mapper.MapperScannerConfigurer;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,41 +29,37 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
  * @author shimingliu 2016年12月20日 下午3:07:34
  * @version MonitorConfiguration.java, v 0.0.1 2016年12月20日 下午3:07:34 shimingliu
  */
+@Configuration
+public class MybatisConfiguration {
 
-public class CommonConfiguration {
+    @Bean
+    @ConditionalOnMissingBean(EmbeddedDatabase.class)
+    public DataSource dataSource() {
+        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+        EmbeddedDatabase db = builder.setType(EmbeddedDatabaseType.H2) //
+                                     .setName("grpcmonitor")//
+                                     .addScript("mapper/create-db.sql")//
+                                     .build();
+        return db;
+    }
 
-    @Configuration
-    public static class MyBatisConfig {
-
-        @Bean
-        @ConditionalOnMissingBean(EmbeddedDatabase.class)
-        public DataSource dataSource() {
-            EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-            EmbeddedDatabase db = builder.setType(EmbeddedDatabaseType.H2) //
-                                         .setName("grpcmonitor")//
-                                         .addScript("mapper/create-db.sql")//
-                                         .build();
-            return db;
+    @Bean(name = "sqlSessionFactory")
+    public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) {
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(dataSource);
+        bean.setTypeAliasesPackage("com.quancheng.saluki.domain");
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        try {
+            bean.setMapperLocations(resolver.getResources("classpath:mapper/*.xml"));
+            return bean.getObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        @Bean(name = "sqlSessionFactory")
-        public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) {
-            SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
-            bean.setDataSource(dataSource);
-            bean.setTypeAliasesPackage("com.quancheng.saluki.domain");
-            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            try {
-                bean.setMapperLocations(resolver.getResources("classpath:mapper/*.xml"));
-                return bean.getObject();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Bean
-        public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
-            return new SqlSessionTemplate(sqlSessionFactory);
-        }
+    @Bean
+    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
+        return new SqlSessionTemplate(sqlSessionFactory);
     }
 
     @Configuration
@@ -84,19 +78,6 @@ public class CommonConfiguration {
             return new DataSourceTransactionManager(dataSource);
         }
 
-    }
-
-    @Configuration
-    @AutoConfigureAfter(MyBatisConfig.class)
-    public static class MyBatisMapperScannerConfig {
-
-        @Bean
-        public MapperScannerConfigurer mapperScannerConfigurer() {
-            MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-            mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-            mapperScannerConfigurer.setBasePackage("com.quancheng.saluki.monitor");
-            return mapperScannerConfigurer;
-        }
     }
 
 }

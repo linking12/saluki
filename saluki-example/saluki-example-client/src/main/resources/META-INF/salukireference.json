@@ -1,12 +1,12 @@
 [
     {
         "service": "com.quancheng.examples.service.HelloService", 
-        "group": "monitor", 
+        "group": "example", 
         "version": "1.0.0"
     }, 
     {
         "service": "com.quancheng.test.service.UserService", 
-        "group": "monitor", 
+        "group": "example", 
         "version": "1.0.0"
     }
     

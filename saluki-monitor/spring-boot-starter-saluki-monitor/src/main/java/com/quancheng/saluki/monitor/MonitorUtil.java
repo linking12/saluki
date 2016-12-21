@@ -36,8 +36,8 @@ public final class MonitorUtil {
 
     static {
         ctx = new AnnotationConfigApplicationContext();
-        ctx.register(CommonConfiguration.MyBatisConfig.class);
-        ctx.register(CommonConfiguration.MyBatisMapperScannerConfig.class);
+        ctx.register(MybatisConfiguration.class);
+        ctx.register(MybatisMapperScannerConfig.class);
         ctx.refresh();
 
     }
