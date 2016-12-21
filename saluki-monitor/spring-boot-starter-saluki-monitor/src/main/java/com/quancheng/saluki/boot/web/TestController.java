@@ -104,6 +104,7 @@ public class TestController {
             SalukiService salukiAnnotation = obj.getClass().getAnnotation(SalukiService.class);
             group = salukiAnnotation.group();
             version = salukiAnnotation.version();
+            break;
         }
         if (StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
             group = prop.getGroup();
