@@ -1,11 +1,5 @@
-/com/
-/.gitignore
-/.DS_Store
-/application.properties
-/log4j.properties
-/salukidefinitions.json
-/SalukiServiceDefinition.json
-/SalukiReferenceDefinition.json
-/salukireference.json
 /META-INF/
+/application.properties
+/com/
+/log4j.properties
 /static/

@@ -3,7 +3,7 @@ package com.quancheng.saluki.example.client.genric;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.test.model.user.UserCreateResponse;
 
