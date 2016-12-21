@@ -72,8 +72,8 @@ public class ConsulRegistry extends FailbackRegistry {
         return ConsulService.newSalukiService()//
                             .withAddress(url.getHost())//
                             .withPort(Integer.valueOf(url.getPort()).toString())//
-                            .withName(ThrallURLUtils.toServiceName(url.getGroup()))//
-                            .withTag(ThrallURLUtils.healthServicePath(url, ThrallRoleType.PROVIDER))//
+                            .withName(GrpcURLUtils.toServiceName(url.getGroup()))//
+                            .withTag(GrpcURLUtils.healthServicePath(url, ThrallRoleType.PROVIDER))//
                             .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath() + "-" + url.getVersion())//
                             .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
@@ -147,7 +147,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {
         Long lastConsulIndexId = lookupGroupServices.get(group) == null ? 0L : lookupGroupServices.get(group);
-        String serviceName = ThrallURLUtils.toServiceName(group);
+        String serviceName = GrpcURLUtils.toServiceName(group);
         ConsulServiceResp consulResp = client.lookupHealthService(serviceName, lastConsulIndexId);
         if (consulResp != null) {
             List<ConsulService> consulServcies = consulResp.getSalukiConsulServices();
