@@ -27,7 +27,7 @@
 
 	<insert id="addInvoke" parameterType="com.quancheng.saluki.domain.GrpcInvoke">
 		insert into
-		saluki_invoke (
+		invoke_data (
 		<include refid="allNoAsOfInvoke" />
 		)
 		values(
@@ -54,7 +54,7 @@
 
 	<select id="queryData" resultType="com.quancheng.saluki.domain.GrpcInvoke">
 		SELECT *
-		FROM saluki_invoke
+		FROM invoke_data
 	</select>
 
 	<delete id="truncateTable">

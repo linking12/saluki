@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `invokedata`;
-CREATE TABLE `invokedata` (
+DROP TABLE IF EXISTS `invoke_data`;
+CREATE TABLE `invoke_data` (
   `id` varchar(255) PRIMARY KEY,
   `invokeDate` datetime DEFAULT NULL,
   `application` varchar(255) DEFAULT NULL,
