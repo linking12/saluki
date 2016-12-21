@@ -7,11 +7,15 @@
  */
 package com.quancheng.saluki;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
+import com.quancheng.saluki.domain.GrpcInvoke;
 import com.quancheng.saluki.monitor.InvokeMapper;
 import com.quancheng.saluki.monitor.MonitorUtil;
 
@@ -30,7 +34,43 @@ public class GrpcMonitorService implements MonitorService {
 
     @Override
     public void collect(GrpcURL statistics) {
-        // TODO Auto-generated method stub
+        if (!Constants.MONITOR_PROTOCOL.equals(statistics.getProtocol())) {
+            return;
+        }
+        try {
+            GrpcInvoke invoke = new GrpcInvoke();
+            invoke.setId(MonitorUtil.createUUID());
+            if (statistics.hasParameter(PROVIDER)) {
+                invoke.setType(CONSUMER);
+                invoke.setConsumer(statistics.getAddress());
+                invoke.setProvider(statistics.getParameter(PROVIDER));
+            } else {
+                invoke.setType(PROVIDER);
+                invoke.setConsumer(statistics.getParameter(CONSUMER));
+                invoke.setProvider(statistics.getAddress());
+            }
+            invoke.setInvokeDate(new Date(Long.valueOf(statistics.getParameter(TIMESTAMP))));
+            invoke.setApplication(statistics.getParameter(APPLICATION));
+            invoke.setService(statistics.getServiceInterface());
+            invoke.setMethod(statistics.getParameter(METHOD));
+            invoke.setConcurrent(statistics.getParameter(CONCURRENT, 1));
+            invoke.setMaxElapsed(statistics.getParameter(MAX_ELAPSED, 0));
+            invoke.setMaxConcurrent(statistics.getParameter(MAX_CONCURRENT, 0));
+            invoke.setMaxInput(statistics.getParameter(MAX_INPUT, 0));
+            invoke.setMaxOutput(statistics.getParameter(MAX_OUTPUT, 0));
+            invoke.setSuccess(statistics.getParameter(SUCCESS, 0));
+            invoke.setFailure(statistics.getParameter(FAILURE, 0));
+            invoke.setElapsed(statistics.getParameter(MonitorService.ELAPSED, 0));
+            invoke.setInput(statistics.getParameter(MonitorService.INPUT, 0));
+            invoke.setOutput(statistics.getParameter(MonitorService.OUTPUT, 0));
+            if (invoke.getSuccess() == 0 && invoke.getFailure() == 0 && invoke.getElapsed() == 0
+                && invoke.getConcurrent() == 0 && invoke.getMaxElapsed() == 0 && invoke.getMaxConcurrent() == 0) {
+                return;
+            }
+            invokeMapping.addInvoke(invoke);
+        } catch (Throwable t) {
+            logger.error(t.getMessage(), t);
+        }
 
     }
 

@@ -52,7 +52,7 @@ public class CommonConfiguration {
         public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) {
             SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
             bean.setDataSource(dataSource);
-            bean.setTypeAliasesPackage("com.quancheng.saluki.boot.domain");
+            bean.setTypeAliasesPackage("com.quancheng.saluki.domain");
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             try {
                 bean.setMapperLocations(resolver.getResources("classpath:mapper/*.xml"));
@@ -94,7 +94,7 @@ public class CommonConfiguration {
         public MapperScannerConfigurer mapperScannerConfigurer() {
             MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
             mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-            mapperScannerConfigurer.setBasePackage("com.quancheng.saluki.boot.respository");
+            mapperScannerConfigurer.setBasePackage("com.quancheng.saluki.monitor");
             return mapperScannerConfigurer;
         }
     }
