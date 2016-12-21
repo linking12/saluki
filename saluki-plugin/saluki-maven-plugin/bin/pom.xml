@@ -5,7 +5,7 @@
 	<artifactId>thrall-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<parent>
-		<groupId>com.ypp.thrall</groupId>
+		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>thrall</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
@@ -17,7 +17,7 @@
 			<version>2.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.ypp.thrall</groupId>
+			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>thrall-plugin</artifactId>
 			<version>${project.version}</version>
 		</dependency>

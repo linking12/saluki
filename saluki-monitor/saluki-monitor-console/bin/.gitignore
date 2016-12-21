@@ -1,0 +1,10 @@
+/application-dev.properties
+/application-local.properties
+/application-prod.properties
+/bootstrap.properties
+/com/
+/log4j2.xml
+/mappers/
+/mybatis.properties
+/sql/
+/static/

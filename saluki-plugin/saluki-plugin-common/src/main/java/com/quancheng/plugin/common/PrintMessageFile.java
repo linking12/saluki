@@ -59,8 +59,8 @@ public final class PrintMessageFile extends AbstractPrint {
         String packageName = sourePackageName.toLowerCase();
         List<String> fileData = Lists.newArrayList();
         fileData.add("package " + packageName + ";");
-        fileData.add("import com.ypp.thrall.serializer.ProtobufAttribute;");
-        fileData.add("import com.ypp.thrall.serializer.ProtobufEntity;");
+        fileData.add("import com.quancheng.saluki.serializer.ProtobufAttribute;");
+        fileData.add("import com.quancheng.saluki.serializer.ProtobufEntity;");
         fileData.add("@ProtobufEntity(" + sourePackageName + "." + className + ".class)");
         fileData.add("public class " + className + "{");
         for (int i = 0; i < messageFields.size(); i++) {
