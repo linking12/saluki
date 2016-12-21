@@ -77,6 +77,7 @@ public class MonitorDataService {
                 syncAndClearData();
             }
         }, 0, 120, TimeUnit.MINUTES);
+        syncAndClearData();
     }
 
     private void syncAndClearData() {

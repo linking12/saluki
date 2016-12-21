@@ -58,6 +58,6 @@
 	</select>
 
 	<delete id="truncateTable">
-		truncate table saluki_invoke
+		truncate table invoke_data
 	</delete>
 </mapper>

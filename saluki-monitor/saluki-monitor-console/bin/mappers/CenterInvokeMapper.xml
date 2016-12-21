@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.quancheng.saluki.monitor.repository.SalukiInvokeMapper">
+<mapper namespace="com.quancheng.saluki.monitor.repository.InvokeMapper">
 
 	<insert id="addInvoke" parameterType="java.util.List">
 		insert into saluki_invoke (
@@ -50,7 +50,7 @@
 	</insert>
 
 	<select id="queryData" parameterType="java.util.Map"
-		resultType="com.quancheng.saluki.monitor.SalukiInvokeStatistics">
+		resultType="com.quancheng.saluki.domain.GrpcnvokeStatistics">
 		SELECT
 		<choose>
 			<when test="interval =='day'">

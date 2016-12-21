@@ -29,7 +29,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 @Repository
 public class ConsulRegistryRepository {
 
-    @Value("${thrall.monitor.consulhost}")
+    @Value("${saluki.monitor.consulhost}")
     private String                                                agentHost;
 
     private ConsulClient                                          consulClient;
