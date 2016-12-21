@@ -1,0 +1,8 @@
+apply plugin: 'groovy'
+
+group = 'saluki-gradle-plugin'
+
+dependencies {
+   compile gradleApi()
+   compile localGroovy()
+}
