@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.maven;
+package com.quancheng.saluki.plugin;
 
 import java.io.File;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.plugin.Proto2ServicePojo;
+import com.quancheng.plugin.common.Proto2ServicePojo;
 
 /**
  * @author shimingliu 2016年12月17日 下午12:31:10
