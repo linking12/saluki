@@ -1,2 +1,4 @@
 /com/
 /static/
+/application-dev.properties
+/application-prod.properties

@@ -103,8 +103,4 @@ public final class MonitorUtil {
     public static String createUUID() {
         return UUID.randomUUID().toString().replaceAll("-", "");
     }
-
-    public static long createIDForLong() {
-        return System.currentTimeMillis();
-    }
 }
