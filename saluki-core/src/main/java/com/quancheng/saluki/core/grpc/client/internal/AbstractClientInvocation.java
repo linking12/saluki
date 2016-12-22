@@ -82,13 +82,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
-        SocketAddress remoteAddress = grpcAsyncCall.getRemoteAddress();
+        SocketAddress remoteAddress = null;
         try {
             reqProtoBufer = request.getRequestArg();
-            if (log.isInfoEnabled()) {
-                log.info(String.format("Service %s request Method %s connect to Address %s", serviceName, methodName,
-                                       remoteAddress.toString()));
-            }
             switch (request.getMethodRequest().getCallType()) {
                 case Constants.RPCTYPE_ASYNC:
                     respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
@@ -105,6 +101,11 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
+            remoteAddress = grpcAsyncCall.getRemoteAddress();
+            if (log.isInfoEnabled()) {
+                log.info(String.format("Service %s request Method %s connect to Address %s", serviceName, methodName,
+                                       remoteAddress.toString()));
+            }
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {

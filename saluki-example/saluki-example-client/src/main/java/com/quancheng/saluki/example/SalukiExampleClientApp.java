@@ -29,6 +29,7 @@ public class SalukiExampleClientApp implements CommandLineRunner {
         HelloReply reply = helloService.sayHello(request);
         System.out.print(reply);
 
+        
     }
 
 }
