@@ -21,37 +21,37 @@ import com.quancheng.saluki.core.utils.NetUtils;
 
 public class GrpcURL implements Serializable {
 
-    private static final long                         serialVersionUID = -1985165475234910535L;
+    private static final long                       serialVersionUID = -1985165475234910535L;
 
-    private final String                              protocol;
+    private final String                            protocol;
 
-    private final String                              username;
+    private final String                            username;
 
-    private final String                              password;
+    private final String                            password;
 
-    private final String                              host;
+    private final String                            host;
 
-    private final int                                 port;
+    private final int                               port;
 
-    private final String                              path;
+    private final String                            path;
 
-    private final Map<String, String>                 parameters;
+    private final Map<String, String>               parameters;
 
     // ==== cache ====
 
-    private volatile transient Map<String, Number>    numbers;
+    private volatile transient Map<String, Number>  numbers;
 
     private volatile transient Map<String, GrpcURL> urls;
 
-    private volatile transient String                 ip;
+    private volatile transient String               ip;
 
-    private volatile transient String                 full;
+    private volatile transient String               full;
 
-    private volatile transient String                 identity;
+    private volatile transient String               identity;
 
-    private volatile transient String                 parameter;
+    private volatile transient String               parameter;
 
-    private volatile transient String                 string;
+    private volatile transient String               string;
 
     protected GrpcURL(){
         this.protocol = null;
@@ -92,12 +92,12 @@ public class GrpcURL implements Serializable {
     }
 
     public GrpcURL(String protocol, String username, String password, String host, int port, String path,
-                     String... pairs){
+                   String... pairs){
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
     public GrpcURL(String protocol, String username, String password, String host, int port, String path,
-                     Map<String, String> parameters){
+                   Map<String, String> parameters){
         if ((username == null || username.length() == 0) && password != null && password.length() > 0) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
@@ -836,7 +836,6 @@ public class GrpcURL implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
@@ -856,9 +855,6 @@ public class GrpcURL implements Serializable {
         if (host == null) {
             if (other.host != null) return false;
         } else if (!host.equals(other.host)) return false;
-        if (parameters == null) {
-            if (other.parameters != null) return false;
-        } else if (!parameters.equals(other.parameters)) return false;
         if (password == null) {
             if (other.password != null) return false;
         } else if (!password.equals(other.password)) return false;
@@ -874,10 +870,12 @@ public class GrpcURL implements Serializable {
         } else if (!username.equals(other.username)) return false;
         if (this.getGroup() == null) {
             if (other.getGroup() != null) return false;
-        } else if (this.getGroup().equals(other.getGroup())) return false;
+        } else if (!this.getGroup().equals(other.getGroup())) return false;
         if (this.getVersion() == null) {
             if (other.getVersion() != null) return false;
-        } else if (this.getVersion().equals(other.getVersion())) return false;
+        } else if (!this.getVersion().equals(other.getVersion())) return false;
+
         return true;
     }
+
 }

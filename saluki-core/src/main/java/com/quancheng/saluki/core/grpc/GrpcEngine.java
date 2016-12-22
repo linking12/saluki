@@ -56,13 +56,13 @@ import io.netty.handler.ssl.SslContextBuilder;
 @Internal
 public final class GrpcEngine {
 
-    private static final Logger                     log = LoggerFactory.getLogger(GrpcEngine.class);
+    private static final Logger                      log = LoggerFactory.getLogger(GrpcEngine.class);
 
-    private final GrpcURL                         registryUrl;
+    private final GrpcURL                            registryUrl;
 
-    private final Registry                          registry;
+    private final Registry                           registry;
 
-    private GenericKeyedObjectPool<String, Channel> channelPool;
+    private GenericKeyedObjectPool<GrpcURL, Channel> channelPool;
 
     public GrpcEngine(GrpcURL registryUrl){
         this.registryUrl = registryUrl;
@@ -83,7 +83,7 @@ public final class GrpcEngine {
         config.setTimeBetweenEvictionRunsMillis(1 * 60000L);
         config.setMinEvictableIdleTimeMillis(10 * 60000L);
         config.setTestWhileIdle(false);
-        this.channelPool = new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
+        this.channelPool = new GenericKeyedObjectPool<GrpcURL, Channel>(new GrpcChannelFactory(), config);
     }
 
     public Object getClient(GrpcURL refUrl) throws Exception {
@@ -99,7 +99,7 @@ public final class GrpcEngine {
                     realRefUrltemp = refUrl;
                 }
                 try {
-                    return channelPool.borrowObject(realRefUrltemp.toFullString());
+                    return channelPool.borrowObject(realRefUrltemp);
                 } catch (Exception e) {
                     throw new java.lang.IllegalArgumentException("Channel pool is full");
                 }
@@ -111,7 +111,7 @@ public final class GrpcEngine {
                 if (realRefUrltemp == null) {
                     realRefUrltemp = refUrl;
                 }
-                channelPool.returnObject(realRefUrltemp.toFullString(), channel);
+                channelPool.returnObject(realRefUrltemp, channel);
             }
 
         };
@@ -176,13 +176,12 @@ public final class GrpcEngine {
         return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
     }
 
-    private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<String, Channel> {
+    private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<GrpcURL, Channel> {
 
         @Override
-        public Channel create(String refUrlFullString) throws Exception {
-            GrpcURL refUrl = GrpcURL.valueOf(refUrlFullString);
+        public Channel create(GrpcURL refURL) throws Exception {
             Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                 .nameResolverFactory(new GrpcNameResolverProvider(refUrl))//
+                                                 .nameResolverFactory(new GrpcNameResolverProvider(refURL))//
                                                  .loadBalancerFactory(buildLoadBalanceFactory())//
                                                  .sslContext(buildClientSslContext())//
                                                  .usePlaintext(false)//
