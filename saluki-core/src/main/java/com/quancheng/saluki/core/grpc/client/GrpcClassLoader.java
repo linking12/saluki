@@ -23,7 +23,7 @@ import com.quancheng.saluki.core.utils.ClassHelper;
  * @author shimingliu 2016年12月14日 下午9:58:47
  * @version ThrallClassLoader.java, v 0.0.1 2016年12月14日 下午9:58:47 shimingliu
  */
-public class ThrallClassLoader extends URLClassLoader {
+public class GrpcClassLoader extends URLClassLoader {
 
     static {
         registerAsParallelCapable();
@@ -35,7 +35,7 @@ public class ThrallClassLoader extends URLClassLoader {
 
     private final Set<String>           _extensions   = new HashSet<String>();
 
-    public ThrallClassLoader(){
+    public GrpcClassLoader(){
         super(new URL[] {}, ClassHelper.getClassLoader());
         _extensions.add(".jar");
         _extensions.add(".zip");

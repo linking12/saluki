@@ -17,7 +17,7 @@ import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
-import com.quancheng.saluki.core.grpc.client.ThrallClassLoader;
+import com.quancheng.saluki.core.grpc.client.GrpcClassLoader;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtils;
@@ -30,11 +30,11 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
     private final Map<String, Integer> methodRetries;
 
-    private final ThrallClassLoader    classLoader;
+    private final GrpcClassLoader    classLoader;
 
     private final GrpcURL            refUrl;
 
-    public GenericProxyClient(ThrallClassLoader classLoader, Map<String, Integer> methodRetries, GrpcURL refUrl){
+    public GenericProxyClient(GrpcClassLoader classLoader, Map<String, Integer> methodRetries, GrpcURL refUrl){
         this.classLoader = classLoader;
         this.methodRetries = methodRetries;
         this.refUrl = refUrl;
