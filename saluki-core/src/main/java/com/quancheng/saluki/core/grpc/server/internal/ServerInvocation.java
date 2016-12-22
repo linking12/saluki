@@ -80,17 +80,27 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             collect(reqProtoBufer, respProtoBufer, start, true);
             Throwable target = e.getCause();
-            if (log.isInfoEnabled()) {
-                log.info(target.getMessage(), target);
+            if (log.isDebugEnabled()) {
+                log.debug(target.getMessage(), target);
             }
             RpcServiceException rpcBizError = new RpcServiceException(target);
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBizError.getMessage())//
                                                                     .withCause(rpcBizError).asRuntimeException();
             responseObserver.onError(statusException);
         } catch (ProtobufException e) {
+            collect(reqProtoBufer, respProtoBufer, start, true);
             RpcFrameworkException rpcFramworkError = new RpcFrameworkException(e);
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcFramworkError.getMessage())//
                                                                     .withCause(rpcFramworkError).asRuntimeException();
+            responseObserver.onError(statusException);
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+            }
+            collect(reqProtoBufer, respProtoBufer, start, true);
+            RpcServiceException rpcBizError = new RpcServiceException(e);
+            StatusRuntimeException statusException = Status.INTERNAL.withDescription(e.getMessage())//
+                                                                    .withCause(rpcBizError).asRuntimeException();
             responseObserver.onError(statusException);
         } finally {
             getConcurrent().decrementAndGet();

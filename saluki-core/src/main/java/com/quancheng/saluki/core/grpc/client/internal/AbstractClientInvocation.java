@@ -82,8 +82,13 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
+        SocketAddress remoteAddress = grpcAsyncCall.getRemoteAddress();
         try {
             reqProtoBufer = request.getRequestArg();
+            if (log.isInfoEnabled()) {
+                log.info(String.format("Service %s request Method %s connect to Address %s", serviceName, methodName,
+                                       remoteAddress.toString()));
+            }
             switch (request.getMethodRequest().getCallType()) {
                 case Constants.RPCTYPE_ASYNC:
                     respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
@@ -100,12 +105,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
-                    false);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, grpcAsyncCall.getRemoteAddress(), start,
-                    true);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -116,6 +119,12 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                 RpcServiceException rpcService = new RpcServiceException(e);
                 throw rpcService;
             }
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+            }
+            RpcServiceException rpcService = new RpcServiceException(e);
+            throw rpcService;
         } finally {
             request.returnChannel(channel);
             getConcurrent(serviceName, methodName).decrementAndGet();
@@ -151,19 +160,19 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String host = getSourceRefUrl().getHost();
             Integer port = getSourceRefUrl().getPort();
             clientServerMonitor.collect(new GrpcURL(Constants.MONITOR_PROTOCOL, host, port, //
-                                                      service + "/" + method, //
-                                                      MonitorService.TIMESTAMP, String.valueOf(start), //
-                                                      MonitorService.APPLICATION,
-                                                      getSourceRefUrl().getParameter(Constants.APPLICATION_NAME), //
-                                                      MonitorService.INTERFACE, service, //
-                                                      MonitorService.METHOD, method, //
-                                                      MonitorService.PROVIDER, provider, //
-                                                      error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
-                                                      MonitorService.ELAPSED, String.valueOf(elapsed), //
-                                                      MonitorService.CONCURRENT, String.valueOf(concurrent), //
-                                                      MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
-                                                      MonitorService.OUTPUT,
-                                                      String.valueOf(response.getSerializedSize())));
+                                                    service + "/" + method, //
+                                                    MonitorService.TIMESTAMP, String.valueOf(start), //
+                                                    MonitorService.APPLICATION,
+                                                    getSourceRefUrl().getParameter(Constants.APPLICATION_NAME), //
+                                                    MonitorService.INTERFACE, service, //
+                                                    MonitorService.METHOD, method, //
+                                                    MonitorService.PROVIDER, provider, //
+                                                    error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
+                                                    MonitorService.ELAPSED, String.valueOf(elapsed), //
+                                                    MonitorService.CONCURRENT, String.valueOf(concurrent), //
+                                                    MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
+                                                    MonitorService.OUTPUT,
+                                                    String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
             log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
         }
