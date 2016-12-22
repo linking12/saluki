@@ -23,7 +23,7 @@ public final class ConsulEphemralNode {
         NewSession newSersson = new NewSession();
         newSersson.setName(getSessionName());
         newSersson.setLockDelay(0);
-        newSersson.setBehavior(Session.Behavior.RELEASE);
+        newSersson.setBehavior(Session.Behavior.DELETE);
         newSersson.setTtl(this.interval + "s");
         return newSersson;
     }
