@@ -68,7 +68,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
     @Override
     public NameResolver newNameResolver(URI targetUri, Attributes params) {
         Attributes allParams = Attributes.newBuilder().setAll(attributesParams).setAll(params).build();
-        return new SalukiNameResolver(targetUri, allParams);
+        return new GrpcNameResolver(targetUri, allParams);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         return null;
     }
 
-    private class SalukiNameResolver extends NameResolver {
+    private class GrpcNameResolver extends NameResolver {
 
         private final Registry               registry;
 
@@ -91,7 +91,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         @GuardedBy("this")
         private volatile List<SocketAddress> addresses;
 
-        public SalukiNameResolver(URI targetUri, Attributes params){
+        public GrpcNameResolver(URI targetUri, Attributes params){
             GrpcURL registryUrl = GrpcURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
             subscribeUrl = params.get(DEFAULT_SUBCRIBE_URL);
@@ -146,15 +146,15 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                                 addSocketAddress(servers, addresses, sock);
                             }
                         } catch (UnknownHostException e) {
-                            SalukiNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
+                            GrpcNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
                         }
                     }
                 }
                 this.addresses = addresses;
                 Attributes config = this.buildNameResolverConfig();
-                SalukiNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
+                GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
-                SalukiNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
+                GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                           + subscribeUrl.toFullString()));
             }
         }
