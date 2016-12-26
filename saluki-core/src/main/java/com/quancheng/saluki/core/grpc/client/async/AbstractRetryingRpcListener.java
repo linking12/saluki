@@ -17,9 +17,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
-import com.quancheng.saluki.core.grpc.utils.MarshallersAttributesUtils;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
+import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
@@ -32,7 +33,7 @@ import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
-    protected final static Logger                              log              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
+    private final static Logger                                log              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
 
     private final RetryOptions                                 retryOptions;
 
@@ -76,7 +77,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             return;
         } else {
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                String errorCause = trailers.get(MarshallersAttributesUtils.GRPC_ERRORCAUSE_VALUE);
+                String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
                 StatusRuntimeException newException = Status.INTERNAL.withDescription(errorCause).asRuntimeException();
                 completionFuture.setException(newException);
                 notify.resetChannel();
@@ -152,10 +153,10 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         private final NameResolver.Listener listener;
 
         public GrpcNotify(Attributes affinity){
-            this.currentServer = affinity.get(MarshallersAttributesUtils.REMOTE_ADDR_KEY);
-            this.servers = affinity.get(MarshallersAttributesUtils.REMOTE_ADDR_KEYS);
-            this.registryServers = affinity.get(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY);
-            this.listener = affinity.get(MarshallersAttributesUtils.NAMERESOVER_LISTENER);
+            this.currentServer = affinity.get(GrpcAsyncCall.REMOTE_ADDR_KEY);
+            this.servers = affinity.get(GrpcAsyncCall.REMOTE_ADDR_KEYS);
+            this.registryServers = affinity.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
+            this.listener = affinity.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
         }
 
         public void onRefreshChannel() {
@@ -191,9 +192,8 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             if (listener != null && registryServers != null) {
                 List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
                 Attributes config = Attributes.newBuilder()//
-                                              .set(MarshallersAttributesUtils.NAMERESOVER_LISTENER, listener)//
-                                              .set(MarshallersAttributesUtils.REMOTE_ADDR_KEYS_REGISTRY,
-                                                   registryServers)//
+                                              .set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener)//
+                                              .set(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, registryServers)//
                                               .build();
                 for (SocketAddress sock : servers) {
                     ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);

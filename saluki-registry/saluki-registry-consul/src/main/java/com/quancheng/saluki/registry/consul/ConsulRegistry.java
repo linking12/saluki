@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.registry.consul;
 
 import java.util.List;
@@ -17,64 +24,89 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.support.FailbackRegistry;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
-import com.quancheng.saluki.registry.consul.internal.ConsulConstants;
-import com.quancheng.saluki.registry.consul.internal.SalukiConsulClient;
-import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulEphemralNode;
-import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulService;
-import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceResp;
+import com.quancheng.saluki.registry.consul.internal.ConsulClient;
+import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
+import com.quancheng.saluki.registry.consul.model.ConsulService;
+import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
+import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
 
+/**
+ * @author shimingliu 2016年12月16日 上午10:24:02
+ * @version ConsulRegistry.java, v 0.0.1 2016年12月16日 上午10:24:02 shimingliu
+ */
 public class ConsulRegistry extends FailbackRegistry {
 
-    private static final Logger                                     log                = LoggerFactory.getLogger(ConsulRegistry.class);
-    public static final String                                      CONSUL_SERVICE_PRE = "Saluki_";
-    private final SalukiConsulClient                                client;
-    private final Cache<String, Map<String, List<SalukiURL>>>       serviceCache;
+    private static final Logger                                     log = LoggerFactory.getLogger(ConsulRegistry.class);
+
+    private final ConsulClient                                      client;
+
+    private final Cache<String, Map<String, List<GrpcURL>>>       serviceCache;
+
     private final Map<String, Long>                                 lookupGroupServices;
+
     private final ExecutorService                                   lookUpServiceExecutor;
-    private final Map<String, Pair<SalukiURL, Set<NotifyListener>>> notifyListeners;
+
+    private final Map<String, Pair<GrpcURL, Set<NotifyListener>>> notifyListeners;
+
     private final Set<String>                                       groupLoogUped;
 
-    public ConsulRegistry(SalukiURL url){
+    public ConsulRegistry(GrpcURL url){
         super(url);
         String host = url.getHost();
         int port = url.getPort();
-        client = new SalukiConsulClient(host, port);
+        client = new ConsulClient(host, port);
         notifyListeners = Maps.newConcurrentMap();
         serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
         lookupGroupServices = Maps.newConcurrentMap();
         groupLoogUped = Sets.newConcurrentHashSet();
-        int cpus = super.getCpus();
-        this.lookUpServiceExecutor = Executors.newFixedThreadPool(cpus * 10,
+        this.lookUpServiceExecutor = Executors.newFixedThreadPool(1,
                                                                   new NamedThreadFactory("ConsulLookUpService", true));
     }
 
+    private ConsulService buildConsulHealthService(GrpcURL url) {
+        return ConsulService.newSalukiService()//
+                            .withAddress(url.getHost())//
+                            .withPort(Integer.valueOf(url.getPort()).toString())//
+                            .withName(GrpcURLUtils.toServiceName(url.getGroup()))//
+                            .withTag(GrpcURLUtils.healthServicePath(url, ThrallRoleType.PROVIDER))//
+                            .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath() + "-" + url.getVersion())//
+                            .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
+    }
+
+    private ConsulEphemralNode buildEphemralNode(GrpcURL url, ThrallRoleType roleType) {
+        return ConsulEphemralNode.newEphemralNode().withUrl(url)//
+                                 .withEphemralType(roleType)//
+                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 600))//
+                                 .build();
+
+    }
+
     @Override
-    protected void doRegister(SalukiURL url) {
-        SalukiConsulService service = this.buildService(url);
+    protected void doRegister(GrpcURL url) {
+        ConsulService service = this.buildConsulHealthService(url);
         client.registerService(service);
-        // 注册本机地址到consul中
-        SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "provider");
+        ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.PROVIDER);
         client.registerEphemralNode(ephemralNode);
     }
 
     @Override
-    protected void doUnregister(SalukiURL url) {
-        SalukiConsulService service = this.buildService(url);
+    protected void doUnregister(GrpcURL url) {
+        ConsulService service = this.buildConsulHealthService(url);
         client.unregisterService(service.getId());
     }
 
     @Override
-    protected synchronized void doSubscribe(SalukiURL url, NotifyListener listener) {
-        Pair<SalukiURL, Set<NotifyListener>> listenersPair = notifyListeners.get(url.getServiceKey());
+    protected synchronized void doSubscribe(GrpcURL url, NotifyListener listener) {
+        Pair<GrpcURL, Set<NotifyListener>> listenersPair = notifyListeners.get(url.getServiceKey());
         if (listenersPair == null) {
             Set<NotifyListener> listeners = Sets.newConcurrentHashSet();
             listeners.add(listener);
-            listenersPair = new ImmutablePair<SalukiURL, Set<NotifyListener>>(url, listeners);
+            listenersPair = new ImmutablePair<GrpcURL, Set<NotifyListener>>(url, listeners);
         } else {
             listenersPair.getValue().add(listener);
         }
@@ -82,24 +114,20 @@ public class ConsulRegistry extends FailbackRegistry {
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
             lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
-            // 注册本机地址到consul中
-            SalukiConsulEphemralNode ephemralNode = this.buildEphemralNode(url, "consumer");
+            ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.CONSUMER);
             client.registerEphemralNode(ephemralNode);
         } else {
             notifyListener(url, listener);
         }
     }
 
-    /**
-     * 如果这里缓存小的话，需要再次通知，这里缓存已经设置为1000了，所以没必要再次通知
-     */
-    private void notifyListener(SalukiURL url, NotifyListener listener) {
-        Map<String, List<SalukiURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
+    private void notifyListener(GrpcURL url, NotifyListener listener) {
+        Map<String, List<GrpcURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
         if (groupCacheUrls != null) {
-            for (Map.Entry<String, List<SalukiURL>> entry : groupCacheUrls.entrySet()) {
+            for (Map.Entry<String, List<GrpcURL>> entry : groupCacheUrls.entrySet()) {
                 String cacheServiceKey = entry.getKey();
                 if (url.getServiceKey().equals(cacheServiceKey)) {
-                    List<SalukiURL> newUrls = entry.getValue();
+                    List<GrpcURL> newUrls = entry.getValue();
                     ConsulRegistry.this.notify(url, listener, newUrls);
                 }
             }
@@ -107,33 +135,30 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doUnsubscribe(SalukiURL url, NotifyListener listener) {
+    protected void doUnsubscribe(GrpcURL url, NotifyListener listener) {
         notifyListeners.remove(url.getServiceKey());
     }
 
     @Override
-    public List<SalukiURL> discover(SalukiURL url) {
-        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
-                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
-        url = url.removeParameters(keys);
+    public List<GrpcURL> discover(GrpcURL url) {
         String group = url.getGroup();
         return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
-    private Map<String, List<SalukiURL>> lookupServiceUpdate(String group) {
+    private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {
         Long lastConsulIndexId = lookupGroupServices.get(group) == null ? 0L : lookupGroupServices.get(group);
-        String serviceName = toServiceName(group);
-        SalukiConsulServiceResp consulResp = client.lookupHealthService(serviceName, lastConsulIndexId);
+        String serviceName = GrpcURLUtils.toServiceName(group);
+        ConsulServiceResp consulResp = client.lookupHealthService(serviceName, lastConsulIndexId);
         if (consulResp != null) {
-            List<SalukiConsulService> consulServcies = consulResp.getSalukiConsulServices();
+            List<ConsulService> consulServcies = consulResp.getSalukiConsulServices();
             boolean updated = consulServcies != null && !consulServcies.isEmpty()
                               && consulResp.getConsulIndex() > lastConsulIndexId;
             if (updated) {
-                Map<String, List<SalukiURL>> groupProviderUrls = Maps.newConcurrentMap();
-                for (SalukiConsulService service : consulServcies) {
-                    SalukiURL providerUrl = buildSalukiURL(service);
+                Map<String, List<GrpcURL>> groupProviderUrls = Maps.newConcurrentMap();
+                for (ConsulService service : consulServcies) {
+                    GrpcURL providerUrl = buildURL(service);
                     String serviceKey = providerUrl.getServiceKey();
-                    List<SalukiURL> urlList = groupProviderUrls.get(serviceKey);
+                    List<GrpcURL> urlList = groupProviderUrls.get(serviceKey);
                     if (urlList == null) {
                         urlList = Lists.newArrayList();
                         groupProviderUrls.put(serviceKey, urlList);
@@ -147,6 +172,21 @@ public class ConsulRegistry extends FailbackRegistry {
         return null;
     }
 
+    private GrpcURL buildURL(ConsulService service) {
+        try {
+            for (String tag : service.getTags()) {
+                if (StringUtils.indexOf(tag, Constants.PROVIDERS_CATEGORY) != -1) {
+                    String toUrlPath = StringUtils.substringAfter(tag, Constants.PROVIDERS_CATEGORY);
+                    GrpcURL salukiUrl = GrpcURL.valueOf(GrpcURL.decode(toUrlPath));
+                    return salukiUrl;
+                }
+            }
+        } catch (Exception e) {
+            log.error("convert consul service to url fail! service:" + service, e);
+        }
+        return null;
+    }
+
     private class ServiceLookUper extends Thread {
 
         private final String group;
@@ -155,29 +195,37 @@ public class ConsulRegistry extends FailbackRegistry {
             this.group = group;
         }
 
+        private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
+            if (newUrls == null | newUrls.isEmpty()) {
+                return false;
+            } else if (oldUrls != null && oldUrls.containsAll(newUrls)) {
+                return false;
+            }
+            return true;
+        }
+
         @Override
         public void run() {
             while (true) {
                 try {
                     // 最新拉取的值
-                    Map<String, List<SalukiURL>> groupNewUrls = lookupServiceUpdate(group);
+                    Map<String, List<GrpcURL>> groupNewUrls = lookupServiceUpdate(group);
                     if (groupNewUrls != null && !groupNewUrls.isEmpty()) {
                         // 缓存中的值
-                        Map<String, List<SalukiURL>> groupCacheUrls = serviceCache.getIfPresent(group);
+                        Map<String, List<GrpcURL>> groupCacheUrls = serviceCache.getIfPresent(group);
                         if (groupCacheUrls == null) {
                             groupCacheUrls = Maps.newConcurrentMap();
                             serviceCache.put(group, groupCacheUrls);
                         }
-                        for (Map.Entry<String, List<SalukiURL>> entry : groupNewUrls.entrySet()) {
-                            List<SalukiURL> oldUrls = groupCacheUrls.get(entry.getKey());
-                            List<SalukiURL> newUrls = entry.getValue();
+                        for (Map.Entry<String, List<GrpcURL>> entry : groupNewUrls.entrySet()) {
+                            List<GrpcURL> oldUrls = groupCacheUrls.get(entry.getKey());
+                            List<GrpcURL> newUrls = entry.getValue();
                             boolean haveChanged = haveChanged(newUrls, oldUrls);
                             if (haveChanged) {
-                                // 更新缓存并且通知监听器
                                 groupCacheUrls.put(entry.getKey(), newUrls);
-                                Pair<SalukiURL, Set<NotifyListener>> listenerPair = notifyListeners.get(entry.getKey());
+                                Pair<GrpcURL, Set<NotifyListener>> listenerPair = notifyListeners.get(entry.getKey());
                                 if (listenerPair != null) {
-                                    SalukiURL subscribeUrl = listenerPair.getKey();
+                                    GrpcURL subscribeUrl = listenerPair.getKey();
                                     Set<NotifyListener> listeners = listenerPair.getValue();
                                     for (NotifyListener listener : listeners) {
                                         ConsulRegistry.this.notify(subscribeUrl, listener, newUrls);
@@ -197,68 +245,4 @@ public class ConsulRegistry extends FailbackRegistry {
         }
     }
 
-    private boolean haveChanged(List<SalukiURL> newUrls, List<SalukiURL> oldUrls) {
-        if (newUrls == null | newUrls.isEmpty()) {
-            return false;
-        } else if (oldUrls != null && oldUrls.containsAll(newUrls)) {
-            return false;
-        }
-        return true;
-    }
-
-    private SalukiConsulService buildService(SalukiURL url) {
-        return SalukiConsulService.newSalukiService()//
-                                  .withAddress(url.getHost())//
-                                  .withPort(Integer.valueOf(url.getPort()).toString())//
-                                  .withName(toServiceName(url.getGroup()))//
-                                  .withTag(toUrlPath(url))//
-                                  .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath() + "-"
-                                          + url.getVersion())//
-                                  .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
-    }
-
-    private SalukiConsulEphemralNode buildEphemralNode(SalukiURL url, String flag) {
-        return SalukiConsulEphemralNode.newEphemralNode()//
-                                       .withHost(url.getHost())//
-                                       .withRpcPort(Integer.valueOf(url.getPort()).toString())//
-                                       .withFlag(flag)//
-                                       .withVersion(url.getVersion())//
-                                       .withGroup(url.getGroup())//
-                                       .withServiceName(url.getServiceInterface())//
-                                       .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
-
-    }
-
-    private SalukiURL buildSalukiURL(SalukiConsulService service) {
-        try {
-            for (String tag : service.getTags()) {
-                if (StringUtils.indexOf(tag, SalukiConstants.PROVIDERS_CATEGORY) != -1) {
-                    String toUrlPath = StringUtils.substringAfter(tag, SalukiConstants.PROVIDERS_CATEGORY);
-                    SalukiURL salukiUrl = SalukiURL.valueOf(SalukiURL.decode(toUrlPath));
-                    return salukiUrl;
-                }
-            }
-        } catch (Exception e) {
-            log.error("convert consul service to url fail! service:" + service, e);
-        }
-        return null;
-    }
-
-    private String toServiceName(String group) {
-        return CONSUL_SERVICE_PRE + group;
-    }
-
-    private String toServicePath(SalukiURL url) {
-        String name = url.getServiceInterface();
-        String group = url.getGroup();
-        return group + SalukiConstants.PATH_SEPARATOR + SalukiURL.encode(name);
-    }
-
-    private String toCategoryPath(SalukiURL url) {
-        return toServicePath(url) + SalukiConstants.PATH_SEPARATOR + SalukiConstants.PROVIDERS_CATEGORY;
-    }
-
-    private String toUrlPath(SalukiURL url) {
-        return toCategoryPath(url) + SalukiConstants.PATH_SEPARATOR + SalukiURL.encode(url.toFullString());
-    }
 }

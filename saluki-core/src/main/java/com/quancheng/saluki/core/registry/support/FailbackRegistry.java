@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.core.registry.support;
 
 import java.util.HashMap;
@@ -14,11 +21,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.NotifyListener;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
 
+/**
+ * @author shimingliu 2016年12月14日 下午1:55:42
+ * @version FailBackRegistry1.java, v 0.0.1 2016年12月14日 下午1:55:42 shimingliu
+ */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
     // 定时任务执行器
@@ -28,20 +39,20 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     // 失败重试定时器，定时检查是否有请求失败，如有，无限次重试
     private final ScheduledFuture<?>                                             retryFuture;
 
-    private final Set<SalukiURL>                                                 failedRegistered   = Sets.newConcurrentHashSet();
+    private final Set<GrpcURL>                                                 failedRegistered   = Sets.newConcurrentHashSet();
 
-    private final Set<SalukiURL>                                                 failedUnregistered = Sets.newConcurrentHashSet();
+    private final Set<GrpcURL>                                                 failedUnregistered = Sets.newConcurrentHashSet();
 
-    private final ConcurrentMap<SalukiURL, Set<NotifyListener>>                  failedSubscribed   = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener>>                  failedSubscribed   = Maps.newConcurrentMap();
 
-    private final ConcurrentMap<SalukiURL, Set<NotifyListener>>                  failedUnsubscribed = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener>>                  failedUnsubscribed = Maps.newConcurrentMap();
 
-    private final ConcurrentMap<SalukiURL, Map<NotifyListener, List<SalukiURL>>> failedNotified     = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener, List<GrpcURL>>> failedNotified     = Maps.newConcurrentMap();
 
-    public FailbackRegistry(SalukiURL url){
+    public FailbackRegistry(GrpcURL url){
         super(url);
-        int retryPeriod = url.getParameter(SalukiConstants.REGISTRY_RETRY_PERIOD_KEY,
-                                           SalukiConstants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY,
+                                           Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
 
             public void run() {
@@ -57,13 +68,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private void retry() {
         if (!failedRegistered.isEmpty()) {
-            Set<SalukiURL> failed = new HashSet<SalukiURL>(failedRegistered);
+            Set<GrpcURL> failed = new HashSet<GrpcURL>(failedRegistered);
             if (failed.size() > 0) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry register " + failed);
                 }
                 try {
-                    for (SalukiURL url : failed) {
+                    for (GrpcURL url : failed) {
                         try {
                             doRegister(url);
                             failedRegistered.remove(url);
@@ -79,13 +90,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         if (!failedUnregistered.isEmpty()) {
-            Set<SalukiURL> failed = new HashSet<SalukiURL>(failedUnregistered);
+            Set<GrpcURL> failed = new HashSet<GrpcURL>(failedUnregistered);
             if (failed.size() > 0) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry unregister " + failed);
                 }
                 try {
-                    for (SalukiURL url : failed) {
+                    for (GrpcURL url : failed) {
                         try {
                             doUnregister(url);
                             failedUnregistered.remove(url);
@@ -101,8 +112,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         if (!failedSubscribed.isEmpty()) {
-            Map<SalukiURL, Set<NotifyListener>> failed = new HashMap<SalukiURL, Set<NotifyListener>>(failedSubscribed);
-            for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : new HashMap<SalukiURL, Set<NotifyListener>>(failed).entrySet()) {
+            Map<GrpcURL, Set<NotifyListener>> failed = new HashMap<GrpcURL, Set<NotifyListener>>(failedSubscribed);
+            for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : new HashMap<GrpcURL, Set<NotifyListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
@@ -112,8 +123,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                     logger.info("Retry subscribe " + failed);
                 }
                 try {
-                    for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : failed.entrySet()) {
-                        SalukiURL url = entry.getKey();
+                    for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : failed.entrySet()) {
+                        GrpcURL url = entry.getKey();
                         Set<NotifyListener> listeners = entry.getValue();
                         for (NotifyListener listener : listeners) {
                             try {
@@ -132,8 +143,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         if (!failedUnsubscribed.isEmpty()) {
-            Map<SalukiURL, Set<NotifyListener>> failed = new HashMap<SalukiURL, Set<NotifyListener>>(failedUnsubscribed);
-            for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : new HashMap<SalukiURL, Set<NotifyListener>>(failed).entrySet()) {
+            Map<GrpcURL, Set<NotifyListener>> failed = new HashMap<GrpcURL, Set<NotifyListener>>(failedUnsubscribed);
+            for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : new HashMap<GrpcURL, Set<NotifyListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
@@ -143,8 +154,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                     logger.info("Retry unsubscribe " + failed);
                 }
                 try {
-                    for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : failed.entrySet()) {
-                        SalukiURL url = entry.getKey();
+                    for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : failed.entrySet()) {
+                        GrpcURL url = entry.getKey();
                         Set<NotifyListener> listeners = entry.getValue();
                         for (NotifyListener listener : listeners) {
                             try {
@@ -163,8 +174,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         if (!failedNotified.isEmpty()) {
-            Map<SalukiURL, Map<NotifyListener, List<SalukiURL>>> failed = new HashMap<SalukiURL, Map<NotifyListener, List<SalukiURL>>>(failedNotified);
-            for (Map.Entry<SalukiURL, Map<NotifyListener, List<SalukiURL>>> entry : new HashMap<SalukiURL, Map<NotifyListener, List<SalukiURL>>>(failed).entrySet()) {
+            Map<GrpcURL, Map<NotifyListener, List<GrpcURL>>> failed = new HashMap<GrpcURL, Map<NotifyListener, List<GrpcURL>>>(failedNotified);
+            for (Map.Entry<GrpcURL, Map<NotifyListener, List<GrpcURL>>> entry : new HashMap<GrpcURL, Map<NotifyListener, List<GrpcURL>>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
@@ -174,11 +185,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                     logger.info("Retry notify " + failed);
                 }
                 try {
-                    for (Map<NotifyListener, List<SalukiURL>> values : failed.values()) {
-                        for (Map.Entry<NotifyListener, List<SalukiURL>> entry : values.entrySet()) {
+                    for (Map<NotifyListener, List<GrpcURL>> values : failed.values()) {
+                        for (Map.Entry<NotifyListener, List<GrpcURL>> entry : values.entrySet()) {
                             try {
                                 NotifyListener listener = entry.getKey();
-                                List<SalukiURL> urls = entry.getValue();
+                                List<GrpcURL> urls = entry.getValue();
                                 listener.notify(urls);
                                 values.remove(listener);
                             } catch (Throwable t) { // 忽略所有异常，等待下次重试
@@ -199,27 +210,27 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return retryFuture;
     }
 
-    public Set<SalukiURL> getFailedRegistered() {
+    public Set<GrpcURL> getFailedRegistered() {
         return failedRegistered;
     }
 
-    public Set<SalukiURL> getFailedUnregistered() {
+    public Set<GrpcURL> getFailedUnregistered() {
         return failedUnregistered;
     }
 
-    public Map<SalukiURL, Set<NotifyListener>> getFailedSubscribed() {
+    public Map<GrpcURL, Set<NotifyListener>> getFailedSubscribed() {
         return failedSubscribed;
     }
 
-    public Map<SalukiURL, Set<NotifyListener>> getFailedUnsubscribed() {
+    public Map<GrpcURL, Set<NotifyListener>> getFailedUnsubscribed() {
         return failedUnsubscribed;
     }
 
-    public Map<SalukiURL, Map<NotifyListener, List<SalukiURL>>> getFailedNotified() {
+    public Map<GrpcURL, Map<NotifyListener, List<GrpcURL>>> getFailedNotified() {
         return failedNotified;
     }
 
-    private void addFailedSubscribed(SalukiURL url, NotifyListener listener) {
+    private void addFailedSubscribed(GrpcURL url, NotifyListener listener) {
         Set<NotifyListener> listeners = failedSubscribed.get(url);
         if (listeners == null) {
             listeners = Sets.newConcurrentHashSet();
@@ -228,7 +239,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         listeners.add(listener);
     }
 
-    private void removeFailedSubscribed(SalukiURL url, NotifyListener listener) {
+    private void removeFailedSubscribed(GrpcURL url, NotifyListener listener) {
         Set<NotifyListener> listeners = failedSubscribed.get(url);
         if (listeners != null) {
             listeners.remove(listener);
@@ -237,14 +248,14 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (listeners != null) {
             listeners.remove(listener);
         }
-        Map<NotifyListener, List<SalukiURL>> notified = failedNotified.get(url);
+        Map<NotifyListener, List<GrpcURL>> notified = failedNotified.get(url);
         if (notified != null) {
             notified.remove(listener);
         }
     }
 
     @Override
-    public void register(SalukiURL url) {
+    public void register(GrpcURL url) {
         super.register(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -259,7 +270,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
-    public void unregister(SalukiURL url) {
+    public void unregister(GrpcURL url) {
         super.unregister(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -274,7 +285,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
-    public void subscribe(SalukiURL url, NotifyListener listener) {
+    public void subscribe(GrpcURL url, NotifyListener listener) {
         super.subscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -288,7 +299,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
-    public void unsubscribe(SalukiURL url, NotifyListener listener) {
+    public void unsubscribe(GrpcURL url, NotifyListener listener) {
         super.unsubscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -307,7 +318,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
-    protected void notify(SalukiURL url, NotifyListener listener, List<SalukiURL> urls) {
+    protected void notify(GrpcURL url, NotifyListener listener, List<GrpcURL> urls) {
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
         }
@@ -318,7 +329,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // 将失败的通知请求记录到失败列表，定时重试
-            Map<NotifyListener, List<SalukiURL>> listeners = failedNotified.get(url);
+            Map<NotifyListener, List<GrpcURL>> listeners = failedNotified.get(url);
             if (listeners == null) {
                 failedNotified.putIfAbsent(url, Maps.newConcurrentMap());
                 listeners = failedNotified.get(url);
@@ -328,30 +339,30 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    protected void doNotify(SalukiURL url, NotifyListener listener, List<SalukiURL> urls) {
+    protected void doNotify(GrpcURL url, NotifyListener listener, List<GrpcURL> urls) {
         super.notify(url, listener, urls);
     }
 
     @Override
     protected void recover() throws Exception {
         // register
-        Set<SalukiURL> recoverRegistered = Sets.newHashSet(getRegistered());
+        Set<GrpcURL> recoverRegistered = Sets.newHashSet(getRegistered());
         if (!recoverRegistered.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover register url " + recoverRegistered);
             }
-            for (SalukiURL url : recoverRegistered) {
+            for (GrpcURL url : recoverRegistered) {
                 failedRegistered.add(url);
             }
         }
         // subscribe
-        Map<SalukiURL, Set<NotifyListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
+        Map<GrpcURL, Set<NotifyListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover subscribe url " + recoverSubscribed.keySet());
             }
-            for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
-                SalukiURL url = entry.getKey();
+            for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
+                GrpcURL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
                     addFailedSubscribed(url, listener);
                 }
@@ -360,12 +371,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     // ==== 模板方法 ====
-    protected abstract void doRegister(SalukiURL url);
+    protected abstract void doRegister(GrpcURL url);
 
-    protected abstract void doUnregister(SalukiURL url);
+    protected abstract void doUnregister(GrpcURL url);
 
-    protected abstract void doSubscribe(SalukiURL url, NotifyListener listener);
+    protected abstract void doSubscribe(GrpcURL url, NotifyListener listener);
 
-    protected abstract void doUnsubscribe(SalukiURL url, NotifyListener listener);
-
+    protected abstract void doUnsubscribe(GrpcURL url, NotifyListener listener);
 }

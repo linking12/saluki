@@ -1,15 +1,27 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.core.grpc.client;
 
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.utils.MethodDescriptorUtils;
-import com.quancheng.saluki.core.grpc.utils.PojoProtobufUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
+import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
+import com.quancheng.saluki.core.grpc.util.SerializerUtils;
 
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
+/**
+ * @author shimingliu 2016年12月14日 下午5:51:01
+ * @version GrpcRequest.java, v 0.0.1 2016年12月14日 下午5:51:01 shimingliu
+ */
 public interface GrpcRequest {
 
     public Message getRequestArg() throws ProtobufException;
@@ -18,9 +30,9 @@ public interface GrpcRequest {
 
     public Channel getChannel();
 
-    public String getServiceName();
+    public void returnChannel(Channel channel);
 
-    public GrpcProtocolClient.ChannelCall getCall();
+    public String getServiceName();
 
     public MethodRequest getMethodRequest();
 
@@ -30,61 +42,54 @@ public interface GrpcRequest {
 
         private static final long                    serialVersionUID = 1L;
 
-        private final String                         serviceName;
+        private final GrpcURL                      refUrl;
 
-        private final String                         group;
-
-        private final String                         version;
-
-        private final GrpcProtocolClient.ChannelCall call;
+        private final GrpcProtocolClient.ChannelPool chanelPool;
 
         private MethodRequest                        methodRequest;
 
-        public Default(String serviceName, String group, String version, GrpcProtocolClient.ChannelCall call){
+        public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelPool chanelPool){
             super();
-            this.serviceName = serviceName;
-            this.group = group;
-            this.version = version;
-            this.call = call;
+            this.refUrl = refUrl;
+            this.chanelPool = chanelPool;
         }
 
+        @Override
         public Message getRequestArg() throws ProtobufException {
             Object arg = this.getMethodRequest().getArg();
-            return PojoProtobufUtils.Pojo2Protobuf(arg);
+            return SerializerUtils.Pojo2Protobuf(arg);
         }
 
+        @Override
         public MethodDescriptor<Message, Message> getMethodDescriptor() {
-            Message argsReq = MethodDescriptorUtils.buildDefaultInstance(this.getMethodRequest().getRequestType());
-            Message argsRep = MethodDescriptorUtils.buildDefaultInstance(this.getMethodRequest().getResponseType());
-            return MethodDescriptorUtils.createMethodDescriptor(this.getServiceName(),
-                                                                this.getMethodRequest().getMethodName(), argsReq,
-                                                                argsRep);
+            Message argsReq = MethodDescriptorUtil.buildDefaultInstance(this.getMethodRequest().getRequestType());
+            Message argsRep = MethodDescriptorUtil.buildDefaultInstance(this.getMethodRequest().getResponseType());
+            return MethodDescriptorUtil.createMethodDescriptor(this.getServiceName(),
+                                                               this.getMethodRequest().getMethodName(), argsReq,
+                                                               argsRep);
         }
 
+        @Override
         public Channel getChannel() {
-            return this.getCall().getChannel(this.serviceName, this.group, this.version);
+            return chanelPool.borrowChannel(refUrl);
         }
 
+        @Override
+        public void returnChannel(Channel channel) {
+            chanelPool.returnChannel(refUrl, channel);
+        }
+
+        @Override
         public String getServiceName() {
-            return serviceName;
+            return refUrl.getServiceInterface();
         }
 
-        public String getGroup() {
-            return group;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public GrpcProtocolClient.ChannelCall getCall() {
-            return call;
-        }
-
+        @Override
         public MethodRequest getMethodRequest() {
             return methodRequest;
         }
 
+        @Override
         public void setMethodRequest(MethodRequest methodRequest) {
             this.methodRequest = methodRequest;
         }
@@ -143,5 +148,4 @@ public interface GrpcRequest {
         }
 
     }
-
 }

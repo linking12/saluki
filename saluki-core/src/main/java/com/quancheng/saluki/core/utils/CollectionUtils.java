@@ -188,7 +188,14 @@ public class CollectionUtils {
         return collection != null && collection.size() > 0;
     }
 
-    private CollectionUtils(){
+    public static boolean isEmpty(String[] array) {
+        return array == null || array.length == 0;
     }
 
+    public static boolean isNotEmpty(String[] array) {
+        return array != null && array.length > 0;
+    }
+
+    private CollectionUtils(){
+    }
 }

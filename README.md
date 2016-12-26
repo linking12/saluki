@@ -58,13 +58,13 @@ public abstract interface UserService
 * 添加spring-boot-saluki依赖
 
 ```
-        gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.1+
+        gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.5+
         
         maven:
         <dependency>
 			<groupId>com.quancheng</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.5.0-SNAPSHOT</version>
 		</dependency>
 		
 		 
@@ -132,4 +132,9 @@ if (osdetector.os == "linux" && osdetector.release.isLike("fedora")) {
 dependencies {
     compile 'io.netty:netty-tcnative-boringssl-static:1.1.33.Fork23:'+ tcnative_classifier
 }
+```
+* monitor
+引入monitor agent
+```
+gradle: compile 'com.quancheng:spring-boot-starter-saluki:1.5+
 ```

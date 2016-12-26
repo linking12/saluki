@@ -1,7 +1,6 @@
 package com.quancheng.saluki.core.grpc.client.async;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
 
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
@@ -60,13 +59,13 @@ public interface AsyncCallInternal {
                     call.sendMessage(request);
                 } catch (Throwable t) {
                     call.cancel("Exception in sendMessage.", t);
-                    throw Throwables.propagate(t);
+                    throw t;
                 }
                 try {
                     call.halfClose();
                 } catch (Throwable t) {
                     call.cancel("Exception in halfClose.", t);
-                    throw Throwables.propagate(t);
+                    throw t;
                 }
             }
         };

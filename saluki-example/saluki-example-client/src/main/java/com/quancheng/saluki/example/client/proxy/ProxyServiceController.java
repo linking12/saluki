@@ -3,10 +3,10 @@ package com.quancheng.saluki.example.client.proxy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.boot.saluki.starter.SalukiReference;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
+import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.test.model.user.UserCreateRequest;
 import com.quancheng.test.model.user.UserCreateResponse;
@@ -15,15 +15,14 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "monitor", version = "1.0.0", retries = 3)
+    @SalukiReference
     private HelloService                           helloService;
 
-    @SalukiReference(service = "com.quancheng.test.service.UserService", group = "monitor", version = "1.0.0")
+    @SalukiReference
     private com.quancheng.test.service.UserService userService;
 
     @RequestMapping("/hello")
     public HelloReply hello() {
-
         return call();
     }
 
