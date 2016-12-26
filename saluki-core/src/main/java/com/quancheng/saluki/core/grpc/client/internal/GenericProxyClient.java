@@ -30,9 +30,9 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
     private final Map<String, Integer> methodRetries;
 
-    private final GrpcClassLoader    classLoader;
+    private final GrpcClassLoader      classLoader;
 
-    private final GrpcURL            refUrl;
+    private final GrpcURL              refUrl;
 
     public GenericProxyClient(GrpcClassLoader classLoader, Map<String, Integer> methodRetries, GrpcURL refUrl){
         this.classLoader = classLoader;
@@ -74,7 +74,7 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
             GrpcURL resetRefUrl = GenericProxyClient.this.refUrl;
-            resetRefUrl = resetRefUrl.setServiceInterface(getServiceName(args));
+            resetRefUrl = resetRefUrl.setPath(getServiceName(args));
             resetRefUrl = resetRefUrl.addParameter(Constants.GROUP_KEY, getGroup(args));
             resetRefUrl = resetRefUrl.addParameter(Constants.VERSION_KEY, getVersion(args));
             GrpcRequest request = new GrpcRequest.Default(resetRefUrl, channelPool);
