@@ -19,5 +19,4 @@ subprojects {
   artifacts {
         archives sourcesJar
   }
-  
 }
