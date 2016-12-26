@@ -31,7 +31,7 @@ import com.quancheng.saluki.registry.consul.internal.model.SalukiConsulServiceRe
 public class ConsulRegistry extends FailbackRegistry {
 
     private static final Logger                                     log                = LoggerFactory.getLogger(ConsulRegistry.class);
-    public static final String                                      CONSUL_SERVICE_PRE = "Saluki_";
+    public static final String                                      CONSUL_SERVICE_PRE = "saluki_";
     private final SalukiConsulClient                                client;
     private final Cache<String, Map<String, List<SalukiURL>>>       serviceCache;
     private final Map<String, Long>                                 lookupGroupServices;
