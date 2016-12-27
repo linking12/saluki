@@ -1,5 +1,7 @@
 package com.quancheng.saluki.example.server;
 
+import org.springframework.stereotype.Service;
+
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.test.model.user.UserCreateRequest;
 import com.quancheng.test.model.user.UserCreateResponse;
@@ -10,7 +12,7 @@ import com.quancheng.test.model.user.UserSetRequest;
 import com.quancheng.test.service.UserService;
 import com.quancheng.zeus.model.basemodel.BaseResponse;
 
-@SalukiService
+@Service
 public class UserServiceImpl implements UserService {
 
     @Override

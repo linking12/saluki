@@ -48,7 +48,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
     private final List<Map<String, String>> servcieReferenceDefintions = Lists.newArrayList();
 
-    private final GrpcProperties          thrallProperties;
+    private final GrpcProperties            thrallProperties;
 
     @Value("${spring.application.name}")
     private String                          applicationName;
@@ -110,9 +110,9 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         String serviceName = this.getServiceName(reference, referenceClass);
         rpcReferenceConfig.setServiceName(serviceName);
         rpcReferenceConfig.setApplication(applicationName);
-        String group = this.getGroup(reference, serviceName);
+        String group = this.getGroup(reference, serviceName, referenceClass);
         rpcReferenceConfig.setGroup(group);
-        String version = this.getVersion(reference, serviceName);
+        String version = this.getVersion(reference, serviceName, referenceClass);
         rpcReferenceConfig.setVersion(version);
         this.addHaRetries(reference, rpcReferenceConfig);
         this.addRegistyAddress(rpcReferenceConfig);
@@ -197,23 +197,27 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         return serviceName;
     }
 
-    private String getGroup(SalukiReference reference, String serviceName) {
+    private String getGroup(SalukiReference reference, String serviceName, Class<?> referenceClass) {
         Pair<String, String> groupVersion = findGroupAndVersionByServiceName(serviceName);
         if (StringUtils.isNoneBlank(reference.group())) {
             return reference.group();
         } else if (StringUtils.isNoneBlank(groupVersion.getLeft())) {
             return groupVersion.getLeft();
+        } else if (this.isGenericClient(referenceClass)) {
+            return StringUtils.EMPTY;
         }
         throw new java.lang.IllegalArgumentException("reference group can not be null or empty");
 
     }
 
-    private String getVersion(SalukiReference reference, String serviceName) {
+    private String getVersion(SalukiReference reference, String serviceName, Class<?> referenceClass) {
         Pair<String, String> groupVersion = findGroupAndVersionByServiceName(serviceName);
         if (StringUtils.isNoneBlank(reference.version())) {
             return reference.version();
         } else if (StringUtils.isNoneBlank(groupVersion.getRight())) {
             return groupVersion.getRight();
+        } else if (this.isGenericClient(referenceClass)) {
+            return StringUtils.EMPTY;
         } else {
             throw new java.lang.IllegalArgumentException("reference version can not be null or empty");
         }

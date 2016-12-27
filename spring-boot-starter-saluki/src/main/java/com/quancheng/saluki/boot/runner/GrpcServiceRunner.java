@@ -22,11 +22,10 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
-import org.springframework.stereotype.Service;
 
-import com.quancheng.saluki.core.config.RpcServiceConfig;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
+import com.quancheng.saluki.core.config.RpcServiceConfig;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:16
@@ -36,7 +35,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
     private static final Logger        log = LoggerFactory.getLogger(GrpcServiceRunner.class);
 
-    private final GrpcProperties     thrallProperties;
+    private final GrpcProperties       thrallProperties;
 
     @Value("${spring.application.name}")
     private String                     applicationName;
@@ -144,7 +143,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
     }
 
     private Collection<Object> getTypedBeansWithAnnotation(Class<? extends Annotation> annotationType) throws Exception {
-        return Stream.of(applicationContext.getBeanNamesForAnnotation(Service.class)).filter(name -> {
+        return Stream.of(applicationContext.getBeanNamesForAnnotation(annotationType)).filter(name -> {
             BeanDefinition beanDefinition = applicationContext.getBeanFactory().getBeanDefinition(name);
             if (beanDefinition.getSource() instanceof StandardMethodMetadata) {
                 StandardMethodMetadata metadata = (StandardMethodMetadata) beanDefinition.getSource();
