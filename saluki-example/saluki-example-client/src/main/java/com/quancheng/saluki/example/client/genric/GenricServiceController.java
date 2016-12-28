@@ -3,7 +3,7 @@ package com.quancheng.saluki.example.client.genric;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.quancheng.boot.saluki.starter.SalukiReference;
+import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.test.model.user.UserCreateResponse;
 
@@ -11,7 +11,7 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/genric")
 public class GenricServiceController {
 
-    @SalukiReference(service = "com.quancheng.saluki.core.grpc.service.GenericService", group = "monitor", version = "1.0.0")
+    @SalukiReference
     private GenericService genricService;
 
     @RequestMapping("/hello")
@@ -23,7 +23,7 @@ public class GenricServiceController {
         com.quancheng.test.model.user.UserCreateRequest request = new com.quancheng.test.model.user.UserCreateRequest();
         request.setName("liushiming");
         Object[] args1 = new Object[] { request };
-        UserCreateResponse reply = (UserCreateResponse) genricService.$invoke(serviceName, "Example", "1.0.0", method,
+        UserCreateResponse reply = (UserCreateResponse) genricService.$invoke(serviceName, "example", "1.0.0", method,
                                                                               parameterTypes, args1);
         return reply;
     }

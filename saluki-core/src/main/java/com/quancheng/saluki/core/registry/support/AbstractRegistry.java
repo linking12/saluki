@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.core.registry.support;
 
 import java.util.ArrayList;
@@ -15,24 +22,28 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
-import com.quancheng.saluki.core.utils.NamedThreadFactory;
-import com.quancheng.saluki.core.utils.UrlUtils;
 
+/**
+ * @author shimingliu 2016年12月14日 下午1:55:28
+ * @version AbstractRegistry1.java, v 0.0.1 2016年12月14日 下午1:55:28 shimingliu
+ */
 public abstract class AbstractRegistry implements Registry {
 
     protected final Logger                                                       logger     = LoggerFactory.getLogger(getClass());
-    private final SalukiURL                                                      registryUrl;
-    private final Set<SalukiURL>                                                 registered = Sets.newConcurrentHashSet();
-    private final ConcurrentMap<SalukiURL, Set<NotifyListener>>                  subscribed = Maps.newConcurrentMap();
-    private final ConcurrentMap<SalukiURL, Map<NotifyListener, List<SalukiURL>>> notified   = Maps.newConcurrentMap();
+    private final GrpcURL                                                      registryUrl;
+    private final Set<GrpcURL>                                                 registered = Sets.newConcurrentHashSet();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener>>                  subscribed = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener, List<GrpcURL>>> notified   = Maps.newConcurrentMap();
     private final ExecutorService                                                notifyExecutor;
     private final int                                                            cpus       = Runtime.getRuntime().availableProcessors();
 
-    public AbstractRegistry(SalukiURL registryUrl){
+    public AbstractRegistry(GrpcURL registryUrl){
         if (registryUrl == null) {
             throw new IllegalArgumentException("registry url == null");
         }
@@ -45,47 +56,46 @@ public abstract class AbstractRegistry implements Registry {
         return cpus;
     }
 
-    public SalukiURL getRegistryUrl() {
+    public GrpcURL getRegistryUrl() {
         return registryUrl;
     }
 
-    public Set<SalukiURL> getRegistered() {
+    public Set<GrpcURL> getRegistered() {
         return registered;
     }
 
-    public Map<SalukiURL, Set<NotifyListener>> getSubscribed() {
+    public Map<GrpcURL, Set<NotifyListener>> getSubscribed() {
         return subscribed;
     }
 
-    public Map<SalukiURL, Map<NotifyListener, List<SalukiURL>>> getNotified() {
+    public Map<GrpcURL, Map<NotifyListener, List<GrpcURL>>> getNotified() {
         return notified;
     }
 
-    public List<SalukiURL> discover(SalukiURL url) {
-        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
-                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
+    public List<GrpcURL> discover(GrpcURL url) {
+        String[] keys = new String[] { Constants.ASYNC_KEY, Constants.GENERIC_KEY, Constants.TIMEOUT };
         url = url.removeParameters(keys);
-        List<SalukiURL> result = new ArrayList<SalukiURL>();
-        Map<NotifyListener, List<SalukiURL>> notifiedUrls = getNotified().get(url);
+        List<GrpcURL> result = new ArrayList<GrpcURL>();
+        Map<NotifyListener, List<GrpcURL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
-            for (List<SalukiURL> urls : notifiedUrls.values()) {
-                for (SalukiURL u : urls) {
+            for (List<GrpcURL> urls : notifiedUrls.values()) {
+                for (GrpcURL u : urls) {
                     result.add(u);
                 }
             }
         } else {
-            final AtomicReference<List<SalukiURL>> reference = new AtomicReference<List<SalukiURL>>();
+            final AtomicReference<List<GrpcURL>> reference = new AtomicReference<List<GrpcURL>>();
             NotifyListener listener = new NotifyListener() {
 
-                public void notify(List<SalukiURL> urls) {
+                public void notify(List<GrpcURL> urls) {
                     reference.set(urls);
                 }
 
             };
             subscribe(url, listener); // 订阅逻辑保证第一次notify后再返回
-            List<SalukiURL> urls = reference.get();
+            List<GrpcURL> urls = reference.get();
             if (urls != null && urls.size() > 0) {
-                for (SalukiURL u : urls) {
+                for (GrpcURL u : urls) {
                     result.add(u);
                 }
             }
@@ -93,7 +103,7 @@ public abstract class AbstractRegistry implements Registry {
         return result;
     }
 
-    public void register(SalukiURL url) {
+    public void register(GrpcURL url) {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
@@ -103,7 +113,7 @@ public abstract class AbstractRegistry implements Registry {
         registered.add(url);
     }
 
-    public void unregister(SalukiURL url) {
+    public void unregister(GrpcURL url) {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
         }
@@ -113,15 +123,14 @@ public abstract class AbstractRegistry implements Registry {
         registered.remove(url);
     }
 
-    public void subscribe(SalukiURL url, NotifyListener listener) {
+    public void subscribe(GrpcURL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("subscribe url == null");
         }
         if (listener == null) {
             throw new IllegalArgumentException("subscribe listener == null");
         }
-        String[] keys = new String[] { SalukiConstants.GRPC_IN_LOCAL_PROCESS, SalukiConstants.RPCTYPE_KEY,
-                                       SalukiConstants.GENERIC_KEY, SalukiConstants.RPCTIMEOUT_KEY };
+        String[] keys = new String[] { Constants.ASYNC_KEY, Constants.GENERIC_KEY, Constants.TIMEOUT };
         url = url.removeParameters(keys);
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
@@ -134,7 +143,7 @@ public abstract class AbstractRegistry implements Registry {
         listeners.add(listener);
     }
 
-    public void unsubscribe(SalukiURL url, NotifyListener listener) {
+    public void unsubscribe(GrpcURL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("unsubscribe url == null");
         }
@@ -150,11 +159,11 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    protected void notify(List<SalukiURL> providerUrls) {
+    protected void notify(List<GrpcURL> providerUrls) {
         if (providerUrls == null || providerUrls.isEmpty()) return;
-        for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            SalukiURL subscribedUrl = entry.getKey();
-            if (!UrlUtils.isMatch(subscribedUrl, providerUrls.get(0))) {
+        for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            GrpcURL subscribedUrl = entry.getKey();
+            if (!GrpcURLUtils.isMatch(subscribedUrl, providerUrls.get(0))) {
                 continue;
             }
             Set<NotifyListener> listeners = entry.getValue();
@@ -166,7 +175,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    protected void notify(SalukiURL subscribedUrl, NotifyListener listener, List<SalukiURL> providerUrls) {
+    protected void notify(GrpcURL subscribedUrl, NotifyListener listener, List<GrpcURL> providerUrls) {
         addNotified(subscribedUrl, listener, providerUrls);
         notifyExecutor.submit(new Runnable() {
 
@@ -181,23 +190,23 @@ public abstract class AbstractRegistry implements Registry {
 
     protected void recover() throws Exception {
         // register
-        Set<SalukiURL> recoverRegistered = Sets.newHashSet(getRegistered());
+        Set<GrpcURL> recoverRegistered = Sets.newHashSet(getRegistered());
         if (!recoverRegistered.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover register url " + recoverRegistered);
             }
-            for (SalukiURL url : recoverRegistered) {
+            for (GrpcURL url : recoverRegistered) {
                 register(url);
             }
         }
         // subscribe
-        Map<SalukiURL, Set<NotifyListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
+        Map<GrpcURL, Set<NotifyListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover subscribe url " + recoverSubscribed.keySet());
             }
-            for (Map.Entry<SalukiURL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
-                SalukiURL url = entry.getKey();
+            for (Map.Entry<GrpcURL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
+                GrpcURL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
                     subscribe(url, listener);
                 }
@@ -205,9 +214,9 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    private void addNotified(SalukiURL subscribedUrl, NotifyListener listener, List<SalukiURL> providerUrls) {
-        Map<NotifyListener, List<SalukiURL>> notifiedUrlMap = notified.get(subscribedUrl);
-        List<SalukiURL> notifiedUrlList;
+    private void addNotified(GrpcURL subscribedUrl, NotifyListener listener, List<GrpcURL> providerUrls) {
+        Map<NotifyListener, List<GrpcURL>> notifiedUrlMap = notified.get(subscribedUrl);
+        List<GrpcURL> notifiedUrlList;
         if (notifiedUrlMap == null) {
             notifiedUrlMap = Maps.newConcurrentMap();
             notifiedUrlList = providerUrls;
@@ -221,5 +230,4 @@ public abstract class AbstractRegistry implements Registry {
         notifiedUrlMap.putIfAbsent(listener, notifiedUrlList);
         notified.putIfAbsent(subscribedUrl, notifiedUrlMap);
     }
-
 }

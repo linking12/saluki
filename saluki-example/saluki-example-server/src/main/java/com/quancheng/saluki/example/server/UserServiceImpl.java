@@ -1,6 +1,6 @@
 package com.quancheng.saluki.example.server;
 
-import com.quancheng.boot.saluki.starter.SalukiService;
+import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.test.model.user.UserCreateRequest;
 import com.quancheng.test.model.user.UserCreateResponse;
 import com.quancheng.test.model.user.UserDeleteRequest;
@@ -10,7 +10,7 @@ import com.quancheng.test.model.user.UserSetRequest;
 import com.quancheng.test.service.UserService;
 import com.quancheng.zeus.model.basemodel.BaseResponse;
 
-@SalukiService(service = "com.quancheng.test.service.UserService", group = "monitor", version = "1.0.0")
+@SalukiService
 public class UserServiceImpl implements UserService {
 
     @Override

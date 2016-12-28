@@ -7,7 +7,6 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -15,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 public class NetUtils {
 
@@ -93,7 +92,8 @@ public class NetUtils {
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
 
     public static boolean isLocalHost(String host) {
-        return host != null && (LOCAL_IP_PATTERN.matcher(host).matches() || host.equalsIgnoreCase("localhost"));
+        return StringUtils.isNotBlank(host)
+               && (LOCAL_IP_PATTERN.matcher(host).matches() || host.equalsIgnoreCase("localhost"));
     }
 
     public static boolean isAnyHost(String host) {
@@ -138,7 +138,7 @@ public class NetUtils {
             return host;
         }
         if (host.contains("://")) {
-            SalukiURL u = SalukiURL.valueOf(host);
+            GrpcURL u = GrpcURL.valueOf(host);
             if (NetUtils.isInvalidLocalHost(u.getHost())) {
                 return u.setHost(NetUtils.getLocalHost()).toFullString();
             }
@@ -157,11 +157,6 @@ public class NetUtils {
 
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
-    /**
-     * 遍历本地网卡，返回第一个合理的IP。
-     * 
-     * @return 本地网卡IP
-     */
     public static InetAddress getLocalAddress() {
         if (LOCAL_ADDRESS != null) return LOCAL_ADDRESS;
         InetAddress localAddress = getLocalAddress0();
@@ -176,17 +171,6 @@ public class NetUtils {
 
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
-        /**
-         * 这里如果装了虚拟机，本地获取ip是错误的
-         */
-        // try {
-        // localAddress = InetAddress.getLocalHost();
-        // if (isValidAddress(localAddress)) {
-        // return localAddress;
-        // }
-        // } catch (Throwable e) {
-        // logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
-        // }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             if (interfaces != null) {
@@ -221,34 +205,6 @@ public class NetUtils {
         return localAddress;
     }
 
-    private static final Map<String, String> hostNameCache = new LRUCache<String, String>(1000);
-
-    public static String getHostName(String address) {
-        try {
-            int i = address.indexOf(':');
-            if (i > -1) {
-                address = address.substring(0, i);
-            }
-            String hostname = hostNameCache.get(address);
-            if (hostname != null && hostname.length() > 0) {
-                return hostname;
-            }
-            InetAddress inetAddress = InetAddress.getByName(address);
-            if (inetAddress != null) {
-                hostname = inetAddress.getHostName();
-                hostNameCache.put(address, hostname);
-                return hostname;
-            }
-        } catch (Throwable e) {
-            // ignore
-        }
-        return address;
-    }
-
-    /**
-     * @param hostName
-     * @return ip address or hostName if UnknownHostException
-     */
     public static String getIpByHost(String hostName) {
         try {
             return InetAddress.getByName(hostName).getHostAddress();
@@ -284,4 +240,9 @@ public class NetUtils {
         return sb.toString();
     }
 
+    public static void main(String[] args) {
+        String ip = "";
+        System.out.println(isLocalHost(ip));
+
+    }
 }

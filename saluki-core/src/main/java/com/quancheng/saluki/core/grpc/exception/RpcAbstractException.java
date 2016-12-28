@@ -1,13 +1,13 @@
 package com.quancheng.saluki.core.grpc.exception;
 
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.common.SalukiConstants;
 
 public abstract class RpcAbstractException extends RuntimeException {
 
     private static final long serialVersionUID = -8742311167276890503L;
 
-    protected RpcErrorMsg   motanErrorMsg    = RpcErrorMsgConstant.FRAMEWORK_DEFAULT_ERROR;
+    protected RpcErrorMsg     motanErrorMsg    = RpcErrorMsgConstant.FRAMEWORK_DEFAULT_ERROR;
     protected String          errorMsg         = null;
 
     public RpcAbstractException(){
@@ -65,8 +65,7 @@ public abstract class RpcAbstractException extends RuntimeException {
         }
 
         return "error_message: " + message + ", status: " + motanErrorMsg.getStatus() + ", error_code: "
-               + motanErrorMsg.getErrorCode() + ",r="
-               + RpcContext.getContext().getAttachment(SalukiConstants.REMOTE_ADDRESS);
+               + motanErrorMsg.getErrorCode() + ",r=" + RpcContext.getContext().getAttachment(Constants.REMOTE_ADDRESS);
     }
 
     public int getStatus() {

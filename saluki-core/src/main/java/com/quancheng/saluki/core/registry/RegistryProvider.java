@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.core.registry;
 
 import java.util.Collections;
@@ -9,12 +16,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.common.SalukiConstants;
-import com.quancheng.saluki.core.common.SalukiURL;
+import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.support.RegistryFactory;
 
 import io.grpc.Internal;
 
+/**
+ * @author shimingliu 2016年12月14日 下午1:48:47
+ * @version RegistryProvider.java, v 0.0.1 2016年12月14日 下午1:48:47 shimingliu
+ */
 @Internal
 public abstract class RegistryProvider extends RegistryFactory {
 
@@ -64,9 +75,9 @@ public abstract class RegistryProvider extends RegistryFactory {
         }
 
         @Override
-        public Registry newRegistry(SalukiURL url) {
+        public Registry newRegistry(GrpcURL url) {
             url = url.setPath(Registry.class.getName())//
-                     .addParameter(SalukiConstants.INTERFACE_KEY, Registry.class.getName());
+                     .addParameter(Constants.INTERFACE_KEY, Registry.class.getName());
             String key = url.toServiceString();
             LOCK.lock();
             try {
@@ -89,6 +100,5 @@ public abstract class RegistryProvider extends RegistryFactory {
                 LOCK.unlock();
             }
         }
-
     }
 }

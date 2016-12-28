@@ -1,0 +1,44 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+	}
+}
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resource' 
+        }
+    }
+}
+description='saluki-monitor-web'
+configurations {
+  all*.exclude group: 'ch.qos.logback', module: 'logback'
+  all*.exclude group: 'ch.qos.logback', module: 'logback-core'
+  all*.exclude group: 'ch.qos.logback', module: 'logback-classic'
+  all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+}
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'1.4.1.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version:'1.4.1.RELEASE'
+    compile group: 'com.ecwid.consul', name: 'consul-api', version:'1.2.1'
+    compile group: 'com.google.guava', name: 'guava', version:'18.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.1'
+    compile group: 'com.quancheng.shared', name: 'mybatis-spring-boot-starter', version:'1.0.1+'
+    compile group: "org.springframework.cloud", name: "spring-cloud-starter-consul-config", version: "1.0.0.RELEASE"
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.21'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version:'2.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version:'2.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version:'2.2'
+    compile project(':saluki-core')
+    compile project(':saluki-monitor:spring-boot-starter-saluki-monitor')
+}

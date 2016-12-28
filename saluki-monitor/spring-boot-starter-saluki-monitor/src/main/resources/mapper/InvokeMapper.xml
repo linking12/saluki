@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.quancheng.saluki.monitor.InvokeMapper">
+
+
+	<sql id="allNoAsOfInvoke">
+		id,
+		invokeDate,
+		application,
+		service,
+		method,
+		consumer,
+		provider,
+		type,
+		success,
+		failure,
+		elapsed,
+		concurrent,
+		maxInput,
+		maxOutput,
+		maxElapsed,
+		maxConcurrent,
+		input,
+		output
+	</sql>
+
+	<insert id="addInvoke" parameterType="com.quancheng.saluki.domain.GrpcInvoke">
+		insert into
+		invoke_data (
+		<include refid="allNoAsOfInvoke" />
+		)
+		values(
+		#{id},
+		#{invokeDate},
+		#{application},
+		#{service},
+		#{method},
+		#{consumer},
+		#{provider},
+		#{type},
+		#{success},
+		#{failure},
+		#{elapsed},
+		#{concurrent},
+		#{maxInput},
+		#{maxOutput},
+		#{maxElapsed},
+		#{maxConcurrent},
+		#{input},
+		#{output}
+		)
+	</insert>
+
+	<select id="queryData" resultType="com.quancheng.saluki.domain.GrpcInvoke">
+		SELECT *
+		FROM invoke_data
+	</select>
+
+	<delete id="truncateTable">
+		truncate table invoke_data
+	</delete>
+</mapper>

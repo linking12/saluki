@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+ <head> 
+  <meta charset="utf-8" /> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  <title>Service Test</title> 
+  <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap.min.css" /> 
+  <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap-theme.min.css" /> 
+  <link rel="stylesheet" href="/service/dist/default.css" type="text/css" /> 
+  <link rel="stylesheet" href="/service/dist/jsoneditor.min.css" type="text/css" /> 
+  <link rel="stylesheet" href="/service/dist/tether.min.css" /> 
+ </head> 
+ <body> 
+  <div class="container"> 
+   <div class="row"> 
+    <div class="col-sm-5 method-info"> 
+     <p class="text-info">Get Service Method Info</p> 
+     <form action="#"> 
+      <div class="form-group row"> 
+       <label class="col-xs-2 col-form-label">service:</label> 
+       <div class="col-xs-10"> 
+        <input class="form-control" type="text" value="" id="servicetest_serviceName" /> 
+       </div> 
+      </div> 
+      <div class="form-group row"> 
+       <label class="col-xs-2 col-form-label">method:</label> 
+       <div class="col-xs-10"> 
+        <input class="form-control" type="text" value="" id="servicetest_methodName" /> 
+        <input class="form-control" type="hidden" value="" id="servicetest_requestType" /> 
+        <input class="form-control" type="hidden" value="" id="servicetest_responseType" /> 
+       </div> 
+      </div> 
+      <div class="form-group row"> 
+       <label class="col-xs-2 col-form-label"></label> 
+       <div class="col-xs-10"> 
+        <button type="button" class="btn btn-primary" id="editor_btn_fetchParam">Submit</button> 
+       </div> 
+      </div> 
+     </form> 
+     <div style="text-align:center; font-size: 100px; color: #000">
+       ^_^ 
+     </div> 
+    </div> 
+    <!--json--> 
+    <div class="col-sm-7 method-test"> 
+     <p class="text-info">Request</p> 
+     <div class="jsoneditor" id="editor_holder_request"> 
+     </div> 
+     <p> </p> 
+     <div class="text-center"> 
+      <div class="form-group row"> 
+       <label class="col-xs-2 col-form-label"></label> 
+       <div class="col-xs-10"> 
+        <button type="button" class="btn btn-primary" id="editor_btn_submitParam">Submit</button> 
+       </div> 
+      </div> 
+     </div> 
+     <p></p> 
+     <br /> 
+     <div id="holder_response"> 
+      <p class="text-info">Response</p> 
+      <div class="jsoneditor" id="editor_holder_response"> 
+      </div> 
+     </div> 
+    </div> 
+   </div> 
+  </div> 
+  <script src="/service/dist/jsoneditor.min.js"></script> 
+  <script src="/webjars/jquery/3.1.1/jquery.min.js"></script> 
+  <script src="/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+  <script src="/service/dist/tether.min.js"></script> 
+  <script>
+        $(document).ready(function(){
+	        var options = {};
+	        $('#holder_response').hide();
+	        var container_request = document.getElementById("editor_holder_request");
+	        var editor_request = new JSONEditor(container_request, options);
+	        var container_response = document.getElementById("editor_holder_response");
+	        var editor_response = new JSONEditor(container_response, options);
+	        $('#editor_btn_fetchParam').click(function() {
+	            var service = $('#servicetest_serviceName').val();
+	            var method = $('#servicetest_methodName').val();
+	            if(service.length!=0 && method.length!=0){
+		            $.getJSON("service/getMethod",
+	                    { service: service, method: method },
+	                    function(result){
+						    editor_request.set(result.parameterTypes[0]);
+						    $('#servicetest_requestType').val(result.parameterTypes[0].class);
+						    $('#servicetest_responseType').val(result.returnType.class);
+				        });
+	            }else{
+	               alert("请输入服务名及方法名");
+	            }
+            });
+            $('#editor_btn_submitParam').click(function() {
+	             $('#holder_response').show();
+	             var data = {
+	               service:$('#servicetest_serviceName').val(),
+	               method:$('#servicetest_methodName').val(),
+	               parameterType:$('#servicetest_requestType').val(),
+	               returnType:$('#servicetest_responseType').val(),
+	               parameter:JSON.stringify(editor_request.get()) 
+	             };
+	             $.ajax({ 
+                    type: "POST", 
+                    url: "service/test", 
+                    contentType: "application/json",  
+                    data: JSON.stringify(data),
+                    success: function(result) { 
+                       editor_response.set(result);
+                    },
+		            error : function(jqXHR, textStatus, errorThrown){
+		                $('#editor_holder_response').width(600);
+		                $('#editor_holder_response').height(200);
+		                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
+		            }
+                 }); 
+            });
+        }); 
+    </script>  
+ </body>
+</html>
