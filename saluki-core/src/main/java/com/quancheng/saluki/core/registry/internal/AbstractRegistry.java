@@ -35,13 +35,14 @@ import com.quancheng.saluki.core.registry.Registry;
  */
 public abstract class AbstractRegistry implements Registry {
 
-    protected final Logger                                                                         logger     = LoggerFactory.getLogger(getClass());
+    protected final Logger                                                                         logger            = LoggerFactory.getLogger(getClass());
     private final GrpcURL                                                                          registryUrl;
-    private final Set<GrpcURL>                                                                     registered = Sets.newConcurrentHashSet();
-    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                subscribed = Maps.newConcurrentMap();
-    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notified   = Maps.newConcurrentMap();
+    private final Set<GrpcURL>                                                                     registered        = Sets.newConcurrentHashSet();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                serviceSubscribed = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>                 routerSubscribed  = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notified          = Maps.newConcurrentMap();
     private final ExecutorService                                                                  notifyExecutor;
-    private final int                                                                              cpus       = Runtime.getRuntime().availableProcessors();
+    private final int                                                                              cpus              = Runtime.getRuntime().availableProcessors();
 
     public AbstractRegistry(GrpcURL registryUrl){
         if (registryUrl == null) {
@@ -65,7 +66,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getSubscribed() {
-        return subscribed;
+        return serviceSubscribed;
     }
 
     public Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> getNotified() {
@@ -134,10 +135,30 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
-        Set<NotifyListener.NotifyServiceListener> listeners = subscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = serviceSubscribed.get(url);
         if (listeners == null) {
-            subscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
-            listeners = subscribed.get(url);
+            serviceSubscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
+            listeners = serviceSubscribed.get(url);
+        }
+        listeners.add(listener);
+    }
+
+    public void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        if (url == null) {
+            throw new IllegalArgumentException("subscribe url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("subscribe listener == null");
+        }
+        String[] keys = new String[] { Constants.ASYNC_KEY, Constants.GENERIC_KEY, Constants.TIMEOUT };
+        url = url.removeParameters(keys);
+        if (logger.isInfoEnabled()) {
+            logger.info("Subscribe: " + url);
+        }
+        Set<NotifyListener.NotifyRouterListener> listeners = routerSubscribed.get(url);
+        if (listeners == null) {
+            routerSubscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
+            listeners = routerSubscribed.get(url);
         }
         listeners.add(listener);
     }
@@ -152,7 +173,23 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe: " + url);
         }
-        Set<NotifyListener.NotifyServiceListener> listeners = subscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = serviceSubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        if (url == null) {
+            throw new IllegalArgumentException("unsubscribe url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("unsubscribe listener == null");
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("Unsubscribe: " + url);
+        }
+        Set<NotifyListener.NotifyRouterListener> listeners = routerSubscribed.get(url);
         if (listeners != null) {
             listeners.remove(listener);
         }

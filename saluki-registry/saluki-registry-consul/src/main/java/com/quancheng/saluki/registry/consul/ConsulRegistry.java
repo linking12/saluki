@@ -28,6 +28,7 @@ import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
+import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.internal.FailbackRegistry;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
@@ -121,6 +122,29 @@ public class ConsulRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
+    protected void doUnsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
+        notifyListeners.remove(url.getServiceKey());
+    }
+
+    @Override
+    protected void doSubscribe(GrpcURL url, NotifyRouterListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    protected void doUnsubscribe(GrpcURL url, NotifyRouterListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public List<GrpcURL> discover(GrpcURL url) {
+        String group = url.getGroup();
+        return lookupServiceUpdate(group).get(url.getServiceKey());
+    }
+
     private void notifyListener(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
         Map<String, List<GrpcURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
         if (groupCacheUrls != null) {
@@ -132,17 +156,6 @@ public class ConsulRegistry extends FailbackRegistry {
                 }
             }
         }
-    }
-
-    @Override
-    protected void doUnsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
-        notifyListeners.remove(url.getServiceKey());
-    }
-
-    @Override
-    public List<GrpcURL> discover(GrpcURL url) {
-        String group = url.getGroup();
-        return lookupServiceUpdate(group).get(url.getServiceKey());
     }
 
     private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {

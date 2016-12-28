@@ -33,9 +33,19 @@ public interface Registry {
     void subscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
 
     /**
+     * 订阅服务路由信息
+     */
+    void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
+
+    /**
      * 取消订阅
      */
     void unsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
+
+    /**
+     * 取消订阅路由信息
+     */
+    void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
 
     /**
      * 查询服务

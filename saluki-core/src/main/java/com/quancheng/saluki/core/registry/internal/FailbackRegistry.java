@@ -318,6 +318,29 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
+    public void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        super.subscribe(url, listener);
+        try {
+            // 向服务器端发送订阅请求
+            doSubscribe(url, listener);
+        } catch (Exception e) {
+            logger.error("Failed to subscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
+            // 将失败的订阅请求记录到失败列表，定时重试
+        }
+    }
+
+    @Override
+    public void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        super.unsubscribe(url, listener);
+        try {
+            // 向服务器端发送取消订阅请求
+            doUnsubscribe(url, listener);
+        } catch (Exception e) {
+            logger.error("Failed to unsubscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     protected void notify(GrpcURL url, NotifyListener.NotifyServiceListener listener, List<GrpcURL> urls) {
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
@@ -378,4 +401,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     protected abstract void doSubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
 
     protected abstract void doUnsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
+
+    protected abstract void doSubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
+
+    protected abstract void doUnsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
 }
