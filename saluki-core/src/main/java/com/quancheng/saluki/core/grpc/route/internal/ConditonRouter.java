@@ -5,13 +5,25 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.core.grpc.route;
+package com.quancheng.saluki.core.grpc.route.internal;
 
+import java.util.List;
+
+import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.route.GrpcRouter;
+
+import io.grpc.ResolvedServerInfo;
 
 /**
  * @author shimingliu 2016年12月15日 上午12:33:17
  * @version Route.java, v 0.0.1 2016年12月15日 上午12:33:17 shimingliu
  */
-public class Route {
+public class ConditonRouter implements GrpcRouter {
+
+    @Override
+    public List<? extends List<ResolvedServerInfo>> router(GrpcURL url, List<ResolvedServerInfo> servers) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

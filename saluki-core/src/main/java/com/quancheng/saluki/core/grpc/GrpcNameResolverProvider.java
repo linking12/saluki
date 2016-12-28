@@ -45,11 +45,11 @@ import io.grpc.Status;
 @Internal
 public class GrpcNameResolverProvider extends NameResolverProvider {
 
-    private static final Logger                    log                  = LoggerFactory.getLogger(NameResolverProvider.class);
+    private static final Logger                  log                  = LoggerFactory.getLogger(NameResolverProvider.class);
 
     private static final Attributes.Key<GrpcURL> DEFAULT_SUBCRIBE_URL = Attributes.Key.of("subscribe-url");
 
-    private final Attributes                       attributesParams;
+    private final Attributes                     attributesParams;
 
     public GrpcNameResolverProvider(GrpcURL refUrl){
         attributesParams = Attributes.newBuilder().set(DEFAULT_SUBCRIBE_URL, refUrl).build();
@@ -80,7 +80,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
 
         private final Registry               registry;
 
-        private final GrpcURL              subscribeUrl;
+        private final GrpcURL                subscribeUrl;
 
         @GuardedBy("this")
         private boolean                      shutdown;
@@ -113,7 +113,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             notifyLoadBalance(urls);
         }
 
-        private NotifyListener notifyListener = new NotifyListener() {
+        private NotifyListener.NotifyServiceListener notifyListener = new NotifyListener.NotifyServiceListener() {
 
             @Override
             public void notify(List<GrpcURL> urls) {
@@ -155,7 +155,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
                 GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
-                                                                                          + subscribeUrl.toFullString()));
+                                                                                        + subscribeUrl.toFullString()));
             }
         }
 
