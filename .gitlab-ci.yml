@@ -10,7 +10,7 @@ before_script:
 build_jar:
   stage: jar-build
   script:
-    - gradle clean build --refresh-dependencies
+    - gradle clean uploadArchives --refresh-dependencies
   only:
     - V1.5.1
 
