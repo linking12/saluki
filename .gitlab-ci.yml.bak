@@ -12,7 +12,7 @@ build_jar:
   script:
     - gradle clean uploadArchives --refresh-dependencies
   only:
-    - develop
+    - V1.5.1
 
 build_images:
    stage: docker-build
@@ -34,4 +34,4 @@ build_images:
     - docker push $aliimagemonitor
   
    only:
-    - develop
+    - V1.5.1

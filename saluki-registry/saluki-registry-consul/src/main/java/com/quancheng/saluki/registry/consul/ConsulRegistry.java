@@ -135,23 +135,6 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     protected synchronized void doSubscribe(GrpcURL url, NotifyRouterListener listener) {
-        Pair<GrpcURL, Set<NotifyListener.NotifyRouterListener>> listenersPair = notifyServiceListeners.get(url.getServiceKey());
-        if (listenersPair == null) {
-            Set<NotifyListener.NotifyServiceListener> listeners = Sets.newConcurrentHashSet();
-            listeners.add(listener);
-            listenersPair = new ImmutablePair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(url, listeners);
-        } else {
-            listenersPair.getValue().add(listener);
-        }
-        notifyServiceListeners.putIfAbsent(url.getServiceKey(), listenersPair);
-        if (!serviceGroupLookUped.contains(url.getGroup())) {
-            serviceGroupLookUped.add(url.getGroup());
-            lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
-            ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.CONSUMER);
-            client.registerEphemralNode(ephemralNode);
-        } else {
-            notifyListener(url, listener);
-        }
 
     }
 

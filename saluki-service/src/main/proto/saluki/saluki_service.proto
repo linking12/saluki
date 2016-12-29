@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_package = "com.quancheng.saluki.service";
+option java_outer_classname = "ServiceParam";
+
+package com.quancheng.saluki.service;
+
+service EchoService {
+  rpc echo (EchoRequest) returns (EchoReply) {}
+}
+
+message EchoRequest {
+  
+}
+
+message EchoReply {
+  string message = 1;
+}

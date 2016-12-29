@@ -51,7 +51,7 @@ public class ConsulRegistryRepository {
             public void run() {
                 loadAllServiceFromConsul();
             }
-        }, 0, 30, TimeUnit.MINUTES);
+        }, 0, 1, TimeUnit.MINUTES);
     }
 
     public void loadAllServiceFromConsul() {
