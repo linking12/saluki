@@ -10,6 +10,8 @@ package com.quancheng.saluki.registry.consul;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -128,7 +130,21 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public List<GrpcURL> discover(GrpcURL url) {
         String group = url.getGroup();
-        return lookupServiceUpdate(group).get(url.getServiceKey());
+        try {
+            Map<String, List<GrpcURL>> providerUrls = serviceCache.get(group,
+                                                                       new Callable<Map<String, List<GrpcURL>>>() {
+
+                                                                           @Override
+                                                                           public Map<String, List<GrpcURL>> call() throws Exception {
+                                                                               return lookupServiceUpdate(group);
+                                                                           }
+                                                                       });
+            return providerUrls.get(url.getServiceKey());
+        } catch (ExecutionException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
+
     }
 
     private void notifyListener(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
