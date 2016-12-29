@@ -33,21 +33,27 @@ import com.quancheng.saluki.core.registry.NotifyListener;
 public abstract class FailbackRegistry extends AbstractRegistry {
 
     // 定时任务执行器
-    private final ScheduledExecutorService                                                         retryExecutor      = Executors.newScheduledThreadPool(1,
-                                                                                                                                                         new NamedThreadFactory("SalukiRegistryFailedRetryTimer",
-                                                                                                                                                                                true));
+    private final ScheduledExecutorService                                                         retryExecutor             = Executors.newScheduledThreadPool(1,
+                                                                                                                                                                new NamedThreadFactory("SalukiRegistryFailedRetryTimer",
+                                                                                                                                                                                       true));
     // 失败重试定时器，定时检查是否有请求失败，如有，无限次重试
     private final ScheduledFuture<?>                                                               retryFuture;
 
-    private final Set<GrpcURL>                                                                     failedRegistered   = Sets.newConcurrentHashSet();
+    private final Set<GrpcURL>                                                                     failedRegistered          = Sets.newConcurrentHashSet();
 
-    private final Set<GrpcURL>                                                                     failedUnregistered = Sets.newConcurrentHashSet();
+    private final Set<GrpcURL>                                                                     failedUnregistered        = Sets.newConcurrentHashSet();
 
-    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                failedSubscribed   = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                failedServiceSubscribed   = Maps.newConcurrentMap();
 
-    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                failedUnsubscribed = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                failedServiceUnsubscribed = Maps.newConcurrentMap();
 
-    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> failedNotified     = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>                 failedRouterSubscribed    = Maps.newConcurrentMap();
+
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>                 failedRouterUnsubscribed  = Maps.newConcurrentMap();
+
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> failedServiceNotified     = Maps.newConcurrentMap();
+
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>>         failedRouterNotified      = Maps.newConcurrentMap();
 
     public FailbackRegistry(GrpcURL url){
         super(url);
@@ -111,8 +117,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
             }
         }
-        if (!failedSubscribed.isEmpty()) {
-            Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failedSubscribed);
+        if (!failedServiceSubscribed.isEmpty()) {
+            Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failedServiceSubscribed);
             for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyServiceListener>> entry : new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
@@ -142,8 +148,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
             }
         }
-        if (!failedUnsubscribed.isEmpty()) {
-            Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failedUnsubscribed);
+        if (!failedServiceUnsubscribed.isEmpty()) {
+            Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failedServiceUnsubscribed);
             for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyServiceListener>> entry : new HashMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
@@ -173,8 +179,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
             }
         }
-        if (!failedNotified.isEmpty()) {
-            Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> failed = new HashMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>>(failedNotified);
+        if (!failedServiceNotified.isEmpty()) {
+            Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> failed = new HashMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>>(failedServiceNotified);
             for (Map.Entry<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> entry : new HashMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
@@ -204,6 +210,102 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
             }
         }
+
+        // Router
+
+        if (!failedRouterSubscribed.isEmpty()) {
+            Map<GrpcURL, Set<NotifyListener.NotifyRouterListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>(failedRouterSubscribed);
+            for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyRouterListener>> entry : new HashMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>(failed).entrySet()) {
+                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                    failed.remove(entry.getKey());
+                }
+            }
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry subscribe " + failed);
+                }
+                try {
+                    for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyRouterListener>> entry : failed.entrySet()) {
+                        GrpcURL url = entry.getKey();
+                        Set<NotifyListener.NotifyRouterListener> listeners = entry.getValue();
+                        for (NotifyListener.NotifyRouterListener listener : listeners) {
+                            try {
+                                doSubscribe(url, listener);
+                                listeners.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry subscribe " + failed + ", waiting for again, cause: "
+                                            + t.getMessage(), t);
+                            }
+                        }
+                    }
+                } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                    logger.warn("Failed to retry subscribe " + failed + ", waiting for again, cause: " + t.getMessage(),
+                                t);
+                }
+            }
+        }
+        if (!failedRouterUnsubscribed.isEmpty()) {
+            Map<GrpcURL, Set<NotifyListener.NotifyRouterListener>> failed = new HashMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>(failedRouterUnsubscribed);
+            for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyRouterListener>> entry : new HashMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>(failed).entrySet()) {
+                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                    failed.remove(entry.getKey());
+                }
+            }
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry unsubscribe " + failed);
+                }
+                try {
+                    for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyRouterListener>> entry : failed.entrySet()) {
+                        GrpcURL url = entry.getKey();
+                        Set<NotifyListener.NotifyRouterListener> listeners = entry.getValue();
+                        for (NotifyListener.NotifyRouterListener listener : listeners) {
+                            try {
+                                doUnsubscribe(url, listener);
+                                listeners.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: "
+                                            + t.getMessage(), t);
+                            }
+                        }
+                    }
+                } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                    logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: "
+                                + t.getMessage(), t);
+                }
+            }
+        }
+        if (!failedRouterNotified.isEmpty()) {
+            Map<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>> failed = new HashMap<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>>(failedRouterNotified);
+            for (Map.Entry<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>> entry : new HashMap<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>>(failed).entrySet()) {
+                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                    failed.remove(entry.getKey());
+                }
+            }
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry notify " + failed);
+                }
+                try {
+                    for (Map<NotifyListener.NotifyRouterListener, String> values : failed.values()) {
+                        for (Map.Entry<NotifyListener.NotifyRouterListener, String> entry : values.entrySet()) {
+                            try {
+                                NotifyListener.NotifyRouterListener listener = entry.getKey();
+                                String routerMessage = entry.getValue();
+                                listener.notify(routerMessage);
+                                values.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry notify " + failed + ", waiting for again, cause: "
+                                            + t.getMessage(), t);
+                            }
+                        }
+                    }
+                } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                    logger.warn("Failed to retry notify " + failed + ", waiting for again, cause: " + t.getMessage(),
+                                t);
+                }
+            }
+        }
     }
 
     public Future<?> getRetryFuture() {
@@ -218,37 +320,73 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedUnregistered;
     }
 
-    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getFailedSubscribed() {
-        return failedSubscribed;
+    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getFailedServiceSubscribed() {
+        return failedServiceSubscribed;
     }
 
-    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getFailedUnsubscribed() {
-        return failedUnsubscribed;
+    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getFailedServiceUnsubscribed() {
+        return failedServiceUnsubscribed;
     }
 
-    public Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> getFailedNotified() {
-        return failedNotified;
+    public Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> getFailedServiceNotified() {
+        return failedServiceNotified;
+    }
+
+    public Map<GrpcURL, Set<NotifyListener.NotifyRouterListener>> getFailedRouterSubscribed() {
+        return failedRouterSubscribed;
+    }
+
+    public Map<GrpcURL, Set<NotifyListener.NotifyRouterListener>> getFailedRouterUnsubscribed() {
+        return failedRouterUnsubscribed;
+    }
+
+    public Map<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>> getFailedRouterNotified() {
+        return failedRouterNotified;
     }
 
     private void addFailedSubscribed(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
-        Set<NotifyListener.NotifyServiceListener> listeners = failedSubscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = failedServiceSubscribed.get(url);
         if (listeners == null) {
             listeners = Sets.newConcurrentHashSet();
-            listeners = failedSubscribed.putIfAbsent(url, listeners);
+            listeners = failedServiceSubscribed.putIfAbsent(url, listeners);
         }
         listeners.add(listener);
     }
 
     private void removeFailedSubscribed(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
-        Set<NotifyListener.NotifyServiceListener> listeners = failedSubscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = failedServiceSubscribed.get(url);
         if (listeners != null) {
             listeners.remove(listener);
         }
-        listeners = failedUnsubscribed.get(url);
+        listeners = failedServiceUnsubscribed.get(url);
         if (listeners != null) {
             listeners.remove(listener);
         }
-        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notified = failedNotified.get(url);
+        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notified = failedServiceNotified.get(url);
+        if (notified != null) {
+            notified.remove(listener);
+        }
+    }
+
+    private void addFailedSubscribed(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        Set<NotifyListener.NotifyRouterListener> listeners = failedRouterSubscribed.get(url);
+        if (listeners == null) {
+            listeners = Sets.newConcurrentHashSet();
+            listeners = failedRouterSubscribed.putIfAbsent(url, listeners);
+        }
+        listeners.add(listener);
+    }
+
+    private void removeFailedSubscribed(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
+        Set<NotifyListener.NotifyRouterListener> listeners = failedRouterSubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        listeners = failedRouterSubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        Map<NotifyListener.NotifyRouterListener, String> notified = failedRouterNotified.get(url);
         if (notified != null) {
             notified.remove(listener);
         }
@@ -308,10 +446,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         } catch (Exception e) {
             logger.error("Failed to unsubscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
             // 将失败的取消订阅请求记录到失败列表，定时重试
-            Set<NotifyListener.NotifyServiceListener> listeners = failedUnsubscribed.get(url);
+            Set<NotifyListener.NotifyServiceListener> listeners = failedServiceUnsubscribed.get(url);
             if (listeners == null) {
                 listeners = Sets.newConcurrentHashSet();
-                listeners = failedUnsubscribed.putIfAbsent(url, listeners);
+                listeners = failedServiceUnsubscribed.putIfAbsent(url, listeners);
             }
             listeners.add(listener);
         }
@@ -320,23 +458,33 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     @Override
     public void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
         super.subscribe(url, listener);
+        removeFailedSubscribed(url, listener);
         try {
             // 向服务器端发送订阅请求
             doSubscribe(url, listener);
         } catch (Exception e) {
             logger.error("Failed to subscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
             // 将失败的订阅请求记录到失败列表，定时重试
+            addFailedSubscribed(url, listener);
         }
     }
 
     @Override
     public void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
         super.unsubscribe(url, listener);
+        removeFailedSubscribed(url, listener);
         try {
             // 向服务器端发送取消订阅请求
             doUnsubscribe(url, listener);
         } catch (Exception e) {
             logger.error("Failed to unsubscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
+            // 将失败的取消订阅请求记录到失败列表，定时重试
+            Set<NotifyListener.NotifyRouterListener> listeners = failedRouterUnsubscribed.get(url);
+            if (listeners == null) {
+                listeners = Sets.newConcurrentHashSet();
+                listeners = failedRouterUnsubscribed.putIfAbsent(url, listeners);
+            }
+            listeners.add(listener);
         }
     }
 
@@ -349,21 +497,47 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
-            doNotify(url, listener, urls);
+            doNotifyService(url, listener, urls);
         } catch (Exception t) {
             // 将失败的通知请求记录到失败列表，定时重试
-            Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> listeners = failedNotified.get(url);
+            Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> listeners = failedServiceNotified.get(url);
             if (listeners == null) {
-                failedNotified.putIfAbsent(url, Maps.newConcurrentMap());
-                listeners = failedNotified.get(url);
+                failedServiceNotified.putIfAbsent(url, Maps.newConcurrentMap());
+                listeners = failedServiceNotified.get(url);
             }
             listeners.put(listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
     }
 
-    protected void doNotify(GrpcURL url, NotifyListener.NotifyServiceListener listener, List<GrpcURL> urls) {
+    @Override
+    protected void notify(GrpcURL url, NotifyListener.NotifyRouterListener listener, String routerMessage) {
+        if (url == null) {
+            throw new IllegalArgumentException("notify url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("notify listener == null");
+        }
+        try {
+            doNotifyRouter(url, listener, routerMessage);
+        } catch (Exception t) {
+            // 将失败的通知请求记录到失败列表，定时重试
+            Map<NotifyListener.NotifyRouterListener, String> listeners = failedRouterNotified.get(url);
+            if (listeners == null) {
+                failedRouterNotified.putIfAbsent(url, Maps.newConcurrentMap());
+                listeners = failedRouterNotified.get(url);
+            }
+            listeners.put(listener, routerMessage);
+            logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+        }
+    }
+
+    protected void doNotifyService(GrpcURL url, NotifyListener.NotifyServiceListener listener, List<GrpcURL> urls) {
         super.notify(url, listener, urls);
+    }
+
+    protected void doNotifyRouter(GrpcURL url, NotifyListener.NotifyRouterListener listener, String routerMessage) {
+        super.notify(url, listener, routerMessage);
     }
 
     @Override
@@ -379,7 +553,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         // subscribe
-        Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
+        Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> recoverSubscribed = Maps.newHashMap(getServiceSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover subscribe url " + recoverSubscribed.keySet());

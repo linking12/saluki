@@ -42,29 +42,26 @@ import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
  */
 public class ConsulRegistry extends FailbackRegistry {
 
-    private static final Logger                                                         log = LoggerFactory.getLogger(ConsulRegistry.class);
+    private static final Logger                                                         log                 = LoggerFactory.getLogger(ConsulRegistry.class);
 
     private final ConsulClient                                                          client;
 
     private final Cache<String, Map<String, List<GrpcURL>>>                             serviceCache;
 
-    private final Map<String, Long>                                                     lookupGroupServices;
+    private final Map<String, Long>                                                     lookupGroupServices = Maps.newConcurrentMap();
+
+    private final Map<String, Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>> notifyListeners     = Maps.newConcurrentMap();
+
+    private final Set<String>                                                           groupLoogUped       = Sets.newConcurrentHashSet();
 
     private final ExecutorService                                                       lookUpServiceExecutor;
-
-    private final Map<String, Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>> notifyListeners;
-
-    private final Set<String>                                                           groupLoogUped;
 
     public ConsulRegistry(GrpcURL url){
         super(url);
         String host = url.getHost();
         int port = url.getPort();
         client = new ConsulClient(host, port);
-        notifyListeners = Maps.newConcurrentMap();
         serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        lookupGroupServices = Maps.newConcurrentMap();
-        groupLoogUped = Sets.newConcurrentHashSet();
         this.lookUpServiceExecutor = Executors.newFixedThreadPool(1,
                                                                   new NamedThreadFactory("ConsulLookUpService", true));
     }
@@ -128,7 +125,7 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doSubscribe(GrpcURL url, NotifyRouterListener listener) {
+    protected synchronized void doSubscribe(GrpcURL url, NotifyRouterListener listener) {
         // TODO Auto-generated method stub
 
     }
@@ -198,6 +195,15 @@ public class ConsulRegistry extends FailbackRegistry {
             log.error("convert consul service to url fail! service:" + service, e);
         }
         return null;
+    }
+
+    private class RouterLookUper extends Thread {
+
+        private final String group;
+
+        public RouterLookUper(String group){
+            this.group = group;
+        }
     }
 
     private class ServiceLookUper extends Thread {
