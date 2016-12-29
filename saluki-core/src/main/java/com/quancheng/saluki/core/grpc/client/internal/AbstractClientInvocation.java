@@ -12,7 +12,6 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -22,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
@@ -36,6 +35,7 @@ import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
@@ -48,18 +48,17 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
 
-    private final MonitorService                       clientServerMonitor;
-
     private final Map<String, Integer>                 methodRetries;
 
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
+
+    private volatile ClientServerMonitor               clientServerMonitor;
+
+    private volatile GrpcURL                           refUrl;
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
-        this.clientServerMonitor = new ClientServerMonitor(getSourceRefUrl());
         this.methodRetries = methodRetries;
     }
-
-    protected abstract GrpcURL getSourceRefUrl();
 
     protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
 
@@ -158,13 +157,16 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String method = methodName; // 获取方法名
             InetSocketAddress remote = (InetSocketAddress) remoteAddress;
             String provider = remote.getHostName();// 服务端主机
-            String host = getSourceRefUrl().getHost();
-            Integer port = getSourceRefUrl().getPort();
+            String host = refUrl.getHost();
+            Integer port = refUrl.getPort();
+            if (clientServerMonitor == null) {
+                clientServerMonitor = new ClientServerMonitor(refUrl);
+            }
             clientServerMonitor.collect(new GrpcURL(Constants.MONITOR_PROTOCOL, host, port, //
                                                     service + "/" + method, //
                                                     MonitorService.TIMESTAMP, String.valueOf(start), //
                                                     MonitorService.APPLICATION,
-                                                    getSourceRefUrl().getParameter(Constants.APPLICATION_NAME), //
+                                                    refUrl.getParameter(Constants.APPLICATION_NAME), //
                                                     MonitorService.INTERFACE, service, //
                                                     MonitorService.METHOD, method, //
                                                     MonitorService.PROVIDER, provider, //

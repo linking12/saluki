@@ -34,6 +34,8 @@ public interface GrpcRequest {
 
     public String getServiceName();
 
+    public GrpcURL getRefUrl();
+
     public MethodRequest getMethodRequest();
 
     public void setMethodRequest(MethodRequest methodRequest);
@@ -42,7 +44,7 @@ public interface GrpcRequest {
 
         private static final long                    serialVersionUID = 1L;
 
-        private final GrpcURL                      refUrl;
+        private final GrpcURL                        refUrl;
 
         private final GrpcProtocolClient.ChannelPool chanelPool;
 
@@ -92,6 +94,11 @@ public interface GrpcRequest {
         @Override
         public void setMethodRequest(MethodRequest methodRequest) {
             this.methodRequest = methodRequest;
+        }
+
+        @Override
+        public GrpcURL getRefUrl() {
+            return this.refUrl;
         }
 
     }

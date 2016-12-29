@@ -25,15 +25,15 @@ public class ClientServerMonitor implements MonitorService {
 
     private static final int                                         LENGTH                   = 10;
 
-    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(1,
-                                                                                                                                 new NamedThreadFactory("SalukiMonitorSendTimer",
-                                                                                                                                                        true));
-
     private final ScheduledFuture<?>                                 sendFuture;
 
     private final List<MonitorService>                               monitorServices;
 
     private final long                                               monitorInterval;
+
+    private final ScheduledExecutorService                           scheduledExecutorService = Executors.newScheduledThreadPool(1,
+                                                                                                                                 new NamedThreadFactory("SalukiMonitorSendTimer",
+                                                                                                                                                        true));
 
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap            = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
@@ -75,19 +75,18 @@ public class ClientServerMonitor implements MonitorService {
                 long maxConcurrent = numbers[9];
                 // 发送汇总信息
                 GrpcURL url = statistics.getUrl().addParameters(MonitorService.TIMESTAMP, String.valueOf(timestamp),
-                                                                  MonitorService.SUCCESS, String.valueOf(success),
-                                                                  MonitorService.FAILURE, String.valueOf(failure),
-                                                                  MonitorService.INPUT, String.valueOf(input),
-                                                                  MonitorService.OUTPUT, String.valueOf(output),
-                                                                  MonitorService.ELAPSED, String.valueOf(elapsed),
-                                                                  MonitorService.CONCURRENT,
-                                                                  String.valueOf(concurrent / (success + failure)),
-                                                                  MonitorService.MAX_INPUT, String.valueOf(maxInput),
-                                                                  MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
-                                                                  MonitorService.MAX_ELAPSED,
-                                                                  String.valueOf(maxElapsed),
-                                                                  MonitorService.MAX_CONCURRENT,
-                                                                  String.valueOf(maxConcurrent));
+                                                                MonitorService.SUCCESS, String.valueOf(success),
+                                                                MonitorService.FAILURE, String.valueOf(failure),
+                                                                MonitorService.INPUT, String.valueOf(input),
+                                                                MonitorService.OUTPUT, String.valueOf(output),
+                                                                MonitorService.ELAPSED, String.valueOf(elapsed),
+                                                                MonitorService.CONCURRENT,
+                                                                String.valueOf(concurrent / (success + failure)),
+                                                                MonitorService.MAX_INPUT, String.valueOf(maxInput),
+                                                                MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
+                                                                MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
+                                                                MonitorService.MAX_CONCURRENT,
+                                                                String.valueOf(maxConcurrent));
                 for (MonitorService monitor : monitorServices) {
                     monitor.collect(url);
                 }

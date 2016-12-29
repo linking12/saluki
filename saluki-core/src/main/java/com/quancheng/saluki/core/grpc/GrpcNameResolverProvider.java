@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
@@ -95,6 +96,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             GrpcURL registryUrl = GrpcURL.valueOf(targetUri.toString());
             registry = RegistryProvider.asFactory().newRegistry(registryUrl);
             subscribeUrl = params.get(DEFAULT_SUBCRIBE_URL);
+            GrpcRouterFactory.getInstance().subscribeRouter(registry, subscribeUrl);
         }
 
         @Override

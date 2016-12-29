@@ -12,7 +12,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.registry.NotifyListener;
+import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.Registry;
 
 import io.grpc.ResolvedServerInfo;
@@ -23,35 +23,37 @@ import io.grpc.ResolvedServerInfo;
  */
 public final class GrpcRouterFactory {
 
-    private static final Map<String, String> routerMessages = Maps.newConcurrentMap();
+    private static final GrpcRouterFactory instance       = new GrpcRouterFactory();
 
-    private static final GrpcRouterFactory   instance       = new GrpcRouterFactory();
+    private final Map<String, String>      routerMessages = Maps.newConcurrentMap();
+
+    private final NotifyRouterListener     routerListener = new NotifyRouterListener() {
+
+                                                              @Override
+                                                              public void notify(String group, String routerCondition) {
+                                                                  if (routerCondition == null) {
+                                                                      routerMessages.remove(group);
+                                                                  } else {
+                                                                      routerMessages.put(group, routerCondition);
+                                                                  }
+                                                              }
+
+                                                          };
 
     private GrpcRouterFactory(){
     }
-
-    private static final NotifyListener.NotifyRouterListener routerListener = new NotifyListener.NotifyRouterListener() {
-
-        @Override
-        public void notify(String group, String routerCondition) {
-            if (routerCondition == null) {
-                routerMessages.remove(group);
-            } else {
-                routerMessages.put(group, routerCondition);
-            }
-        }
-
-    };
 
     public static GrpcRouterFactory getInstance() {
         return instance;
     }
 
-    public static void configWithRegistry(Registry registry, GrpcURL subscribeUrl) {
-        registry.subscribe(subscribeUrl.getGroup(), routerListener);
+    public void subscribeRouter(Registry registry, GrpcURL subscribeUrl) {
+        if (!routerMessages.containsKey(subscribeUrl.getGroup())) {
+            registry.subscribe(subscribeUrl.getGroup(), routerListener);
+        }
     }
 
-    public static GrpcRouter createRouter(GrpcURL subscribeUrl) {
+    public GrpcRouter createRouter(GrpcURL subscribeUrl) {
         String group = subscribeUrl.getGroup();
         String routerMessage = routerMessages.get(group);
         if (routerMessage.startsWith("condition://")) {
@@ -63,7 +65,7 @@ public final class GrpcRouterFactory {
         }
     }
 
-    private static class ConditionRouter extends GrpcRouter {
+    private class ConditionRouter extends GrpcRouter {
 
         public ConditionRouter(GrpcURL url, String routerMessage){
             super(url, routerMessage);
@@ -83,7 +85,7 @@ public final class GrpcRouterFactory {
 
     }
 
-    private static class ScriptRouter extends GrpcRouter {
+    private class ScriptRouter extends GrpcRouter {
 
         public ScriptRouter(GrpcURL url, String routerMessage){
             super(url, routerMessage);
