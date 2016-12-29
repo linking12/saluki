@@ -35,7 +35,7 @@ public interface Registry {
     /**
      * 订阅服务路由信息
      */
-    void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
+    void subscribe(String group, NotifyListener.NotifyRouterListener listener);
 
     /**
      * 取消订阅
@@ -45,7 +45,7 @@ public interface Registry {
     /**
      * 取消订阅路由信息
      */
-    void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener);
+    void unsubscribe(String group, NotifyListener.NotifyRouterListener listener);
 
     /**
      * 查询服务

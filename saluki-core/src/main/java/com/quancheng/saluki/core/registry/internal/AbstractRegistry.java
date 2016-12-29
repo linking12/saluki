@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +35,13 @@ import com.quancheng.saluki.core.registry.Registry;
  */
 public abstract class AbstractRegistry implements Registry {
 
-    protected final Logger                                                                         logger            = LoggerFactory.getLogger(getClass());
-    private final GrpcURL                                                                          registryUrl;
-    private final Set<GrpcURL>                                                                     registered        = Sets.newConcurrentHashSet();
-    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                serviceSubscribed = Maps.newConcurrentMap();
-    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyRouterListener>>                 routerSubscribed  = Maps.newConcurrentMap();
-    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notifiedService   = Maps.newConcurrentMap();
-    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>>         notifiedRouter    = Maps.newConcurrentMap();
-    private final ExecutorService                                                                  notifyExecutor;
-    private final int                                                                              cpus              = Runtime.getRuntime().availableProcessors();
+    protected final Logger                                                   logger     = LoggerFactory.getLogger(getClass());
+    private final GrpcURL                                                    registryUrl;
+    private final Set<GrpcURL>                                               registered = Sets.newConcurrentHashSet();
+    private final ConcurrentMap<GrpcURL, Set<NotifyListener.NotifyServiceListener>>                subscribed = Maps.newConcurrentMap();
+    private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notified   = Maps.newConcurrentMap();
+    private final ExecutorService                                            notifyExecutor;
+    private final int                                                        cpus       = Runtime.getRuntime().availableProcessors();
 
     public AbstractRegistry(GrpcURL registryUrl){
         if (registryUrl == null) {
@@ -52,7 +49,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         this.registryUrl = registryUrl;
         this.notifyExecutor = Executors.newFixedThreadPool(cpus * 3,
-                                                           new NamedThreadFactory("SalukiNotifyListener", true));
+                                                           new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener", true));
     }
 
     public int getCpus() {
@@ -67,27 +64,19 @@ public abstract class AbstractRegistry implements Registry {
         return registered;
     }
 
-    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getServiceSubscribed() {
-        return serviceSubscribed;
+    public Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> getSubscribed() {
+        return subscribed;
     }
 
-    public Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> getServiceNotified() {
-        return notifiedService;
-    }
-
-    public Map<GrpcURL, Set<NotifyListener.NotifyRouterListener>> getRouterSubscribed() {
-        return routerSubscribed;
-    }
-
-    public ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyRouterListener, String>> getRouterNotified() {
-        return notifiedRouter;
+    public Map<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> getNotified() {
+        return notified;
     }
 
     public List<GrpcURL> discover(GrpcURL url) {
         String[] keys = new String[] { Constants.ASYNC_KEY, Constants.GENERIC_KEY, Constants.TIMEOUT };
         url = url.removeParameters(keys);
         List<GrpcURL> result = new ArrayList<GrpcURL>();
-        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notifiedUrls = getServiceNotified().get(url);
+        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
             for (List<GrpcURL> urls : notifiedUrls.values()) {
                 for (GrpcURL u : urls) {
@@ -145,30 +134,10 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
-        Set<NotifyListener.NotifyServiceListener> listeners = serviceSubscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = subscribed.get(url);
         if (listeners == null) {
-            serviceSubscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
-            listeners = serviceSubscribed.get(url);
-        }
-        listeners.add(listener);
-    }
-
-    public void subscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
-        if (url == null) {
-            throw new IllegalArgumentException("subscribe url == null");
-        }
-        if (listener == null) {
-            throw new IllegalArgumentException("subscribe listener == null");
-        }
-        String[] keys = new String[] { Constants.ASYNC_KEY, Constants.GENERIC_KEY, Constants.TIMEOUT };
-        url = url.removeParameters(keys);
-        if (logger.isInfoEnabled()) {
-            logger.info("Subscribe: " + url);
-        }
-        Set<NotifyListener.NotifyRouterListener> listeners = routerSubscribed.get(url);
-        if (listeners == null) {
-            routerSubscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
-            listeners = routerSubscribed.get(url);
+            subscribed.putIfAbsent(url, Sets.newConcurrentHashSet());
+            listeners = subscribed.get(url);
         }
         listeners.add(listener);
     }
@@ -183,23 +152,7 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe: " + url);
         }
-        Set<NotifyListener.NotifyServiceListener> listeners = serviceSubscribed.get(url);
-        if (listeners != null) {
-            listeners.remove(listener);
-        }
-    }
-
-    public void unsubscribe(GrpcURL url, NotifyListener.NotifyRouterListener listener) {
-        if (url == null) {
-            throw new IllegalArgumentException("unsubscribe url == null");
-        }
-        if (listener == null) {
-            throw new IllegalArgumentException("unsubscribe listener == null");
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("Unsubscribe: " + url);
-        }
-        Set<NotifyListener.NotifyRouterListener> listeners = routerSubscribed.get(url);
+        Set<NotifyListener.NotifyServiceListener> listeners = subscribed.get(url);
         if (listeners != null) {
             listeners.remove(listener);
         }
@@ -207,7 +160,7 @@ public abstract class AbstractRegistry implements Registry {
 
     protected void notify(List<GrpcURL> providerUrls) {
         if (providerUrls == null || providerUrls.isEmpty()) return;
-        for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyServiceListener>> entry : getServiceSubscribed().entrySet()) {
+        for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyServiceListener>> entry : getSubscribed().entrySet()) {
             GrpcURL subscribedUrl = entry.getKey();
             if (!GrpcURLUtils.isMatch(subscribedUrl, providerUrls.get(0))) {
                 continue;
@@ -221,44 +174,15 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    protected void notify(GrpcURL subscribedUrl, NotifyListener.NotifyServiceListener listener,
-                          List<GrpcURL> providerUrls) {
+    protected void notify(GrpcURL subscribedUrl, NotifyListener.NotifyServiceListener listener, List<GrpcURL> providerUrls) {
         addNotified(subscribedUrl, listener, providerUrls);
         notifyExecutor.submit(new Runnable() {
 
             @Override
             public void run() {
                 listener.notify(providerUrls);
-
             }
         });
-
-    }
-
-    protected void notify(String routerMessage) {
-        if (StringUtils.isBlank(routerMessage)) return;
-        for (Map.Entry<GrpcURL, Set<NotifyListener.NotifyRouterListener>> entry : getRouterSubscribed().entrySet()) {
-            GrpcURL subscribedUrl = entry.getKey();
-            Set<NotifyListener.NotifyRouterListener> listeners = entry.getValue();
-            if (listeners != null) {
-                for (NotifyListener.NotifyRouterListener listener : listeners) {
-                    notify(subscribedUrl, listener, routerMessage);
-                }
-            }
-        }
-    }
-
-    protected void notify(GrpcURL subscribedUrl, NotifyListener.NotifyRouterListener listener, String routerMessage) {
-        addNotified(subscribedUrl, listener, routerMessage);
-        notifyExecutor.submit(new Runnable() {
-
-            @Override
-            public void run() {
-                listener.notify(routerMessage);
-
-            }
-        });
-
     }
 
     protected void recover() throws Exception {
@@ -273,7 +197,7 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         // subscribe
-        Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> recoverSubscribed = Maps.newHashMap(getServiceSubscribed());
+        Map<GrpcURL, Set<NotifyListener.NotifyServiceListener>> recoverSubscribed = Maps.newHashMap(getSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover subscribe url " + recoverSubscribed.keySet());
@@ -287,9 +211,8 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    private void addNotified(GrpcURL subscribedUrl, NotifyListener.NotifyServiceListener listener,
-                             List<GrpcURL> providerUrls) {
-        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notifiedUrlMap = notifiedService.get(subscribedUrl);
+    private void addNotified(GrpcURL subscribedUrl, NotifyListener.NotifyServiceListener listener, List<GrpcURL> providerUrls) {
+        Map<NotifyListener.NotifyServiceListener, List<GrpcURL>> notifiedUrlMap = notified.get(subscribedUrl);
         List<GrpcURL> notifiedUrlList;
         if (notifiedUrlMap == null) {
             notifiedUrlMap = Maps.newConcurrentMap();
@@ -302,20 +225,6 @@ public abstract class AbstractRegistry implements Registry {
             notifiedUrlList.addAll(providerUrls);
         }
         notifiedUrlMap.putIfAbsent(listener, notifiedUrlList);
-        notifiedService.putIfAbsent(subscribedUrl, notifiedUrlMap);
-    }
-
-    private void addNotified(GrpcURL subscribedUrl, NotifyListener.NotifyRouterListener listener,
-                             String routerMessage) {
-        Map<NotifyListener.NotifyRouterListener, String> notifiedUrlMap = notifiedRouter.get(subscribedUrl);
-        String routerCondition;
-        if (notifiedUrlMap == null) {
-            notifiedUrlMap = Maps.newConcurrentMap();
-            routerCondition = routerMessage;
-        } else {
-            routerCondition = notifiedUrlMap.get(listener);
-        }
-        notifiedUrlMap.putIfAbsent(listener, routerCondition);
-        notifiedRouter.putIfAbsent(subscribedUrl, notifiedUrlMap);
+        notified.putIfAbsent(subscribedUrl, notifiedUrlMap);
     }
 }

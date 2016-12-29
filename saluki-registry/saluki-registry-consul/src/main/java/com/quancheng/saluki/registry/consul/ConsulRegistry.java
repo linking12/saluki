@@ -32,6 +32,7 @@ import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.internal.FailbackRegistry;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
+import com.quancheng.saluki.registry.consul.model.ConsulRouterResp;
 import com.quancheng.saluki.registry.consul.model.ConsulService;
 import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
 import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
@@ -48,21 +49,13 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private final Cache<String, Map<String, List<GrpcURL>>>                             serviceCache;
 
-    private final Cache<String, String>                                                 routerCache;
-
     private final Map<String, Long>                                                     lookupGroupServices    = Maps.newConcurrentMap();
-
-    private final Map<String, Long>                                                     lookupGroupRouters     = Maps.newConcurrentMap();
 
     private final Map<String, Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>> notifyServiceListeners = Maps.newConcurrentMap();
 
-    private final Map<String, Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>> notifyRouterListeners  = Maps.newConcurrentMap();
-
     private final Set<String>                                                           serviceGroupLookUped   = Sets.newConcurrentHashSet();
 
-    private final Set<String>                                                           routerGroupLookUped    = Sets.newConcurrentHashSet();
-
-    private final ExecutorService                                                       lookUpServiceExecutor;
+    private final ExecutorService                                                       lookUpExecutor;
 
     public ConsulRegistry(GrpcURL url){
         super(url);
@@ -71,8 +64,7 @@ public class ConsulRegistry extends FailbackRegistry {
         client = new ConsulClient(host, port);
         this.serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
         this.routerCache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        this.lookUpServiceExecutor = Executors.newFixedThreadPool(10,
-                                                                  new NamedThreadFactory("ConsulLookUpService", true));
+        this.lookUpExecutor = Executors.newFixedThreadPool(10, new NamedThreadFactory("ConsulLookUpService", true));
     }
 
     private ConsulService buildConsulHealthService(GrpcURL url) {
@@ -120,7 +112,7 @@ public class ConsulRegistry extends FailbackRegistry {
         notifyServiceListeners.putIfAbsent(url.getServiceKey(), listenersPair);
         if (!serviceGroupLookUped.contains(url.getGroup())) {
             serviceGroupLookUped.add(url.getGroup());
-            lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
+            lookUpExecutor.execute(new ServiceLookUper(url.getGroup()));
             ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.CONSUMER);
             client.registerEphemralNode(ephemralNode);
         } else {
@@ -131,17 +123,6 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     protected void doUnsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
         notifyServiceListeners.remove(url.getServiceKey());
-    }
-
-    @Override
-    protected synchronized void doSubscribe(GrpcURL url, NotifyRouterListener listener) {
-
-    }
-
-    @Override
-    protected void doUnsubscribe(GrpcURL url, NotifyRouterListener listener) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -205,15 +186,6 @@ public class ConsulRegistry extends FailbackRegistry {
         return null;
     }
 
-    private class RouterLookUper extends Thread {
-
-        private final String group;
-
-        public RouterLookUper(String group){
-            this.group = group;
-        }
-    }
-
     private class ServiceLookUper extends Thread {
 
         private final String group;
@@ -258,6 +230,110 @@ public class ConsulRegistry extends FailbackRegistry {
                                         ConsulRegistry.this.notify(subscribeUrl, listener, newUrls);
                                     }
                                 }
+                            }
+                        }
+                    }
+                    sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
+                } catch (Throwable e) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Router信息
+     */
+    private final Cache<String, List<String>>                           routerCache;
+    private final Map<String, Long>                                     lookupGroupRouters    = Maps.newConcurrentMap();
+    private final Map<String, Set<NotifyListener.NotifyRouterListener>> notifyRouterListeners = Maps.newConcurrentMap();
+    private final Set<String>                                           routerGroupLookUped   = Sets.newConcurrentHashSet();
+
+    @Override
+    public void subscribe(String group, NotifyRouterListener listener) {
+        Set<NotifyListener.NotifyRouterListener> listeners = notifyRouterListeners.get(group);
+        if (listeners == null) {
+            listeners = Sets.newConcurrentHashSet();
+            listeners.add(listener);
+        } else {
+            listeners.add(listener);
+        }
+        notifyRouterListeners.put(group, listeners);
+        if (!routerGroupLookUped.contains(group)) {
+            serviceGroupLookUped.add(group);
+            lookUpExecutor.execute(new RouterLookUper(group));
+        }
+    }
+
+    @Override
+    public void unsubscribe(String group, NotifyRouterListener listener) {
+        notifyRouterListeners.get(group).remove(listener);
+    }
+
+    private class RouterLookUper extends Thread {
+
+        private final String          group;
+
+        private final ExecutorService notifyExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()
+                                                                                    * 3,
+                                                                                    new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener",
+                                                                                                           true));
+
+        public RouterLookUper(String group){
+            this.group = group;
+        }
+
+        private boolean haveChanged(List<String> newRouters, List<String> oldRouters) {
+            if (newRouters == null | newRouters.isEmpty()) {
+                return false;
+            } else if (oldRouters != null && oldRouters.containsAll(newRouters)) {
+                return false;
+            }
+            return true;
+        }
+
+        private List<String> lookupRouterUpdate(String group) {
+            Long lastConsulIndexId = lookupGroupRouters.get(group) == null ? 0L : lookupGroupRouters.get(group);
+            String serviceName = GrpcURLUtils.toServiceName(group);
+            ConsulRouterResp consulResp = client.lookupRouterMessage(serviceName, lastConsulIndexId);
+            if (consulResp != null) {
+                List<String> routerMessages = consulResp.getSalukiConsulRouter();
+                boolean updated = routerMessages != null && !routerMessages.isEmpty()
+                                  && consulResp.getConsulIndex() > lastConsulIndexId;
+                if (updated) {
+                    lookupGroupRouters.put(group, consulResp.getConsulIndex());
+                    return routerMessages;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    List<String> groupRouterMessages = lookupRouterUpdate(group);
+                    if (groupRouterMessages != null && !groupRouterMessages.isEmpty()) {
+                        List<String> groupCacheRouters = routerCache.getIfPresent(group);
+                        if (groupCacheRouters == null) {
+                            routerCache.put(group, groupRouterMessages);
+                        }
+                        if (haveChanged(groupRouterMessages, groupCacheRouters)) {
+                            Set<NotifyListener.NotifyRouterListener> listeners = notifyRouterListeners.get(group);
+                            if (listeners != null) {
+                                for (NotifyListener.NotifyRouterListener listener : listeners) {
+                                    notifyExecutor.submit(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            listener.notify(groupRouterMessages);
+                                        }
+                                    });
+                                }
+                                routerCache.put(group, groupRouterMessages);
                             }
                         }
                     }
