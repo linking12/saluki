@@ -76,6 +76,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public T pickTransport(Attributes affinity) {
+
+            // TODO 添加路由逻辑
+
             this.callOptions_Affinity = affinity;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {

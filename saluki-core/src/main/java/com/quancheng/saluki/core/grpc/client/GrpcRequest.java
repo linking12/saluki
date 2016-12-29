@@ -10,10 +10,11 @@ package com.quancheng.saluki.core.grpc.client;
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
@@ -98,7 +99,7 @@ public interface GrpcRequest {
 
         @Override
         public GrpcURL getRefUrl() {
-            return this.refUrl;
+            return this.refUrl.addParameter(Constants.METHOD_KEY, this.methodRequest.getMethodName());
         }
 
     }
