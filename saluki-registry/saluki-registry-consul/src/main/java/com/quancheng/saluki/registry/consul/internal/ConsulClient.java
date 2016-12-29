@@ -115,14 +115,10 @@ public class ConsulClient {
         QueryParams queryParams = new QueryParams(ConsulConstants.CONSUL_BLOCK_TIME_SECONDS, lastConsulIndex);
         Response<GetValue> orgResponse = client.getKVValue(serviceName, queryParams);
         GetValue getValue = orgResponse.getValue();
-        List<String> routerMessages = Lists.newArrayList();
         if (getValue != null && StringUtils.isNoneBlank(getValue.getValue())) {
             String router = new String(Base64.decodeBase64(getValue.getValue()));
-            routerMessages.addAll(Arrays.asList(StringUtils.split(router, "\n")));
-        }
-        if (!routerMessages.isEmpty()) {
             ConsulRouterResp response = ConsulRouterResp.newResponse()//
-                                                        .withValue(routerMessages)//
+                                                        .withValue(router)//
                                                         .withConsulIndex(orgResponse.getConsulIndex())//
                                                         .withConsulLastContact(orgResponse.getConsulLastContact())//
                                                         .withConsulKnowLeader(orgResponse.isConsulKnownLeader())//

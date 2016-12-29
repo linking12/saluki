@@ -7,18 +7,16 @@
  */
 package com.quancheng.saluki.registry.consul.model;
 
-import java.util.List;
-
 /**
  * @author shimingliu 2016年12月29日 下午4:10:13
  * @version ConsulRouterResp.java, v 0.0.1 2016年12月29日 下午4:10:13 shimingliu
  */
 public final class ConsulRouterResp {
 
-    private final List<String> salukiConsulRouter;
-    private final Long         consulIndex;
-    private final Boolean      consulKnownLeader;
-    private final Long         consulLastContact;
+    private final String  salukiConsulRouter;
+    private final Long    consulIndex;
+    private final Boolean consulKnownLeader;
+    private final Long    consulLastContact;
 
     private ConsulRouterResp(Builder builder){
         this.salukiConsulRouter = builder.salukiConsulRouter;
@@ -27,7 +25,7 @@ public final class ConsulRouterResp {
         this.consulLastContact = builder.consulLastContact;
     }
 
-    public List<String> getSalukiConsulRouter() {
+    public String getSalukiConsulRouter() {
         return salukiConsulRouter;
     }
 
@@ -49,12 +47,12 @@ public final class ConsulRouterResp {
 
     public static class Builder extends AbstractBuilder {
 
-        private List<String> salukiConsulRouter;
-        private Long         consulIndex;
-        private Boolean      consulKnownLeader;
-        private Long         consulLastContact;
+        private String  salukiConsulRouter;
+        private Long    consulIndex;
+        private Boolean consulKnownLeader;
+        private Long    consulLastContact;
 
-        public Builder withValue(List<String> routerMessage) {
+        public Builder withValue(String routerMessage) {
             this.salukiConsulRouter = routerMessage;
             return this;
         }

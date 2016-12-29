@@ -24,7 +24,7 @@ public interface NotifyListener {
 
     public interface NotifyRouterListener {
 
-        void notify(List<String> routerCondition);
+        void notify(String group, String routerCondition);
     }
 
 }

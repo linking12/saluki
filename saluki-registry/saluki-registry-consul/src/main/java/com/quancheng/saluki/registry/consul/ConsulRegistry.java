@@ -65,7 +65,6 @@ public class ConsulRegistry extends FailbackRegistry {
         int port = url.getPort();
         client = new ConsulClient(host, port);
         this.serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        this.routerCache = CacheBuilder.newBuilder().maximumSize(1000).build();
         this.lookUpExecutor = Executors.newFixedThreadPool(10, new NamedThreadFactory("ConsulLookUpService", true));
     }
 
@@ -263,7 +262,6 @@ public class ConsulRegistry extends FailbackRegistry {
     /**
      * Router信息
      */
-    private final Cache<String, List<String>>                           routerCache;
     private final Map<String, Long>                                     lookupGroupRouters    = Maps.newConcurrentMap();
     private final Map<String, Set<NotifyListener.NotifyRouterListener>> notifyRouterListeners = Maps.newConcurrentMap();
     private final Set<String>                                           routerGroupLookUped   = Sets.newConcurrentHashSet();
@@ -302,27 +300,14 @@ public class ConsulRegistry extends FailbackRegistry {
             this.group = group;
         }
 
-        private boolean haveChanged(List<String> newRouters, List<String> oldRouters) {
-            if (newRouters == null | newRouters.isEmpty()) {
-                return false;
-            } else if (oldRouters != null && oldRouters.containsAll(newRouters)) {
-                return false;
-            }
-            return true;
-        }
-
-        private List<String> lookupRouterUpdate(String group) {
+        private String lookupRouterUpdate(String group) {
             Long lastConsulIndexId = lookupGroupRouters.get(group) == null ? 0L : lookupGroupRouters.get(group);
             String serviceName = GrpcURLUtils.toServiceName(group);
             ConsulRouterResp consulResp = client.lookupRouterMessage(serviceName, lastConsulIndexId);
             if (consulResp != null) {
-                List<String> routerMessages = consulResp.getSalukiConsulRouter();
-                boolean updated = routerMessages != null && !routerMessages.isEmpty()
-                                  && consulResp.getConsulIndex() > lastConsulIndexId;
-                if (updated) {
-                    lookupGroupRouters.put(group, consulResp.getConsulIndex());
-                    return routerMessages;
-                }
+                String routerMessages = consulResp.getSalukiConsulRouter();
+                lookupGroupRouters.put(group, consulResp.getConsulIndex());
+                return routerMessages;
             }
             return null;
         }
@@ -331,26 +316,17 @@ public class ConsulRegistry extends FailbackRegistry {
         public void run() {
             while (true) {
                 try {
-                    List<String> groupRouterMessages = lookupRouterUpdate(group);
-                    if (groupRouterMessages != null && !groupRouterMessages.isEmpty()) {
-                        List<String> groupCacheRouters = routerCache.getIfPresent(group);
-                        if (groupCacheRouters == null) {
-                            routerCache.put(group, groupRouterMessages);
-                        }
-                        if (haveChanged(groupRouterMessages, groupCacheRouters)) {
-                            Set<NotifyListener.NotifyRouterListener> listeners = notifyRouterListeners.get(group);
-                            if (listeners != null) {
-                                for (NotifyListener.NotifyRouterListener listener : listeners) {
-                                    notifyExecutor.submit(new Runnable() {
+                    String groupRouterMessages = lookupRouterUpdate(group);
+                    Set<NotifyListener.NotifyRouterListener> listeners = notifyRouterListeners.get(group);
+                    if (listeners != null) {
+                        for (NotifyListener.NotifyRouterListener listener : listeners) {
+                            notifyExecutor.submit(new Runnable() {
 
-                                        @Override
-                                        public void run() {
-                                            listener.notify(groupRouterMessages);
-                                        }
-                                    });
+                                @Override
+                                public void run() {
+                                    listener.notify(group, groupRouterMessages);
                                 }
-                                routerCache.put(group, groupRouterMessages);
-                            }
+                            });
                         }
                     }
                     sleep(ConsulConstants.DEFAULT_LOOKUP_INTERVAL);
