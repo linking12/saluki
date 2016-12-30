@@ -49,6 +49,8 @@ public class ConsulRegistryRepository {
 
             @Override
             public void run() {
+                servicesPassing.clear();
+                servicesFailing.clear();
                 loadAllServiceFromConsul();
             }
         }, 0, 1, TimeUnit.MINUTES);
