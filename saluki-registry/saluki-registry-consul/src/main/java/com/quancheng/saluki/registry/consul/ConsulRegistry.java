@@ -41,19 +41,19 @@ import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
  */
 public class ConsulRegistry extends FailbackRegistry {
 
-    private static final Logger                                     log = LoggerFactory.getLogger(ConsulRegistry.class);
+    private static final Logger                                   log = LoggerFactory.getLogger(ConsulRegistry.class);
 
-    private final ConsulClient                                      client;
+    private final ConsulClient                                    client;
 
     private final Cache<String, Map<String, List<GrpcURL>>>       serviceCache;
 
-    private final Map<String, Long>                                 lookupGroupServices;
+    private final Map<String, Long>                               lookupGroupServices;
 
-    private final ExecutorService                                   lookUpServiceExecutor;
+    private final ExecutorService                                 lookUpServiceExecutor;
 
     private final Map<String, Pair<GrpcURL, Set<NotifyListener>>> notifyListeners;
 
-    private final Set<String>                                       groupLoogUped;
+    private final Set<String>                                     groupLoogUped;
 
     public ConsulRegistry(GrpcURL url){
         super(url);
@@ -81,7 +81,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private ConsulEphemralNode buildEphemralNode(GrpcURL url, ThrallRoleType roleType) {
         return ConsulEphemralNode.newEphemralNode().withUrl(url)//
                                  .withEphemralType(roleType)//
-                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 600))//
+                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 10))//
                                  .build();
 
     }
