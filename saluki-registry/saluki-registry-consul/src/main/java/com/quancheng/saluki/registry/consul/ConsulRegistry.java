@@ -81,7 +81,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private ConsulEphemralNode buildEphemralNode(GrpcURL url, ThrallRoleType roleType) {
         return ConsulEphemralNode.newEphemralNode().withUrl(url)//
                                  .withEphemralType(roleType)//
-                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 10))//
+                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 60))//
                                  .build();
 
     }
