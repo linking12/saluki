@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -22,12 +23,14 @@ import com.ecwid.consul.v1.agent.model.Check;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.domain.GrpcHost;
-import com.quancheng.saluki.core.common.GrpcURL;
 
 @Repository
 public class ConsulRegistryRepository {
+
+    private static final Logger                                   log             = Logger.getLogger(ConsulRegistryRepository.class);
 
     @Value("${saluki.monitor.consulhost}")
     private String                                                agentHost;
@@ -49,9 +52,14 @@ public class ConsulRegistryRepository {
 
             @Override
             public void run() {
-                servicesPassing.clear();
-                servicesFailing.clear();
-                loadAllServiceFromConsul();
+                try {
+                    log.info("begin to load from registry");
+                    servicesPassing.clear();
+                    servicesFailing.clear();
+                    loadAllServiceFromConsul();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }, 0, 1, TimeUnit.MINUTES);
     }
