@@ -57,7 +57,7 @@ public class ConsulRegistryRepository {
                     servicesPassing.clear();
                     servicesFailing.clear();
                     loadAllServiceFromConsul();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     log.error(e.getMessage(), e);
                 }
             }
