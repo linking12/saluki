@@ -48,7 +48,7 @@ public class ConsulRegistryRepository {
     @PostConstruct
     public void init() {
         consulClient = new ConsulClient(agentHost);
-        executor.scheduleWithFixedDelay(new Runnable() {
+        executor.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
