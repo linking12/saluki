@@ -187,10 +187,6 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         public final synchronized void start(Listener listener) {
             Preconditions.checkState(this.listener == null, "already started");
             this.listener = listener;
-            resolve();
-        }
-
-        private void resolve() {
             if (shutdown) {
                 return;
             }
