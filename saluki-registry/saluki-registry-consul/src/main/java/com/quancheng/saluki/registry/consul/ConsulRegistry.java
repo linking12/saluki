@@ -10,6 +10,8 @@ package com.quancheng.saluki.registry.consul;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,8 +27,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.support.FailbackRegistry;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
@@ -142,7 +144,20 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public List<GrpcURL> discover(GrpcURL url) {
         String group = url.getGroup();
-        return lookupServiceUpdate(group).get(url.getServiceKey());
+        try {
+            Map<String, List<GrpcURL>> providerUrls = serviceCache.get(group,
+                                                                       new Callable<Map<String, List<GrpcURL>>>() {
+
+                                                                           @Override
+                                                                           public Map<String, List<GrpcURL>> call() throws Exception {
+                                                                               return lookupServiceUpdate(group);
+                                                                           }
+                                                                       });
+            return providerUrls.get(url.getServiceKey());
+        } catch (ExecutionException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {
