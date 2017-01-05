@@ -12,8 +12,8 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
-import com.quancheng.saluki.core.registry.Registry;
 
 import io.grpc.ResolvedServerInfo;
 
@@ -23,22 +23,24 @@ import io.grpc.ResolvedServerInfo;
  */
 public final class GrpcRouterFactory {
 
-    private static final GrpcRouterFactory instance       = new GrpcRouterFactory();
+    private static final GrpcRouterFactory            instance       = new GrpcRouterFactory();
 
-    private final Map<String, String>      routerMessages = Maps.newConcurrentMap();
+    private final Map<String, String>                 routerMessages = Maps.newConcurrentMap();
 
-    private final NotifyRouterListener     routerListener = new NotifyRouterListener() {
+    private final NotifyListener.NotifyRouterListener routerListener = new NotifyRouterListener() {
 
-                                                              @Override
-                                                              public void notify(String group, String routerCondition) {
-                                                                  if (routerCondition == null) {
-                                                                      routerMessages.remove(group);
-                                                                  } else {
-                                                                      routerMessages.put(group, routerCondition);
-                                                                  }
-                                                              }
+                                                                         @Override
+                                                                         public void notify(String group,
+                                                                                            String routerCondition) {
+                                                                             if (routerCondition == null) {
+                                                                                 routerMessages.remove(group);
+                                                                             } else {
+                                                                                 routerMessages.put(group,
+                                                                                                    routerCondition);
+                                                                             }
+                                                                         }
 
-                                                          };
+                                                                     };
 
     private GrpcRouterFactory(){
     }
@@ -47,21 +49,19 @@ public final class GrpcRouterFactory {
         return instance;
     }
 
-    public void subscribeRouter(Registry registry, GrpcURL subscribeUrl) {
-        if (!routerMessages.containsKey(subscribeUrl.getGroup())) {
-            registry.subscribe(subscribeUrl.getGroup(), routerListener);
-        }
+    public NotifyListener.NotifyRouterListener getNotifyRouterListener() {
+        return this.routerListener;
     }
 
-    public GrpcRouter createRouter(GrpcURL subscribeUrl) {
-        String group = subscribeUrl.getGroup();
+    public GrpcRouter createRouter(GrpcURL refUrl) {
+        String group = refUrl.getGroup();
         String routerMessage = routerMessages.get(group);
         if (routerMessage.startsWith("condition://")) {
             routerMessage = routerMessage.replaceAll("condition://", "");
-            return new ConditionRouter(subscribeUrl, routerMessage);
+            return new ConditionRouter(refUrl, routerMessage);
         } else {
             routerMessage = routerMessage.replaceAll("script://", "");
-            return new ScriptRouter(subscribeUrl, routerMessage);
+            return new ScriptRouter(refUrl, routerMessage);
         }
     }
 
