@@ -7,7 +7,6 @@
  */
 package com.quancheng.saluki.registry.consul.internal;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
