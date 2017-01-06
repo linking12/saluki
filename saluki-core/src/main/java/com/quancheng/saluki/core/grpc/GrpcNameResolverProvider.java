@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -23,11 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
-import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
+import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 import com.quancheng.saluki.core.utils.NetUtils;
@@ -46,9 +48,11 @@ import io.grpc.Status;
 @Internal
 public class GrpcNameResolverProvider extends NameResolverProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(NameResolverProvider.class);
+    private static final Logger                log                 = LoggerFactory.getLogger(NameResolverProvider.class);
 
-    private final GrpcURL       subscribeUrl;
+    public static final Attributes.Key<String> GRPC_ROUTER_MESSAGE = Attributes.Key.of("grpc-router");
+
+    private final GrpcURL                      subscribeUrl;
 
     public GrpcNameResolverProvider(GrpcURL refUrl){
         this.subscribeUrl = refUrl;
@@ -89,6 +93,8 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         @GuardedBy("this")
         private volatile List<SocketAddress>               addresses;
 
+        private final Map<String, String>                  routerMessages = Maps.newConcurrentMap();
+
         private final NotifyListener.NotifyServiceListener notifyListener = new NotifyListener.NotifyServiceListener() {
 
                                                                               @Override
@@ -101,11 +107,26 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                                                                               }
 
                                                                           };
+        private final NotifyListener.NotifyRouterListener  routerListener = new NotifyRouterListener() {
+
+                                                                              @Override
+                                                                              public void notify(String group,
+                                                                                                 String routerCondition) {
+                                                                                  if (routerCondition == null) {
+                                                                                      routerMessages.remove(group);
+                                                                                  } else {
+                                                                                      routerMessages.put(group,
+                                                                                                         routerCondition);
+                                                                                  }
+                                                                              }
+
+                                                                          };
 
         public GrpcNameResolver(URI targetUri, Attributes params, GrpcURL subscribeUrl){
             GrpcURL registryUrl = GrpcURL.valueOf(targetUri.toString());
             this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
             this.subscribeUrl = subscribeUrl;
+            registry.subscribe(subscribeUrl.getGroup(), routerListener);
         }
 
         @Override
@@ -132,7 +153,6 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 return;
             }
             registry.subscribe(subscribeUrl, notifyListener);
-            registry.subscribe(subscribeUrl.getGroup(), GrpcRouterFactory.getInstance().getNotifyRouterListener());
         }
 
         @Override
@@ -153,28 +173,38 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                     String host = url.getHost();
                     int port = url.getPort();
                     if (NetUtils.isIP(host)) {
-                        SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
-                        addSocketAddress(servers, addresses, sock);
+                        IpResolved(servers, addresses, host, port);
                     } else {
-                        try {
-                            InetAddress[] inetAddrs = InetAddress.getAllByName(host);
-                            for (int j = 0; j < inetAddrs.length; j++) {
-                                InetAddress inetAddr = inetAddrs[j];
-                                SocketAddress sock = new InetSocketAddress(inetAddr, port);
-                                addSocketAddress(servers, addresses, sock);
-                            }
-                        } catch (UnknownHostException e) {
-                            GrpcNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
-                        }
+                        DnsResolved(servers, addresses, host, port);
                     }
                 }
                 this.addresses = addresses;
-                Attributes config = this.buildNameResolverConfig();
+                Attributes config = this.buildAttributes();
                 GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
                 GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                         + subscribeUrl.toFullString()));
             }
+        }
+
+        private void DnsResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses, String host,
+                                 int port) {
+            try {
+                InetAddress[] inetAddrs = InetAddress.getAllByName(host);
+                for (int j = 0; j < inetAddrs.length; j++) {
+                    InetAddress inetAddr = inetAddrs[j];
+                    SocketAddress sock = new InetSocketAddress(inetAddr, port);
+                    addSocketAddress(servers, addresses, sock);
+                }
+            } catch (UnknownHostException e) {
+                GrpcNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
+            }
+        }
+
+        private void IpResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses, String host,
+                                int port) {
+            SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
+            addSocketAddress(servers, addresses, sock);
         }
 
         private void addSocketAddress(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
@@ -184,13 +214,17 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             addresses.add(sock);
         }
 
-        private Attributes buildNameResolverConfig() {
+        private Attributes buildAttributes() {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
                 builder.set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
                 builder.set(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, addresses);
+            }
+            String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
+            if (routeMessage != null) {
+                builder.set(GRPC_ROUTER_MESSAGE, routeMessage);
             }
             return builder.build();
         }

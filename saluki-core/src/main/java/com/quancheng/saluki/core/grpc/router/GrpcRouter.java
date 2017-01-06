@@ -39,5 +39,5 @@ public abstract class GrpcRouter {
 
     abstract void parseRouter();
 
-    abstract List<? extends List<ResolvedServerInfo>> router(List<ResolvedServerInfo> servers);
+    public abstract List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers);
 }

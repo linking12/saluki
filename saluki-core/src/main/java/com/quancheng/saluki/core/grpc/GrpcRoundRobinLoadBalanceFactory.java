@@ -15,8 +15,11 @@ import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Supplier;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.router.GrpcRouter;
+import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
@@ -55,21 +58,26 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private static final Status            SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
 
         private final Object                   lock            = new Object();
-        @GuardedBy("lock")
-        private RoundRobinServerListExtend<T>  addresses;
-        @GuardedBy("lock")
-        private InterimTransport<T>            interimTransport;
-        @GuardedBy("lock")
-        private Status                         nameResolutionError;
-        @GuardedBy("lock")
-        private boolean                        closed;
-        @GuardedBy("lock")
-        private volatile NameResolver.Listener nameResolverListener;
-        private volatile List<SocketAddress>   remoteAddressList;
-        @GuardedBy("lock")
-        private volatile Attributes            callOptions_Affinity;
 
         private final TransportManager<T>      tm;
+
+        @GuardedBy("lock")
+        private RoundRobinServerListExtend<T>  addresses;
+
+        @GuardedBy("lock")
+        private InterimTransport<T>            interimTransport;
+
+        @GuardedBy("lock")
+        private Status                         nameResolutionError;
+
+        @GuardedBy("lock")
+        private boolean                        closed;
+
+        private volatile NameResolver.Listener nameResolverListener;
+
+        private volatile List<SocketAddress>   remoteAddressList;
+
+        private volatile Attributes            callOptions_Affinity;
 
         private RoundRobinLoadBalancer(TransportManager<T> tm){
             this.tm = tm;
@@ -77,9 +85,6 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public T pickTransport(Attributes affinity) {
-
-            // TODO 添加路由逻辑
-
             this.callOptions_Affinity = affinity;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
@@ -141,12 +146,19 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     return;
                 }
                 RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                for (List<ResolvedServerInfo> servers : updatedServers) {
-                    if (servers.isEmpty()) {
-                        continue;
-                    }
-                    for (ResolvedServerInfo server : servers) {
-                        listBuilder.add(server.getAddress());
+                try {
+                    GrpcURL url = this.callOptions_Affinity.get(GrpcAsyncCall.GRPC_REF_URL);
+                    String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
+                    GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(url, routerMessage);
+                    updatedServers = grpcRouter.router(updatedServers);
+                } finally {
+                    for (List<ResolvedServerInfo> servers : updatedServers) {
+                        if (servers.isEmpty()) {
+                            continue;
+                        }
+                        for (ResolvedServerInfo server : servers) {
+                            listBuilder.add(server.getAddress());
+                        }
                     }
                 }
                 addresses = listBuilder.build();
