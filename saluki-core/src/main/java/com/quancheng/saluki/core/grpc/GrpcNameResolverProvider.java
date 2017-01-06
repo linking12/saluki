@@ -46,14 +46,12 @@ import io.grpc.Status;
 @Internal
 public class GrpcNameResolverProvider extends NameResolverProvider {
 
-    private static final Logger                  log                  = LoggerFactory.getLogger(NameResolverProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(NameResolverProvider.class);
 
-    private static final Attributes.Key<GrpcURL> DEFAULT_SUBCRIBE_URL = Attributes.Key.of("subscribe-url");
-
-    private final Attributes                     attributesParams;
+    private final GrpcURL       subscribeUrl;
 
     public GrpcNameResolverProvider(GrpcURL refUrl){
-        attributesParams = Attributes.newBuilder().set(DEFAULT_SUBCRIBE_URL, refUrl).build();
+        this.subscribeUrl = refUrl;
     }
 
     @Override
@@ -68,8 +66,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
 
     @Override
     public NameResolver newNameResolver(URI targetUri, Attributes params) {
-        Attributes allParams = Attributes.newBuilder().setAll(attributesParams).setAll(params).build();
-        return new GrpcNameResolver(targetUri, allParams);
+        return new GrpcNameResolver(targetUri, params, subscribeUrl);
     }
 
     @Override
@@ -79,23 +76,36 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
 
     private class GrpcNameResolver extends NameResolver {
 
-        private final Registry               registry;
+        private final Registry                             registry;
 
-        private final GrpcURL                subscribeUrl;
-
-        @GuardedBy("this")
-        private boolean                      shutdown;
+        private final GrpcURL                              subscribeUrl;
 
         @GuardedBy("this")
-        private Listener                     listener;
+        private boolean                                    shutdown;
 
         @GuardedBy("this")
-        private volatile List<SocketAddress> addresses;
+        private Listener                                   listener;
 
-        public GrpcNameResolver(URI targetUri, Attributes params){
+        @GuardedBy("this")
+        private volatile List<SocketAddress>               addresses;
+
+        private final NotifyListener.NotifyServiceListener notifyListener = new NotifyListener.NotifyServiceListener() {
+
+                                                                              @Override
+                                                                              public void notify(List<GrpcURL> urls) {
+                                                                                  if (log.isInfoEnabled()) {
+                                                                                      log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
+                                                                                               + Arrays.toString(urls.toArray()));
+                                                                                  }
+                                                                                  notifyLoadBalance(urls);
+                                                                              }
+
+                                                                          };
+
+        public GrpcNameResolver(URI targetUri, Attributes params, GrpcURL subscribeUrl){
             GrpcURL registryUrl = GrpcURL.valueOf(targetUri.toString());
             this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
-            this.subscribeUrl = params.get(DEFAULT_SUBCRIBE_URL);
+            this.subscribeUrl = subscribeUrl;
         }
 
         @Override
@@ -114,6 +124,26 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             notifyLoadBalance(urls);
         }
 
+        @Override
+        public final synchronized void start(Listener listener) {
+            Preconditions.checkState(this.listener == null, "already started");
+            this.listener = listener;
+            if (shutdown) {
+                return;
+            }
+            registry.subscribe(subscribeUrl, notifyListener);
+            registry.subscribe(subscribeUrl.getGroup(), GrpcRouterFactory.getInstance().getNotifyRouterListener());
+        }
+
+        @Override
+        public final synchronized void shutdown() {
+            if (shutdown) {
+                return;
+            }
+            shutdown = true;
+            registry.unsubscribe(subscribeUrl, notifyListener);
+        }
+
         private void notifyLoadBalance(List<GrpcURL> urls) {
             if (urls != null && !urls.isEmpty()) {
                 List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
@@ -127,7 +157,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                         addSocketAddress(servers, addresses, sock);
                     } else {
                         try {
-                            InetAddress[] inetAddrs = getAllByName(host);
+                            InetAddress[] inetAddrs = InetAddress.getAllByName(host);
                             for (int j = 0; j < inetAddrs.length; j++) {
                                 InetAddress inetAddr = inetAddrs[j];
                                 SocketAddress sock = new InetSocketAddress(inetAddr, port);
@@ -154,10 +184,6 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             addresses.add(sock);
         }
 
-        private InetAddress[] getAllByName(String host) throws UnknownHostException {
-            return InetAddress.getAllByName(host);
-        }
-
         private Attributes buildNameResolverConfig() {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
@@ -169,38 +195,6 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             return builder.build();
         }
 
-        private final NotifyListener.NotifyServiceListener notifyListener = new NotifyListener.NotifyServiceListener() {
-
-            @Override
-            public void notify(List<GrpcURL> urls) {
-                if (log.isInfoEnabled()) {
-                    log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
-                             + Arrays.toString(urls.toArray()));
-                }
-                notifyLoadBalance(urls);
-            }
-
-        };
-
-        @Override
-        public final synchronized void start(Listener listener) {
-            Preconditions.checkState(this.listener == null, "already started");
-            this.listener = listener;
-            if (shutdown) {
-                return;
-            }
-            registry.subscribe(subscribeUrl, notifyListener);
-            registry.subscribe(subscribeUrl.getGroup(), GrpcRouterFactory.getInstance().getNotifyRouterListener());
-        }
-
-        @Override
-        public final synchronized void shutdown() {
-            if (shutdown) {
-                return;
-            }
-            shutdown = true;
-            registry.unsubscribe(subscribeUrl, notifyListener);
-        }
     }
 
 }
