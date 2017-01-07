@@ -14,5 +14,6 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version:'1.4.0.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version:'1.4.0.RELEASE'   
     compile project(':saluki-core')
+    compile project(':saluki-service')
     compile project(':saluki-registry:saluki-registry-consul')
 }

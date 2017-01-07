@@ -30,14 +30,14 @@ import com.quancheng.saluki.monitor.service.MonitorDataService;
 @RequestMapping(value = "/api/monitor")
 public class MonitorController {
 
-    private Logger             log = Logger.getLogger(MonitorController.class);
+    private static final Logger log = Logger.getLogger(MonitorController.class);
 
     @Autowired
-    private MonitorDataService minitorDataService;
+    private MonitorDataService  minitorDataService;
 
-    private HttpClient         httpClient;
+    private HttpClient          httpClient;
 
-    private Gson               gson;
+    private Gson                gson;
 
     @PostConstruct
     public void init() {

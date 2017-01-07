@@ -101,7 +101,7 @@ public final class GrpcEngine {
                 try {
                     return channelPool.borrowObject(realRefUrltemp);
                 } catch (Exception e) {
-                    throw new java.lang.IllegalArgumentException("Channel pool is full");
+                    throw new java.lang.IllegalArgumentException("Grpc borrow Channel failed", e);
                 }
             }
 

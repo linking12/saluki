@@ -1,5 +1,6 @@
 rootProject.name = 'saluki'
 include ':saluki-core'
+include ':saluki-service'
 include ':saluki-serializer'
 include ':saluki-plugin:saluki-plugin-common'
 include ':saluki-plugin:saluki-gradle-plugin'
@@ -12,6 +13,7 @@ include ':saluki-example:saluki-example-client'
 include ':saluki-example:saluki-example-server'
 
 project(':saluki-core').projectDir = "$rootDir/saluki-core" as File
+project(':saluki-service').projectDir = "$rootDir/saluki-service" as File
 project(':saluki-serializer').projectDir = "$rootDir/saluki-serializer" as File
 project(':saluki-plugin:saluki-plugin-common').projectDir = "$rootDir/saluki-plugin/saluki-plugin-common" as File
 project(':saluki-plugin:saluki-gradle-plugin').projectDir = "$rootDir/saluki-plugin/saluki-gradle-plugin" as File

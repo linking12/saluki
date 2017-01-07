@@ -6,17 +6,14 @@
  * into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc.server.internal;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.protobuf.Message;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
@@ -27,31 +24,22 @@ import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
-
 import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
 import io.grpc.stub.StreamObserver;
-
 /**
  * @author shimingliu 2016年12月14日 下午10:14:18
  * @version ServerInvocation.java, v 0.0.1 2016年12月14日 下午10:14:18 shimingliu
  */
 public class ServerInvocation implements UnaryMethod<Message, Message> {
-
     private static final Logger                        log = LoggerFactory.getLogger(ServerInvocation.class);
-
     private final MonitorService                       salukiMonitor;
-
     private final Object                               serviceToInvoke;
-
     private final Method                               method;
-
     private final GrpcURL                              providerUrl;
-
     private final ConcurrentMap<String, AtomicInteger> concurrents;
-
     public ServerInvocation(Object serviceToInvoke, Method method, GrpcURL providerUrl,
                             ConcurrentMap<String, AtomicInteger> concurrents, MonitorService salukiMonitor){
         this.serviceToInvoke = serviceToInvoke;
@@ -60,7 +48,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         this.providerUrl = providerUrl;
         this.concurrents = concurrents;
     }
-
     @Override
     public void invoke(Message request, StreamObserver<Message> responseObserver) {
         Message reqProtoBufer = request;
@@ -80,9 +67,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             collect(reqProtoBufer, respProtoBufer, start, true);
             Throwable target = e.getCause();
-            if (log.isDebugEnabled()) {
-                log.debug(target.getMessage(), target);
-            }
+            log.error(target.getMessage(), target);
             RpcServiceException rpcBizError = new RpcServiceException(target);
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBizError.getMessage())//
                                                                     .withCause(rpcBizError).asRuntimeException();
@@ -94,9 +79,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                                                     .withCause(rpcFramworkError).asRuntimeException();
             responseObserver.onError(statusException);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) {
-                log.debug(e.getMessage(), e);
-            }
+            log.error(e.getMessage(), e);
             collect(reqProtoBufer, respProtoBufer, start, true);
             RpcServiceException rpcBizError = new RpcServiceException(e);
             StatusRuntimeException statusException = Status.INTERNAL.withDescription(e.getMessage())//
@@ -106,7 +89,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             getConcurrent().decrementAndGet();
         }
     }
-
     private void responseObserverSpecial(StreamObserver<Message> responseObserver) {
         try {
             Class<?> classType = responseObserver.getClass();
@@ -121,7 +103,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             throw rpcFramwork;
         }
     }
-
     // 信息采集
     private void collect(Message request, Message response, long start, boolean error) {
         try {
@@ -137,7 +118,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                 log.debug("Receiver %s request from %s,and return s% ", request.toString(), consumer,
                           response.toString());
             }
-
             String host = providerUrl.getHost();
             int rpcPort = providerUrl.getPort();
             int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);
@@ -159,9 +139,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
                       + t.getMessage(), t);
         }
-
     }
-
     private AtomicInteger getConcurrent() {
         String key = serviceToInvoke.getClass().getName() + "." + method.getName();
         AtomicInteger concurrent = concurrents.get(key);

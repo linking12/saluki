@@ -10,8 +10,8 @@ package com.quancheng.saluki.registry.consul;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.support.FailbackRegistry;
@@ -41,19 +40,17 @@ import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
  */
 public class ConsulRegistry extends FailbackRegistry {
 
-    private static final Logger                                     log = LoggerFactory.getLogger(ConsulRegistry.class);
+    private static final Logger                                   log = LoggerFactory.getLogger(ConsulRegistry.class);
 
-    private final ConsulClient                                      client;
+    private final ConsulClient                                    client;
 
     private final Cache<String, Map<String, List<GrpcURL>>>       serviceCache;
 
-    private final Map<String, Long>                                 lookupGroupServices;
-
-    private final ExecutorService                                   lookUpServiceExecutor;
+    private final Map<String, Long>                               lookupGroupServices;
 
     private final Map<String, Pair<GrpcURL, Set<NotifyListener>>> notifyListeners;
 
-    private final Set<String>                                       groupLoogUped;
+    private final Set<String>                                     groupLoogUped;
 
     public ConsulRegistry(GrpcURL url){
         super(url);
@@ -64,8 +61,6 @@ public class ConsulRegistry extends FailbackRegistry {
         serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
         lookupGroupServices = Maps.newConcurrentMap();
         groupLoogUped = Sets.newConcurrentHashSet();
-        this.lookUpServiceExecutor = Executors.newFixedThreadPool(1,
-                                                                  new NamedThreadFactory("ConsulLookUpService", true));
     }
 
     private ConsulService buildConsulHealthService(GrpcURL url) {
@@ -81,7 +76,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private ConsulEphemralNode buildEphemralNode(GrpcURL url, ThrallRoleType roleType) {
         return ConsulEphemralNode.newEphemralNode().withUrl(url)//
                                  .withEphemralType(roleType)//
-                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 600))//
+                                 .withCheckInterval(Integer.toString(ConsulConstants.TTL * 60))//
                                  .build();
 
     }
@@ -113,7 +108,9 @@ public class ConsulRegistry extends FailbackRegistry {
         notifyListeners.putIfAbsent(url.getServiceKey(), listenersPair);
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
-            lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
+            ServiceLookUper serviceLookUper = new ServiceLookUper(url.getGroup());
+            serviceLookUper.setDaemon(true);
+            serviceLookUper.start();
             ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.CONSUMER);
             client.registerEphemralNode(ephemralNode);
         } else {
@@ -142,7 +139,20 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public List<GrpcURL> discover(GrpcURL url) {
         String group = url.getGroup();
-        return lookupServiceUpdate(group).get(url.getServiceKey());
+        try {
+            Map<String, List<GrpcURL>> providerUrls = serviceCache.get(group,
+                                                                       new Callable<Map<String, List<GrpcURL>>>() {
+
+                                                                           @Override
+                                                                           public Map<String, List<GrpcURL>> call() throws Exception {
+                                                                               return lookupServiceUpdate(group);
+                                                                           }
+                                                                       });
+            return providerUrls.get(url.getServiceKey());
+        } catch (ExecutionException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {

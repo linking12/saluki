@@ -25,7 +25,9 @@ import org.springframework.core.type.StandardMethodMetadata;
 
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
+import com.quancheng.saluki.boot.service.EchoServiceImpl;
 import com.quancheng.saluki.core.config.RpcServiceConfig;
+import com.quancheng.saluki.service.EchoService;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:16
@@ -63,19 +65,30 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
         rpcSerivceConfig.setApplication(applicationName);
         this.addHostAndPort(rpcSerivceConfig);
         rpcSerivceConfig.setMonitorinterval(thrallProperties.getMonitorinterval());
-        for (Object instance : getTypedBeansWithAnnotation(SalukiService.class)) {
-            SalukiService serviceAnnotation = instance.getClass().getAnnotation(SalukiService.class);
-            String serviceName = serviceAnnotation.service();
-            if (StringUtils.isBlank(serviceName)) {
-                if (this.isGrpcServer(instance)) {
-                    throw new java.lang.IllegalArgumentException("you use grpc stub service,must set service name,service instance is"
-                                                                 + instance);
-                } else {
-                    serviceName = instance.getClass().getInterfaces()[0].getName();
+        Collection<Object> instances = getTypedBeansWithAnnotation(SalukiService.class);
+        if (instances.size() > 0) {
+            try {
+                for (Object instance : instances) {
+                    SalukiService serviceAnnotation = instance.getClass().getAnnotation(SalukiService.class);
+                    String serviceName = serviceAnnotation.service();
+                    if (StringUtils.isBlank(serviceName)) {
+                        if (this.isGrpcServer(instance)) {
+                            throw new java.lang.IllegalArgumentException("you use grpc stub service,must set service name,service instance is"
+                                                                         + instance);
+                        } else {
+                            serviceName = instance.getClass().getInterfaces()[0].getName();
+                        }
+                    }
+                    rpcSerivceConfig.addServiceDefinition(serviceName, getGroup(serviceAnnotation),
+                                                          getVersion(serviceAnnotation), instance);
                 }
+            } finally {
+                Object echoinstance = new EchoServiceImpl();
+                applicationContext.getBeanFactory().registerSingleton(EchoService.class.getSimpleName(), echoinstance);
+                String group = thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
+                String version = thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
+                rpcSerivceConfig.addServiceDefinition(EchoService.class.getName(), group, version, echoinstance);
             }
-            rpcSerivceConfig.addServiceDefinition(serviceName, getGroup(serviceAnnotation),
-                                                  getVersion(serviceAnnotation), instance);
         }
         this.rpcService = rpcSerivceConfig;
         rpcSerivceConfig.export();
