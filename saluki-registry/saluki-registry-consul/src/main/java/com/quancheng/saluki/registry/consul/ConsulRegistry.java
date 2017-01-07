@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -28,7 +26,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.support.FailbackRegistry;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
@@ -51,8 +48,6 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private final Map<String, Long>                               lookupGroupServices;
 
-    private final ExecutorService                                 lookUpServiceExecutor;
-
     private final Map<String, Pair<GrpcURL, Set<NotifyListener>>> notifyListeners;
 
     private final Set<String>                                     groupLoogUped;
@@ -66,8 +61,6 @@ public class ConsulRegistry extends FailbackRegistry {
         serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
         lookupGroupServices = Maps.newConcurrentMap();
         groupLoogUped = Sets.newConcurrentHashSet();
-        this.lookUpServiceExecutor = Executors.newFixedThreadPool(1,
-                                                                  new NamedThreadFactory("ConsulLookUpService", true));
     }
 
     private ConsulService buildConsulHealthService(GrpcURL url) {
@@ -115,7 +108,9 @@ public class ConsulRegistry extends FailbackRegistry {
         notifyListeners.putIfAbsent(url.getServiceKey(), listenersPair);
         if (!groupLoogUped.contains(url.getGroup())) {
             groupLoogUped.add(url.getGroup());
-            lookUpServiceExecutor.execute(new ServiceLookUper(url.getGroup()));
+            ServiceLookUper serviceLookUper = new ServiceLookUper(url.getGroup());
+            serviceLookUper.setDaemon(true);
+            serviceLookUper.start();
             ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.CONSUMER);
             client.registerEphemralNode(ephemralNode);
         } else {
