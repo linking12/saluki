@@ -7,6 +7,7 @@
  */
 package com.quancheng.saluki.core.grpc.router.internal;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -58,8 +59,37 @@ public class ConditionRouter extends GrpcRouter {
 
     @Override
     public boolean match(SocketAddress server) {
-        // TODO Auto-generated method stub
-        return false;
+        InetSocketAddress server_ = (InetSocketAddress) server;
+        GrpcURL providerUrl = super.getUrl().setAddress(server_.getHostString());
+        if (matchWhen(super.getUrl())) {
+            if (matchThen(super.getUrl(), providerUrl)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public boolean matchWhen(GrpcURL refUrl) {
+        return matchCondition(whenCondition, refUrl, null);
+    }
+
+    public boolean matchThen(GrpcURL providerUrl, GrpcURL param) {
+        return thenCondition != null && matchCondition(thenCondition, providerUrl, param);
+    }
+
+    private boolean matchCondition(Map<String, MatchPair> condition, GrpcURL url, GrpcURL param) {
+        Map<String, String> sample = url.toMap();
+        for (Map.Entry<String, String> entry : sample.entrySet()) {
+            String key = entry.getKey();
+            MatchPair pair = condition.get(key);
+            if (pair != null && !pair.isMatch(entry.getValue(), param)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // help method
