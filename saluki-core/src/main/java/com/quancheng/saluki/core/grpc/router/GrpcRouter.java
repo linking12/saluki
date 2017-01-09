@@ -7,11 +7,9 @@
  */
 package com.quancheng.saluki.core.grpc.router;
 
-import java.util.List;
-
 import com.quancheng.saluki.core.common.GrpcURL;
 
-import io.grpc.ResolvedServerInfo;
+import io.grpc.EquivalentAddressGroup;
 
 /**
  * @author shimingliu 2016年12月29日 下午7:52:14
@@ -39,5 +37,5 @@ public abstract class GrpcRouter {
 
     protected abstract void parseRouter();
 
-    public abstract List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers);
+    public abstract boolean match(EquivalentAddressGroup server);
 }

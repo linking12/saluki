@@ -9,10 +9,8 @@ package com.quancheng.saluki.core.grpc.router.internal;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -22,7 +20,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 
-import io.grpc.ResolvedServerInfo;
+import io.grpc.EquivalentAddressGroup;
 
 /**
  * @author shimingliu 2017年1月9日 下午2:22:04
@@ -49,8 +47,9 @@ public class ConditionRouter extends GrpcRouter {
     }
 
     @Override
-    public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-        return servers;
+    public boolean match(EquivalentAddressGroup server) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
     private static final class MatchPair {

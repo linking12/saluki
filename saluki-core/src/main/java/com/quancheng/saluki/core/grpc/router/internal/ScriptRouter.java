@@ -7,12 +7,10 @@
  */
 package com.quancheng.saluki.core.grpc.router.internal;
 
-import java.util.List;
-
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 
-import io.grpc.ResolvedServerInfo;
+import io.grpc.EquivalentAddressGroup;
 
 /**
  * @author shimingliu 2017年1月9日 下午2:24:56
@@ -31,9 +29,9 @@ public class ScriptRouter extends GrpcRouter {
     }
 
     @Override
-    public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
+    public boolean match(EquivalentAddressGroup server) {
         // TODO Auto-generated method stub
-        return null;
+        return false;
     }
 
 }
