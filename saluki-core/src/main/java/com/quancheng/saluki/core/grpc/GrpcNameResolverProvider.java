@@ -220,7 +220,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 builder.set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, addresses);
+                builder.set(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS, addresses);
             }
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {
