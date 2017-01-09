@@ -118,6 +118,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                 throw rpcService;
             }
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             RpcServiceException rpcService = new RpcServiceException(e);
             throw rpcService;
         } finally {

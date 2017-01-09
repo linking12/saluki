@@ -6,7 +6,6 @@
  * into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.registry.consul;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,20 +35,17 @@ import com.quancheng.saluki.registry.consul.model.ConsulRouterResp;
 import com.quancheng.saluki.registry.consul.model.ConsulService;
 import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
 import com.quancheng.saluki.registry.consul.model.ThrallRoleType;
-
 /**
  * @author shimingliu 2016年12月16日 上午10:24:02
  * @version ConsulRegistry.java, v 0.0.1 2016年12月16日 上午10:24:02 shimingliu
  */
 public class ConsulRegistry extends FailbackRegistry {
-
     private static final Logger                                                         log                    = LoggerFactory.getLogger(ConsulRegistry.class);
     private final ConsulClient                                                          client;
     private final Cache<String, Map<String, List<GrpcURL>>>                             serviceCache;
     private final Map<String, Long>                                                     lookupGroupServices    = Maps.newConcurrentMap();
     private final Map<String, Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>>> notifyServiceListeners = Maps.newConcurrentMap();
     private final Set<String>                                                           serviceGroupLookUped   = Sets.newConcurrentHashSet();
-
     public ConsulRegistry(GrpcURL url){
         super(url);
         String host = url.getHost();
@@ -57,7 +53,6 @@ public class ConsulRegistry extends FailbackRegistry {
         client = new ConsulClient(host, port);
         this.serviceCache = CacheBuilder.newBuilder().maximumSize(1000).build();
     }
-
     private ConsulService buildConsulHealthService(GrpcURL url) {
         return ConsulService.newSalukiService()//
                             .withAddress(url.getHost())//
@@ -67,14 +62,12 @@ public class ConsulRegistry extends FailbackRegistry {
                             .withId(url.getHost() + ":" + url.getPort() + "-" + url.getPath() + "-" + url.getVersion())//
                             .withCheckInterval(Integer.valueOf(ConsulConstants.TTL).toString()).build();
     }
-
     private ConsulEphemralNode buildEphemralNode(GrpcURL url, ThrallRoleType roleType) {
         return ConsulEphemralNode.newEphemralNode().withUrl(url)//
                                  .withEphemralType(roleType)//
                                  .withCheckInterval(Integer.toString(ConsulConstants.TTL * 600))//
                                  .build();
     }
-
     @Override
     protected void doRegister(GrpcURL url) {
         ConsulService service = this.buildConsulHealthService(url);
@@ -82,13 +75,11 @@ public class ConsulRegistry extends FailbackRegistry {
         ConsulEphemralNode ephemralNode = this.buildEphemralNode(url, ThrallRoleType.PROVIDER);
         client.registerEphemralNode(ephemralNode);
     }
-
     @Override
     protected void doUnregister(GrpcURL url) {
         ConsulService service = this.buildConsulHealthService(url);
         client.unregisterService(service.getId());
     }
-
     @Override
     protected synchronized void doSubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
         Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>> listenersPair = notifyServiceListeners.get(url.getServiceKey());
@@ -111,19 +102,16 @@ public class ConsulRegistry extends FailbackRegistry {
             notifyListener(url, listener);
         }
     }
-
     @Override
     protected void doUnsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
         notifyServiceListeners.remove(url.getServiceKey());
     }
-
     @Override
     public List<GrpcURL> discover(GrpcURL url) {
         String group = url.getGroup();
         try {
             Map<String, List<GrpcURL>> providerUrls = serviceCache.get(group,
                                                                        new Callable<Map<String, List<GrpcURL>>>() {
-
                                                                            @Override
                                                                            public Map<String, List<GrpcURL>> call() throws Exception {
                                                                                return lookupServiceUpdate(group);
@@ -135,7 +123,6 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         return null;
     }
-
     private void notifyListener(GrpcURL url, NotifyListener.NotifyServiceListener listener) {
         Map<String, List<GrpcURL>> groupCacheUrls = serviceCache.getIfPresent(url.getGroup());
         if (groupCacheUrls != null) {
@@ -148,7 +135,6 @@ public class ConsulRegistry extends FailbackRegistry {
             }
         }
     }
-
     private Map<String, List<GrpcURL>> lookupServiceUpdate(String group) {
         Long lastConsulIndexId = lookupGroupServices.get(group) == null ? 0L : lookupGroupServices.get(group);
         String serviceName = GrpcURLUtils.toServiceName(group);
@@ -175,7 +161,6 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         return null;
     }
-
     private GrpcURL buildURL(ConsulService service) {
         try {
             for (String tag : service.getTags()) {
@@ -190,15 +175,11 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         return null;
     }
-
     private class ServiceLookUper extends Thread {
-
         private final String group;
-
         public ServiceLookUper(String group){
             this.group = group;
         }
-
         private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
             if (newUrls == null | newUrls.isEmpty()) {
                 return false;
@@ -207,7 +188,6 @@ public class ConsulRegistry extends FailbackRegistry {
             }
             return true;
         }
-
         @Override
         public void run() {
             while (true) {
@@ -248,14 +228,12 @@ public class ConsulRegistry extends FailbackRegistry {
             }
         }
     }
-
     /**
      * Router信息
      */
     private final Map<String, Long>                                     lookupGroupRouters    = Maps.newConcurrentMap();
     private final Map<String, Set<NotifyListener.NotifyRouterListener>> notifyRouterListeners = Maps.newConcurrentMap();
     private final Set<String>                                           routerGroupLookUped   = Sets.newConcurrentHashSet();
-
     @Override
     public void subscribe(String group, NotifyRouterListener listener) {
         Set<NotifyListener.NotifyRouterListener> listeners = notifyRouterListeners.get(group);
@@ -273,24 +251,19 @@ public class ConsulRegistry extends FailbackRegistry {
             routerLookUper.start();
         }
     }
-
     @Override
     public void unsubscribe(String group, NotifyRouterListener listener) {
         notifyRouterListeners.get(group).remove(listener);
     }
-
     private class RouterLookUper extends Thread {
-
         private final String          group;
         private final ExecutorService notifyExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()
                                                                                     * 3,
                                                                                     new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener",
                                                                                                            true));
-
         public RouterLookUper(String group){
             this.group = group;
         }
-
         private String lookupRouterUpdate(String group) {
             Long lastConsulIndexId = lookupGroupRouters.get(group) == null ? 0L : lookupGroupRouters.get(group);
             String serviceName = GrpcURLUtils.toServiceName(group);
@@ -302,7 +275,6 @@ public class ConsulRegistry extends FailbackRegistry {
             }
             return null;
         }
-
         @Override
         public void run() {
             while (true) {
@@ -312,7 +284,6 @@ public class ConsulRegistry extends FailbackRegistry {
                     if (listeners != null) {
                         for (NotifyListener.NotifyRouterListener listener : listeners) {
                             notifyExecutor.submit(new Runnable() {
-
                                 @Override
                                 public void run() {
                                     listener.notify(group, groupRouterMessages);
