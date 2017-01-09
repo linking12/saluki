@@ -7,11 +7,9 @@
  */
 package com.quancheng.saluki.core.grpc.router;
 
-import java.util.List;
-
 import com.quancheng.saluki.core.common.GrpcURL;
-
-import io.grpc.ResolvedServerInfo;
+import com.quancheng.saluki.core.grpc.router.internal.ConditionRouter;
+import com.quancheng.saluki.core.grpc.router.internal.ScriptRouter;
 
 /**
  * @author shimingliu 2016年12月28日 下午8:33:41
@@ -37,41 +35,4 @@ public final class GrpcRouterFactory {
             return new ScriptRouter(refUrl, routerMessage);
         }
     }
-
-    private class ConditionRouter extends GrpcRouter {
-
-        public ConditionRouter(GrpcURL url, String routerMessage){
-            super(url, routerMessage);
-        }
-
-        @Override
-        void parseRouter() {
-
-        }
-
-        @Override
-        public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-            return servers;
-        }
-
-    }
-
-    private class ScriptRouter extends GrpcRouter {
-
-        public ScriptRouter(GrpcURL url, String routerMessage){
-            super(url, routerMessage);
-        }
-
-        @Override
-        void parseRouter() {
-
-        }
-
-        @Override
-        public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-            return servers;
-        }
-
-    }
-
 }

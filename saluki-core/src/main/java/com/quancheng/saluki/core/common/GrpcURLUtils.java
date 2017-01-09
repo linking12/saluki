@@ -40,6 +40,39 @@ public class GrpcURLUtils {
                && StringUtils.equals(subscribedVersion, providerVersion);
     }
 
+    public static boolean isMatchGlobPattern(String pattern, String value, GrpcURL param) {
+        if (param != null && pattern.startsWith("$")) {
+            pattern = param.getRawParameter(pattern.substring(1));
+        }
+        return isMatchGlobPattern(pattern, value);
+    }
+
+    public static boolean isMatchGlobPattern(String pattern, String value) {
+        if ("*".equals(pattern)) return true;
+        if ((pattern == null || pattern.length() == 0) && (value == null || value.length() == 0)) return true;
+        if ((pattern == null || pattern.length() == 0) || (value == null || value.length() == 0)) return false;
+
+        int i = pattern.lastIndexOf('*');
+        // 没有找到星号
+        if (i == -1) {
+            return value.equals(pattern);
+        }
+        // 星号在末尾
+        else if (i == pattern.length() - 1) {
+            return value.startsWith(pattern.substring(0, i));
+        }
+        // 星号的开头
+        else if (i == 0) {
+            return value.endsWith(pattern.substring(i + 1));
+        }
+        // 星号的字符串的中间
+        else {
+            String prefix = pattern.substring(0, i);
+            String suffix = pattern.substring(i + 1);
+            return value.startsWith(prefix) && value.endsWith(suffix);
+        }
+    }
+
     private GrpcURLUtils(){
 
     }

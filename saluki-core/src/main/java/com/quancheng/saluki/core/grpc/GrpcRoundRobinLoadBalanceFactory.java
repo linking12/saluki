@@ -14,14 +14,12 @@ import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
 
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
-import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
-import com.quancheng.saluki.core.grpc.router.GrpcRouter;
-import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
@@ -56,6 +54,8 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
     }
 
     private static class RoundRobinLoadBalancer<T> extends LoadBalancer<T> {
+
+        private static final Logger            log             = LoggerFactory.getLogger(RoundRobinLoadBalancer.class);
 
         private static final Status            SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
 
@@ -139,24 +139,16 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @Override
         public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
                                             Attributes config) {
-
-            nameResolverListener = config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
-            remoteAddressList = config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
-            final InterimTransport<T> savedInterimTransport;
-            final RoundRobinServerListExtend<T> addressesCopy;
-            synchronized (lock) {
-                if (closed) {
-                    return;
-                }
-                RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                try {
-                    GrpcURL url = this.callOptions_Affinity.get(GrpcAsyncCall.GRPC_REF_URL);
-                    String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-                    if (StringUtils.isNotEmpty(routerMessage)) {
-                        GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(url, routerMessage);
-                        updatedServers = grpcRouter.router(updatedServers);
+            try {
+                nameResolverListener = config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
+                remoteAddressList = config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
+                final InterimTransport<T> savedInterimTransport;
+                final RoundRobinServerListExtend<T> addressesCopy;
+                synchronized (lock) {
+                    if (closed) {
+                        return;
                     }
-                } finally {
+                    RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
                     for (List<ResolvedServerInfo> servers : updatedServers) {
                         if (servers.isEmpty()) {
                             continue;
@@ -165,24 +157,26 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                             listBuilder.add(server.getAddress());
                         }
                     }
+                    addresses = listBuilder.build();
+                    addressesCopy = addresses;
+                    nameResolutionError = null;
+                    savedInterimTransport = interimTransport;
+                    interimTransport = null;
                 }
-                addresses = listBuilder.build();
-                addressesCopy = addresses;
-                nameResolutionError = null;
-                savedInterimTransport = interimTransport;
-                interimTransport = null;
-            }
-            if (savedInterimTransport != null) {
-                savedInterimTransport.closeWithRealTransports(new Supplier<T>() {
+                if (savedInterimTransport != null) {
+                    savedInterimTransport.closeWithRealTransports(new Supplier<T>() {
 
-                    @Override
-                    public T get() {
-                        T t = addressesCopy.getTransportForNextServer();
-                        RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressesCopy);
-                        return t;
+                        @Override
+                        public T get() {
+                            T t = addressesCopy.getTransportForNextServer();
+                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressesCopy);
+                            return t;
 
-                    }
-                });
+                        }
+                    });
+                }
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
             }
 
         }
