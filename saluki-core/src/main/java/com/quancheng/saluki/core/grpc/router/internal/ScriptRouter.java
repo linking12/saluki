@@ -7,10 +7,10 @@
  */
 package com.quancheng.saluki.core.grpc.router.internal;
 
+import java.net.SocketAddress;
+
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
-
-import io.grpc.EquivalentAddressGroup;
 
 /**
  * @author shimingliu 2017年1月9日 下午2:24:56
@@ -29,7 +29,7 @@ public class ScriptRouter extends GrpcRouter {
     }
 
     @Override
-    public boolean match(EquivalentAddressGroup server) {
+    public boolean match(SocketAddress server) {
         // TODO Auto-generated method stub
         return false;
     }

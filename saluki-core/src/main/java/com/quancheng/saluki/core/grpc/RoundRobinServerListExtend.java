@@ -17,7 +17,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.Internal;
@@ -45,18 +44,6 @@ public final class RoundRobinServerListExtend<T> {
     }
 
     public T getTransportForNextServer() {
-        EquivalentAddressGroup currentServer;
-        synchronized (cyclingIter) {
-            currentServer = cyclingIter.next();
-        }
-        if (currentServer == null) {
-            return requestDroppingTransport;
-        }
-        this.currentServer = currentServer;
-        return tm.getTransport(currentServer);
-    }
-
-    public T getTransportForNextServer(GrpcRouter router) {
         EquivalentAddressGroup currentServer;
         synchronized (cyclingIter) {
             currentServer = cyclingIter.next();

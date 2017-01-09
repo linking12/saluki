@@ -7,9 +7,9 @@
  */
 package com.quancheng.saluki.core.grpc.router;
 
-import com.quancheng.saluki.core.common.GrpcURL;
+import java.net.SocketAddress;
 
-import io.grpc.EquivalentAddressGroup;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 /**
  * @author shimingliu 2016年12月29日 下午7:52:14
@@ -37,5 +37,5 @@ public abstract class GrpcRouter {
 
     protected abstract void parseRouter();
 
-    public abstract boolean match(EquivalentAddressGroup server);
+    public abstract boolean match(SocketAddress server);
 }

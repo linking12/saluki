@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -117,8 +118,17 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             T t = null;
             if (StringUtils.isNotEmpty(routerMessage)) {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
-                addressesCopy.getTransportForNextServer(grpcRouter);
-                return t;
+                List<SocketAddress> updatedServers = Lists.newArrayList();
+                for (SocketAddress server : addressesCopy.getServers()) {
+                    if (grpcRouter.match(server)) {
+                        updatedServers.add(server);
+                    }
+                }
+                RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                for (SocketAddress server : updatedServers) {
+                    listBuilder.add(server);
+                }
+                addressesCopy = listBuilder.build();
             }
             t = addressesCopy.getTransportForNextServer();
             return t;
