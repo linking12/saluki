@@ -14,6 +14,8 @@ import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.base.Supplier;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
@@ -137,6 +139,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @Override
         public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
                                             Attributes config) {
+
             nameResolverListener = config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
             remoteAddressList = config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
             final InterimTransport<T> savedInterimTransport;
@@ -149,8 +152,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 try {
                     GrpcURL url = this.callOptions_Affinity.get(GrpcAsyncCall.GRPC_REF_URL);
                     String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-                    GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(url, routerMessage);
-                    updatedServers = grpcRouter.router(updatedServers);
+                    if (StringUtils.isNotEmpty(routerMessage)) {
+                        GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(url, routerMessage);
+                        updatedServers = grpcRouter.router(updatedServers);
+                    }
                 } finally {
                     for (List<ResolvedServerInfo> servers : updatedServers) {
                         if (servers.isEmpty()) {
@@ -179,6 +184,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     }
                 });
             }
+
         }
 
         @Override

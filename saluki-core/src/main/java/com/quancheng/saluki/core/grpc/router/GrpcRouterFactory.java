@@ -51,7 +51,7 @@ public final class GrpcRouterFactory {
 
         @Override
         public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-            return null;
+            return servers;
         }
 
     }
@@ -69,7 +69,7 @@ public final class GrpcRouterFactory {
 
         @Override
         public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-            return null;
+            return servers;
         }
 
     }
