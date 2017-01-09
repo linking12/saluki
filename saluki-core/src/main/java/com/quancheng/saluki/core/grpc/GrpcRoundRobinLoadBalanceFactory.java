@@ -15,8 +15,11 @@ import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.base.Supplier;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.router.GrpcRouter;
+import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
@@ -52,23 +55,29 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
     private static class RoundRobinLoadBalancer<T> extends LoadBalancer<T> {
 
-        private static final Status           SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
+        private static final Status            SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
 
-        private final Object                  lock            = new Object();
-        @GuardedBy("lock")
-        private RoundRobinServerListExtend<T> addresses;
-        @GuardedBy("lock")
-        private InterimTransport<T>           interimTransport;
-        @GuardedBy("lock")
-        private Status                        nameResolutionError;
-        @GuardedBy("lock")
-        private boolean                       closed;
-        @GuardedBy("lock")
-        private volatile Attributes           nameResolver_Config;
-        @GuardedBy("lock")
-        private volatile Attributes           callOptions_Affinity;
+        private final Object                   lock            = new Object();
 
-        private final TransportManager<T>     tm;
+        private final TransportManager<T>      tm;
+
+        @GuardedBy("lock")
+        private RoundRobinServerListExtend<T>  addresses;
+
+        @GuardedBy("lock")
+        private InterimTransport<T>            interimTransport;
+
+        @GuardedBy("lock")
+        private Status                         nameResolutionError;
+
+        @GuardedBy("lock")
+        private boolean                        closed;
+
+        private volatile NameResolver.Listener nameResolverListener;
+
+        private volatile List<SocketAddress>   remoteAddressList;
+
+        private volatile Attributes            callOptions_Affinity;
 
         private RoundRobinLoadBalancer(TransportManager<T> tm){
             this.tm = tm;
@@ -101,11 +110,12 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
-            NameResolver.Listener listener = this.nameResolver_Config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
-            List<SocketAddress> registryaddresses = this.nameResolver_Config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
-            if (listener != null) {
-                data.put(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
+            if (nameResolverListener != null) {
+                data.put(GrpcAsyncCall.NAMERESOVER_LISTENER, nameResolverListener);
+            }
+            if (remoteAddressList != null) {
+                data.put(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, remoteAddressList);
             }
             if (currentAddress != null) {
                 data.put(GrpcAsyncCall.REMOTE_ADDR_KEY, currentAddress);
@@ -113,12 +123,6 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             if (addresses != null) {
                 data.put(GrpcAsyncCall.REMOTE_ADDR_KEYS, addresses);
             }
-            if (registryaddresses != null) {
-                data.put(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, registryaddresses);
-            }
-            /**
-             * 这里有点比较low，由于affinity是保护的，没法覆盖值，所以只能用反射来强制设置值 这里需要看看能否有优化之处
-             */
             try {
                 Class<?> classType = callOptions_Affinity.getClass();
                 Field field = classType.getDeclaredField("data");
@@ -133,7 +137,8 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @Override
         public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
                                             Attributes config) {
-            this.nameResolver_Config = config;
+            nameResolverListener = config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
+            remoteAddressList = config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
             final InterimTransport<T> savedInterimTransport;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
@@ -141,12 +146,19 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     return;
                 }
                 RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                for (List<ResolvedServerInfo> servers : updatedServers) {
-                    if (servers.isEmpty()) {
-                        continue;
-                    }
-                    for (ResolvedServerInfo server : servers) {
-                        listBuilder.add(server.getAddress());
+                try {
+                    GrpcURL url = this.callOptions_Affinity.get(GrpcAsyncCall.GRPC_REF_URL);
+                    String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
+                    GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(url, routerMessage);
+                    updatedServers = grpcRouter.router(updatedServers);
+                } finally {
+                    for (List<ResolvedServerInfo> servers : updatedServers) {
+                        if (servers.isEmpty()) {
+                            continue;
+                        }
+                        for (ResolvedServerInfo server : servers) {
+                            listBuilder.add(server.getAddress());
+                        }
                     }
                 }
                 addresses = listBuilder.build();

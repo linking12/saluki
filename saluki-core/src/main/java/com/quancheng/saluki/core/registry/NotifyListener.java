@@ -17,5 +17,14 @@ import com.quancheng.saluki.core.common.GrpcURL;
  */
 public interface NotifyListener {
 
-    void notify(List<GrpcURL> urls);
+    public interface NotifyServiceListener {
+
+        void notify(List<GrpcURL> urls);
+    }
+
+    public interface NotifyRouterListener {
+
+        void notify(String group, String routerCondition);
+    }
+
 }

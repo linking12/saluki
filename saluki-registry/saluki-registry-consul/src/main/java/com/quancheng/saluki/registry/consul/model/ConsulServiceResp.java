@@ -5,9 +5,9 @@ import java.util.List;
 public final class ConsulServiceResp {
 
     private final List<ConsulService> salukiConsulServices;
-    private final Long                      consulIndex;
-    private final Boolean                   consulKnownLeader;
-    private final Long                      consulLastContact;
+    private final Long                consulIndex;
+    private final Boolean             consulKnownLeader;
+    private final Long                consulLastContact;
 
     private ConsulServiceResp(Builder builder){
         this.salukiConsulServices = builder.salukiConsulServices;
@@ -39,9 +39,9 @@ public final class ConsulServiceResp {
     public static class Builder extends AbstractBuilder {
 
         private List<ConsulService> salukiConsulServices;
-        private Long                      consulIndex;
-        private Boolean                   consulKnownLeader;
-        private Long                      consulLastContact;
+        private Long                consulIndex;
+        private Boolean             consulKnownLeader;
+        private Long                consulLastContact;
 
         public Builder withValue(List<ConsulService> value) {
             this.salukiConsulServices = value;

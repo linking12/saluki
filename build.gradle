@@ -1,7 +1,7 @@
 allprojects  {
   apply plugin: 'maven'
   group = 'com.quancheng.saluki'
-  version = '1.5.1-SNAPSHOT'
+  version = '1.5.2-SNAPSHOT'
 }
 
 subprojects {

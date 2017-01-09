@@ -30,15 +30,26 @@ public interface Registry {
     /**
      * 订阅服务
      */
-    void subscribe(GrpcURL url, NotifyListener listener);
+    void subscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
+
+    /**
+     * 订阅服务路由信息
+     */
+    void subscribe(String group, NotifyListener.NotifyRouterListener listener);
 
     /**
      * 取消订阅
      */
-    void unsubscribe(GrpcURL url, NotifyListener listener);
+    void unsubscribe(GrpcURL url, NotifyListener.NotifyServiceListener listener);
+
+    /**
+     * 取消订阅路由信息
+     */
+    void unsubscribe(String group, NotifyListener.NotifyRouterListener listener);
 
     /**
      * 查询服务
      */
     List<GrpcURL> discover(GrpcURL url);
+
 }
