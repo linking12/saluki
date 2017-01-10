@@ -107,15 +107,15 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 }
                 addressesCopy = addresses;
             }
-            T t = getTransportForNextServer(addressesCopy);
-            this.doSaveRemoteInfo(addressesCopy);
+            RoundRobinServerListExtend<T> addressCopyReseted = routerAddress(addressesCopy);
+            T t = addressCopyReseted.getTransportForNextServer();
+            this.doSaveRemoteInfo(addressCopyReseted);
             return t;
         }
 
-        private T getTransportForNextServer(RoundRobinServerListExtend<T> addressesCopy) {
+        private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
             GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
             String routerMessage = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-            T t = null;
             if (StringUtils.isNotEmpty(routerMessage)) {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
                 List<SocketAddress> updatedServers = Lists.newArrayList();
@@ -128,10 +128,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 for (SocketAddress server : updatedServers) {
                     listBuilder.add(server);
                 }
-                addressesCopy = listBuilder.build();
+                return listBuilder.build();
             }
-            t = addressesCopy.getTransportForNextServer();
-            return t;
+            return addressesCopy;
         }
 
         private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
@@ -185,10 +184,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
                         @Override
                         public T get() {
-                            T t = getTransportForNextServer(addressesCopy);
-                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressesCopy);
+                            RoundRobinServerListExtend<T> addressCopyReseted = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
+                            T t = addressCopyReseted.getTransportForNextServer();
+                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressCopyReseted);
                             return t;
-
                         }
                     });
                 }

@@ -76,8 +76,8 @@ public class ConditionRouter extends GrpcRouter {
         return matchCondition(whenCondition, refUrl, null);
     }
 
-    public boolean matchThen(GrpcURL providerUrl, GrpcURL param) {
-        return thenCondition != null && matchCondition(thenCondition, providerUrl, param);
+    public boolean matchThen(GrpcURL refUrl, GrpcURL providerUrl) {
+        return thenCondition != null && matchCondition(thenCondition, refUrl, providerUrl);
     }
 
     private boolean matchCondition(Map<String, MatchPair> condition, GrpcURL url, GrpcURL param) {
