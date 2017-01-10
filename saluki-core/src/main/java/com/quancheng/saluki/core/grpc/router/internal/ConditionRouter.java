@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
@@ -35,9 +36,9 @@ public class ConditionRouter extends GrpcRouter {
 
     private static final Pattern   ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
 
-    private Map<String, MatchPair> whenCondition;
+    private Map<String, MatchPair> whenCondition = Maps.newHashMap();
 
-    private Map<String, MatchPair> thenCondition;
+    private Map<String, MatchPair> thenCondition = Maps.newHashMap();
 
     public ConditionRouter(GrpcURL url, String routerMessage){
         super(url, routerMessage);
