@@ -125,7 +125,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     }
                 }
                 if (updatedServers.isEmpty()) {
-                    throw new IllegalArgumentException("The router condition has stop all server address");
+                    throw new IllegalArgumentException("The router condition has stoped all server address");
                 } else {
                     RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
                     for (SocketAddress server : updatedServers) {
