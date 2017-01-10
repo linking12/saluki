@@ -122,7 +122,6 @@
 		where 
 		type='provider'
 		and service=#{service}
-		and provider like CONCAT('${provider}','%' )
 		group by application;
 	</select>
 	

@@ -30,7 +30,7 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
 
     private final Class<?>             interfaceClass;
 
-    private final GrpcURL            refUrl;
+    private final GrpcURL              refUrl;
 
     public DefaultProxyClient(String interfaceName, Map<String, Integer> methodRetries, GrpcURL refUrl){
         this.interfaceName = interfaceName;
@@ -84,11 +84,6 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
                                                                                     callType, callTimeout);
             request.setMethodRequest(methodRequest);
             return request;
-        }
-
-        @Override
-        protected GrpcURL getSourceRefUrl() {
-            return DefaultProxyClient.this.refUrl;
         }
 
     }

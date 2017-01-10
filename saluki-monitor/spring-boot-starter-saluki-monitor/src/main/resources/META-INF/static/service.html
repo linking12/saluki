@@ -72,7 +72,10 @@
   <script src="/service/dist/tether.min.js"></script> 
   <script>
         $(document).ready(function(){
-	        var options = {};
+	        var options = {
+              mode: 'form',
+              modes: ['code', 'form', 'text', 'tree', 'view'],
+            };
 	        $('#holder_response').hide();
 	        var container_request = document.getElementById("editor_holder_request");
 	        var editor_request = new JSONEditor(container_request, options);

@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.async.AbstractRetryingRpcListener;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
@@ -34,24 +35,26 @@ import io.grpc.Status;
  */
 public interface GrpcAsyncCall {
 
-    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY           = Attributes.Key.of("remote-addr");
+    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL               = Attributes.Key.of("grpc-refurl");
 
-    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS          = Attributes.Key.of("remote-addrs");
+    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY            = Attributes.Key.of("remote-addr");
 
-    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS_REGISTRY = Attributes.Key.of("remote-addrs-registry");
+    public static final Attributes.Key<List<SocketAddress>>   PICKED_REMOTE_ADDR_KEYS    = Attributes.Key.of("picked-remote-addrs");
 
-    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER      = Attributes.Key.of("nameResolver-Listener");
+    public static final Attributes.Key<List<SocketAddress>>   NOTPICKED_REMOTE_ADDR_KEYS = Attributes.Key.of("notpicked-remote-addrs");
+
+    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER       = Attributes.Key.of("nameResolver-Listener");
 
     public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public SocketAddress getRemoteAddress();
+    public Attributes getAffinity();
 
-    public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions) {
+    public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions,
+                                                    final Attributes atributes) {
+        CallOptions callOptions = CallOptions.DEFAULT.withAffinity(atributes);
         return new GrpcAsyncCall() {
-
-            private volatile CallOptions callOptions;
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
@@ -64,8 +67,8 @@ public interface GrpcAsyncCall {
             }
 
             @Override
-            public SocketAddress getRemoteAddress() {
-                return callOptions.getAffinity().get(REMOTE_ADDR_KEY);
+            public Attributes getAffinity() {
+                return callOptions.getAffinity();
             }
 
             /**
@@ -80,14 +83,7 @@ public interface GrpcAsyncCall {
 
             private <ReqT, RespT> RetryingUnaryRpcCallListener<ReqT, RespT> createUnaryListener(ReqT request,
                                                                                                 AsyncCallClientInternal<ReqT, RespT> rpc) {
-                CallOptions callOptions = getCallOptions(rpc.getMethodDescriptor(), request);
                 return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, new Metadata());
-            }
-
-            private <ReqT> CallOptions getCallOptions(final MethodDescriptor<ReqT, ?> methodDescriptor, ReqT request) {
-                CallOptions callOptions = AsyncCallInternal.createCallOptions(methodDescriptor, request);
-                this.callOptions = callOptions;
-                return callOptions;
             }
 
             private <ReqT, RespT, OutputT> ListenableFuture<OutputT> getCompletionFuture(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {

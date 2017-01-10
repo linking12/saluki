@@ -15,7 +15,7 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
 @RequestMapping("/stub")
 public class StubServiceController {
 
-    @SalukiReference(service = "com.quancheng.examples.service.HelloService", group = "monitor", version = "1.0.0")
+    @SalukiReference(service = "com.quancheng.examples.service.HelloService")
     private HelloServiceGrpc.HelloServiceFutureStub helloServiceStub;
 
     @RequestMapping("/hello")

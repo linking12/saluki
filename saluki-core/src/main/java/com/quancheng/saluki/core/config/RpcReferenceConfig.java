@@ -155,7 +155,7 @@ public class RpcReferenceConfig extends RpcBaseConfig {
                 this.addMonitorInterval(params);
                 this.addHttpPort(params);
                 GrpcURL refUrl = new GrpcURL(Constants.REMOTE_PROTOCOL, super.getHost(), super.getHttpPort(),
-                                                 serviceName, params);
+                                             serviceName, params);
                 ref = super.getGrpcEngine().getClient(refUrl);
             } catch (Exception e) {
                 throw new IllegalStateException("Create Grpc client failed!", e);
@@ -248,11 +248,13 @@ public class RpcReferenceConfig extends RpcBaseConfig {
     }
 
     private void addServiceClass(Map<String, String> params) {
-        String serviceClassName = getServiceName();
-        Class<?> serviceClass = getServiceClass();
-        if (serviceClass != null) {
-            serviceClassName = serviceClass.getName();
+        if (isGrpcStub()) {
+            String serviceClassName = getServiceName();
+            Class<?> serviceClass = getServiceClass();
+            if (serviceClass != null) {
+                serviceClassName = serviceClass.getName();
+            }
+            params.put(Constants.INTERFACECLASS_KEY, serviceClassName);
         }
-        params.put(Constants.INTERFACECLASS_KEY, serviceClassName);
     }
 }

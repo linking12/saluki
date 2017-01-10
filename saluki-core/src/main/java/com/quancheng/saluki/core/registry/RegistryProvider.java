@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.registry.support.RegistryFactory;
+import com.quancheng.saluki.core.registry.internal.RegistryFactory;
 
 import io.grpc.Internal;
 

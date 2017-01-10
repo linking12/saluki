@@ -23,7 +23,6 @@ public class ApplicationDependcyService {
         List<ApplicationDependcy> appDepencys = Lists.newArrayList();
         for (Map<String, String> consumer : allConsumers) {
             String appName = consumer.get("application");
-            String providerHost = consumer.get("provider");
             String service = consumer.get("service");
             String callCount = String.valueOf(consumer.get("callCount"));
             ApplicationDependcy hasAddedApp = null;
@@ -37,7 +36,6 @@ public class ApplicationDependcyService {
                 appDepencys.add(hasAddedApp);
             }
             Map<String, String> providerParam = Maps.newHashMap();
-            providerParam.put("provider", providerHost);
             providerParam.put("service", service);
             Map<String, String> providerAppMap = invokeMapper.queryProvider(providerParam);
             String parentAppName = null;

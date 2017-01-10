@@ -141,10 +141,5 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
         }
 
-        @Override
-        protected GrpcURL getSourceRefUrl() {
-            return GenericProxyClient.this.refUrl;
-        }
-
     }
 }
