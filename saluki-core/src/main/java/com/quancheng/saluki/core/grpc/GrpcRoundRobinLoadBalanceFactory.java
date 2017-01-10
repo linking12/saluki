@@ -124,11 +124,15 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                         updatedServers.add(server);
                     }
                 }
-                RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                for (SocketAddress server : updatedServers) {
-                    listBuilder.add(server);
+                if (updatedServers.isEmpty()) {
+                    throw new IllegalArgumentException("The router condition has stop all server address");
+                } else {
+                    RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                    for (SocketAddress server : updatedServers) {
+                        listBuilder.add(server);
+                    }
+                    return listBuilder.build();
                 }
-                return listBuilder.build();
             }
             return addressesCopy;
         }

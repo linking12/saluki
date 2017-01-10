@@ -59,8 +59,7 @@ public class ConditionRouter extends GrpcRouter {
 
     @Override
     public boolean match(SocketAddress server) {
-        InetSocketAddress server_ = (InetSocketAddress) server;
-        GrpcURL providerUrl = super.getUrl().setAddress(server_.getHostString());
+        GrpcURL providerUrl = super.getUrl().setAddress(((InetSocketAddress) server).getHostString());
         if (matchWhen(super.getUrl())) {
             if (matchThen(super.getUrl(), providerUrl)) {
                 return true;
@@ -72,11 +71,11 @@ public class ConditionRouter extends GrpcRouter {
         }
     }
 
-    public boolean matchWhen(GrpcURL refUrl) {
+    private boolean matchWhen(GrpcURL refUrl) {
         return matchCondition(whenCondition, refUrl, null);
     }
 
-    public boolean matchThen(GrpcURL refUrl, GrpcURL providerUrl) {
+    private boolean matchThen(GrpcURL refUrl, GrpcURL providerUrl) {
         return thenCondition != null && matchCondition(thenCondition, refUrl, providerUrl);
     }
 
