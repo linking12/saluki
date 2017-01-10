@@ -107,9 +107,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 }
                 addressesCopy = addresses;
             }
-            RoundRobinServerListExtend<T> addressCopyReseted = routerAddress(addressesCopy);
-            T t = addressCopyReseted.getTransportForNextServer();
-            this.doSaveRemoteInfo(addressCopyReseted);
+            RoundRobinServerListExtend<T> addressCopyRouted = routerAddress(addressesCopy);
+            T t = addressCopyRouted.getTransportForNextServer();
+            this.doSaveRemoteInfo(addressCopyRouted);
             return t;
         }
 
@@ -188,9 +188,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
                         @Override
                         public T get() {
-                            RoundRobinServerListExtend<T> addressCopyReseted = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
-                            T t = addressCopyReseted.getTransportForNextServer();
-                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressCopyReseted);
+                            RoundRobinServerListExtend<T> addressCopyRouted = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
+                            T t = addressCopyRouted.getTransportForNextServer();
+                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressCopyRouted);
                             return t;
                         }
                     });
