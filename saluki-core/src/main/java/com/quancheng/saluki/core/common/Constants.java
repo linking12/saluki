@@ -43,7 +43,7 @@ public class Constants {
     public static final String  ASYNC_KEY                     = "async";
     public static final int     RPCTYPE_ASYNC                 = 1;
     public static final int     RPCTYPE_BLOCKING              = 2;
-    public static final int     RPC_ASYNC_DEFAULT_TIMEOUT     = 5000;
+    public static final int     RPC_ASYNC_DEFAULT_TIMEOUT     = 500000;
 
     public static final String  REMOTE_ADDRESS                = "remoteaddress";
 

@@ -27,9 +27,8 @@ public class SalukiExampleClientApp implements CommandLineRunner {
         request.setName("liushiming");
         RpcContext.getContext().set("123", "helloworld");
         HelloReply reply = helloService.sayHello(request);
-        System.out.print(reply);
+        System.out.println(reply);
 
-        
     }
 
 }

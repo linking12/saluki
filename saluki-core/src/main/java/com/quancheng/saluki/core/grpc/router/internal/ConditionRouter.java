@@ -35,9 +35,9 @@ public class ConditionRouter extends GrpcRouter {
 
     private static final Pattern   ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
 
-    private Map<String, MatchPair> whenCondition = Maps.newHashMap();
+    private Map<String, MatchPair> whenCondition;
 
-    private Map<String, MatchPair> thenCondition = Maps.newHashMap();
+    private Map<String, MatchPair> thenCondition;
 
     public ConditionRouter(GrpcURL url, String routerMessage){
         super(url, routerMessage);
@@ -45,15 +45,20 @@ public class ConditionRouter extends GrpcRouter {
 
     @Override
     protected void parseRouter() {
-        String rule = super.getRule();
-        int i = rule.indexOf("=>");
-        String whenRule = i < 0 ? null : rule.substring(0, i).trim();
-        String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
-        try {
-            whenCondition = doParseRule(whenRule);
-            thenCondition = doParseRule(thenRule);
-        } catch (ParseException e) {
-            log.error(e.getMessage(), e);
+        whenCondition = Maps.newHashMap();
+        thenCondition = Maps.newHashMap();
+        String rulestr = super.getRule();
+        String[] rules = StringUtils.split(rulestr, "\n");
+        for (String rule : rules) {
+            int i = rule.trim().indexOf("=>");
+            String whenRule = i < 0 ? null : rule.substring(0, i).trim();
+            String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
+            try {
+                whenCondition.putAll(doParseRule(whenRule));
+                thenCondition.putAll(doParseRule(thenRule));
+            } catch (ParseException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
