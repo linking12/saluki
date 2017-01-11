@@ -17,18 +17,18 @@ import com.quancheng.saluki.core.common.GrpcURL;
  */
 public abstract class GrpcRouter {
 
-    private final String  routerMessage;
+    private final String  rule;
 
     private final GrpcURL url;
 
-    public GrpcRouter(GrpcURL url, String routerMessage){
-        this.routerMessage = routerMessage;
+    public GrpcRouter(GrpcURL url, String rule){
+        this.rule = rule;
         this.url = url;
         parseRouter();
     }
 
-    public String getRouterMessage() {
-        return routerMessage;
+    public String getRule() {
+        return rule;
     }
 
     public GrpcURL getUrl() {

@@ -45,7 +45,7 @@ public class ConditionRouter extends GrpcRouter {
 
     @Override
     protected void parseRouter() {
-        String rule = super.getRouterMessage();
+        String rule = super.getRule();
         int i = rule.indexOf("=>");
         String whenRule = i < 0 ? null : rule.substring(0, i).trim();
         String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
