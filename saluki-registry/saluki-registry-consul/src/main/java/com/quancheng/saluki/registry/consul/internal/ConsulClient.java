@@ -42,38 +42,38 @@ import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
  */
 public class ConsulClient {
 
-    private static final Logger                    log    = LoggerFactory.getLogger(ConsulClient.class);
+    private static final Logger                    log  = LoggerFactory.getLogger(ConsulClient.class);
 
-    private final Object                           lock   = new Object();
+    private final Object                           lock = new Object();
 
     private final com.ecwid.consul.v1.ConsulClient client;
 
     private final TtlScheduler                     ttlScheduler;
 
-    private final ScheduledExecutorService         scheduleRegistryZnode;
-
-    private final Set<ConsulEphemralNode>          znodes = Sets.newConcurrentHashSet();
+    // private final ScheduledExecutorService scheduleRegistryZnode;
+    //
+    // private final Set<ConsulEphemralNode> znodes = Sets.newConcurrentHashSet();
 
     public ConsulClient(String host, int port){
         client = new com.ecwid.consul.v1.ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(client);
-        scheduleRegistryZnode = Executors.newScheduledThreadPool(1,
-                                                                 new NamedThreadFactory("RegisterEphemralNode", true));
-        scheduleRegistryZnode.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                retryRegisterEphemralNode();
-            }
-        }, 0, 10, TimeUnit.MINUTES);
+        // scheduleRegistryZnode = Executors.newScheduledThreadPool(1,
+        // new NamedThreadFactory("RegisterEphemralNode", true));
+        // scheduleRegistryZnode.scheduleAtFixedRate(new Runnable() {
+        //
+        // @Override
+        // public void run() {
+        // retryRegisterEphemralNode();
+        // }
+        // }, 0, 1, TimeUnit.HOURS);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }
 
-    private void retryRegisterEphemralNode() {
-        for (ConsulEphemralNode znode : znodes) {
-            registerEphemralNode(znode);
-        }
-    }
+    // private void retryRegisterEphemralNode() {
+    // for (ConsulEphemralNode znode : znodes) {
+    // registerEphemralNode(znode);
+    // }
+    // }
 
     public void registerService(ConsulService service) {
         NewService newService = service.getNewService();
@@ -107,7 +107,7 @@ public class ConsulClient {
         PutParams kvPutParams = new PutParams();
         kvPutParams.setAcquireSession(sessionId);
         client.setKVValue(ephemralNode.getEphemralNodeKey(), ephemralNode.getEphemralNodeValue(), kvPutParams);
-        znodes.add(ephemralNode);
+        // znodes.add(ephemralNode);
     }
 
     public ConsulRouterResp lookupRouterMessage(String serviceName, long lastConsulIndex) {
