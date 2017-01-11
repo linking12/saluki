@@ -9,9 +9,7 @@ package com.quancheng.saluki.core.grpc.router.internal;
 
 import java.util.List;
 
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
+import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -50,17 +48,16 @@ public class ScriptRouter extends GrpcRouter {
     public boolean match(List<GrpcURL> providerUrls) {
         String rule = super.getRule();
         try {
-            Compilable compilable = (Compilable) engine;
-            Bindings bindings = engine.createBindings();
-            bindings.put("providerUrls", providerUrls);
-            CompiledScript function = compilable.compile(super.getRule());
-            Object obj = function.eval(bindings);
+            engine.eval(super.getRule());
+            Invocable invocable = (Invocable) engine;
+            GrpcURL refUrl = super.getUrl();
+            Object obj = invocable.invokeFunction("route", refUrl, providerUrls);
             if (obj instanceof Boolean) {
                 return (Boolean) obj;
             } else {
                 return true;
             }
-        } catch (ScriptException e) {
+        } catch (ScriptException | NoSuchMethodException e) {
             log.error("route error , rule has been ignored. rule: " + rule + ", url: " + providerUrls, e);
             return true;
         }

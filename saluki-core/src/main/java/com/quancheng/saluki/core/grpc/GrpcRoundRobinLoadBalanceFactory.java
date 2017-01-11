@@ -114,20 +114,29 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             return t;
         }
 
-        private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
-            GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
-            // String routerMessage =
-            // this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-            // String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
-            String  routerMessage = "javascript://function route(providerUrls) {"
+        /**
+         * <pre>
+         *  String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
+         * <pre>
+         *  String  routerMessage = "javascript://function route(refUrl,providerUrls) {"
                                    + "var result = false;"
-                                   + "for (i = 0; i < providerUrls.length(); i ++) {"
-                                   + "    if ('10.110.0.16'.equals(providerUrls[i].host)) {"
+                                   + "if(refUrl.host=='10.110.0.16'){"
+                                   + "   for (i = 0; i < providerUrls.length; i ++) {"
+                                   + "      if ('10.110.0.16' == providerUrls[i].host) {"
                                    + "        result = true;"
-                                   + "    }"
+                                   + "      }else{"
+                                   + "        allMatchThen = false;"
+                                   + "        break;"
+                                   + "      }"
+                                   + "   }"
                                    + "}"
                                    + "return result;"
                                 +"}" ;
+         * </pre>
+         */
+        private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
+            GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
+            String routerMessage = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
             if (StringUtils.isNotEmpty(routerMessage)) {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
                 List<SocketAddress> updatedServers = Lists.newArrayList();
