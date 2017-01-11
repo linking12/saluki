@@ -206,7 +206,8 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         } else if (this.isGenericClient(referenceClass)) {
             return StringUtils.EMPTY;
         }
-        throw new java.lang.IllegalArgumentException("reference group can not be null or empty");
+        throw new java.lang.IllegalArgumentException(String.format("reference group can not be null or empty,the servicName is %s",
+                                                                   serviceName));
 
     }
 

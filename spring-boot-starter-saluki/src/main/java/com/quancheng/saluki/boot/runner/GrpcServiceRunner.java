@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,12 +33,13 @@ import com.quancheng.saluki.service.EchoService;
  */
 public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
-    private static final Logger        log = LoggerFactory.getLogger(GrpcServiceRunner.class);
-
     private final GrpcProperties       thrallProperties;
 
     @Value("${spring.application.name}")
     private String                     applicationName;
+
+    @Value("${server.port}")
+    private int                        httpPort;
 
     @Autowired
     private AbstractApplicationContext applicationContext;
@@ -59,7 +58,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
     @Override
     public void run(String... arg0) throws Exception {
-        log.info("Starting GRPC Server ...");
+        System.out.println("Starting GRPC Server ...");
         RpcServiceConfig rpcSerivceConfig = new RpcServiceConfig();
         this.addRegistyAddress(rpcSerivceConfig);
         rpcSerivceConfig.setApplication(applicationName);
@@ -92,6 +91,9 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
         }
         this.rpcService = rpcSerivceConfig;
         rpcSerivceConfig.export();
+        System.out.println(String.format("GRPC server has started!You can do test by %s \n %s",
+                                         "http://localhost:" + httpPort + "/service.html",
+                                         "http://saluki.dev.quancheng-ec.com"));
     }
 
     private void addHostAndPort(RpcServiceConfig rpcSerivceConfig) {
