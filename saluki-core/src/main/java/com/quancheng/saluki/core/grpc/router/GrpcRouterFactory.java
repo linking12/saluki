@@ -27,12 +27,12 @@ public final class GrpcRouterFactory {
     }
 
     public GrpcRouter createRouter(GrpcURL refUrl, String routerMessage) {
-        if (routerMessage.startsWith("condition://")) {
-            routerMessage = routerMessage.replaceAll("condition://", "");
-            return new ConditionRouter(refUrl, routerMessage);
-        } else {
+        if (routerMessage.startsWith("script://")) {
             routerMessage = routerMessage.replaceAll("script://", "");
             return new ScriptRouter(refUrl, routerMessage);
+        } else {
+            routerMessage = routerMessage.replaceAll("condition://", "");
+            return new ConditionRouter(refUrl, routerMessage);
         }
     }
 }
