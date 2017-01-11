@@ -116,8 +116,18 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
             GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
-            //String routerMessage = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-            String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
+            // String routerMessage =
+            // this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
+            // String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
+            String  routerMessage = "javascript://function route(providerUrls) {"
+                                   + "var result = false;"
+                                   + "for (i = 0; i < providerUrls.length(); i ++) {"
+                                   + "    if ('10.110.0.16'.equals(providerUrls[i].host)) {"
+                                   + "        result = true;"
+                                   + "    }"
+                                   + "}"
+                                   + "return result;"
+                                +"}" ;
             if (StringUtils.isNotEmpty(routerMessage)) {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
                 List<SocketAddress> updatedServers = Lists.newArrayList();
