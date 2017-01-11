@@ -7,7 +7,7 @@
  */
 package com.quancheng.saluki.core.grpc.router;
 
-import java.net.SocketAddress;
+import java.util.List;
 
 import com.quancheng.saluki.core.common.GrpcURL;
 
@@ -37,5 +37,5 @@ public abstract class GrpcRouter {
 
     protected abstract void parseRouter();
 
-    public abstract boolean match(SocketAddress server);
+    public abstract boolean match(List<GrpcURL> providerUrl);
 }

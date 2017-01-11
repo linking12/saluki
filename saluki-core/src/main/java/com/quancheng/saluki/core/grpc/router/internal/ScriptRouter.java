@@ -7,7 +7,7 @@
  */
 package com.quancheng.saluki.core.grpc.router.internal;
 
-import java.net.SocketAddress;
+import java.util.List;
 
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
@@ -29,7 +29,7 @@ public class ScriptRouter extends GrpcRouter {
     }
 
     @Override
-    public boolean match(SocketAddress server) {
+    public boolean match(List<GrpcURL> providerUrl) {
         // TODO Auto-generated method stub
         return false;
     }

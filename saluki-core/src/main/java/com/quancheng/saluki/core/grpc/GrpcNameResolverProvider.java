@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -48,11 +48,13 @@ import io.grpc.Status;
 @Internal
 public class GrpcNameResolverProvider extends NameResolverProvider {
 
-    private static final Logger                log                 = LoggerFactory.getLogger(NameResolverProvider.class);
+    private static final Logger                                           log                          = LoggerFactory.getLogger(NameResolverProvider.class);
 
-    public static final Attributes.Key<String> GRPC_ROUTER_MESSAGE = Attributes.Key.of("grpc-router");
+    public static final Attributes.Key<String>                            GRPC_ROUTER_MESSAGE          = Attributes.Key.of("grpc-router");
 
-    private final GrpcURL                      subscribeUrl;
+    public static final Attributes.Key<Map<List<SocketAddress>, GrpcURL>> GRPC_ADDRESS_GRPCURL_MAPPING = Attributes.Key.of("grpc-address-mapping");
+
+    private final GrpcURL                                                 subscribeUrl;
 
     public GrpcNameResolverProvider(GrpcURL refUrl){
         this.subscribeUrl = refUrl;
@@ -166,20 +168,22 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<GrpcURL> urls) {
             if (urls != null && !urls.isEmpty()) {
-                List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
-                List<SocketAddress> addresses = new ArrayList<SocketAddress>(urls.size());
-                for (int i = 0; i < urls.size(); i++) {
-                    GrpcURL url = urls.get(i);
+                List<ResolvedServerInfo> servers = Lists.newArrayList();
+                List<SocketAddress> addresses = Lists.newArrayList();
+                Map<List<SocketAddress>, GrpcURL> addressUrlMapping = Maps.newHashMap();
+                for (GrpcURL url : urls) {
                     String host = url.getHost();
                     int port = url.getPort();
+                    List<SocketAddress> hostAddressMapping;
                     if (NetUtils.isIP(host)) {
-                        IpResolved(servers, addresses, host, port);
+                        hostAddressMapping = IpResolved(servers, addresses, host, port);
                     } else {
-                        DnsResolved(servers, addresses, host, port);
+                        hostAddressMapping = DnsResolved(servers, addresses, host, port);
                     }
+                    addressUrlMapping.put(hostAddressMapping, url);
                 }
                 this.addresses = addresses;
-                Attributes config = this.buildAttributes();
+                Attributes config = this.buildAttributes(addressUrlMapping);
                 GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
             } else {
                 GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
@@ -187,24 +191,31 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             }
         }
 
-        private void DnsResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses, String host,
-                                 int port) {
+        private List<SocketAddress> DnsResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+                                                String host, int port) {
+            List<SocketAddress> hostAddressMapping = Lists.newArrayList();
             try {
                 InetAddress[] inetAddrs = InetAddress.getAllByName(host);
                 for (int j = 0; j < inetAddrs.length; j++) {
                     InetAddress inetAddr = inetAddrs[j];
                     SocketAddress sock = new InetSocketAddress(inetAddr, port);
+                    hostAddressMapping.add(sock);
                     addSocketAddress(servers, addresses, sock);
                 }
+                return hostAddressMapping;
             } catch (UnknownHostException e) {
                 GrpcNameResolver.this.listener.onError(Status.UNAVAILABLE.withCause(e));
             }
+            return hostAddressMapping;
         }
 
-        private void IpResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses, String host,
-                                int port) {
+        private List<SocketAddress> IpResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+                                               String host, int port) {
+            List<SocketAddress> hostAddressMapping = Lists.newArrayList();
             SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
+            hostAddressMapping.add(sock);
             addSocketAddress(servers, addresses, sock);
+            return hostAddressMapping;
         }
 
         private void addSocketAddress(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
@@ -214,7 +225,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             addresses.add(sock);
         }
 
-        private Attributes buildAttributes() {
+        private Attributes buildAttributes(Map<List<SocketAddress>, GrpcURL> addressUrlMapping) {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
                 builder.set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
@@ -225,6 +236,9 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {
                 builder.set(GRPC_ROUTER_MESSAGE, routeMessage);
+            }
+            if (!addressUrlMapping.isEmpty()) {
+                builder.set(GRPC_ADDRESS_GRPCURL_MAPPING, addressUrlMapping);
             }
             return builder.build();
         }

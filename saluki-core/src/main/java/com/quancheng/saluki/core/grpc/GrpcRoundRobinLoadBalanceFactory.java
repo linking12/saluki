@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -120,7 +121,8 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
                 List<SocketAddress> updatedServers = Lists.newArrayList();
                 for (SocketAddress server : addressesCopy.getServers()) {
-                    if (grpcRouter.match(server)) {
+                    List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+                    if (grpcRouter.match(providerUrls)) {
                         updatedServers.add(server);
                     }
                 }
@@ -135,6 +137,20 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 }
             }
             return addressesCopy;
+        }
+
+        private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {
+            Map<List<SocketAddress>, GrpcURL> addressMapping = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ADDRESS_GRPCURL_MAPPING);
+            List<GrpcURL> providerUrls = Lists.newArrayList();
+            if (!addressMapping.isEmpty()) {
+                for (Map.Entry<List<SocketAddress>, GrpcURL> entry : addressMapping.entrySet()) {
+                    List<SocketAddress> allAddress = entry.getKey();
+                    if (allAddress.contains(address)) {
+                        providerUrls.add(entry.getValue());
+                    }
+                }
+            }
+            return providerUrls;
         }
 
         private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
