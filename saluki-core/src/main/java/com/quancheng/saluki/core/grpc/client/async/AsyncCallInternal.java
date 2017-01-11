@@ -2,7 +2,6 @@ package com.quancheng.saluki.core.grpc.client.async;
 
 import com.google.common.base.Predicate;
 
-import io.grpc.Attributes;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -11,10 +10,6 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
 public interface AsyncCallInternal {
-
-    public static <RequestT> CallOptions createCallOptions(MethodDescriptor<RequestT, ?> descriptor, RequestT request) {
-        return CallOptions.DEFAULT.withAffinity(Attributes.EMPTY);
-    }
 
     public static interface AsyncCallClientInternal<REQUEST, RESPONSE> {
 

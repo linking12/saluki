@@ -12,7 +12,6 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -22,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
@@ -36,7 +35,9 @@ import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
+import io.grpc.Attributes;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
@@ -48,18 +49,17 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private static final Logger                        log         = LoggerFactory.getLogger(AbstractClientInvocation.class);
 
-    private final MonitorService                       clientServerMonitor;
-
     private final Map<String, Integer>                 methodRetries;
 
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
+
+    private volatile ClientServerMonitor               clientServerMonitor;
+
+    private volatile GrpcURL                           refUrl;
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
-        this.clientServerMonitor = new ClientServerMonitor(getSourceRefUrl());
         this.methodRetries = methodRetries;
     }
-
-    protected abstract GrpcURL getSourceRefUrl();
 
     protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
 
@@ -69,6 +69,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             return AbstractClientInvocation.this.toString();
         }
         GrpcRequest request = buildGrpcRequest(method, args);
+        refUrl = request.getRefUrl();
         // 准备Grpc参数begin
         String serviceName = request.getServiceName();
         String methodName = request.getMethodRequest().getMethodName();
@@ -79,7 +80,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
         RetryOptions retryConfig = createRetryOption(methodName);
-        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, buildAttributes(refUrl));
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         SocketAddress remoteAddress = null;
@@ -101,11 +102,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
-            remoteAddress = grpcAsyncCall.getRemoteAddress();
-            if (log.isInfoEnabled()) {
-                log.info(String.format("Service %s request Method %s connect to Address %s", serviceName, methodName,
-                                       remoteAddress.toString()));
-            }
+            remoteAddress = grpcAsyncCall.getAffinity().get(GrpcAsyncCall.REMOTE_ADDR_KEY);
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
@@ -130,6 +127,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
+    private Attributes buildAttributes(GrpcURL url) {
+        return Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
+    }
+
     private RetryOptions createRetryOption(String methodName) {
         if (methodRetries.size() == 1 && methodRetries.containsKey("*")) {
             Integer retries = methodRetries.get("*");
@@ -147,6 +148,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {
+            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
+                                   remoteAddress.toString()));
             if (request == null || response == null) {
                 return;
             }
@@ -156,13 +159,16 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             String method = methodName; // 获取方法名
             InetSocketAddress remote = (InetSocketAddress) remoteAddress;
             String provider = remote.getHostName();// 服务端主机
-            String host = getSourceRefUrl().getHost();
-            Integer port = getSourceRefUrl().getPort();
+            String host = refUrl.getHost();
+            Integer port = refUrl.getPort();
+            if (clientServerMonitor == null) {
+                clientServerMonitor = new ClientServerMonitor(refUrl);
+            }
             clientServerMonitor.collect(new GrpcURL(Constants.MONITOR_PROTOCOL, host, port, //
                                                     service + "/" + method, //
                                                     MonitorService.TIMESTAMP, String.valueOf(start), //
                                                     MonitorService.APPLICATION,
-                                                    getSourceRefUrl().getParameter(Constants.APPLICATION_NAME), //
+                                                    refUrl.getParameter(Constants.APPLICATION_NAME), //
                                                     MonitorService.INTERFACE, service, //
                                                     MonitorService.METHOD, method, //
                                                     MonitorService.PROVIDER, provider, //
