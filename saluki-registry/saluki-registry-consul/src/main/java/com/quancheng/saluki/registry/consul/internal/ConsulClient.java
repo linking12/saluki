@@ -65,7 +65,7 @@ public class ConsulClient {
             public void run() {
                 retryRegisterEphemralNode();
             }
-        }, 0, 10, TimeUnit.MINUTES);
+        }, 0, ConsulConstants.TTL * 6, TimeUnit.SECONDS);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }
 

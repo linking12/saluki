@@ -59,8 +59,10 @@ public final class PrintMessageFile extends AbstractPrint {
         String packageName = sourePackageName.toLowerCase();
         List<String> fileData = Lists.newArrayList();
         fileData.add("package " + packageName + ";");
+        fileData.add(System.getProperty("line.separator"));
         fileData.add("import com.quancheng.saluki.serializer.ProtobufAttribute;");
         fileData.add("import com.quancheng.saluki.serializer.ProtobufEntity;");
+        fileData.add(System.getProperty("line.separator"));
         fileData.add("@ProtobufEntity(" + sourePackageName + "." + className + ".class)");
         fileData.add("public class " + className + "{");
         for (int i = 0; i < messageFields.size(); i++) {
@@ -72,14 +74,18 @@ public final class PrintMessageFile extends AbstractPrint {
                 }
             }
             String fieldName = messageField.getName();
-            fileData.add("@ProtobufAttribute");
-            fileData.add("private " + javaType + " " + fieldName + ";");
-            fileData.add("public " + javaType + " get" + captureName(fieldName) + "(){");
-            fileData.add("return this." + fieldName + ";");
+            fileData.add(System.getProperty("line.separator"));
+            fileData.add("    @ProtobufAttribute");
+            fileData.add("    private " + javaType + " " + fieldName + ";");
+            fileData.add(System.getProperty("line.separator"));
+            fileData.add("    public " + javaType + " get" + captureName(fieldName) + "(){");
+            fileData.add("        return this." + fieldName + ";");
             fileData.add("}");
-            fileData.add("public void set" + captureName(fieldName) + "(" + javaType + " " + fieldName + "){");
-            fileData.add("this." + fieldName + "=" + fieldName + ";");
+            fileData.add(System.getProperty("line.separator"));
+            fileData.add("    public void set" + captureName(fieldName) + "(" + javaType + " " + fieldName + "){");
+            fileData.add("        this." + fieldName + "=" + fieldName + ";");
             fileData.add("}");
+            fileData.add(System.getProperty("line.separator"));
         }
         fileData.add("}");
         return fileData;

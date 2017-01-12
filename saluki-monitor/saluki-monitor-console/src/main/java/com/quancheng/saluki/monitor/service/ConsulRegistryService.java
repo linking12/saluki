@@ -35,13 +35,9 @@ public class ConsulRegistryService {
      */
     public List<Application> getAllApplication() {
         Map<String, Application> appCache = Maps.newHashMap();
+        registryRepository.loadAllServiceFromConsul();
         Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesPassing = registryRepository.getAllPassingService();
         Map<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> servicesFailing = registryRepository.getAllFailingService();
-        if (servicesPassing.isEmpty()) {
-            registryRepository.loadAllServiceFromConsul();
-            servicesPassing = registryRepository.getAllPassingService();
-            servicesFailing = registryRepository.getAllFailingService();
-        }
         for (Map.Entry<String, Pair<Set<GrpcHost>, Set<GrpcHost>>> entry : servicesPassing.entrySet()) {
             processApplication(appCache, entry);
         }
