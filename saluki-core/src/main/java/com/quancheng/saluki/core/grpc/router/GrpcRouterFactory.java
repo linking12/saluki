@@ -9,7 +9,6 @@ package com.quancheng.saluki.core.grpc.router;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.internal.ConditionRouter;
 import com.quancheng.saluki.core.grpc.router.internal.ScriptRouter;
 
@@ -28,18 +27,18 @@ public final class GrpcRouterFactory {
         return instance;
     }
 
-    public GrpcRouter createRouter(GrpcURL refUrl, String routerMessage) {
+    public GrpcRouter createRouter(String routerMessage) {
         if (!routerMessage.startsWith("condition://")) {
             String[] router = StringUtils.split(routerMessage, "://");
             if (router.length == 2) {
                 String type = router[0];
                 String routerScript = router[1];
-                return new ScriptRouter(refUrl, type, routerScript);
+                return new ScriptRouter(type, routerScript);
             }
             throw new IllegalStateException(new IllegalStateException("No router type for script"));
         } else {
             routerMessage = routerMessage.replaceAll("condition://", "");
-            return new ConditionRouter(refUrl, routerMessage);
+            return new ConditionRouter(routerMessage);
         }
     }
 }

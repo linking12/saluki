@@ -17,13 +17,12 @@ import com.quancheng.saluki.core.common.GrpcURL;
  */
 public abstract class GrpcRouter {
 
-    private final String  rule;
+    private final String rule;
 
-    private final GrpcURL url;
+    private GrpcURL      refUrl;
 
-    public GrpcRouter(GrpcURL url, String rule){
+    public GrpcRouter(String rule){
         this.rule = rule;
-        this.url = url;
         parseRouter();
     }
 
@@ -31,8 +30,12 @@ public abstract class GrpcRouter {
         return rule;
     }
 
-    public GrpcURL getUrl() {
-        return url;
+    public GrpcURL getRefUrl() {
+        return refUrl;
+    }
+
+    public void setRefUrl(GrpcURL refUrl) {
+        this.refUrl = refUrl;
     }
 
     protected abstract void parseRouter();

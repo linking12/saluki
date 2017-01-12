@@ -39,8 +39,8 @@ public class ConditionRouter extends GrpcRouter {
 
     private Map<String, MatchPair> thenCondition;
 
-    public ConditionRouter(GrpcURL url, String routerMessage){
-        super(url, routerMessage);
+    public ConditionRouter(String routerMessage){
+        super(routerMessage);
     }
 
     @Override
@@ -64,10 +64,10 @@ public class ConditionRouter extends GrpcRouter {
 
     @Override
     public boolean match(List<GrpcURL> providerUrls) {
-        if (matchWhen(super.getUrl())) {
+        if (matchWhen(super.getRefUrl())) {
             boolean allMatchThen = false;
             for (GrpcURL providerUrl : providerUrls) {
-                if (matchThen(super.getUrl(), providerUrl)) {
+                if (matchThen(super.getRefUrl(), providerUrl)) {
                     allMatchThen = true;
                 } else {
                     allMatchThen = false;

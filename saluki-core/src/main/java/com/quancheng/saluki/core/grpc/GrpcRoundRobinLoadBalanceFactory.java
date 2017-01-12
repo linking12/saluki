@@ -81,6 +81,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         @GuardedBy("lock")
         private boolean                       closed;
 
+        @GuardedBy("lock")
+        private GrpcRouter                    grpcRouter;
+
         private volatile Attributes           nameNameResolver_attributes;
 
         private volatile Attributes           clientInvoke_attributes;
@@ -136,24 +139,25 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
          */
         private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
             GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
-            String routerMessage = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-            if (StringUtils.isNotEmpty(routerMessage)) {
-                GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(refUrl, routerMessage);
-                List<SocketAddress> updatedServers = Lists.newArrayList();
-                for (SocketAddress server : addressesCopy.getServers()) {
-                    List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-                    if (grpcRouter.match(providerUrls)) {
-                        updatedServers.add(server);
+            synchronized (lock) {
+                if (grpcRouter != null) {
+                    grpcRouter.setRefUrl(refUrl);
+                    List<SocketAddress> updatedServers = Lists.newArrayList();
+                    for (SocketAddress server : addressesCopy.getServers()) {
+                        List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+                        if (grpcRouter.match(providerUrls)) {
+                            updatedServers.add(server);
+                        }
                     }
-                }
-                if (updatedServers.isEmpty()) {
-                    throw new IllegalArgumentException("The router condition has stoped all server address");
-                } else {
-                    RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                    for (SocketAddress server : updatedServers) {
-                        listBuilder.add(server);
+                    if (updatedServers.isEmpty()) {
+                        throw new IllegalArgumentException("The router condition has stoped all server address");
+                    } else {
+                        RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                        for (SocketAddress server : updatedServers) {
+                            listBuilder.add(server);
+                        }
+                        return listBuilder.build();
                     }
-                    return listBuilder.build();
                 }
             }
             return addressesCopy;
@@ -218,6 +222,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     nameResolutionError = null;
                     savedInterimTransport = interimTransport;
                     interimTransport = null;
+                    createGrpcRouter(config);
                 }
                 if (savedInterimTransport != null) {
                     savedInterimTransport.closeWithRealTransports(new Supplier<T>() {
@@ -235,6 +240,15 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 log.error(e.getMessage(), e);
             }
 
+        }
+
+        private void createGrpcRouter(Attributes config) {
+            String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
+            if (StringUtils.isNotEmpty(routerMessage)) {
+                grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);
+            } else {
+                grpcRouter = null;
+            }
         }
 
         private RoundRobinServerListExtend<T> createRoundRobinServer(List<? extends List<ResolvedServerInfo>> updatedServers) {

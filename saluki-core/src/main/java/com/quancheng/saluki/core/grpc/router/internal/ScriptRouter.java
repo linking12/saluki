@@ -30,8 +30,8 @@ public class ScriptRouter extends GrpcRouter {
 
     private final ScriptEngine  engine;
 
-    public ScriptRouter(GrpcURL url, String type, String rule){
-        super(url, rule);
+    public ScriptRouter(String type, String rule){
+        super(rule);
         engine = new ScriptEngineManager().getEngineByName(type);
         if (engine == null) {
             throw new IllegalStateException(new IllegalStateException("Unsupported route rule type: " + type
@@ -50,7 +50,7 @@ public class ScriptRouter extends GrpcRouter {
         try {
             engine.eval(super.getRule());
             Invocable invocable = (Invocable) engine;
-            GrpcURL refUrl = super.getUrl();
+            GrpcURL refUrl = super.getRefUrl();
             Object obj = invocable.invokeFunction("route", refUrl, providerUrls);
             if (obj instanceof Boolean) {
                 return (Boolean) obj;
