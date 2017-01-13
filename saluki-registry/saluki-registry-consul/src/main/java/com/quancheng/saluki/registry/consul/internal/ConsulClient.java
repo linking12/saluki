@@ -63,7 +63,11 @@ public class ConsulClient {
 
             @Override
             public void run() {
-                retryRegisterEphemralNode();
+                try {
+                    retryRegisterEphemralNode();
+                } catch (Throwable e) {
+                    log.info("retry registry znode failed", e);
+                }
             }
         }, 0, ConsulConstants.TTL * 5, TimeUnit.SECONDS);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
