@@ -148,8 +148,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {
-            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-                                   remoteAddress.toString()));
+            log.error(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
+                                    remoteAddress));
             if (request == null || response == null) {
                 return;
             }
