@@ -70,12 +70,16 @@ public class TtlScheduler {
 
         @Override
         public void run() {
-            for (String checkId : serviceIds) {
-                if (!checkId.startsWith("service:")) {
-                    checkId = "service:" + checkId;
+            try {
+                for (String checkId : serviceIds) {
+                    if (!checkId.startsWith("service:")) {
+                        checkId = "service:" + checkId;
+                    }
+                    client.agentCheckPass(checkId);
+                    log.debug("Sending consul heartbeat for: " + checkId);
                 }
-                client.agentCheckPass(checkId);
-                log.debug("Sending consul heartbeat for: " + checkId);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -84,9 +88,13 @@ public class TtlScheduler {
 
         @Override
         public void run() {
-            for (String sessionId : sessionIds) {
-                Response<Session> response = client.renewSession(sessionId, QueryParams.DEFAULT);
-                log.debug("Sending consul heartbeat for: " + response.getValue().getId());
+            try {
+                for (String sessionId : sessionIds) {
+                    Response<Session> response = client.renewSession(sessionId, QueryParams.DEFAULT);
+                    log.debug("Sending consul heartbeat for: " + response.getValue().getId());
+                }
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
             }
         }
     }
