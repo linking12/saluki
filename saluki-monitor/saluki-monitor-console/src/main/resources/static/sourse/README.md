@@ -1,5 +1,4 @@
 
-安装包
 npm install <br/>
 
 npm run dev <br/>
