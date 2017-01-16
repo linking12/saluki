@@ -50,7 +50,7 @@ public class TtlScheduler {
         this.client = client;
         heartbeatServiceExecutor.scheduleAtFixedRate(new ConsulHeartbeatServiceTask(), ConsulConstants.HEARTBEAT_CIRCLE,
                                                      ConsulConstants.HEARTBEAT_CIRCLE, TimeUnit.MILLISECONDS);
-        heartbeatSessionExecutor.scheduleAtFixedRate(new ConsulHeartbeatSessionTask(), 0,
+        heartbeatSessionExecutor.scheduleAtFixedRate(new ConsulHeartbeatSessionTask(), ConsulConstants.HEARTBEAT_CIRCLE,
                                                      ConsulConstants.HEARTBEAT_CIRCLE, TimeUnit.MILLISECONDS);
     }
 
