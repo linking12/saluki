@@ -1,0 +1,37 @@
+{
+    "nodes": [{
+        "color": "#4f19c7",
+        "label": "Abc",
+        "attributes": {},
+        "id": "Abc",
+        "size": 4.7252817
+    }, {
+        "color": "#c71969",
+        "label": "Bbc",
+        "attributes": {},
+        "id": "Bbc",
+        "size": 6.1554675
+    }, {
+        "color": "#c71969",
+        "label": "Cbc",
+        "attributes": {},
+        "id": "Cbc",
+        "size": 6.1554675
+    }],
+    "edges": [{
+        "sourceID": "Abc",
+        "attributes": {},
+        "targetID": "Bbc",
+        "size": 1
+    },{
+        "sourceID": "Bbc",
+        "attributes": {},
+        "targetID": "Abc",
+        "size": 1
+    },{
+        "sourceID": "Abc",
+        "attributes": {},
+        "targetID": "Cbc",
+        "size": 1
+    }]
+}
