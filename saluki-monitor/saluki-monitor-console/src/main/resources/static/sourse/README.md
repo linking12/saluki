@@ -1,4 +1,7 @@
->ie9
-npm install
-npm run dev
-npm run build
+
+安装包
+npm install <br/>
+
+npm run dev <br/>
+
+npm run build <br/>
