@@ -103,6 +103,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
             remoteAddress = grpcAsyncCall.getAffinity().get(GrpcAsyncCall.REMOTE_ADDR_KEY);
+            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
+                                   remoteAddress));
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
@@ -148,9 +150,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response,
                          SocketAddress remoteAddress, long start, boolean error) {
         try {
-            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-                                   remoteAddress.toString()));
-            if (request == null || response == null) {
+            if (request == null || response == null || remoteAddress == null) {
                 return;
             }
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
