@@ -1,6 +1,5 @@
 stages:
   - jar-build
-  - docker-build
 before_script:
   - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:`TZ=CST-8 date '+%Y%m%d'` 
   - aliimageserver=nexus.quancheng-ec.com:5000/saluki-example-server:`TZ=CST-8 date '+%Y%m%d'`
@@ -15,7 +14,7 @@ build_jar:
     - mvn clean install
     - mvn deploy
   only:
-    - V1.5.1
+    - V1.5.2
 
 build_images:
    stage: docker-build
@@ -37,4 +36,4 @@ build_images:
     - docker push $aliimagemonitor
   
    only:
-    - V1.5.1
+    - V1.5.2
