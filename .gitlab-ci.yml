@@ -1,5 +1,4 @@
 stages:
-  - jar-build
   - docker-build
 before_script:
   - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:`TZ=CST-8 date '+%Y%m%d'` 
@@ -7,16 +6,7 @@ before_script:
   - aliimagemonitor=nexus.quancheng-ec.com:5000/saluki-monitor:`TZ=CST-8 date '+%Y%m%d'`
   - hostname -i
   - whoami
-build_jar:
-  stage: jar-build
-  script:
-    - gradle clean uploadArchives --refresh-dependencies
-    - cd saluki-plugin/saluki-maven-plugin
-    - mvn clean install
-    - mvn deploy
-  only:
-    - V1.5.1
-
+  
 build_images:
    stage: docker-build
 
