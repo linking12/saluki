@@ -91,9 +91,9 @@ public class Proto2ServicePojo {
         List<DescriptorProto> messageDescList = fdp.getMessageTypeList();
         List<ServiceDescriptorProto> serviceDescList = fdp.getServiceList();
         List<EnumDescriptorProto> enumDescList = fdp.getEnumTypeList();
+        printEnum(enumDescList, javaPackage, outerClassName);
         printMessage(messageDescList, javaPackage, outerClassName);
         printService(serviceDescList, javaPackage);
-        printEnum(enumDescList, javaPackage, outerClassName);
     }
 
     private void printService(List<ServiceDescriptorProto> serviceDescList, String javaPackage) {
