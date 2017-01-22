@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -26,15 +28,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.env.Environment;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.quancheng.saluki.boot.SalukiReference;
+import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
 import com.quancheng.saluki.core.config.RpcReferenceConfig;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.CollectionUtils;
-import com.quancheng.saluki.boot.SalukiReference;
-import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
 
 import io.grpc.stub.AbstractStub;
 
@@ -45,6 +48,8 @@ import io.grpc.stub.AbstractStub;
 public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
     private static final Logger             logger                     = LoggerFactory.getLogger(GrpcReferenceRunner.class);
+
+    private static final Pattern            REPLACE_PATTERN            = Pattern.compile("\\{(.*?)\\}");
 
     private final List<Map<String, String>> servcieReferenceDefintions = Lists.newArrayList();
 
@@ -58,6 +63,9 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
     @Autowired
     private AbstractApplicationContext      applicationContext;
+
+    @Autowired
+    private Environment                     env;
 
     public GrpcReferenceRunner(GrpcProperties thrallProperties){
         this.thrallProperties = thrallProperties;
@@ -202,7 +210,15 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         if (StringUtils.isNoneBlank(reference.group())) {
             return reference.group();
         } else if (StringUtils.isNoneBlank(groupVersion.getLeft())) {
-            return groupVersion.getLeft();
+            String replaceGroup = groupVersion.getLeft();
+            Matcher matcher = REPLACE_PATTERN.matcher(replaceGroup);
+            if (matcher.find()) {
+                String replace = matcher.group().substring(1, matcher.group().length() - 1).trim();
+                String realGroup = env.getProperty(replace, replace);
+                return realGroup;
+            } else {
+                return replaceGroup;
+            }
         } else if (this.isGenericClient(referenceClass)) {
             return StringUtils.EMPTY;
         }
@@ -216,7 +232,15 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         if (StringUtils.isNoneBlank(reference.version())) {
             return reference.version();
         } else if (StringUtils.isNoneBlank(groupVersion.getRight())) {
-            return groupVersion.getRight();
+            String replaceVersion = groupVersion.getRight();
+            Matcher matcher = REPLACE_PATTERN.matcher(replaceVersion);
+            if (matcher.find()) {
+                String replace = matcher.group().substring(1, matcher.group().length() - 1).trim();
+                String realVersion = env.getProperty(replace, replace);
+                return realVersion;
+            } else {
+                return replaceVersion;
+            }
         } else if (this.isGenericClient(referenceClass)) {
             return StringUtils.EMPTY;
         } else {
