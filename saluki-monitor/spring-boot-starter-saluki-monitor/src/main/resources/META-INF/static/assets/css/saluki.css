@@ -164,7 +164,7 @@ label {
   width: 100%;
   max-width: 100%;
   font-size: 90%;
-  min-height: 250px;
+  min-height: 200px;
 }
 
 .debug-http-headers {
