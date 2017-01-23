@@ -84,7 +84,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private boolean                       closed;
 
         @GuardedBy("lock")
-        private GrpcRouter                    grpcRouter;
+        private volatile GrpcRouter           grpcRouter;
 
         private volatile Attributes           nameNameResolver_attributes;
 
