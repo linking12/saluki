@@ -157,7 +157,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                                      + "}";//
                     }
                     if (routerRule != null) {
-                        if (RpcContext.getContext().contain("routerRule")) {
+                        if (RpcContext.getContext().containAttachment("routerRule")) {
                             RpcContext.getContext().removeAttachment("routerRule");
                         }
                         grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);

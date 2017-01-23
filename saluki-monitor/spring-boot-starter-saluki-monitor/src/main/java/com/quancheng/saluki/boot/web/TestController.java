@@ -121,6 +121,8 @@ public class TestController {
             Object[] args = new Object[] { request };
             if (StringUtils.isNotBlank(routerRule)) {
                 RpcContext.getContext().setAttachment("routerRule", routerRule);
+            } else {
+                RpcContext.getContext().removeAttachment("routerRule");
             }
             Object reply = genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
                                                  getAnnotation(model.getService()).getRight(), model.getMethod(),

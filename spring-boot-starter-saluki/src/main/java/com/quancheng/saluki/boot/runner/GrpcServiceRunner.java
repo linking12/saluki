@@ -98,7 +98,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
         this.rpcService = rpcSerivceConfig;
         rpcSerivceConfig.export();
         System.out.println(String.format("GRPC server has started!You can do test by %s \n %s",
-                                         "http://localhost:" + httpPort + "/service.html",
+                                         "http://localhost:" + httpPort + "/doc",
                                          "http://saluki.dev.quancheng-ec.com"));
     }
 
