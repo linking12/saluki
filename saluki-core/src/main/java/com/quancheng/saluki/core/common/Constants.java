@@ -23,6 +23,7 @@ public class Constants {
     public static final String  ANYHOST_KEY                   = "anyhost";
     public static final String  METHODS_KEY                   = "methods";
     public static final String  METHOD_KEY                    = "method";
+    public static final String  ARG_KEY                       = "arg";
     public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
 

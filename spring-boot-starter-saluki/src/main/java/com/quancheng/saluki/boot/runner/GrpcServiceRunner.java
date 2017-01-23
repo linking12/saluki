@@ -23,9 +23,9 @@ import org.springframework.core.type.StandardMethodMetadata;
 
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
-import com.quancheng.saluki.boot.service.EchoServiceImpl;
+import com.quancheng.saluki.boot.service.HealthImpl;
 import com.quancheng.saluki.core.config.RpcServiceConfig;
-import com.quancheng.saluki.service.EchoService;
+import com.quancheng.saluki.service.Health;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:16
@@ -82,11 +82,11 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                                                           getVersion(serviceAnnotation), instance);
                 }
             } finally {
-                Object echoinstance = new EchoServiceImpl();
-                applicationContext.getBeanFactory().registerSingleton(EchoService.class.getSimpleName(), echoinstance);
+                Object echoinstance = new HealthImpl();
+                applicationContext.getBeanFactory().registerSingleton(Health.class.getSimpleName(), echoinstance);
                 String group = thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
                 String version = thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
-                rpcSerivceConfig.addServiceDefinition(EchoService.class.getName(), group, version, echoinstance);
+                rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version, echoinstance);
             }
         }
         this.rpcService = rpcSerivceConfig;

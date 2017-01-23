@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -121,7 +122,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
          * <pre>
          *  String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
          * <pre>
-         *  String  routerMessage = "javascript://function route(refUrl,providerUrls) {"
+           String  routerMessage = "javascript://function route(refUrl,providerUrls) {"
                                    + "var result = false;"
                                    + "if(refUrl.host=='10.110.0.16'){"
                                    + "   for (i = 0; i < providerUrls.length; i ++) {"
@@ -140,23 +141,42 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
             GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
             synchronized (lock) {
-                if (grpcRouter != null) {
-                    grpcRouter.setRefUrl(refUrl);
-                    List<SocketAddress> updatedServers = Lists.newArrayList();
-                    for (SocketAddress server : addressesCopy.getServers()) {
-                        List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-                        if (grpcRouter.match(providerUrls)) {
-                            updatedServers.add(server);
-                        }
+                try {
+                    if ("com.quancheng.saluki.service.Health".equals(refUrl.getServiceInterface())) {
+                        refUrl.getParameterAndDecoded(Constants.ARG_KEY);
+                        String  routerMessage = "javascript://function route(refUrl,providerUrls,arg) {"
+                                + "var result = false;"
+                                + "for (i = 0; i < providerUrls.length; i ++) {"
+                                + "      if (arg.serviceip == providerUrls[i].host) {"
+                                + "        result = true;"
+                                + "      }else{"
+                                + "        allMatchThen = false;"
+                                + "        break;"
+                                + "      }"
+                                + "}"
+                                + "return result;"
+                             +"}" ;
+                        grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);
                     }
-                    if (updatedServers.isEmpty()) {
-                        throw new IllegalArgumentException("The router condition has stoped all server address");
-                    } else {
-                        RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                        for (SocketAddress server : updatedServers) {
-                            listBuilder.add(server);
+                } finally {
+                    if (grpcRouter != null) {
+                        grpcRouter.setRefUrl(refUrl);
+                        List<SocketAddress> updatedServers = Lists.newArrayList();
+                        for (SocketAddress server : addressesCopy.getServers()) {
+                            List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+                            if (grpcRouter.match(providerUrls)) {
+                                updatedServers.add(server);
+                            }
                         }
-                        return listBuilder.build();
+                        if (updatedServers.isEmpty()) {
+                            throw new IllegalArgumentException("The router condition has stoped all server address");
+                        } else {
+                            RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                            for (SocketAddress server : updatedServers) {
+                                listBuilder.add(server);
+                            }
+                            return listBuilder.build();
+                        }
                     }
                 }
             }
@@ -222,7 +242,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     nameResolutionError = null;
                     savedInterimTransport = interimTransport;
                     interimTransport = null;
-                    createGrpcRouter(config);
+                    createGrpcRouterByNameResolver(config);
                 }
                 if (savedInterimTransport != null) {
                     savedInterimTransport.closeWithRealTransports(new Supplier<T>() {
@@ -242,7 +262,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         }
 
-        private void createGrpcRouter(Attributes config) {
+        private void createGrpcRouterByNameResolver(Attributes config) {
             String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
             if (StringUtils.isNotEmpty(routerMessage)) {
                 grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);

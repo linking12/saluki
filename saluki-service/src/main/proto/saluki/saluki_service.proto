@@ -5,14 +5,21 @@ option java_outer_classname = "ServiceParam";
 
 package com.quancheng.saluki.service;
 
-service EchoService {
-  rpc echo (EchoRequest) returns (EchoReply) {}
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
 }
 
-message EchoRequest {
-  
+message HealthCheckRequest {
+  string service = 1;
+  string serviceip = 2;
 }
 
-message EchoReply {
-  string message = 1;
+message HealthCheckResponse {
+  ServingStatus status = 1;
+}
+
+enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
 }

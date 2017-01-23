@@ -17,6 +17,8 @@ import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 
@@ -51,7 +53,9 @@ public class ScriptRouter extends GrpcRouter {
             engine.eval(super.getRule());
             Invocable invocable = (Invocable) engine;
             GrpcURL refUrl = super.getRefUrl();
-            Object obj = invocable.invokeFunction("route", refUrl, providerUrls);
+            Object arg = new Gson().fromJson(refUrl.getParameterAndDecoded(Constants.ARG_KEY), Object.class);
+            Object obj = invocable.invokeFunction("route", refUrl.removeParameter(Constants.ARG_KEY), providerUrls,
+                                                  arg);
             if (obj instanceof Boolean) {
                 return (Boolean) obj;
             } else {
