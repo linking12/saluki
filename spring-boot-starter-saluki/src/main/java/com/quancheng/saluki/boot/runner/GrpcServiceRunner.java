@@ -83,7 +83,6 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                 }
             } finally {
                 Object echoinstance = new HealthImpl(applicationContext);
-                applicationContext.getBeanFactory().registerSingleton(Health.class.getSimpleName(), echoinstance);
                 String group = thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
                 String version = thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
                 rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version, echoinstance);
