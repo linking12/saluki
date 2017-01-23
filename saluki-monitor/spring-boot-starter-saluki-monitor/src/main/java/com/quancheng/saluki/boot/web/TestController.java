@@ -119,7 +119,9 @@ public class TestController {
             Object request = gson.fromJson(model.getParameter(), requestClass);
             String[] paramTypes = new String[] { model.getParameterType(), model.getReturnType() };
             Object[] args = new Object[] { request };
-            RpcContext.getContext().setAttachment("routerRule", routerRule);
+            if (StringUtils.isNotBlank(routerRule)) {
+                RpcContext.getContext().setAttachment("routerRule", routerRule);
+            }
             Object reply = genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
                                                  getAnnotation(model.getService()).getRight(), model.getMethod(),
                                                  paramTypes, args);
@@ -136,7 +138,6 @@ public class TestController {
             Object request = gson.fromJson(model.getParameter(), requestClass);
             String[] paramTypes = new String[] { model.getParameterType(), model.getReturnType() };
             Object[] args = new Object[] { request };
-
             Object reply = genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
                                                  getAnnotation(model.getService()).getRight(), model.getMethod(),
                                                  paramTypes, args);
