@@ -49,7 +49,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
     private static final Logger             logger                     = LoggerFactory.getLogger(GrpcReferenceRunner.class);
 
-    private static final Pattern            REPLACE_PATTERN            = Pattern.compile("\\{(.*?)\\}");
+    private static final Pattern            REPLACE_PATTERN            = Pattern.compile("#\\{(.*?)\\}");
 
     private final List<Map<String, String>> servcieReferenceDefintions = Lists.newArrayList();
 
@@ -213,9 +213,14 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
             String replaceGroup = groupVersion.getLeft();
             Matcher matcher = REPLACE_PATTERN.matcher(replaceGroup);
             if (matcher.find()) {
-                String replace = matcher.group().substring(1, matcher.group().length() - 1).trim();
-                String realGroup = env.getProperty(replace, replace);
-                return realGroup;
+                String replace = matcher.group().substring(2, matcher.group().length() - 1).trim();
+                String[] replaces = StringUtils.split(replace, ":");
+                if (replaces.length == 2) {
+                    String realGroup = env.getProperty(replaces[0], replaces[1]);
+                    return realGroup;
+                } else {
+                    throw new IllegalArgumentException("replaces formater is #{XXXgroup:groupName}");
+                }
             } else {
                 return replaceGroup;
             }
@@ -235,9 +240,14 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
             String replaceVersion = groupVersion.getRight();
             Matcher matcher = REPLACE_PATTERN.matcher(replaceVersion);
             if (matcher.find()) {
-                String replace = matcher.group().substring(1, matcher.group().length() - 1).trim();
-                String realVersion = env.getProperty(replace, replace);
-                return realVersion;
+                String replace = matcher.group().substring(2, matcher.group().length() - 1).trim();
+                String[] replaces = StringUtils.split(replace, ":");
+                if (replaces.length == 2) {
+                    String realVersion = env.getProperty(replaces[0], replaces[1]);
+                    return realVersion;
+                } else {
+                    throw new IllegalArgumentException("replaces formater is #{XXXservice:1.0.0}");
+                }
             } else {
                 return replaceVersion;
             }
