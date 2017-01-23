@@ -22,27 +22,27 @@ $(document).ready(function(){
         render(URI(window.location.href));
     });
     $('#editor_btn_submitParam').click(function() {
-	             var data = {
-	               service:$('#servicetest_serviceName').val(),
-	               method:$('#servicetest_methodName').val(),
-	               parameterType:$('#servicetest_requestType').val(),
-	               returnType:$('#servicetest_responseType').val(),
-	               parameter:JSON.stringify(editor_request.get()) 
-	             };
-	             $.ajax({ 
-                    type: "POST", 
-                    url: "service/test", 
-                    contentType: "application/json",  
-                    data: JSON.stringify(data),
-                    success: function(result) { 
-                       editor_response.set(result);
-                    },
-		            error : function(jqXHR, textStatus, errorThrown){
-		                $('#editor_holder_response').width(600);
-		                $('#editor_holder_response').height(200);
-		                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
-		            }
-                 }); 
+	         var data = {
+	           service:$('#servicetest_serviceName').val(),
+	           method:$('#servicetest_methodName').val(),
+	           parameterType:$('#servicetest_requestType').val(),
+	           returnType:$('#servicetest_responseType').val(),
+	           parameter:JSON.stringify(editor_request.get()) 
+	         };
+	         $.ajax({ 
+	            type: "POST", 
+	            url: "service/test", 
+	            contentType: "application/json",  
+	            data: JSON.stringify(data),
+	            success: function(result) { 
+	               editor_response.set(result);
+	            },
+	            error : function(jqXHR, textStatus, errorThrown){
+	                $('#editor_holder_response').width(600);
+	                $('#editor_holder_response').height(200);
+	                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
+	            }
+	         }); 
     });
     function render(uri) {
 	    var fragmentUri = uri.fragment(true);
