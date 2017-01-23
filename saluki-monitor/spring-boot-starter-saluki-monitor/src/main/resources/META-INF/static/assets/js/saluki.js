@@ -3,14 +3,46 @@ $(document).ready(function(){
     var specification = {};
     var navTemplate = Handlebars.compile($('#nav-template').html());
     var previousFragmentPath = null;
+    var options = {
+              mode: 'form',
+              modes: ['code', 'form', 'text', 'tree', 'view'],
+    };
+    var container_request = document.getElementById("editor_holder_request");
+	var editor_request = new JSONEditor(container_request, options);
+	var container_response = document.getElementById("editor_holder_response");
+	var editor_response = new JSONEditor(container_response, options);
     $.getJSON('service/getAllService', function (data) {
 	      specification = {services:data}
 	      $('.sidebar').html(navTemplate({specification: specification}));
-	      
 	});
+	$('#function').hide();
+	$('#functionbutton').hide();
     $(window).trigger('hashchange');
     $(window).on('hashchange', function () {
         render(URI(window.location.href));
+    });
+    $('#editor_btn_submitParam').click(function() {
+	             var data = {
+	               service:$('#servicetest_serviceName').val(),
+	               method:$('#servicetest_methodName').val(),
+	               parameterType:$('#servicetest_requestType').val(),
+	               returnType:$('#servicetest_responseType').val(),
+	               parameter:JSON.stringify(editor_request.get()) 
+	             };
+	             $.ajax({ 
+                    type: "POST", 
+                    url: "service/test", 
+                    contentType: "application/json",  
+                    data: JSON.stringify(data),
+                    success: function(result) { 
+                       editor_response.set(result);
+                    },
+		            error : function(jqXHR, textStatus, errorThrown){
+		                $('#editor_holder_response').width(600);
+		                $('#editor_holder_response').height(200);
+		                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
+		            }
+                 }); 
     });
     function render(uri) {
 	    var fragmentUri = uri.fragment(true);
@@ -31,33 +63,16 @@ $(document).ready(function(){
 	    } 
     }
     function renderFunction(serviceName, functionName){
-        var serviceInfo = specification.services[serviceName];
-	    if (serviceInfo == undefined) {
-	      return;
-	    }
-	    var functionInfo = serviceInfo.functions[functionName];
-	    if (functionInfo == undefined) {
-	      return;
-	    }
-	    processService(serviceInfo);
-	    processFunction(functionInfo);
-	    makeActive('li#nav-' + serviceName + '.' + functionName);
-	    var oldDebugHttpHeadersText = functionContainer.find('.debug-http-headers');
-	    var oldDebugHttpHeadersSticky = functionContainer.find('.debug-http-headers-sticky');
-	    functionContainer.html(functionTemplate({
-	      'serviceName': serviceName,
-	      'serviceSimpleName': serviceInfo.simpleName,
-	      'serviceEndpoints': serviceInfo.endpoints,
-	      'serviceDebugPath': serviceInfo.debugPath,
-	      'serviceDebugFragment': serviceInfo.debugFragment,
-	      'function': functionInfo
-	    }));
-        
+         $('#home').hide();
+         $('#function').show();
+         $('#functionbutton').show();
+         $('#page_header').html('<code title="'+serviceName+'.'+functionName+'()">'+serviceName+'.'+functionName+'()</code>');
+         $.getJSON("service/getMethod",{ service: serviceName, method: functionName },function(result){
+			 editor_request.set(result.parameterTypes[0]);
+			 $('#servicetest_requestType').val(result.parameterTypes[0].class);
+			 $('#servicetest_responseType').val(result.returnType.class);
+		 });
     }
-    
-    
-    
-   
     
 }); 
 

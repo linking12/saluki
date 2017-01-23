@@ -8,6 +8,7 @@
   <title>saluki documentation service</title>
   <link href="assets/css/vendor/bootstrap-3.3.5.min.css" rel="stylesheet">
   <link href="assets/css/vendor/highlight-jsononly-github-8.9.1.min.css" rel="stylesheet">
+  <link href="assets/css/vendor/jsoneditor.min.css" rel="stylesheet"/> 
   <link href="assets/css/saluki.css" rel="stylesheet">
   <link rel="mask-icon" href="https://assets-cdn.github.com/pinned-octocat.svg" color="#000000">
   <link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
@@ -55,123 +56,38 @@
         </p>
         <p>Please start to navigate via the sidebar on the left or the menu button on the top right.</p>
       </div>
-      <div id="function" class="content">
-        <script id="function-template" type="text/x-handlebars-template">
-          <h1 class="page-header"><code title="{{serviceName}}.{{function.name}}()">{{serviceSimpleName}}.{{function.name}}()</code></h1>
-          <div class="description">{{{function.docString}}}</div>
-          <h2 class="sub-header">Parameters</h2>
+      <div class="content">
+          <p>
+            <h1 id="page_header" class="page-header"></h1>
+          </p>
           <div class="table-responsive">
-            <table class="table table-striped table-condensed">
-              <thead>
-              <tr>
-                <th>Name</th>
-                <th>Required</th>
-                <th>Type</th>
-                <th>Description</th>
-              </tr>
-              </thead>
-              <tbody>
-              {{#each function.parameters}}
-              <tr>
-                <td><code>{{name}}</code></td>
-                <td>{{requirementType}}</td>
-                <td><code>{{{type.typeStr}}}</code></td>
-                <td class="description">{{{docString}}}</td>
-              </tr>
-              {{else}}
-              <tr>
-                <td colspan="3">There are no parameters.</td>
-              </tr>
-              {{/each}}
-              </tbody>
-            </table>
-          </div>
-
-          <h2 class="sub-header">Return type</h2>
-          <div class="table-responsive">
-            <table class="table table-striped table-condensed">
-              <tr>
-                <td><code>{{{function.returnType.typeStr}}}</code></td>
-              </tr>
-            </table>
-          </div>
-
-          {{#if function.exceptions.length}}
-          <h2 class="sub-header">Exceptions</h2>
-          <div class="table-responsive">
-            <table class="table table-striped table-condensed">
-              {{#each function.exceptions}}
-              <tr>
-                <td><code>{{{typeStr}}}</code></td>
-              </tr>
-              {{/each}}
-            </table>
-          </div>
-          {{/if}}
-          {{#if serviceEndpoints.length}}
-          <h2 class="sub-header">Endpoints</h2>
-          <div class="table-responsive">
-            <table class="table table-striped table-condensed">
-              <thead>
-              <tr>
-                <th>Hostname</th>
-                <th>Path</th>
-                <th>MIME types</th>
-              </tr>
-              </thead>
-              <tbody>
-              {{#each serviceEndpoints}}
-              <tr>
-                <td><code>{{{hostnamePattern}}}</code></td>
-                <td><code>{{{path}}}{{#if fragment}}#{{fragment}}{{/if}}</code></td>
-                <td>
-                  <ul>
-                  {{#each availableMimeTypes}}
-                    <li>{{{.}}}</li>
-                  {{/each}}
-                  </ul>
-                </td>
-              </tr>
-              {{/each}}
-              </tbody>
-            </table>
-          </div>
-          {{/if}}
-          {{#if serviceDebugPath}}
-          <h2 class="sub-header">Debug</h2>
-          <div class="row">
-            <div class="col-sm-6">
-              <div>
-                <label>
-                  Arguments as a
-                  <a href="https://github.com/line/armeria/blob/13b0510205a84e1a3cd17509e7d39116d050b6b3/src/main/java/com/linecorp/armeria/common/thrift/text/TTextProtocol.java">TText</a>
-                  JSON object:
-                </label>
-                <textarea class="debug-textarea form-control code">{&#10;&#32;&#32;"": ""&#10;}&#10;</textarea>
-              </div>
-              <div>
-                <a class="btn btn-link debug-http-headers-collapser" data-toggle="collapse">Edit additional HTTP Headers</a>
-                <div class="collapse">
-                  <textarea class="debug-http-headers form-control code">{&#10;&#10;}&#10;</textarea>
-                  <div class="checkbox">
-                    <label>
-                      <input class="debug-http-headers-sticky" type="checkbox">
-                      Use these HTTP headers for all functions.
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <button class="debug-submit btn btn-primary">Submit to: <code>{{{serviceDebugPath}}}</code></button>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <label >Result:</label>
-              <pre class="debug-response json"><code></code></pre>
-            </div>
-          </div>
-          {{/if}}
-        </script>
+	          <h2 class="sub-header">Service Test</h2>
+	          <div class="row">
+	              <div class="col-sm-6">
+	                <label>Route Rule 非特殊情况不要做修改</label>
+	                <textarea class="debug-textarea form-control code"></textarea>
+	              </div>
+	          </div>
+	          <div id="function" class="row">
+	            <div class="col-sm-6">
+	                <label>Request:</label>
+	                <div class="jsoneditor" id="editor_holder_request"></div>
+	            </div>
+	            <div class="col-sm-6">
+	                <label>Response:</label>
+	                <div class="jsoneditor" id="editor_holder_response"></div>
+	            </div>
+	          </div>
+	          <div id="functionbutton" class="row">
+	              <div class="col-sm-12">
+	                <input class="form-control" type="hidden" value="" id="servicetest_requestType" /> 
+	                <input class="form-control" type="hidden" value="" id="servicetest_responseType" />
+	                <input class="form-control" type="hidden" value="" id="serviceName" /> 
+	                <input class="form-control" type="hidden" value="" id="functionName" />  
+	                <button class="debug-submit btn btn-primary">Submit</button>
+	              </div>
+	          </div>
+	       </div>
       </div>
     </div>
   </div>
@@ -183,6 +99,7 @@
 <script src="assets/js/vendor/json-minify-0.1.js"></script>
 <script src="assets/js/vendor/json-prettify-0.1.js"></script>
 <script src="assets/js/vendor/URI-1.17.0.min.js"></script>
+<script src="assets/js/vendor/jsoneditor.min.js"></script>
 <script src="assets/js/saluki.js"></script>
 </body>
 </html>
