@@ -84,7 +84,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private boolean                       closed;
 
         @GuardedBy("lock")
-        private volatile GrpcRouter           grpcRouter;
+        private GrpcRouter                    grpcRouter;
 
         private volatile Attributes           nameNameResolver_attributes;
 
@@ -142,7 +142,13 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
             GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
             synchronized (lock) {
+                GrpcRouter grpcRouterCopy = grpcRouter;
                 try {
+                    String routerRule = RpcContext.getContext().getAttachment("routerRule");
+                    if (routerRule != null) {
+                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);
+                        RpcContext.getContext().removeAttachment("routerRule");
+                    }
                     if ("com.quancheng.saluki.service.Health".equals(refUrl.getServiceInterface())) {
                         refUrl.getParameterAndDecoded(Constants.ARG_KEY);
                         String routerMessage = "javascript://function route(refUrl,providerUrls,arg) {"
@@ -151,19 +157,15 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                                                + "        result = true;" + "      }else{"
                                                + "        allMatchThen = false;" + "        break;" + "      }" + "}"
                                                + "return result;" + "}";
-                        grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);
-                    }
-                    String routerRule = RpcContext.getContext().getAttachment("routerRule");
-                    if (routerRule != null) {
-                        grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerRule);
+                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerMessage);
                     }
                 } finally {
-                    if (grpcRouter != null) {
-                        grpcRouter.setRefUrl(refUrl);
+                    if (grpcRouterCopy != null) {
+                        grpcRouterCopy.setRefUrl(refUrl);
                         List<SocketAddress> updatedServers = Lists.newArrayList();
                         for (SocketAddress server : addressesCopy.getServers()) {
                             List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-                            if (grpcRouter.match(providerUrls)) {
+                            if (grpcRouterCopy.match(providerUrls)) {
                                 updatedServers.add(server);
                             }
                         }
@@ -176,10 +178,6 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                             }
                             return listBuilder.build();
                         }
-                    }
-                    if (RpcContext.getContext().containAttachment("routerRule")) {
-                        RpcContext.getContext().removeAttachment("routerRule");
-                        grpcRouter = null;
                     }
                 }
             }
