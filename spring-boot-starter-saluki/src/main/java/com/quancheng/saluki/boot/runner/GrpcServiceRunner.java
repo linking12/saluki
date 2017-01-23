@@ -17,6 +17,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
@@ -82,10 +84,15 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                                                           getVersion(serviceAnnotation), instance);
                 }
             } finally {
-                Object echoinstance = new HealthImpl(applicationContext);
+                Object healthInstance = new HealthImpl(applicationContext);
+                BeanDefinitionRegistry beanDefinitonRegistry = (BeanDefinitionRegistry) applicationContext.getBeanFactory();
+                BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(Health.class);
+                beanDefinitonRegistry.registerBeanDefinition(Health.class.getName(),
+                                                             beanDefinitionBuilder.getRawBeanDefinition());
+                applicationContext.getBeanFactory().registerSingleton(Health.class.getName(), healthInstance);
                 String group = thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
                 String version = thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
-                rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version, echoinstance);
+                rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version, healthInstance);
             }
         }
         this.rpcService = rpcSerivceConfig;

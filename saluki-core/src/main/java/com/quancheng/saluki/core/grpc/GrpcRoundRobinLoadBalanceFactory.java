@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
@@ -145,19 +144,23 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 GrpcRouter grpcRouterCopy = grpcRouter;
                 try {
                     String routerRule = RpcContext.getContext().getAttachment("routerRule");
-                    if (routerRule != null) {
-                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);
-                        RpcContext.getContext().removeAttachment("routerRule");
-                    }
                     if ("com.quancheng.saluki.service.Health".equals(refUrl.getServiceInterface())) {
-                        refUrl.getParameterAndDecoded(Constants.ARG_KEY);
-                        String routerMessage = "javascript://function route(refUrl,providerUrls,arg) {"
-                                               + "var result = false;" + "for (i = 0; i < providerUrls.length; i ++) {"
-                                               + "      if (arg.serviceip == providerUrls[i].host) {"
-                                               + "        result = true;" + "      }else{"
-                                               + "        allMatchThen = false;" + "        break;" + "      }" + "}"
-                                               + "return result;" + "}";
-                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerMessage);
+                        routerRule = "javascript://function route(refUrl,providerUrls,arg) {"//
+                                     + "var result = false;"//
+                                     + "for (i = 0; i < providerUrls.length; i ++) {"//
+                                     + "  if (arg.serviceip == providerUrls[i].host) {"//
+                                     + "    result = true;"//
+                                     + "  }else{"//
+                                     + "    allMatchThen = false;break;}"//
+                                     + "  }"//
+                                     + "  return result;"//
+                                     + "}";//
+                    }
+                    if (routerRule != null) {
+                        if (RpcContext.getContext().contain("routerRule")) {
+                            RpcContext.getContext().removeAttachment("routerRule");
+                        }
+                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);
                     }
                 } finally {
                     if (grpcRouterCopy != null) {
