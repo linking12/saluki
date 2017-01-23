@@ -30,6 +30,10 @@ public class RpcContext {
         return attachments.get(key);
     }
 
+    public boolean containAttachment(String key) {
+        return attachments.containsKey(key);
+    }
+
     public RpcContext setAttachment(String key, String value) {
         if (value == null) {
             attachments.remove(key);
@@ -80,5 +84,9 @@ public class RpcContext {
 
     public Object get(String key) {
         return values.get(key);
+    }
+
+    public boolean contain(String key) {
+        return values.containsKey(key);
     }
 }

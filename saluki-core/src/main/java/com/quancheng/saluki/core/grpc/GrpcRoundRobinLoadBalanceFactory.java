@@ -177,7 +177,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                             return listBuilder.build();
                         }
                     }
-                    RpcContext.getContext().removeAttachment("routerRule");
+                    if (RpcContext.getContext().containAttachment("routerRule")) {
+                        RpcContext.getContext().removeAttachment("routerRule");
+                        grpcRouter = null;
+                    }
                 }
             }
             return addressesCopy;
