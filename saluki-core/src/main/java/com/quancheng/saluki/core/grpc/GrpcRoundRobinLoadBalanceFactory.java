@@ -23,6 +23,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
@@ -144,19 +145,17 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 try {
                     if ("com.quancheng.saluki.service.Health".equals(refUrl.getServiceInterface())) {
                         refUrl.getParameterAndDecoded(Constants.ARG_KEY);
-                        String  routerMessage = "javascript://function route(refUrl,providerUrls,arg) {"
-                                + "var result = false;"
-                                + "for (i = 0; i < providerUrls.length; i ++) {"
-                                + "      if (arg.serviceip == providerUrls[i].host) {"
-                                + "        result = true;"
-                                + "      }else{"
-                                + "        allMatchThen = false;"
-                                + "        break;"
-                                + "      }"
-                                + "}"
-                                + "return result;"
-                             +"}" ;
+                        String routerMessage = "javascript://function route(refUrl,providerUrls,arg) {"
+                                               + "var result = false;" + "for (i = 0; i < providerUrls.length; i ++) {"
+                                               + "      if (arg.serviceip == providerUrls[i].host) {"
+                                               + "        result = true;" + "      }else{"
+                                               + "        allMatchThen = false;" + "        break;" + "      }" + "}"
+                                               + "return result;" + "}";
                         grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);
+                    }
+                    String routerRule = RpcContext.getContext().getAttachment("routerRule");
+                    if (routerRule != null) {
+                        grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerRule);
                     }
                 } finally {
                     if (grpcRouter != null) {
@@ -178,6 +177,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                             return listBuilder.build();
                         }
                     }
+                    RpcContext.getContext().removeAttachment("routerRule");
                 }
             }
             return addressesCopy;

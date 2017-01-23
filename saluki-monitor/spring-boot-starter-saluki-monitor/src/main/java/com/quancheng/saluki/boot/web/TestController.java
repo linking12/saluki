@@ -27,15 +27,16 @@ import com.google.gson.Gson;
 import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
-import com.quancheng.saluki.core.grpc.service.GenericService;
-import com.quancheng.saluki.core.utils.ReflectUtils;
-import com.quancheng.saluki.domain.GrpcServiceTestModel;
 import com.quancheng.saluki.boot.jaket.Jaket;
 import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
 import com.quancheng.saluki.boot.jaket.model.MetadataType;
 import com.quancheng.saluki.boot.jaket.model.MethodDefinition;
 import com.quancheng.saluki.boot.jaket.model.ServiceDefinition;
 import com.quancheng.saluki.boot.jaket.util.GenericInvokeUtils;
+import com.quancheng.saluki.core.common.RpcContext;
+import com.quancheng.saluki.core.grpc.service.GenericService;
+import com.quancheng.saluki.core.utils.ReflectUtils;
+import com.quancheng.saluki.domain.GrpcServiceTestModel;
 
 @RestController
 @RequestMapping("service")
@@ -105,6 +106,24 @@ public class TestController {
             GenericInvokeMetadata meta = GenericInvokeUtils.getGenericInvokeMetadata(serviceMeta, method,
                                                                                      MetadataType.DEFAULT_VALUE);
             return meta;
+        } catch (ClassNotFoundException e) {
+            throw e;
+        }
+    }
+
+    @RequestMapping(value = "testLocal", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object testLocalService(@RequestParam(value = "routerRule", required = true) String routerRule,
+                                   @RequestBody GrpcServiceTestModel model) throws ClassNotFoundException {
+        try {
+            Class<?> requestClass = ReflectUtils.name2class(model.getParameterType());
+            Object request = gson.fromJson(model.getParameter(), requestClass);
+            String[] paramTypes = new String[] { model.getParameterType(), model.getReturnType() };
+            Object[] args = new Object[] { request };
+            RpcContext.getContext().setAttachment("routerRule", routerRule);
+            Object reply = genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
+                                                 getAnnotation(model.getService()).getRight(), model.getMethod(),
+                                                 paramTypes, args);
+            return reply;
         } catch (ClassNotFoundException e) {
             throw e;
         }

@@ -31,7 +31,7 @@ $(document).ready(function(){
 	         };
 	         $.ajax({ 
 	            type: "POST", 
-	            url: "service/test", 
+	            url: "service/testLocal?routerRule="+URLencode($('#routerRule').val()), 
 	            contentType: "application/json",  
 	            data: JSON.stringify(data),
 	            success: function(result) { 
@@ -44,6 +44,9 @@ $(document).ready(function(){
 	            }
 	         }); 
     });
+    function URLencode(sStr){
+       return escape(sStr).replace(/\+/g, '%2B').replace(/\"/g,'%22').replace(/\'/g, '%27').replace(/\//g,'%2F');
+    }
     function render(uri) {
 	    var fragmentUri = uri.fragment(true);
 	    var path = fragmentUri.pathname();
@@ -67,6 +70,8 @@ $(document).ready(function(){
          $('#function').show();
          $('#functionbutton').show();
          $('#page_header').html('<code title="'+serviceName+'.'+functionName+'()">'+serviceName+'.'+functionName+'()</code>');
+         $('#servicetest_serviceName').val(serviceName)
+         $('#servicetest_methodName').val(functionName),
          $.getJSON("service/getMethod",{ service: serviceName, method: functionName },function(result){
 			 editor_request.set(result.parameterTypes[0]);
 			 $('#servicetest_requestType').val(result.parameterTypes[0].class);
