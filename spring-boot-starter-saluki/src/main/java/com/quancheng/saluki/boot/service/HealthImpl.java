@@ -7,10 +7,11 @@
  */
 package com.quancheng.saluki.boot.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import com.quancheng.saluki.boot.SalukiService;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.service.Health;
 import com.quancheng.saluki.service.serviceparam.HealthCheckRequest;
 import com.quancheng.saluki.service.serviceparam.HealthCheckResponse;
@@ -22,8 +23,11 @@ import com.quancheng.saluki.service.serviceparam.HealthCheckResponse;
 @SalukiService
 public class HealthImpl implements Health {
 
-    @Autowired
     private AbstractApplicationContext applicationContext;
+
+    public HealthImpl(AbstractApplicationContext applicationContext){
+        this.applicationContext = applicationContext;
+    }
 
     /**
      * <strong>描述：提供健康检查</strong>TODO 描述 <br>
@@ -39,15 +43,18 @@ public class HealthImpl implements Health {
     @Override
     public HealthCheckResponse Check(HealthCheckRequest healthcheckrequest) {
         String service = healthcheckrequest.getService();
-        if (applicationContext.containsBean(service)) {
-            HealthCheckResponse response = new HealthCheckResponse();
-            response.setStatus(com.quancheng.saluki.service.serviceparam.ServingStatus.SERVING);
-            return response;
-        } else if (!applicationContext.containsBean(service)) {
-            HealthCheckResponse response = new HealthCheckResponse();
-            response.setStatus(com.quancheng.saluki.service.serviceparam.ServingStatus.NOT_SERVING);
-            return response;
-        } else {
+        try {
+            Object obj = applicationContext.getBeansOfType(ReflectUtils.name2class(service));
+            if (obj != null) {
+                HealthCheckResponse response = new HealthCheckResponse();
+                response.setStatus(com.quancheng.saluki.service.serviceparam.ServingStatus.SERVING);
+                return response;
+            } else {
+                HealthCheckResponse response = new HealthCheckResponse();
+                response.setStatus(com.quancheng.saluki.service.serviceparam.ServingStatus.NOT_SERVING);
+                return response;
+            }
+        } catch (BeansException | ClassNotFoundException e) {
             HealthCheckResponse response = new HealthCheckResponse();
             response.setStatus(com.quancheng.saluki.service.serviceparam.ServingStatus.UNKNOWN);
             return response;
