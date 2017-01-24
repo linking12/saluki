@@ -58,10 +58,16 @@ public class TtlScheduler {
     }
 
     public void addHeartbeatServcie(final ConsulService2 service) {
+        if (!failedservices.isEmpty()) {
+            failedservices.clear();
+        }
         services.add(service);
     }
 
     public void addHeartbeatSession(final ConsulSession session) {
+        if (!failedsessions.isEmpty()) {
+            failedsessions.clear();
+        }
         sessions.add(session);
     }
 
