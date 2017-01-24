@@ -28,6 +28,7 @@ import com.ecwid.consul.v1.kv.model.PutParams;
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.registry.consul.ConsulConstants;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
@@ -51,13 +52,13 @@ public class ConsulClient {
 
     private final TtlScheduler                     ttlScheduler;
 
-    private final ScheduledExecutorService         scheduleRegistryZnode;
+    private final ScheduledExecutorService         scheduleRegistry;
 
     public ConsulClient(String host, int port){
         client = new com.ecwid.consul.v1.ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(client);
-        scheduleRegistryZnode = Executors.newScheduledThreadPool(1, new NamedThreadFactory("retryFailedTtl", true));
-        scheduleRegistryZnode.scheduleAtFixedRate(new Runnable() {
+        scheduleRegistry = Executors.newScheduledThreadPool(1, new NamedThreadFactory("retryFailedTtl", true));
+        scheduleRegistry.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
@@ -74,11 +75,19 @@ public class ConsulClient {
     private void retryFailedTtl() {
         Set<ConsulService2> failedService = ttlScheduler.getFailedService();
         Set<ConsulSession> failedSession = ttlScheduler.getFailedSession();
-        for (ConsulService2 consulService2 : failedService) {
-            registerService(consulService2.getService());
-        }
-        for (ConsulSession consulSession : failedSession) {
-            registerEphemralNode(consulSession.getEphemralNode());
+        if (failedSession.size() > 0 || failedService.size() > 0) {
+            log.info(String.format("retry to registry failed service %d and failed session %d", failedService.size(),
+                                   failedSession.size()));
+            for (ConsulService2 consulService2 : failedService) {
+                registerService(consulService2.getService());
+            }
+            Set<Boolean> allSuccess = Sets.newHashSet();
+            for (ConsulSession consulSession : failedSession) {
+                allSuccess.add(registerEphemralNode(consulSession.getEphemralNode()));
+            }
+            if (!allSuccess.contains(Boolean.FALSE)) {
+                ttlScheduler.cleanFailedTtl();
+            }
         }
     }
 
@@ -96,7 +105,7 @@ public class ConsulClient {
         ttlScheduler.removeHeartbeatServcie(consulService2);
     }
 
-    public void registerEphemralNode(ConsulEphemralNode ephemralNode) {
+    public Boolean registerEphemralNode(ConsulEphemralNode ephemralNode) {
         String sessionId = null;
         List<Session> sessions = client.getSessionList(QueryParams.DEFAULT).getValue();
         if (sessions != null && !sessions.isEmpty()) {
@@ -116,7 +125,8 @@ public class ConsulClient {
         ttlScheduler.addHeartbeatSession(session);
         PutParams kvPutParams = new PutParams();
         kvPutParams.setAcquireSession(sessionId);
-        client.setKVValue(ephemralNode.getEphemralNodeKey(), ephemralNode.getEphemralNodeValue(), kvPutParams);
+        return client.setKVValue(ephemralNode.getEphemralNodeKey(), ephemralNode.getEphemralNodeValue(),
+                                 kvPutParams).getValue();
     }
 
     public ConsulRouterResp lookupRouterMessage(String serviceName, long lastConsulIndex) {
