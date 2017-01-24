@@ -76,8 +76,8 @@ public class ConsulClient {
         Set<ConsulService2> failedService = ttlScheduler.getFailedService();
         Set<ConsulSession> failedSession = ttlScheduler.getFailedSession();
         if (failedSession.size() > 0 || failedService.size() > 0) {
-            log.info(String.format("retry to registry failed service %d or failed session %d", failedService.size(),
-                                   failedSession.size()));
+            log.debug(String.format("retry to registry failed service %d or failed session %d", failedService.size(),
+                                    failedSession.size()));
             for (ConsulService2 consulService2 : failedService) {
                 registerService(consulService2.getService());
             }
