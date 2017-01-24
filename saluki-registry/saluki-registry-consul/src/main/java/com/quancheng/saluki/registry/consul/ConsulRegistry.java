@@ -86,7 +86,7 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     protected void doUnregister(GrpcURL url) {
         ConsulService service = this.buildConsulHealthService(url);
-        client.unregisterService(service.getId());
+        client.unregisterService(service);
     }
 
     @Override

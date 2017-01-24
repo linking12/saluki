@@ -28,13 +28,14 @@ import com.ecwid.consul.v1.kv.model.PutParams;
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.registry.consul.ConsulConstants;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.model.ConsulRouterResp;
 import com.quancheng.saluki.registry.consul.model.ConsulService;
+import com.quancheng.saluki.registry.consul.model.ConsulService2;
 import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
+import com.quancheng.saluki.registry.consul.model.ConsulSession;
 
 /**
  * @author shimingliu 2016年12月16日 上午10:32:23
@@ -42,9 +43,9 @@ import com.quancheng.saluki.registry.consul.model.ConsulServiceResp;
  */
 public class ConsulClient {
 
-    private static final Logger                    log    = LoggerFactory.getLogger(ConsulClient.class);
+    private static final Logger                    log  = LoggerFactory.getLogger(ConsulClient.class);
 
-    private final Object                           lock   = new Object();
+    private final Object                           lock = new Object();
 
     private final com.ecwid.consul.v1.ConsulClient client;
 
@@ -52,19 +53,16 @@ public class ConsulClient {
 
     private final ScheduledExecutorService         scheduleRegistryZnode;
 
-    private final Set<ConsulEphemralNode>          znodes = Sets.newConcurrentHashSet();
-
     public ConsulClient(String host, int port){
         client = new com.ecwid.consul.v1.ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(client);
-        scheduleRegistryZnode = Executors.newScheduledThreadPool(1,
-                                                                 new NamedThreadFactory("RegisterEphemralNode", true));
+        scheduleRegistryZnode = Executors.newScheduledThreadPool(1, new NamedThreadFactory("retryFailedTtl", true));
         scheduleRegistryZnode.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    retryRegisterEphemralNode();
+                    retryFailedTtl();
                 } catch (Throwable e) {
                     log.info("retry registry znode failed", e);
                 }
@@ -73,21 +71,29 @@ public class ConsulClient {
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }
 
-    private void retryRegisterEphemralNode() {
-        for (ConsulEphemralNode znode : znodes) {
-            registerEphemralNode(znode);
+    private void retryFailedTtl() {
+        Set<ConsulService2> failedService = ttlScheduler.getFailedService();
+        Set<ConsulSession> failedSession = ttlScheduler.getFailedSession();
+        for (ConsulService2 consulService2 : failedService) {
+            registerService(consulService2.getService());
+        }
+        for (ConsulSession consulSession : failedSession) {
+            registerEphemralNode(consulSession.getEphemralNode());
         }
     }
 
     public void registerService(ConsulService service) {
         NewService newService = service.getNewService();
         client.agentServiceRegister(newService);
-        ttlScheduler.addHeartbeatServcie(newService);
+        ConsulService2 consulService2 = new ConsulService2(service, newService);
+        ttlScheduler.addHeartbeatServcie(consulService2);
     }
 
-    public void unregisterService(String serviceid) {
-        client.agentServiceDeregister(serviceid);
-        ttlScheduler.removeHeartbeatServcie(serviceid);
+    public void unregisterService(ConsulService service) {
+        NewService newService = service.getNewService();
+        client.agentServiceDeregister(newService.getId());
+        ConsulService2 consulService2 = new ConsulService2(service, newService);
+        ttlScheduler.removeHeartbeatServcie(consulService2);
     }
 
     public void registerEphemralNode(ConsulEphemralNode ephemralNode) {
@@ -97,7 +103,6 @@ public class ConsulClient {
             for (Session session : sessions) {
                 if (session.getName().equals(ephemralNode.getSessionName())) {
                     sessionId = session.getId();
-                    ttlScheduler.addHeartbeatSession(sessionId);
                 }
             }
         }
@@ -105,13 +110,13 @@ public class ConsulClient {
             NewSession newSession = ephemralNode.getNewSession();
             synchronized (lock) {
                 sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
-                ttlScheduler.addHeartbeatSession(sessionId);
+                ConsulSession session = new ConsulSession(newSession, sessionId, ephemralNode);
+                ttlScheduler.addHeartbeatSession(session);
             }
         }
         PutParams kvPutParams = new PutParams();
         kvPutParams.setAcquireSession(sessionId);
         client.setKVValue(ephemralNode.getEphemralNodeKey(), ephemralNode.getEphemralNodeValue(), kvPutParams);
-        znodes.add(ephemralNode);
     }
 
     public ConsulRouterResp lookupRouterMessage(String serviceName, long lastConsulIndex) {
