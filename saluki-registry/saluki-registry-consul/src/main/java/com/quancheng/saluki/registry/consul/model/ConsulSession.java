@@ -7,33 +7,20 @@
  */
 package com.quancheng.saluki.registry.consul.model;
 
-import com.ecwid.consul.v1.session.model.NewSession;
-
 /**
  * @author shimingliu 2017年1月24日 上午10:46:03
  * @version ConsulSession.java, v 0.0.1 2017年1月24日 上午10:46:03 shimingliu
  */
 public final class ConsulSession {
 
-    private NewSession         session;
-
     private String             sessionId;
 
     private ConsulEphemralNode ephemralNode;
 
-    public ConsulSession(NewSession session, String sessionId, ConsulEphemralNode ephemralNode){
+    public ConsulSession(String sessionId, ConsulEphemralNode ephemralNode){
         super();
-        this.session = session;
         this.sessionId = sessionId;
         this.ephemralNode = ephemralNode;
-    }
-
-    public NewSession getSession() {
-        return session;
-    }
-
-    public void setSession(NewSession session) {
-        this.session = session;
     }
 
     public String getSessionId() {
@@ -56,6 +43,7 @@ public final class ConsulSession {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((ephemralNode == null) ? 0 : ephemralNode.hashCode());
         result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
         return result;
     }
@@ -66,10 +54,18 @@ public final class ConsulSession {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         ConsulSession other = (ConsulSession) obj;
+        if (ephemralNode == null) {
+            if (other.ephemralNode != null) return false;
+        } else if (!ephemralNode.equals(other.ephemralNode)) return false;
         if (sessionId == null) {
             if (other.sessionId != null) return false;
         } else if (!sessionId.equals(other.sessionId)) return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ConsulSession [sessionId=" + sessionId + ", ephemralNode=" + ephemralNode + "]";
     }
 
 }

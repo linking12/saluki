@@ -67,7 +67,7 @@ public class ConsulClient {
                     log.info("retry registry znode failed", e);
                 }
             }
-        }, 0, ConsulConstants.TTL * 5, TimeUnit.SECONDS);
+        }, ConsulConstants.HEARTBEAT_CIRCLE, ConsulConstants.HEARTBEAT_CIRCLE, TimeUnit.MILLISECONDS);
         log.info("ConsulEcwidClient init finish. client host:" + host + ", port:" + port);
     }
 
@@ -110,10 +110,10 @@ public class ConsulClient {
             NewSession newSession = ephemralNode.getNewSession();
             synchronized (lock) {
                 sessionId = client.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
-                ConsulSession session = new ConsulSession(newSession, sessionId, ephemralNode);
-                ttlScheduler.addHeartbeatSession(session);
             }
         }
+        ConsulSession session = new ConsulSession(sessionId, ephemralNode);
+        ttlScheduler.addHeartbeatSession(session);
         PutParams kvPutParams = new PutParams();
         kvPutParams.setAcquireSession(sessionId);
         client.setKVValue(ephemralNode.getEphemralNodeKey(), ephemralNode.getEphemralNodeValue(), kvPutParams);

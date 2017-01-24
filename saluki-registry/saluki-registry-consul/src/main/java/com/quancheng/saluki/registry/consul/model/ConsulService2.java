@@ -42,21 +42,32 @@ public class ConsulService2 {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((newService == null) ? 0 : newService.hashCode());
+        result = prime * result + ((service == null) ? 0 : service.hashCode());
+        return result;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         ConsulService2 other = (ConsulService2) obj;
         if (newService == null) {
-            if (other.newService != null) {
-                return false;
-            }
-        } else if (other.newService != null) {
-            if (!newService.getId().equals(other.newService.getId())) {
-                return false;
-            }
-        }
+            if (other.newService != null) return false;
+        } else if (!newService.equals(other.newService)) return false;
+        if (service == null) {
+            if (other.service != null) return false;
+        } else if (!service.equals(other.service)) return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ConsulService2 [service=" + service + ", newService=" + newService + "]";
     }
 
 }

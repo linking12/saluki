@@ -102,14 +102,18 @@ public class TtlScheduler {
 
         @Override
         public void run() {
+            Set<String> sessionIds = Sets.newHashSet();
             for (ConsulSession session : sessions) {
                 try {
                     String sessionId = session.getSessionId();
-                    client.renewSession(sessionId, QueryParams.DEFAULT);
+                    if (!sessionIds.contains(sessionId)) {
+                        client.renewSession(sessionId, QueryParams.DEFAULT);
+                        sessionIds.add(sessionId);
+                    }
                     log.debug("Sending consul heartbeat for: " + sessionId);
                 } catch (Throwable e) {
-                    failedsessions.add(session);
-                    sessions.remove(session);
+                    failedsessions.addAll(sessions);
+                    sessions.clear();
                     log.error(e.getMessage(), e);
                 }
             }
