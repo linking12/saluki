@@ -1,4 +1,5 @@
 stages:
+  - jar-build
   - docker-build
 before_script:
   - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:V1.5.2-`TZ=CST-8 date '+%Y%m%d'` 
@@ -33,6 +34,5 @@ build_images:
     - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
     - echo "Push Image:" $aliimagemonitor " to repository..."
     - docker push $aliimagemonitor
-  
    only:
     - V1.5.2
