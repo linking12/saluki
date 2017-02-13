@@ -36,8 +36,7 @@ public class ScriptRouter extends GrpcRouter {
         super(rule);
         engine = new ScriptEngineManager().getEngineByName(type);
         if (engine == null) {
-            throw new IllegalStateException(new IllegalStateException("Unsupported route rule type: " + type
-                                                                      + ", rule: " + rule));
+            throw new IllegalStateException("Unsupported route rule type: " + type + ", rule: " + rule);
         }
     }
 
