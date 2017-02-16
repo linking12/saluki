@@ -152,11 +152,14 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
         private final NameResolver.Listener listener;
 
+        private final Attributes            affinity;
+
         public GrpcNotify(Attributes affinity){
             this.currentServer = affinity.get(GrpcAsyncCall.REMOTE_ADDR_KEY);
             this.servers = affinity.get(GrpcAsyncCall.PICKED_REMOTE_ADDR_KEYS);
             this.registryServers = affinity.get(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS);
             this.listener = affinity.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
+            this.affinity = affinity;
         }
 
         public void onRefreshChannel() {
@@ -191,15 +194,11 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         private void notifyChannel(List<SocketAddress> servers) {
             if (listener != null && registryServers != null) {
                 List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
-                Attributes config = Attributes.newBuilder()//
-                                              .set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener)//
-                                              .set(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS, registryServers)//
-                                              .build();
                 for (SocketAddress sock : servers) {
-                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, config);
+                    ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, affinity);
                     resolvedServers.add(serverInfo);
                 }
-                listener.onUpdate(Collections.singletonList(resolvedServers), config);
+                listener.onUpdate(Collections.singletonList(resolvedServers), affinity);
             }
         }
     }
