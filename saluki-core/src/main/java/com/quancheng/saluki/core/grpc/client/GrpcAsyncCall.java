@@ -48,8 +48,6 @@ public interface GrpcAsyncCall {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public Attributes getAffinity();
-
     public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions,
                                                     final Attributes atributes) {
         CallOptions callOptions = CallOptions.DEFAULT.withAffinity(atributes);
@@ -63,11 +61,6 @@ public interface GrpcAsyncCall {
             @Override
             public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method) {
                 return getBlockingResult(createUnaryListener(request, buildAsyncRpc(method)));
-            }
-
-            @Override
-            public Attributes getAffinity() {
-                return callOptions.getAffinity();
             }
 
             /**

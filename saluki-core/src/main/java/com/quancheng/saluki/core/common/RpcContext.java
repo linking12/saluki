@@ -60,8 +60,9 @@ public class RpcContext {
         return this;
     }
 
-    public void clearAttachments() {
+    public void clear() {
         this.attachments.clear();
+        this.values.clear();
     }
 
     public Map<String, Object> get() {
