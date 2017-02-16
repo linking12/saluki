@@ -32,7 +32,6 @@ import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
-import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
 import io.grpc.Status;
 import io.grpc.TransportManager;
@@ -205,13 +204,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
-            NameResolver.Listener nameResolverListener = this.nameNameResolver_attributes.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
-            List<SocketAddress> remoteAddressList = this.nameNameResolver_attributes.get(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS);
-            if (nameResolverListener != null) {
-                data.put(GrpcAsyncCall.NAMERESOVER_LISTENER, nameResolverListener);
-            }
-            if (remoteAddressList != null) {
-                data.put(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS, remoteAddressList);
+            for (Key<?> key : this.nameNameResolver_attributes.keys()) {
+                Object obj = this.nameNameResolver_attributes.get(key);
+                data.put(key, obj);
             }
             if (currentAddress != null) {
                 data.put(GrpcAsyncCall.REMOTE_ADDR_KEY, currentAddress);
