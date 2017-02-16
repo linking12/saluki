@@ -231,7 +231,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                         if (updatedServers.isEmpty()) {
                             throw new IllegalArgumentException("The router condition has stoped all server address");
                         } else {
-                            if (haveChanged(addressesCopy.getServers(), updatedServers)) {
+                            if (haveChanged(updatedServers, addressesCopy.getServers())) {
                                 RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
                                 for (SocketAddress server : updatedServers) {
                                     listBuilder.add(server);
@@ -251,6 +251,9 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             if (newServers == null | newServers.isEmpty()) {
                 return false;
             } else if (oldServers != null) {
+                if (newServers.size() != oldServers.size()) {
+                    return false;
+                }
                 boolean result = false;
                 for (int i = 0; i < newServers.size(); i++) {
                     if (result) {
