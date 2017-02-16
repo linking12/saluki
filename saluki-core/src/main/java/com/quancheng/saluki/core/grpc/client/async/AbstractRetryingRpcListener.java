@@ -104,11 +104,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         Metadata metadata = new Metadata();
         metadata.merge(originalMetadata);
         this.call = rpc.newCall(callOptions);
-        rpc.start(this.call, getRetryRequest(), this, metadata);
-    }
-
-    protected RequestT getRetryRequest() {
-        return request;
+        rpc.start(this.call, this.request, this, metadata);
     }
 
     public void start() {
