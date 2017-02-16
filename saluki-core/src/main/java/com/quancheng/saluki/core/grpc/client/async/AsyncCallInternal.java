@@ -1,7 +1,5 @@
 package com.quancheng.saluki.core.grpc.client.async;
 
-import com.google.common.base.Predicate;
-
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -18,7 +16,7 @@ public interface AsyncCallInternal {
         void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
                    Metadata metadata);
 
-        boolean isRetryable(REQUEST request);
+        boolean isRetryable();
 
         MethodDescriptor<REQUEST, RESPONSE> getMethodDescriptor();
 
@@ -26,13 +24,13 @@ public interface AsyncCallInternal {
 
     public static <RequestT, ResponseT> AsyncCallClientInternal<RequestT, ResponseT> createGrpcAsyncCall(final Channel channel,
                                                                                                          final MethodDescriptor<RequestT, ResponseT> method,
-                                                                                                         final Predicate<RequestT> isRetryable) {
+                                                                                                         final Boolean isRetryable) {
 
         return new AsyncCallClientInternal<RequestT, ResponseT>() {
 
             @Override
-            public boolean isRetryable(RequestT request) {
-                return isRetryable.apply(request);
+            public boolean isRetryable() {
+                return isRetryable;
             }
 
             @Override

@@ -15,7 +15,7 @@ import com.quancheng.test.model.user.UserCreateResponse;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-    @SalukiReference
+    @SalukiReference(retries = 3)
     private HelloService                           helloService;
 
     @SalukiReference

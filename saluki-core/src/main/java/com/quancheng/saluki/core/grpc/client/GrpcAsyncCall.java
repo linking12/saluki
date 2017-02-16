@@ -11,7 +11,6 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -77,7 +76,7 @@ public interface GrpcAsyncCall {
             private AsyncCallClientInternal<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
                 AsyncCallClientInternal<Message, Message> asyncRpc = AsyncCallInternal.createGrpcAsyncCall(channel,
                                                                                                            method,
-                                                                                                           Predicates.<Message> alwaysTrue());
+                                                                                                           retryOptions.isEnableRetry());
                 return asyncRpc;
             }
 

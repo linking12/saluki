@@ -113,7 +113,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             }
             RoundRobinServerListExtend<T> addressCopyRouted = routerAddress(addressesCopy);
             T t = addressCopyRouted.getTransportForNextServer();
-            this.doSaveRemoteInfo(addressCopyRouted);
+            this.mergeNameResolverAttribute2ClientInvokeAttribute(addressCopyRouted);
             return t;
         }
 
@@ -226,7 +226,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             return providerUrls;
         }
 
-        private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
+        private void mergeNameResolverAttribute2ClientInvokeAttribute(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
@@ -276,7 +276,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                         public T get() {
                             RoundRobinServerListExtend<T> addressCopyRouted = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
                             T t = addressCopyRouted.getTransportForNextServer();
-                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressCopyRouted);
+                            RoundRobinLoadBalancer.this.mergeNameResolverAttribute2ClientInvokeAttribute(addressCopyRouted);
                             return t;
                         }
                     });
