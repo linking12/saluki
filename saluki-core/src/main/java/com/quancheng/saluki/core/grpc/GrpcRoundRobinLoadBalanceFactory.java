@@ -174,16 +174,42 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                         if (updatedServers.isEmpty()) {
                             throw new IllegalArgumentException("The router condition has stoped all server address");
                         } else {
-                            RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                            for (SocketAddress server : updatedServers) {
-                                listBuilder.add(server);
+                            if (haveChanged(addressesCopy.getServers(), updatedServers)) {
+                                RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                                for (SocketAddress server : updatedServers) {
+                                    listBuilder.add(server);
+                                }
+                                return listBuilder.build();
+                            } else {
+                                return addressesCopy;
                             }
-                            return listBuilder.build();
                         }
                     }
                 }
             }
             return addressesCopy;
+        }
+
+        private boolean haveChanged(List<SocketAddress> newServers, List<SocketAddress> oldServers) {
+            if (newServers == null | newServers.isEmpty()) {
+                return false;
+            } else if (oldServers != null) {
+                boolean result = false;
+                for (int i = 0; i < newServers.size(); i++) {
+                    if (result) {
+                        for (int j = 0; j < oldServers.size(); j++) {
+                            if (newServers.get(i).equals(oldServers.get(j))) {
+                                result = false;
+                                break;
+                            } else {
+                                result = true;
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+            return true;
         }
 
         private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {
