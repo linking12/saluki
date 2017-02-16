@@ -141,32 +141,32 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     private static class GrpcNotify {
 
-        private final List<SocketAddress>   servers;
+        private final List<SocketAddress>   roundrobined_servers;
 
-        private final List<SocketAddress>   registryServers;
+        private final List<SocketAddress>   registry_servers;
 
-        private final SocketAddress         currentServer;
+        private final SocketAddress         current_server;
 
         private final NameResolver.Listener listener;
 
         private final Attributes            affinity;
 
         public GrpcNotify(Attributes affinity){
-            this.currentServer = affinity.get(GrpcAsyncCall.REMOTE_ADDR_KEY);
-            this.servers = affinity.get(GrpcAsyncCall.PICKED_REMOTE_ADDR_KEYS);
-            this.registryServers = affinity.get(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS);
+            this.current_server = affinity.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+            this.roundrobined_servers = affinity.get(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS);
+            this.registry_servers = affinity.get(GrpcAsyncCall.REGISTRY_REMOTE_ADDR_KEYS);
             this.listener = affinity.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
             this.affinity = affinity;
         }
 
         public void onRefreshChannel() {
             List<SocketAddress> serversCopy = Lists.newArrayList();
-            if (listener != null && currentServer != null && servers != null) {
-                InetSocketAddress currentSock = (InetSocketAddress) currentServer;
-                int serverSize = servers.size();
+            if (listener != null && current_server != null && roundrobined_servers != null) {
+                InetSocketAddress currentSock = (InetSocketAddress) current_server;
+                int serverSize = roundrobined_servers.size();
                 if (serverSize >= 2) {
                     for (int i = 0; i < serverSize; i++) {
-                        InetSocketAddress inetSock = (InetSocketAddress) servers.get(i);
+                        InetSocketAddress inetSock = (InetSocketAddress) roundrobined_servers.get(i);
                         boolean hostequal = inetSock.getHostName().equals(currentSock.getHostName());
                         boolean portequal = inetSock.getPort() == currentSock.getPort();
                         if (!hostequal || !portequal) {
@@ -174,7 +174,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                         }
                     }
                 } else {
-                    serversCopy.addAll(servers);
+                    serversCopy.addAll(roundrobined_servers);
                 }
                 if (serversCopy.size() != 0) {
                     notifyChannel(serversCopy);
@@ -183,13 +183,13 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         }
 
         public void resetChannel() {
-            if (registryServers != null) {
-                notifyChannel(registryServers);
+            if (registry_servers != null) {
+                notifyChannel(registry_servers);
             }
         }
 
         private void notifyChannel(List<SocketAddress> servers) {
-            if (listener != null && registryServers != null) {
+            if (listener != null && registry_servers != null) {
                 List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
                 for (SocketAddress sock : servers) {
                     ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, affinity);

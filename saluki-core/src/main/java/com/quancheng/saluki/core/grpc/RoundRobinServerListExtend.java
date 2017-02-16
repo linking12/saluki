@@ -54,7 +54,7 @@ public final class RoundRobinServerListExtend<T> {
         if (currentServer == null) {
             return requestDroppingTransport;
         } else {
-            RpcContext.getContext().set(Constants.REMOTE_ADDRESS, getCurrent(currentServer));
+            RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, getCurrent(currentServer));
         }
         this.currentServer = currentServer;
         return tm.getTransport(currentServer);

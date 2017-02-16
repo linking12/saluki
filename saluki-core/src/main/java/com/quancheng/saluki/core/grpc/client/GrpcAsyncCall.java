@@ -34,15 +34,15 @@ import io.grpc.Status;
  */
 public interface GrpcAsyncCall {
 
-    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL               = Attributes.Key.of("grpc-refurl");
+    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL                  = Attributes.Key.of("grpc-refurl");
 
-    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY            = Attributes.Key.of("remote-addr");
+    public static final Attributes.Key<SocketAddress>         CURRENT_ADDR_KEY              = Attributes.Key.of("current-address");
 
-    public static final Attributes.Key<List<SocketAddress>>   PICKED_REMOTE_ADDR_KEYS    = Attributes.Key.of("picked-remote-addrs");
+    public static final Attributes.Key<List<SocketAddress>>   ROUNDROBINED_REMOTE_ADDR_KEYS = Attributes.Key.of("roundrobined-remote-addresss");
 
-    public static final Attributes.Key<List<SocketAddress>>   NOTPICKED_REMOTE_ADDR_KEYS = Attributes.Key.of("notpicked-remote-addrs");
+    public static final Attributes.Key<List<SocketAddress>>   REGISTRY_REMOTE_ADDR_KEYS     = Attributes.Key.of("registry-remote-addresss");
 
-    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER       = Attributes.Key.of("nameResolver-Listener");
+    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER          = Attributes.Key.of("nameResolver-Listener");
 
     public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 

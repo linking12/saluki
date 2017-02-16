@@ -121,15 +121,15 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             throw rpcService;
         } finally {
             log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-                                   getRemoteAddress()));
+                                   getProviderServer()));
             request.returnChannel(channel);
             getConcurrent(serviceName, methodName).decrementAndGet();
         }
     }
 
-    private InetSocketAddress getRemoteAddress() {
-        InetSocketAddress remoteAddress = (InetSocketAddress) RpcContext.getContext().get(Constants.REMOTE_ADDRESS);
-        return remoteAddress;
+    private InetSocketAddress getProviderServer() {
+        InetSocketAddress provider = (InetSocketAddress) RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
+        return provider;
     }
 
     private Attributes buildAttributes(GrpcURL url) {
@@ -160,7 +160,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = getRemoteAddress().getHostName();
+            String provider = getProviderServer().getHostName();
             String host = refUrl.getHost();
             Integer port = refUrl.getPort();
             if (clientServerMonitor == null) {

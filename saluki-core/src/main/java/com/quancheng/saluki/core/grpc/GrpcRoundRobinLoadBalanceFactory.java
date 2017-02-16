@@ -129,10 +129,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 data.put(key, obj);
             }
             if (currentAddress != null) {
-                data.put(GrpcAsyncCall.REMOTE_ADDR_KEY, currentAddress);
+                data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentAddress);
             }
             if (addresses != null) {
-                data.put(GrpcAsyncCall.PICKED_REMOTE_ADDR_KEYS, addresses);
+                data.put(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
             }
             try {
                 Class<?> classType = clientInvoke_attributes.getClass();
