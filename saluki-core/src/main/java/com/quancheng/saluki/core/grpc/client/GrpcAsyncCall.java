@@ -75,8 +75,7 @@ public interface GrpcAsyncCall {
              */
             private AsyncCallClientInternal<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
                 AsyncCallClientInternal<Message, Message> asyncRpc = AsyncCallInternal.createGrpcAsyncCall(channel,
-                                                                                                           method,
-                                                                                                           retryOptions.isEnableRetry());
+                                                                                                           method);
                 return asyncRpc;
             }
 

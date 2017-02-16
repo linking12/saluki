@@ -234,6 +234,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 Object obj = this.nameNameResolver_attributes.get(key);
                 data.put(key, obj);
             }
+            for (Key<?> key : this.clientInvoke_attributes.keys()) {
+                Object obj = this.clientInvoke_attributes.get(key);
+                data.put(key, obj);
+            }
             if (currentAddress != null) {
                 data.put(GrpcAsyncCall.REMOTE_ADDR_KEY, currentAddress);
             }

@@ -11,32 +11,17 @@ public interface AsyncCallInternal {
 
     public static interface AsyncCallClientInternal<REQUEST, RESPONSE> {
 
-        ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
+        public ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
 
-        void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
-                   Metadata metadata);
-
-        boolean isRetryable();
-
-        MethodDescriptor<REQUEST, RESPONSE> getMethodDescriptor();
+        public void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
+                          Metadata metadata);
 
     }
 
     public static <RequestT, ResponseT> AsyncCallClientInternal<RequestT, ResponseT> createGrpcAsyncCall(final Channel channel,
-                                                                                                         final MethodDescriptor<RequestT, ResponseT> method,
-                                                                                                         final Boolean isRetryable) {
+                                                                                                         final MethodDescriptor<RequestT, ResponseT> method) {
 
         return new AsyncCallClientInternal<RequestT, ResponseT>() {
-
-            @Override
-            public boolean isRetryable() {
-                return isRetryable;
-            }
-
-            @Override
-            public MethodDescriptor<RequestT, ResponseT> getMethodDescriptor() {
-                return method;
-            }
 
             @Override
             public ClientCall<RequestT, ResponseT> newCall(CallOptions callOptions) {
