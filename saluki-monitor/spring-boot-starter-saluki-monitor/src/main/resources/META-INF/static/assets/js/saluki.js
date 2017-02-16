@@ -22,6 +22,8 @@ $(document).ready(function(){
         render(URI(window.location.href));
     });
     $('#editor_btn_submitParam').click(function() {
+             editor_response.set('{There is have no response}');
+             $('#editor_btn_submitParam').attr('disabled',"true");
 	         var data = {
 	           service:$('#servicetest_serviceName').val(),
 	           method:$('#servicetest_methodName').val(),
@@ -35,12 +37,14 @@ $(document).ready(function(){
 	            contentType: "application/json",  
 	            data: JSON.stringify(data),
 	            success: function(result) { 
+	               $('#editor_btn_submitParam').removeAttr("disabled");
 	               editor_response.set(result);
 	            },
 	            error : function(jqXHR, textStatus, errorThrown){
 	                $('#editor_holder_response').width(600);
 	                $('#editor_holder_response').height(200);
 	                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
+	                $('#editor_btn_submitParam').removeAttr("disabled");
 	            }
 	         }); 
     });
