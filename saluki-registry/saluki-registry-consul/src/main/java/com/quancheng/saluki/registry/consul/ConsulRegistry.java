@@ -14,11 +14,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -200,12 +202,26 @@ public class ConsulRegistry extends FailbackRegistry {
         }
 
         private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
-            if (newUrls == null | newUrls.isEmpty()) {
-                return false;
-            } else if (oldUrls != null && oldUrls.containsAll(newUrls)) {
+            if (null == newUrls || null == oldUrls) {
                 return false;
             }
-            return true;
+            if (newUrls.size() != oldUrls.size()) {
+                return false;
+            }
+            boolean result = true;
+            for (int i = 0; i < newUrls.size(); i++) {
+                if (result) {
+                    for (int j = 0; j < oldUrls.size(); j++) {
+                        if (newUrls.get(i).equals(oldUrls.get(j))) {
+                            result = true;
+                            break;
+                        } else {
+                            result = false;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         @Override
