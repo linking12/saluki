@@ -198,7 +198,7 @@ public class CollectionUtils {
 
     public static boolean isSameCollection(Collection<?> newCollection, Collection<?> oldCollection) {
         if (newCollection == null || newCollection.isEmpty()) {
-            return false;
+            return true;
         } else if (oldCollection != null) {
             if (newCollection.containsAll(oldCollection) && oldCollection.containsAll(newCollection)) {
                 return true;

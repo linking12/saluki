@@ -218,8 +218,8 @@ public class ConsulRegistry extends FailbackRegistry {
                         for (Map.Entry<String, List<GrpcURL>> entry : groupNewUrls.entrySet()) {
                             List<GrpcURL> oldUrls = groupCacheUrls.get(entry.getKey());
                             List<GrpcURL> newUrls = entry.getValue();
-                            boolean haveChanged = CollectionUtils.isSameCollection(newUrls, oldUrls);
-                            if (haveChanged) {
+                            boolean isSame = CollectionUtils.isSameCollection(newUrls, oldUrls);
+                            if (!isSame) {
                                 groupCacheUrls.put(entry.getKey(), newUrls);
                                 Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>> listenerPair = notifyServiceListeners.get(entry.getKey());
                                 if (listenerPair != null) {

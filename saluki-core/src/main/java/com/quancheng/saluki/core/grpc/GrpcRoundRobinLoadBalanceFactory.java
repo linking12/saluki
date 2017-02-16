@@ -27,7 +27,6 @@ import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
-import com.quancheng.saluki.core.utils.CollectionUtils;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
@@ -232,15 +231,11 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                         if (updatedServers.isEmpty()) {
                             throw new IllegalArgumentException("The router condition has stoped all server address");
                         } else {
-                            if (CollectionUtils.isSameCollection(updatedServers, addressesCopy.getServers())) {
-                                RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                                for (SocketAddress server : updatedServers) {
-                                    listBuilder.add(server);
-                                }
-                                return listBuilder.build();
-                            } else {
-                                return addressesCopy;
+                            RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                            for (SocketAddress server : updatedServers) {
+                                listBuilder.add(server);
                             }
+                            return listBuilder.build();
                         }
                     }
                 }
