@@ -221,7 +221,6 @@ public class ConsulRegistry extends FailbackRegistry {
                 return result;
             }
             return true;
-
         }
 
         @Override
