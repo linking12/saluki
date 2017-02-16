@@ -11,7 +11,6 @@ service Health {
 
 message HealthCheckRequest {
   string service = 1;
-  string serviceip = 2;
 }
 
 message HealthCheckResponse {
