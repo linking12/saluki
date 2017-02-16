@@ -202,26 +202,26 @@ public class ConsulRegistry extends FailbackRegistry {
         }
 
         private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
-            if (null == newUrls || null == oldUrls) {
+            if (newUrls == null | newUrls.isEmpty()) {
                 return false;
-            }
-            if (newUrls.size() != oldUrls.size()) {
-                return false;
-            }
-            boolean result = true;
-            for (int i = 0; i < newUrls.size(); i++) {
-                if (result) {
-                    for (int j = 0; j < oldUrls.size(); j++) {
-                        if (newUrls.get(i).equals(oldUrls.get(j))) {
-                            result = true;
-                            break;
-                        } else {
-                            result = false;
+            } else if (oldUrls != null) {
+                boolean result = false;
+                for (int i = 0; i < newUrls.size(); i++) {
+                    if (result) {
+                        for (int j = 0; j < oldUrls.size(); j++) {
+                            if (newUrls.get(i).equals(oldUrls.get(j))) {
+                                result = false;
+                                break;
+                            } else {
+                                result = true;
+                            }
                         }
                     }
                 }
+                return result;
             }
-            return result;
+            return true;
+
         }
 
         @Override
