@@ -32,6 +32,7 @@ import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.internal.FailbackRegistry;
+import com.quancheng.saluki.core.utils.CollectionUtils;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.model.ConsulRouterResp;
@@ -201,28 +202,6 @@ public class ConsulRegistry extends FailbackRegistry {
             this.group = group;
         }
 
-        private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
-            if (newUrls == null | newUrls.isEmpty()) {
-                return false;
-            } else if (oldUrls != null) {
-                boolean result = false;
-                for (int i = 0; i < newUrls.size(); i++) {
-                    if (result) {
-                        for (int j = 0; j < oldUrls.size(); j++) {
-                            if (newUrls.get(i).equals(oldUrls.get(j))) {
-                                result = false;
-                                break;
-                            } else {
-                                result = true;
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-            return true;
-        }
-
         @Override
         public void run() {
             while (true) {
@@ -239,7 +218,7 @@ public class ConsulRegistry extends FailbackRegistry {
                         for (Map.Entry<String, List<GrpcURL>> entry : groupNewUrls.entrySet()) {
                             List<GrpcURL> oldUrls = groupCacheUrls.get(entry.getKey());
                             List<GrpcURL> newUrls = entry.getValue();
-                            boolean haveChanged = haveChanged(newUrls, oldUrls);
+                            boolean haveChanged = CollectionUtils.isSameCollection(newUrls, oldUrls);
                             if (haveChanged) {
                                 groupCacheUrls.put(entry.getKey(), newUrls);
                                 Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>> listenerPair = notifyServiceListeners.get(entry.getKey());
