@@ -45,7 +45,7 @@ public class HeaderServerInterceptor implements ServerInterceptor {
             @Override
             public void request(int numMessages) {
                 InetSocketAddress remoteAddress = (InetSocketAddress) call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-                RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, remoteAddress.getHostString());
+                RpcContext.getContext().setAttachment(Constants.CONSUMER_ADDRESS, remoteAddress.getHostString());
                 copyMetadataToThreadLocal(headers);
                 super.request(numMessages);
             }
@@ -69,8 +69,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
         try {
             if (attachments != null) {
                 Map<String, String> attachmentsMap = SerializerUtils.fromJson(attachments,
-                                                                         new TypeToken<Map<String, String>>() {
-                                                                         }.getType());
+                                                                              new TypeToken<Map<String, String>>() {
+                                                                              }.getType());
                 RpcContext.getContext().setAttachments(attachmentsMap);
             }
             if (values != null) {

@@ -14,11 +14,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -30,6 +32,7 @@ import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.internal.FailbackRegistry;
+import com.quancheng.saluki.core.utils.CollectionUtils;
 import com.quancheng.saluki.registry.consul.internal.ConsulClient;
 import com.quancheng.saluki.registry.consul.model.ConsulEphemralNode;
 import com.quancheng.saluki.registry.consul.model.ConsulRouterResp;
@@ -86,7 +89,7 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     protected void doUnregister(GrpcURL url) {
         ConsulService service = this.buildConsulHealthService(url);
-        client.unregisterService(service.getId());
+        client.unregisterService(service);
     }
 
     @Override
@@ -199,15 +202,6 @@ public class ConsulRegistry extends FailbackRegistry {
             this.group = group;
         }
 
-        private boolean haveChanged(List<GrpcURL> newUrls, List<GrpcURL> oldUrls) {
-            if (newUrls == null | newUrls.isEmpty()) {
-                return false;
-            } else if (oldUrls != null && oldUrls.containsAll(newUrls)) {
-                return false;
-            }
-            return true;
-        }
-
         @Override
         public void run() {
             while (true) {
@@ -224,8 +218,8 @@ public class ConsulRegistry extends FailbackRegistry {
                         for (Map.Entry<String, List<GrpcURL>> entry : groupNewUrls.entrySet()) {
                             List<GrpcURL> oldUrls = groupCacheUrls.get(entry.getKey());
                             List<GrpcURL> newUrls = entry.getValue();
-                            boolean haveChanged = haveChanged(newUrls, oldUrls);
-                            if (haveChanged) {
+                            boolean isSame = CollectionUtils.isSameCollection(newUrls, oldUrls);
+                            if (!isSame) {
                                 groupCacheUrls.put(entry.getKey(), newUrls);
                                 Pair<GrpcURL, Set<NotifyListener.NotifyServiceListener>> listenerPair = notifyServiceListeners.get(entry.getKey());
                                 if (listenerPair != null) {

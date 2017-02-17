@@ -11,7 +11,6 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import com.google.common.base.Predicates;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -35,21 +34,19 @@ import io.grpc.Status;
  */
 public interface GrpcAsyncCall {
 
-    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL               = Attributes.Key.of("grpc-refurl");
+    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL                  = Attributes.Key.of("grpc-refurl");
 
-    public static final Attributes.Key<SocketAddress>         REMOTE_ADDR_KEY            = Attributes.Key.of("remote-addr");
+    public static final Attributes.Key<SocketAddress>         CURRENT_ADDR_KEY              = Attributes.Key.of("current-address");
 
-    public static final Attributes.Key<List<SocketAddress>>   PICKED_REMOTE_ADDR_KEYS    = Attributes.Key.of("picked-remote-addrs");
+    public static final Attributes.Key<List<SocketAddress>>   ROUNDROBINED_REMOTE_ADDR_KEYS = Attributes.Key.of("roundrobined-remote-addresss");
 
-    public static final Attributes.Key<List<SocketAddress>>   NOTPICKED_REMOTE_ADDR_KEYS = Attributes.Key.of("notpicked-remote-addrs");
+    public static final Attributes.Key<List<SocketAddress>>   REGISTRY_REMOTE_ADDR_KEYS     = Attributes.Key.of("registry-remote-addresss");
 
-    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER       = Attributes.Key.of("nameResolver-Listener");
+    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER          = Attributes.Key.of("nameResolver-Listener");
 
     public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
-
-    public Attributes getAffinity();
 
     public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions,
                                                     final Attributes atributes) {
@@ -66,18 +63,12 @@ public interface GrpcAsyncCall {
                 return getBlockingResult(createUnaryListener(request, buildAsyncRpc(method)));
             }
 
-            @Override
-            public Attributes getAffinity() {
-                return callOptions.getAffinity();
-            }
-
             /**
              * Help Method
              */
             private AsyncCallClientInternal<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
                 AsyncCallClientInternal<Message, Message> asyncRpc = AsyncCallInternal.createGrpcAsyncCall(channel,
-                                                                                                           method,
-                                                                                                           Predicates.<Message> alwaysTrue());
+                                                                                                           method);
                 return asyncRpc;
             }
 

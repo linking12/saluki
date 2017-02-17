@@ -72,10 +72,10 @@ public final class GrpcEngine {
     private void initChannelPool() {
         GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
         config.setMaxTotal(500);
-        config.setMaxTotalPerKey(1);
+        config.setMaxTotalPerKey(5);
         config.setBlockWhenExhausted(true);
-        config.setMinIdlePerKey(0);
-        config.setMaxWaitMillis(-1);
+        config.setMinIdlePerKey(3);
+        config.setMaxWaitMillis(10);
         config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
         config.setTestOnBorrow(false);
         config.setTestOnReturn(false);

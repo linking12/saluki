@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
@@ -61,12 +62,15 @@ public class MonitorAutoconfiguration {
 
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
-            registry.addResourceHandler("/service/dist/**")//
-                    .addResourceLocations("classpath:/META-INF/static/dist/");
-            registry.addResourceHandler("service.html").//
+            registry.addResourceHandler("/assets/**")//
+                    .addResourceLocations("classpath:/META-INF/static/assets/");
+            registry.addResourceHandler("doc.html").//
                     addResourceLocations("classpath:/META-INF/static/");
-            registry.addResourceHandler("/webjars/**")//
-                    .addResourceLocations("classpath:/META-INF/resources/webjars/");
+        }
+
+        @Override
+        public void addViewControllers(ViewControllerRegistry registry) {
+            registry.addViewController("/doc").setViewName("/doc.html");
         }
 
     };

@@ -196,6 +196,19 @@ public class CollectionUtils {
         return array != null && array.length > 0;
     }
 
+    public static boolean isSameCollection(Collection<?> newCollection, Collection<?> oldCollection) {
+        if (newCollection == null || newCollection.isEmpty()) {
+            return true;
+        } else if (oldCollection != null) {
+            if (newCollection.containsAll(oldCollection) && oldCollection.containsAll(newCollection)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private CollectionUtils(){
     }
 }

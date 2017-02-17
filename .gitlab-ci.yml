@@ -2,9 +2,9 @@ stages:
   - jar-build
   - docker-build
 before_script:
-  - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:`TZ=CST-8 date '+%Y%m%d'` 
-  - aliimageserver=nexus.quancheng-ec.com:5000/saluki-example-server:`TZ=CST-8 date '+%Y%m%d'`
-  - aliimagemonitor=nexus.quancheng-ec.com:5000/saluki-monitor:`TZ=CST-8 date '+%Y%m%d'`
+  - aliimageclient=nexus.quancheng-ec.com:5000/saluki-example-client:V1.5.2-`TZ=CST-8 date '+%Y%m%d'` 
+  - aliimageserver=nexus.quancheng-ec.com:5000/saluki-example-server:V1.5.2-`TZ=CST-8 date '+%Y%m%d'`
+  - aliimagemonitor=nexus.quancheng-ec.com:5000/saluki-monitor:V1.5.2-`TZ=CST-8 date '+%Y%m%d'`
   - hostname -i
   - whoami
 build_jar:
@@ -15,11 +15,10 @@ build_jar:
     - mvn clean install
     - mvn deploy
   only:
-    - V1.5.1
-
+    - V1.5.2
+    
 build_images:
    stage: docker-build
-
    script:
     - echo `git rev-parse --short HEAD` >> saluki-monitor/saluki-monitor-console/bin/git.tag
     - echo $image
@@ -35,6 +34,5 @@ build_images:
     - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
     - echo "Push Image:" $aliimagemonitor " to repository..."
     - docker push $aliimagemonitor
-  
    only:
-    - V1.5.1
+    - V1.5.2

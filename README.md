@@ -16,6 +16,6 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 * 添加spring-boot-saluki依赖
 
 ```
-     compile group: "com.quancheng.saluki", name: "spring-boot-starter-saluki", version: "1.5.1+"
-     compile group: "com.quancheng.saluki", name: "spring-boot-starter-saluki-monitor", version: "1.5.1+"	 
+     compile group: "com.quancheng.saluki", name: "spring-boot-starter-saluki", version: "1.5.2+"
+     compile group: "com.quancheng.saluki", name: "spring-boot-starter-saluki-monitor", version: "1.5.2+"	 
 ```

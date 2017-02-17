@@ -17,6 +17,6 @@ public interface InvokeMapper {
 
     List<Map<String, String>> queryConsumer();
 
-    Map<String, String> queryProvider(Map<String, String> paramter);
+    List<Map<String, String>> queryProvider(Map<String, String> paramter);
 
 }

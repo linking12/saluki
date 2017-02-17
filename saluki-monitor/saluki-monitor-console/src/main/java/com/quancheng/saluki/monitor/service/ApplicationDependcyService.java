@@ -24,6 +24,7 @@ public class ApplicationDependcyService {
         for (Map<String, String> consumer : allConsumers) {
             String appName = consumer.get("application");
             String service = consumer.get("service");
+            String privider = consumer.get("provider");
             String callCount = String.valueOf(consumer.get("callCount"));
             ApplicationDependcy hasAddedApp = null;
             for (ApplicationDependcy ApplicationDependcy : appDepencys) {
@@ -37,10 +38,20 @@ public class ApplicationDependcyService {
             }
             Map<String, String> providerParam = Maps.newHashMap();
             providerParam.put("service", service);
-            Map<String, String> providerAppMap = invokeMapper.queryProvider(providerParam);
+            List<Map<String, String>> providerAppMaps = invokeMapper.queryProvider(providerParam);
             String parentAppName = null;
-            if (providerAppMap != null) {
-                parentAppName = providerAppMap.get("application");
+            if (providerAppMaps != null && providerAppMaps.size() == 1) {
+                parentAppName = providerAppMaps.get(0).get("application");
+            } else if (providerAppMaps != null && providerAppMaps.size() > 1) {
+                for (Map<String, String> providerAppMap : providerAppMaps) {
+                    if (providerAppMap.get("provider").equals(privider)) {
+                        parentAppName = providerAppMap.get("application");
+                        break;
+                    }
+                }
+                if (parentAppName == null) {
+                    parentAppName = "No monitor provider data";
+                }
             } else {
                 parentAppName = "No monitor provider data";
             }

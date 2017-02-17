@@ -95,6 +95,9 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         @GuardedBy("this")
         private volatile List<SocketAddress>               addresses;
 
+        @GuardedBy("this")
+        private volatile List<GrpcURL>                     urls;
+
         private final Map<String, String>                  routerMessages = Maps.newConcurrentMap();
 
         private final NotifyListener.NotifyServiceListener notifyListener = new NotifyListener.NotifyServiceListener() {
@@ -105,6 +108,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                                                                                       log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
                                                                                                + Arrays.toString(urls.toArray()));
                                                                                   }
+                                                                                  GrpcNameResolver.this.urls = urls;
                                                                                   notifyLoadBalance(urls);
                                                                               }
 
@@ -120,6 +124,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                                                                                       routerMessages.put(group,
                                                                                                          routerCondition);
                                                                                   }
+                                                                                  notifyLoadBalance(GrpcNameResolver.this.urls);
                                                                               }
 
                                                                           };
@@ -231,7 +236,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 builder.set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(GrpcAsyncCall.NOTPICKED_REMOTE_ADDR_KEYS, addresses);
+                builder.set(GrpcAsyncCall.REGISTRY_REMOTE_ADDR_KEYS, addresses);
             }
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {
