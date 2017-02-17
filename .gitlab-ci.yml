@@ -16,6 +16,7 @@ build_jar:
     - mvn deploy
   only:
     - V1.5.1
+    - V1.5.2-Trace
 
 build_images:
    stage: docker-build
