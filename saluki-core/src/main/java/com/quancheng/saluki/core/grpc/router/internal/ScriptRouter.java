@@ -31,12 +31,12 @@ public class ScriptRouter extends GrpcRouter {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptRouter.class);
 
-    private  ScriptEngine  engine;
+    private ScriptEngine        engine;
 
     public ScriptRouter(String type, String rule){
         super(rule);
         engine = new ScriptEngineManager().getEngineByName(type);
-        if (engine == null && StringUtils.equals(type,"javascript")) {
+        if (engine == null && StringUtils.equals(type, "javascript")) {
             engine = new ScriptEngineManager().getEngineByName("js");
         }
         if (engine == null) {
