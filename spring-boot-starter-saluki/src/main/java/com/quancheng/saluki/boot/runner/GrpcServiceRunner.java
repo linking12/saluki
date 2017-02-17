@@ -22,9 +22,11 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
+import org.springframework.util.ClassUtils;
 
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
+import com.quancheng.saluki.boot.common.GrpcAopUtils;
 import com.quancheng.saluki.boot.service.HealthImpl;
 import com.quancheng.saluki.core.config.RpcServiceConfig;
 import com.quancheng.saluki.service.Health;
@@ -72,12 +74,15 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                 for (Object instance : instances) {
                     SalukiService serviceAnnotation = instance.getClass().getAnnotation(SalukiService.class);
                     String serviceName = serviceAnnotation.service();
+                    Object target = instance;
                     if (StringUtils.isBlank(serviceName)) {
                         if (this.isGrpcServer(instance)) {
                             throw new java.lang.IllegalArgumentException("you use grpc stub service,must set service name,service instance is"
                                                                          + instance);
                         } else {
-                            serviceName = instance.getClass().getInterfaces()[0].getName();
+                            target = GrpcAopUtils.getTarget(target);
+                            Class<?>[] interfaces = ClassUtils.getAllInterfacesForClass(target.getClass());
+                            serviceName = interfaces[0].getName();
                         }
                     }
                     rpcSerivceConfig.addServiceDefinition(serviceName, getGroup(serviceAnnotation),

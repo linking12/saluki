@@ -15,6 +15,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.http.MediaType;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +28,7 @@ import com.google.gson.Gson;
 import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
+import com.quancheng.saluki.boot.common.GrpcAopUtils;
 import com.quancheng.saluki.boot.jaket.Jaket;
 import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
 import com.quancheng.saluki.boot.jaket.model.MetadataType;
@@ -70,7 +72,9 @@ public class TestController {
         try {
             Collection<Object> instances = getTypedBeansWithAnnotation(SalukiService.class);
             for (Object instance : instances) {
-                Class<?> clzz = instance.getClass().getInterfaces()[0];
+                Object target = GrpcAopUtils.getTarget(instance);
+                Class<?>[] interfaces = ClassUtils.getAllInterfacesForClass(target.getClass());
+                Class<?> clzz = interfaces[0];
                 Map<String, Object> serviceMap = Maps.newHashMap();
                 serviceMap.put("simpleName", clzz.getSimpleName());
                 serviceMap.put("name", clzz.getName());

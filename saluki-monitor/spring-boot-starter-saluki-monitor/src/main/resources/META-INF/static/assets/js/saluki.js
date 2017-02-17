@@ -45,6 +45,9 @@ $(document).ready(function(){
 	                $('#editor_holder_response').height(200);
 	                $('#editor_holder_response').html("<p class='text-info'>"+jqXHR.responseText+"</p>");
 	                $('#editor_btn_submitParam').removeAttr("disabled");
+	                setInterval(function(){
+	                   self.local="/doc";
+	                }, 3000);  
 	            }
 	         }); 
     });
