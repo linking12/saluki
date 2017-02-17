@@ -14,6 +14,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +31,14 @@ public class ScriptRouter extends GrpcRouter {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptRouter.class);
 
-    private final ScriptEngine  engine;
+    private  ScriptEngine  engine;
 
     public ScriptRouter(String type, String rule){
         super(rule);
-        engine = new ScriptEngineManager(null).getEngineByName(type);
+        engine = new ScriptEngineManager().getEngineByName(type);
+        if (engine == null && StringUtils.equals(type,"javascript")) {
+            engine = new ScriptEngineManager().getEngineByName("js");
+        }
         if (engine == null) {
             throw new IllegalStateException("Unsupported route rule type: " + type + ", rule: " + rule);
         }
