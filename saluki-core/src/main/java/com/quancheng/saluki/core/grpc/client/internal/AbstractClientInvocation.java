@@ -128,7 +128,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     private InetSocketAddress getProviderServer() {
-        InetSocketAddress provider = (InetSocketAddress) RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
+        Object obj = RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
+        InetSocketAddress provider = (InetSocketAddress)obj;
         return provider;
     }
 
