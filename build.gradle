@@ -10,8 +10,6 @@ subprojects {
   apply plugin: 'maven'
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
-
-
   task sourcesJar(type: Jar) {
         classifier = 'sources'
         from sourceSets.main.allSource
