@@ -112,7 +112,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 addressesCopy = addresses;
             }
             T t = addressesCopy.getTransportForNextServer();
-            this.mergeNameResolverAttribute2ClientInvokeAttribute(addressesCopy);
+            mergeNameResolverAttribute2ClientInvokeAttribute(addressesCopy);
             return t;
         }
 
@@ -213,9 +213,6 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 try {
                     String routerRule = RpcContext.getContext().getAttachment("routerRule");
                     if (routerRule != null) {
-                        if (RpcContext.getContext().containAttachment("routerRule")) {
-                            RpcContext.getContext().removeAttachment("routerRule");
-                        }
                         grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);
                     }
                 } finally {
