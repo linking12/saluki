@@ -7,6 +7,7 @@ before_script:
   - aliimagemonitor=nexus.quancheng-ec.com:5000/saluki-monitor:V1.5.2-`TZ=CST-8 date '+%Y%m%d'`
   - hostname -i
   - whoami
+  
 build_jar:
   stage: jar-build
   script:
