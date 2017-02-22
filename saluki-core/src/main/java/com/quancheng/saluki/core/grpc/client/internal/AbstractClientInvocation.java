@@ -86,6 +86,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
+            this.cacheProviderServer(attributes);
             switch (request.getMethodRequest().getCallType()) {
                 case Constants.RPCTYPE_ASYNC:
                     respProtoBufer = grpcAsyncCall.unaryFuture(reqProtoBufer, methodDesc).get(timeOut,
@@ -103,11 +104,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
 
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false,
-                    getProviderServer(attributes));
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true, getProviderServer(attributes));
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -124,17 +124,19 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             throw rpcService;
         } finally {
             log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-                                   getProviderServer(attributes)));
+                                   getProviderServer()));
             request.returnChannel(channel);
             getConcurrent(serviceName, methodName).decrementAndGet();
         }
     }
 
-    private InetSocketAddress getProviderServer(Attributes attributes) {
+    private void cacheProviderServer(Attributes attributes) {
         InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
         RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, currentServer);
-        return currentServer;
+    }
 
+    private InetSocketAddress getProviderServer() {
+        return (InetSocketAddress) RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
     }
 
     private Attributes buildAttributes(GrpcURL url) {
@@ -156,7 +158,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     private void collect(String serviceName, String methodName, Message request, Message response, long start,
-                         boolean error, InetSocketAddress remoteAddress) {
+                         boolean error) {
         try {
             if (request == null || response == null) {
                 return;
@@ -165,7 +167,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = remoteAddress.getHostName();
+            String provider = getProviderServer().getHostName();
             String host = refUrl.getHost();
             Integer port = refUrl.getPort();
             if (clientServerMonitor == null) {
