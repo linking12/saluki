@@ -135,7 +135,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, currentServer);
     }
 
-    private InetSocketAddress getProviderServer() {
+    public InetSocketAddress getProviderServer() {
         return (InetSocketAddress) RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
     }
 
