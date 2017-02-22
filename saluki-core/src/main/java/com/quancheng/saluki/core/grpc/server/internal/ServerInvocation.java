@@ -161,6 +161,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     public String getRpcName() {
         return this.providerUrl.getServiceInterface() + ":" + method.getName();
     }
+    
+    public String getLocalAddressString(){
+        return this.providerUrl.getAddress();
+    }
 
     private AtomicInteger getConcurrent() {
         String key = serviceToInvoke.getClass().getName() + "." + method.getName();
