@@ -1,9 +1,2 @@
 /com/
 /static/
-/application-dev.properties
-/application-prod.properties
-/application-local.properties
-/bootstrap.properties
-/log4j2.xml
-/mybatis.properties
-/mappers/
