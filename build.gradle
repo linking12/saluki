@@ -2,20 +2,6 @@ allprojects  {
   apply plugin: 'maven'
   group = 'com.quancheng.saluki'
   version = '1.5.3-SNAPSHOT'
-  task writePom << {
-    pom {
-        project {
-            inceptionYear '2017'
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-        }
-    }.writeTo("pom.xml")
-  }
 }
 subprojects {
   apply plugin: 'java'
