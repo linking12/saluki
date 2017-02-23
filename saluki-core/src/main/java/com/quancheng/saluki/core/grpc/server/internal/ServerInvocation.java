@@ -152,8 +152,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                               MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
                                               MonitorService.OUTPUT, String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
-            log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
-                      + t.getMessage(), t);
+            log.warn("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
+                     + t.getMessage());
         }
 
     }
@@ -161,8 +161,8 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
     public String getRpcName() {
         return this.providerUrl.getServiceInterface() + ":" + method.getName();
     }
-    
-    public String getLocalAddressString(){
+
+    public String getLocalAddressString() {
         return this.providerUrl.getAddress();
     }
 

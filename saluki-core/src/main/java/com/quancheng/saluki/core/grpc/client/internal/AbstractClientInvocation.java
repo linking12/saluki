@@ -188,7 +188,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                                                     MonitorService.OUTPUT,
                                                     String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
-            log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
+            log.warn("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage());
         }
     }
 
