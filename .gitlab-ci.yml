@@ -23,7 +23,7 @@ build_images:
    script:
     - echo `git rev-parse --short HEAD` >> saluki-monitor/saluki-monitor-console/bin/git.tag
     - echo $image
-    - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }' ); fi
     - cd saluki-example/
     - mvn clean install -U
     - cd ..
