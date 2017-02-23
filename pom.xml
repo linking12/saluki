@@ -19,6 +19,7 @@
 		<module>saluki-core</module>
 		<module>saluki-registry/saluki-registry-consul</module>
 		<module>saluki-serializer</module>
+		<module>saluki-service</module>
 		<module>spring-boot-starter-saluki</module>
 		<module>saluki-monitor/spring-boot-starter-saluki-monitor</module>
 		<module>saluki-monitor/saluki-monitor-console</module>
