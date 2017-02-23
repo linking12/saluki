@@ -16,7 +16,7 @@ build_jar:
     - cd saluki-plugin/saluki-gradle-plugin
     - gradle clean uploadArchives --refresh-dependencies
   only:
-    - V1.5.2
+    - V1.5.3
     
 build_images:
    stage: docker-build
@@ -39,4 +39,4 @@ build_images:
     - echo "Push Image:" $aliimagemonitor " to repository..."
     - docker push $aliimagemonitor
    only:
-    - V1.5.2
+    - V1.5.3
