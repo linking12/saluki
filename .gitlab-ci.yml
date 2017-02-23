@@ -26,6 +26,7 @@ build_images:
     - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
     - cd saluki-example/
     - mvn clean install -U
+    - cd ..
     - echo "Build Docker Image..."
     - docker build --no-cache -t $aliimageclient -f saluki-example/saluki-example-client/Dockerfile .
     - echo "Push Image:" $aliimageclient " to repository..."
@@ -33,7 +34,6 @@ build_images:
     - docker build --no-cache -t $aliimageserver -f saluki-example/saluki-example-server/Dockerfile .
     - echo "Push Image:" $aliimageserver " to repository..."
     - docker push $aliimageserver
-    - cd ..
     - mvn clean install -U
     - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
     - echo "Push Image:" $aliimagemonitor " to repository..."
