@@ -1,3 +1,4 @@
 /.gradle/
 /bin/
 /build/
+/target/

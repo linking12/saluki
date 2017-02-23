@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>saluki-example-server</artifactId>
+	<inceptionYear>2017</inceptionYear>
+	<parent>
+		<groupId>com.quancheng.saluki</groupId>
+		<artifactId>saluki-example</artifactId>
+		<version>1.5.3-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<dependencies>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>spring-boot-starter-saluki</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>spring-boot-starter-saluki-monitor</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jetty</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.shared</groupId>
+			<artifactId>shared.api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-tcnative-boringssl-static</artifactId>
+			<version>${netty-tcnative.version}</version>
+			<classifier>${os.detected.classifier}</classifier>
+		</dependency>
+	</dependencies>
+</project>

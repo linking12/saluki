@@ -1,5 +1,7 @@
 package com.quancheng.saluki.core.grpc.client.async;
 
+import com.quancheng.saluki.core.common.RpcContext;
+
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -31,6 +33,7 @@ public interface AsyncCallInternal {
             @Override
             public void start(ClientCall<RequestT, ResponseT> call, RequestT request, Listener<ResponseT> listener,
                               Metadata metadata) {
+                RpcContext.getContext().removeAttachment("routerRule");
                 call.start(listener, metadata);
                 call.request(1);
                 try {

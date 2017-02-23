@@ -7,7 +7,6 @@
  */
 package com.quancheng.saluki.core.grpc;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,8 +17,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.RpcContext;
 
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.Internal;
@@ -53,19 +50,9 @@ public final class RoundRobinServerListExtend<T> {
         }
         if (currentServer == null) {
             return requestDroppingTransport;
-        } else {
-            RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, getCurrent(currentServer));
         }
         this.currentServer = currentServer;
         return tm.getTransport(currentServer);
-    }
-
-    private InetSocketAddress getCurrent(EquivalentAddressGroup addressGroup) {
-        Iterator<SocketAddress> it = addressGroup.getAddresses().iterator();
-        while (it.hasNext()) {
-            return (InetSocketAddress) it.next();
-        }
-        return null;
     }
 
     public SocketAddress getCurrentServer() {

@@ -57,6 +57,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private volatile GrpcURL                           refUrl;
 
+    private volatile Attributes                        attributes;
+
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
         this.methodRetries = methodRetries;
     }
@@ -80,7 +82,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
         RetryOptions retryConfig = createRetryOption(methodName);
-        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, buildAttributes(refUrl));
+        Attributes attributes = this.buildAttributes(refUrl);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, attributes);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
@@ -116,6 +119,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                 throw rpcService;
             }
         } catch (Exception e) {
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             log.error(e.getMessage(), e);
             RpcServiceException rpcService = new RpcServiceException(e);
             throw rpcService;
@@ -127,19 +131,16 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
-    private InetSocketAddress getProviderServer() {
-        Object obj = RpcContext.getContext().get(Constants.PROVIDER_ADDRESS);
-        if (obj instanceof InetSocketAddress) {
-            InetSocketAddress provider = (InetSocketAddress) obj;
-            return provider;
-        } else {
-            return new InetSocketAddress(0);
-        }
-
+    public InetSocketAddress getProviderServer() {
+        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+        RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, currentServer);
+        return currentServer;
     }
 
     private Attributes buildAttributes(GrpcURL url) {
-        return Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
+        Attributes attributes = Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
+        this.attributes = attributes;
+        return attributes;
     }
 
     private RetryOptions createRetryOption(String methodName) {
