@@ -24,7 +24,8 @@ build_images:
     - echo `git rev-parse --short HEAD` >> saluki-monitor/saluki-monitor-console/bin/git.tag
     - echo $image
     - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^nexus.quancheng-ec.com:5000/ { print $3 }' ); fi
-    - gradle clean build --refresh-dependencies
+    - cd saluki-example/
+    - mvn clean install -U
     - echo "Build Docker Image..."
     - docker build --no-cache -t $aliimageclient -f saluki-example/saluki-example-client/Dockerfile .
     - echo "Push Image:" $aliimageclient " to repository..."
@@ -32,6 +33,8 @@ build_images:
     - docker build --no-cache -t $aliimageserver -f saluki-example/saluki-example-server/Dockerfile .
     - echo "Push Image:" $aliimageserver " to repository..."
     - docker push $aliimageserver
+    - cd ..
+    - mvn clean install -U
     - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
     - echo "Push Image:" $aliimagemonitor " to repository..."
     - docker push $aliimagemonitor
