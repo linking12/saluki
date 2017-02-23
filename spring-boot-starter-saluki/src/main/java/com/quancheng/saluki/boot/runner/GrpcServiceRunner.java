@@ -56,8 +56,12 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
     @Override
     public void destroy() throws Exception {
-        rpcService.destroy();
-        applicationContext.destroy();
+        if (rpcService != null) {
+            rpcService.destroy();
+        }
+        if (applicationContext != null) {
+            applicationContext.destroy();
+        }
     }
 
     @Override
