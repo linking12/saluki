@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
+		<version>1.5.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<licenses>
@@ -66,7 +66,7 @@
 			<plugin>
 				<groupId>com.quancheng.saluki</groupId>
 				<artifactId>saluki-maven-plugin</artifactId>
-				<version>1.5.3-SNAPSHOT</version>
+				<version>1.5.2-SNAPSHOT</version>
 				<configuration>
 					<protoPath>${project.basedir}/src/main/proto</protoPath>
 					<buildPath>${project.basedir}/target/generated-sources/protobuf/java</buildPath>

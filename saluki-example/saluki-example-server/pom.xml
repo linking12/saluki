@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-example</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
+		<version>1.5.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<licenses>
@@ -54,4 +54,27 @@
 			<classifier>${os.detected.classifier}</classifier>
 		</dependency>
 	</dependencies>
+	<build>
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.4.0.Final</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${springboot.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
