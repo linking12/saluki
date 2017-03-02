@@ -9,6 +9,7 @@ package com.quancheng.saluki.boot.runner;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,6 +25,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.util.ClassUtils;
 
+import com.google.common.collect.Sets;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
 import com.quancheng.saluki.boot.common.GrpcAopUtils;
@@ -78,6 +80,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                 for (Object instance : instances) {
                     SalukiService serviceAnnotation = instance.getClass().getAnnotation(SalukiService.class);
                     String serviceName = serviceAnnotation.service();
+                    Set<String> serviceNames = Sets.newHashSet();
                     Object target = instance;
                     if (StringUtils.isBlank(serviceName)) {
                         if (this.isGrpcServer(instance)) {
@@ -86,11 +89,20 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                         } else {
                             target = GrpcAopUtils.getTarget(target);
                             Class<?>[] interfaces = ClassUtils.getAllInterfacesForClass(target.getClass());
-                            serviceName = interfaces[0].getName();
+                            for (Class<?> interfaceClass : interfaces) {
+                                String interfaceName = interfaceClass.getName();
+                                if (StringUtils.startsWith(interfaceName, "com.quancheng")) {
+                                    serviceNames.add(interfaceName);
+                                }
+                            }
                         }
+                    } else {
+                        serviceNames.add(serviceName);
                     }
-                    rpcSerivceConfig.addServiceDefinition(serviceName, getGroup(serviceAnnotation),
-                                                          getVersion(serviceAnnotation), instance);
+                    for (String realServiceName : serviceNames) {
+                        rpcSerivceConfig.addServiceDefinition(realServiceName, getGroup(serviceAnnotation),
+                                                              getVersion(serviceAnnotation), instance);
+                    }
                 }
             } finally {
                 Object healthInstance = new HealthImpl(applicationContext);
