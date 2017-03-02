@@ -81,11 +81,11 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                 StatusRuntimeException newException;
                 if (errorCause != null) {
                     newException = status.withDescription(errorCause).asRuntimeException();
+                    completionFuture.setException(newException);
                 } else {
                     newException = status.asRuntimeException();
+                    newException.printStackTrace();
                 }
-                newException.printStackTrace();
-                completionFuture.setException(newException);
                 notify.resetChannel();
                 return;
             } else {
