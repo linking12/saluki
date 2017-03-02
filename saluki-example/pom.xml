@@ -21,6 +21,7 @@
 	<modules>
 		<module>saluki-example-client</module>
 		<module>saluki-example-server</module>
+		<module>saluki-example-spring</module>
 	</modules>
 	<properties>
 		<os.detected.classifier>osx-x86_64</os.detected.classifier>

@@ -43,21 +43,5 @@
 			<artifactId>saluki-registry-consul</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.quancheng.shared</groupId>
-			<artifactId>shared.api</artifactId>
-			<version>1.1.6-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-tcnative-boringssl-static</artifactId>
-			<version>${netty-tcnative.version}</version>
-			<classifier>${os.detected.classifier}</classifier>
-		</dependency>
-		<dependency>
-			<groupId>com.weibo</groupId>
-			<artifactId>motan-springsupport</artifactId>
-			<version>0.2.2</version>
-		</dependency>
 	</dependencies>
 </project>
