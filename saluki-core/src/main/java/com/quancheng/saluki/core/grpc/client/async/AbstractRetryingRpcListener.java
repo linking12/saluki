@@ -28,6 +28,7 @@ import io.grpc.ClientCall;
 import io.grpc.Metadata;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
+import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -201,7 +202,8 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                     ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, affinity);
                     resolvedServers.add(serverInfo);
                 }
-                listener.onUpdate(Collections.singletonList(resolvedServers), affinity);
+                ResolvedServerInfoGroup serversGroup = ResolvedServerInfoGroup.builder().addAll(resolvedServers).build();
+                listener.onUpdate(Collections.singletonList(serversGroup), affinity);
             }
         }
     }

@@ -33,6 +33,7 @@ import io.grpc.Attributes.Key;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
 import io.grpc.ResolvedServerInfo;
+import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 import io.grpc.TransportManager;
 import io.grpc.TransportManager.InterimTransport;
@@ -146,8 +147,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         }
 
         @Override
-        public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
-                                            Attributes config) {
+        public void handleResolvedAddresses(List<ResolvedServerInfoGroup> servers, Attributes config) {
             try {
                 this.nameNameResolver_attributes = config;
                 final InterimTransport<T> savedInterimTransport;
@@ -156,7 +156,8 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                     if (closed) {
                         return;
                     }
-                    addresses = createRoundRobinServer(updatedServers);
+                    List<ResolvedServerInfo> updateServers = servers.get(0).getResolvedServerInfoList();
+                    addresses = createRoundRobinServer(updateServers);
                     addressesCopy = addresses;
                     createGrpcRouterByNameResolver(config);
                     // 如果有参数，说明不是第一次调用，refUrl是存在的
@@ -263,15 +264,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
             }
         }
 
-        private RoundRobinServerListExtend<T> createRoundRobinServer(List<? extends List<ResolvedServerInfo>> updatedServers) {
+        private RoundRobinServerListExtend<T> createRoundRobinServer(List<ResolvedServerInfo> updatedServers) {
             RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-            for (List<ResolvedServerInfo> servers : updatedServers) {
-                if (servers.isEmpty()) {
-                    continue;
-                }
-                for (ResolvedServerInfo server : servers) {
-                    listBuilder.add(server.getAddress());
-                }
+            for (ResolvedServerInfo server : updatedServers) {
+                listBuilder.add(server.getAddress());
             }
             return listBuilder.build();
         }

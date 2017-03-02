@@ -39,6 +39,7 @@ import io.grpc.Internal;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
 import io.grpc.ResolvedServerInfo;
+import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 
 /**
@@ -191,7 +192,8 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 }
                 this.addresses = addresses;
                 Attributes config = this.buildAttributes(addressUrlMapping);
-                GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(servers), config);
+                ResolvedServerInfoGroup serversGroup = ResolvedServerInfoGroup.builder().addAll(servers).build();
+                GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(serversGroup), config);
             } else {
                 GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                         + subscribeUrl.toFullString()));
