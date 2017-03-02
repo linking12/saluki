@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>saluki-example</artifactId>
 	<inceptionYear>2017</inceptionYear>
@@ -22,6 +21,7 @@
 	<modules>
 		<module>saluki-example-client</module>
 		<module>saluki-example-server</module>
+		<module>saluki-example-spring</module>
 	</modules>
 	<properties>
 		<os.detected.classifier>osx-x86_64</os.detected.classifier>
@@ -73,6 +73,40 @@
 				<groupId>com.quancheng.shared</groupId>
 				<artifactId>shared.api</artifactId>
 				<version>1.1.6-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.commons</groupId>
+						<artifactId>commons-lang3</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-log4j2</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-io</groupId>
+						<artifactId>commons-io</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-netty</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-protobuf</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-stub</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.alibaba</groupId>
+						<artifactId>fastjson</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

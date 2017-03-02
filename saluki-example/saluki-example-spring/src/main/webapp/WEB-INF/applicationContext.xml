@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+
+	<context:component-scan base-package="example.angularspring.service.impl" />
+
+	<sec:http pattern="/admin/**" create-session="never">
+		<sec:http-basic entry-point-ref="restAuthenticationEntryPoint" />
+		<sec:intercept-url pattern="/**" access="ROLE_USER" />
+	</sec:http>
+	<sec:http pattern="/action/user" create-session="never">
+		<sec:http-basic entry-point-ref="restAuthenticationEntryPoint" />
+		<sec:intercept-url pattern="/**" access="ROLE_USER" />
+	</sec:http>
+	<sec:http pattern="/**" security="none" />
+
+	<bean id="restAuthenticationEntryPoint" class="example.angularspring.web.RestAuthenticationEntryPoint" />
+
+	<import resource="applicationContext-rpc.xml" />
+
+	<sec:authentication-manager alias="authenticationManager">
+		<sec:authentication-provider>
+			<sec:user-service>
+				<sec:user name="jimi" password="jimi" authorities="ROLE_USER, ROLE_ADMIN" />
+				<sec:user name="bob" password="bob" authorities="ROLE_USER" />
+			</sec:user-service>
+		</sec:authentication-provider>
+	</sec:authentication-manager>
+</beans>

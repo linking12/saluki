@@ -21,6 +21,7 @@
 		<module>saluki-serializer</module>
 		<module>saluki-service</module>
 		<module>spring-boot-starter-saluki</module>
+		<module>saluki-springsupport</module>
 		<module>saluki-monitor/spring-boot-starter-saluki-monitor</module>
 		<module>saluki-monitor/saluki-monitor-console</module>
 		<module>saluki-plugin/saluki-maven-plugin</module>
@@ -174,7 +175,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	
 	<distributionManagement>
 		<repository>
 			<id>nexus</id>
@@ -187,5 +187,4 @@
 			<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
 </project>

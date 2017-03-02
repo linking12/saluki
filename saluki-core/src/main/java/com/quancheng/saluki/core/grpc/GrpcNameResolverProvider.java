@@ -124,7 +124,9 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                                                                                       routerMessages.put(group,
                                                                                                          routerCondition);
                                                                                   }
-                                                                                  notifyLoadBalance(GrpcNameResolver.this.urls);
+                                                                                  if (GrpcNameResolver.this.urls != null) {
+                                                                                      notifyLoadBalance(GrpcNameResolver.this.urls);
+                                                                                  }
                                                                               }
 
                                                                           };

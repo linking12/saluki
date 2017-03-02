@@ -11,6 +11,7 @@ sourceSets {
         }
     }
 }
+
 dependencies {
    compile gradleApi()
    compile localGroovy()
