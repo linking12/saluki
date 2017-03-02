@@ -8,7 +8,6 @@
 	<saluki:config application="application" registry="daily.quancheng-ec.com:8500"
 		httpPort="8181" />
 
-	<saluki:referer id="helloService"
-		interface="com.quancheng.examples.service.HelloService" group="example"
-		version="1.0.0" />
+	<saluki:referer interface="com.quancheng.examples.service.HelloService"
+		group="example" version="1.0.0" />
 </beans> 

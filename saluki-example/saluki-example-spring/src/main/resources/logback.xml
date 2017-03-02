@@ -5,7 +5,7 @@
             <pattern>%-4r [%t] %-5p %c - %m%n</pattern>
         </encoder>
     </appender>
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="C"/>
     </root>
 </configuration>

@@ -78,7 +78,13 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         } else {
             if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
                 String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                StatusRuntimeException newException = Status.INTERNAL.withDescription(errorCause).asRuntimeException();
+                StatusRuntimeException newException;
+                if (errorCause != null) {
+                    newException = status.withDescription(errorCause).asRuntimeException();
+                } else {
+                    newException = status.asRuntimeException();
+                }
+                newException.printStackTrace();
                 completionFuture.setException(newException);
                 notify.resetChannel();
                 return;

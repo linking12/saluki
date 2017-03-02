@@ -26,6 +26,12 @@ public class GrpcReferenceBeanDefinitionParser extends AbstractSingleBeanDefinit
 
     private static final String SERVICEBEAN_VERSION   = "version";
 
+    @Override
+    protected String getBeanClassName(Element element) {
+        return ReferenceBean.class.getName();
+    }
+
+    @Override
     protected Class<?> getBeanClass(Element element) {
         return ReferenceBean.class;
     }

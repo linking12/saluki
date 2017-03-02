@@ -73,6 +73,40 @@
 				<groupId>com.quancheng.shared</groupId>
 				<artifactId>shared.api</artifactId>
 				<version>1.1.6-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.commons</groupId>
+						<artifactId>commons-lang3</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-log4j2</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-io</groupId>
+						<artifactId>commons-io</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-netty</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-protobuf</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-stub</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.alibaba</groupId>
+						<artifactId>fastjson</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

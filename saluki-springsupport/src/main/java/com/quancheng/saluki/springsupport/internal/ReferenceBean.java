@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import com.quancheng.saluki.core.config.RpcReferenceConfig;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 
 /**
  * @author shimingliu 2017年2月28日 下午6:28:03
@@ -48,7 +49,12 @@ public class ReferenceBean extends RpcReferenceConfig implements FactoryBean<Obj
 
     @Override
     public Class<?> getObjectType() {
-        return getServiceClass();
+        Class<?> clzz = super.getServiceClass();
+        String servcieName = super.getServiceName();
+        if (clzz == null && servcieName != null) {
+            clzz = ReflectUtils.forName(servcieName);
+        }
+        return clzz;
     }
 
     @Override
