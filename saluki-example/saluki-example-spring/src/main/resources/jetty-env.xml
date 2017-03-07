@@ -1,0 +1,10 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <!-- Must be done in jetty-env.xml, since jetty-web.xml is loaded too late.   -->
+    <!-- Removing ALPN from the blacklisted server classes (using "-" to remove). -->
+    <!-- Must prepend to the blacklist since order matters.                       -->
+    <Call name="prependServerClass">
+        <Arg>-org.eclipse.jetty.alpn.</Arg>
+    </Call>
+</Configure>
