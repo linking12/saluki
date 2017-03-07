@@ -9,6 +9,7 @@ package com.quancheng.saluki.boot.runner;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,15 +18,20 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
+import org.springframework.util.ClassUtils;
 
+import com.google.common.collect.Sets;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
-import com.quancheng.saluki.boot.service.EchoServiceImpl;
+import com.quancheng.saluki.boot.common.GrpcAopUtils;
+import com.quancheng.saluki.boot.service.HealthImpl;
 import com.quancheng.saluki.core.config.RpcServiceConfig;
-import com.quancheng.saluki.service.EchoService;
+import com.quancheng.saluki.service.Health;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:16
@@ -52,8 +58,12 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
     @Override
     public void destroy() throws Exception {
-        rpcService.destroy();
-        applicationContext.destroy();
+        if (rpcService != null) {
+            rpcService.destroy();
+        }
+        if (applicationContext != null) {
+            applicationContext.destroy();
+        }
     }
 
     @Override
@@ -70,29 +80,46 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
                 for (Object instance : instances) {
                     SalukiService serviceAnnotation = instance.getClass().getAnnotation(SalukiService.class);
                     String serviceName = serviceAnnotation.service();
+                    Set<String> serviceNames = Sets.newHashSet();
+                    Object target = instance;
                     if (StringUtils.isBlank(serviceName)) {
                         if (this.isGrpcServer(instance)) {
                             throw new java.lang.IllegalArgumentException("you use grpc stub service,must set service name,service instance is"
                                                                          + instance);
                         } else {
-                            serviceName = instance.getClass().getInterfaces()[0].getName();
+                            target = GrpcAopUtils.getTarget(target);
+                            Class<?>[] interfaces = ClassUtils.getAllInterfacesForClass(target.getClass());
+                            for (Class<?> interfaceClass : interfaces) {
+                                String interfaceName = interfaceClass.getName();
+                                if (StringUtils.startsWith(interfaceName, "com.quancheng")) {
+                                    serviceNames.add(interfaceName);
+                                }
+                            }
                         }
+                    } else {
+                        serviceNames.add(serviceName);
                     }
-                    rpcSerivceConfig.addServiceDefinition(serviceName, getGroup(serviceAnnotation),
-                                                          getVersion(serviceAnnotation), instance);
+                    for (String realServiceName : serviceNames) {
+                        rpcSerivceConfig.addServiceDefinition(realServiceName, getGroup(serviceAnnotation),
+                                                              getVersion(serviceAnnotation), instance);
+                    }
                 }
             } finally {
-                Object echoinstance = new EchoServiceImpl();
-                applicationContext.getBeanFactory().registerSingleton(EchoService.class.getSimpleName(), echoinstance);
+                Object healthInstance = new HealthImpl(applicationContext);
+                BeanDefinitionRegistry beanDefinitonRegistry = (BeanDefinitionRegistry) applicationContext.getBeanFactory();
+                BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(Health.class);
+                beanDefinitonRegistry.registerBeanDefinition(Health.class.getName(),
+                                                             beanDefinitionBuilder.getRawBeanDefinition());
+                applicationContext.getBeanFactory().registerSingleton(Health.class.getName(), healthInstance);
                 String group = thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
                 String version = thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
-                rpcSerivceConfig.addServiceDefinition(EchoService.class.getName(), group, version, echoinstance);
+                rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version, healthInstance);
             }
         }
         this.rpcService = rpcSerivceConfig;
         rpcSerivceConfig.export();
         System.out.println(String.format("GRPC server has started!You can do test by %s \n %s",
-                                         "http://localhost:" + httpPort + "/service.html",
+                                         "http://localhost:" + httpPort + "/doc",
                                          "http://saluki.dev.quancheng-ec.com"));
     }
 

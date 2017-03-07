@@ -36,7 +36,7 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
 
     private static final Logger  log = LoggerFactory.getLogger(DefaultProxyExporter.class);
 
-    private final GrpcURL      providerUrl;
+    private final GrpcURL        providerUrl;
 
     private final MonitorService clientServerMonitor;
 
@@ -53,8 +53,7 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
         ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
         List<Method> methods = GrpcReflectUtil.findAllPublicMethods(serivce);
         if (methods.isEmpty()) {
-            throw new IllegalStateException("protocolClass " + serviceName + " not have export method"
-                                            + serivce.getClass());
+            throw new IllegalStateException("protocolClass " + serviceName + " not have export method" + serivce);
         }
         final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
         for (Method method : methods) {

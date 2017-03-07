@@ -1,45 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki-maven-plugin</artifactId>
-	<version>1.5.1</version>
 	<packaging>maven-plugin</packaging>
+	<parent>
+		<groupId>com.quancheng.saluki</groupId>
+		<artifactId>saluki</artifactId>
+		<version>1.5.2</version>
+		<relativePath>../..</relativePath>
+	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>saluki-plugin-common</artifactId>
-			<version>1.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-model</artifactId>
-			<version>2.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
-			<version>3.2</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
@@ -87,6 +78,8 @@
 							<goals>
 								<goal>clean</goal>
 								<goal>test-compile</goal>
+								<goal>compile</goal>
+							    <goal>compile-custom</goal>
 							</goals>
 						</configuration>
 						<executions>
@@ -104,16 +97,4 @@
 			</build>
 		</profile>
 	</profiles>
-	<distributionManagement>
-		<repository>
-			<id>nexus</id>
-			<name>Nexus Release Repository</name>
-			<url>http://repo.quancheng-ec.com/repository/maven-releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>nexus</id>
-			<name>Nexus Snapshot Repository</name>
-			<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>

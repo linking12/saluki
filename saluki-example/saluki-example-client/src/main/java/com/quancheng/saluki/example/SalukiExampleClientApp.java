@@ -23,13 +23,12 @@ public class SalukiExampleClientApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        HelloRequest request = new HelloRequest();
-        request.setName("liushiming");
-        RpcContext.getContext().set("123", "helloworld");
-        HelloReply reply = helloService.sayHello(request);
-        System.out.print(reply);
+//        HelloRequest request = new HelloRequest();
+//        request.setName("liushiming");
+//        RpcContext.getContext().set("123", "helloworld");
+//        HelloReply reply = helloService.sayHello(request);
+//        System.out.println(reply);
 
-        
     }
 
 }

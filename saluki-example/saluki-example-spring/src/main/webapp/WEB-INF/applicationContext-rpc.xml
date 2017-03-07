@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:saluki="http://code.quancheng.com/schema/saluki"
+	xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd 
+	http://code.quancheng.com/schema/saluki http://code.quancheng.com/schema/saluki/saluki.xsd">
+
+
+	<saluki:config application="application" registry="daily.quancheng-ec.com:8500"
+		httpPort="8181" />
+
+	<saluki:referer interface="com.quancheng.examples.service.HelloService"
+		group="example" version="1.0.0" />
+</beans> 

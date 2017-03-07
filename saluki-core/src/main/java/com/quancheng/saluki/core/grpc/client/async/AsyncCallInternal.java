@@ -1,6 +1,6 @@
 package com.quancheng.saluki.core.grpc.client.async;
 
-import com.google.common.base.Predicate;
+import com.quancheng.saluki.core.common.RpcContext;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -13,32 +13,17 @@ public interface AsyncCallInternal {
 
     public static interface AsyncCallClientInternal<REQUEST, RESPONSE> {
 
-        ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
+        public ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
 
-        void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
-                   Metadata metadata);
-
-        boolean isRetryable(REQUEST request);
-
-        MethodDescriptor<REQUEST, RESPONSE> getMethodDescriptor();
+        public void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
+                          Metadata metadata);
 
     }
 
     public static <RequestT, ResponseT> AsyncCallClientInternal<RequestT, ResponseT> createGrpcAsyncCall(final Channel channel,
-                                                                                                         final MethodDescriptor<RequestT, ResponseT> method,
-                                                                                                         final Predicate<RequestT> isRetryable) {
+                                                                                                         final MethodDescriptor<RequestT, ResponseT> method) {
 
         return new AsyncCallClientInternal<RequestT, ResponseT>() {
-
-            @Override
-            public boolean isRetryable(RequestT request) {
-                return isRetryable.apply(request);
-            }
-
-            @Override
-            public MethodDescriptor<RequestT, ResponseT> getMethodDescriptor() {
-                return method;
-            }
 
             @Override
             public ClientCall<RequestT, ResponseT> newCall(CallOptions callOptions) {
@@ -48,6 +33,7 @@ public interface AsyncCallInternal {
             @Override
             public void start(ClientCall<RequestT, ResponseT> call, RequestT request, Listener<ResponseT> listener,
                               Metadata metadata) {
+                RpcContext.getContext().removeAttachment("routerRule");
                 call.start(listener, metadata);
                 call.request(1);
                 try {

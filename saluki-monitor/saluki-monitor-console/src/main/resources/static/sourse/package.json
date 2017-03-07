@@ -1,0 +1,66 @@
+{
+  "name": "in-services-management",
+  "version": "1.0.0",
+  "description": "服务治理平台",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server -d --hot --env.dev",
+    "build": "rimraf dist && webpack -p"
+  },
+  "author": "oainiao",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.7",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-latest": "^6.16.0",
+    "css-loader": "^0.25.0",
+    "eslint": "^3.9.1",
+    "eslint-config-enough": "^0.1.0",
+    "extract-text-webpack-plugin": "^2.0.0-beta.4",
+    "html-loader": "^0.4.4",
+    "html-webpack-plugin": "^2.24.1",
+    "json-loader": "^0.5.4",
+    "postcss-loader": "^1.1.0",
+    "rimraf": "^2.5.4",
+    "script-loader": "^0.7.0",
+    "stylus-loader": "^2.3.1",
+    "webpack": "^2.1.0-beta.25",
+    "webpack-dev-server": "^2.1.0-beta.9"
+  },
+  "dependencies": {
+    "echarts": "^3.3.1",
+    "file-loader": "^0.9.0",
+    "jsoneditor": "^5.5.10",
+    "moment": "^2.17.0",
+    "style-loader": "^0.13.1",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^2.3.1",
+    "url-loader": "^0.5.7",
+    "vue": "^2.1.6",
+    "vue-loader": "^10.0.2",
+    "vue-resource": "^1.0.3",
+    "vue-router": "^2.1.1",
+    "vue-template-compiler": "^2.1.6",
+    "vuex": "^2.0.0",
+    "vuex-router-sync": "^2.1.1"
+  },
+  "babel": {
+    "presets": [
+      [
+        "latest",
+        {
+          "modules": false
+        }
+      ]
+    ]
+  },
+  "eslintConfig": {
+    "extends": "enough",
+    "env": {
+      "browser": true,
+      "commonjs": true
+    }
+  }
+}

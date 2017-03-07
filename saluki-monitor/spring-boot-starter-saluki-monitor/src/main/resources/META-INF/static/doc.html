@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>saluki documentation service</title>
+  <link href="assets/css/vendor/bootstrap-3.3.5.min.css" rel="stylesheet">
+  <link href="assets/css/vendor/highlight-jsononly-github-8.9.1.min.css" rel="stylesheet">
+  <link href="assets/css/vendor/jsoneditor.min.css" rel="stylesheet"/> 
+  <link href="assets/css/saluki.css" rel="stylesheet">
+  <link rel="mask-icon" href="https://assets-cdn.github.com/pinned-octocat.svg" color="#000000">
+  <link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+              aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="">Saluki documentation service</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <div id="navbar" class="col-sm-2 sidebar">
+        <script id="nav-template" type="text/x-handlebars-template">
+        <h1>Services</h1>
+        {{#each specification.services}}
+        <h2><code title="{{this.name}}">{{this.simpleName}}</code></h2>
+        <ul class="nav nav-sidebar">
+          {{#each this.functions}}
+          <li id="nav-{{../name}}.{{this}}">
+             <a href="#!function/{{../name}}/{{this}}"><code>{{this}}()</code></a>
+          </li>
+          {{/each}}
+        </ul>
+        {{/each}}
+      </script>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 main">
+      <div id="home" class="content">
+        <h1 class="page-header">Welcome to the Saluki documentation service</h1>
+        <p>
+          This page provides the information about the RPC services and its related data types in this server.
+        </p>
+        <p>Please start to navigate via the sidebar on the left or the menu button on the top right.</p>
+      </div>
+      <div class="content">
+          <p>
+            <h1 id="page_header" class="page-header"></h1>
+          </p>
+          <div class="table-responsive">
+	          <h2 class="sub-header">Service Test</h2>
+	          <div class="row">
+	              <div class="col-sm-12">
+	                <label>Route Rule(非特殊情况不要做修改)</label>
+	                <textarea class="debug-textarea form-control code" id="routerRule">
+javascript://function route(refUrl,providerUrls,arg) {
+			var result = false;
+			for (i = 0; i < providerUrls.length; i=i+1) {
+			    if (refUrl.host == providerUrls[i].host) {
+					result = true;
+				} else {
+					 allMatchThen = false;
+					 break;
+				}
+			}
+		         return result;
+            };
+	                </textarea>
+	              </div>
+	          </div>
+	          <div id="function" class="row">
+	            <div class="col-sm-6">
+	                <label>Request:</label>
+	                <div class="jsoneditor" id="editor_holder_request"></div>
+	            </div>
+	            <div class="col-sm-6">
+	                <label>Response:</label>
+	                <div class="jsoneditor" id="editor_holder_response"></div>
+	            </div>
+	          </div>
+	          <div id="functionbutton" class="row">
+	              <div class="col-sm-12">
+	                <input class="form-control" type="hidden" value="" id="servicetest_requestType" /> 
+	                <input class="form-control" type="hidden" value="" id="servicetest_responseType" />
+	                <input class="form-control" type="hidden" value="" id="servicetest_serviceName" /> 
+	                <input class="form-control" type="hidden" value="" id="servicetest_methodName" />  
+	                <button class="debug-submit btn btn-primary" id="editor_btn_submitParam">Submit</button>
+	              </div>
+	          </div>
+	       </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/js/vendor/jquery-2.1.4.min.js"></script>
+<script src="assets/js/vendor/bootstrap-3.3.5.min.js"></script>
+<script src="assets/js/vendor/handlebars-4.0.4.min.js"></script>
+<script src="assets/js/vendor/highlight-jsononly-8.9.1.pack.js"></script>
+<script src="assets/js/vendor/json-minify-0.1.js"></script>
+<script src="assets/js/vendor/json-prettify-0.1.js"></script>
+<script src="assets/js/vendor/URI-1.17.0.min.js"></script>
+<script src="assets/js/vendor/jsoneditor.min.js"></script>
+<script src="assets/js/saluki.js"></script>
+</body>
+</html>

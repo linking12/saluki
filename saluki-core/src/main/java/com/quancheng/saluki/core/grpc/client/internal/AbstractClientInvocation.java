@@ -10,7 +10,6 @@ package com.quancheng.saluki.core.grpc.client.internal;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
@@ -57,6 +57,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private volatile GrpcURL                           refUrl;
 
+    private volatile Attributes                        attributes;
+
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
         this.methodRetries = methodRetries;
     }
@@ -80,10 +82,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
         RetryOptions retryConfig = createRetryOption(methodName);
-        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, buildAttributes(refUrl));
+        Attributes attributes = this.buildAttributes(refUrl);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, attributes);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
-        SocketAddress remoteAddress = null;
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
@@ -102,13 +104,10 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
             GrpcResponse response = new GrpcResponse.Default(respProtoBufer, respPojoType);
             Object respPojo = response.getResponseArg();
-            remoteAddress = grpcAsyncCall.getAffinity().get(GrpcAsyncCall.REMOTE_ADDR_KEY);
-            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-                                   remoteAddress));
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, false);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false);
             return respPojo;
         } catch (ProtobufException | InterruptedException | ExecutionException | TimeoutException e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, remoteAddress, start, true);
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -120,17 +119,28 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                 throw rpcService;
             }
         } catch (Exception e) {
+            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             log.error(e.getMessage(), e);
             RpcServiceException rpcService = new RpcServiceException(e);
             throw rpcService;
         } finally {
+            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
+                                   getProviderServer()));
             request.returnChannel(channel);
             getConcurrent(serviceName, methodName).decrementAndGet();
         }
     }
 
+    public InetSocketAddress getProviderServer() {
+        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+        RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, currentServer);
+        return currentServer;
+    }
+
     private Attributes buildAttributes(GrpcURL url) {
-        return Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
+        Attributes attributes = Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
+        this.attributes = attributes;
+        return attributes;
     }
 
     private RetryOptions createRetryOption(String methodName) {
@@ -147,18 +157,17 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         }
     }
 
-    private void collect(String serviceName, String methodName, Message request, Message response,
-                         SocketAddress remoteAddress, long start, boolean error) {
+    private void collect(String serviceName, String methodName, Message request, Message response, long start,
+                         boolean error) {
         try {
-            if (request == null || response == null || remoteAddress == null) {
+            if (request == null || response == null) {
                 return;
             }
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            InetSocketAddress remote = (InetSocketAddress) remoteAddress;
-            String provider = remote.getHostName();// 服务端主机
+            String provider = getProviderServer().getHostName();
             String host = refUrl.getHost();
             Integer port = refUrl.getPort();
             if (clientServerMonitor == null) {
@@ -179,7 +188,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
                                                     MonitorService.OUTPUT,
                                                     String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
-            log.error("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage(), t);
+            log.warn("Failed to monitor count service " + serviceName + ", cause: " + t.getMessage());
         }
     }
 

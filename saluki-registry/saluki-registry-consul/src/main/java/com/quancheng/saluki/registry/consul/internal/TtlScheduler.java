@@ -17,12 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
-import com.ecwid.consul.v1.Response;
-import com.ecwid.consul.v1.agent.model.NewService;
-import com.ecwid.consul.v1.session.model.Session;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.registry.consul.ConsulConstants;
+import com.quancheng.saluki.registry.consul.model.ConsulService2;
+import com.quancheng.saluki.registry.consul.model.ConsulSession;
 
 /**
  * @author shimingliu 2016年12月16日 上午10:32:37
@@ -32,9 +31,13 @@ public class TtlScheduler {
 
     private static final Logger            log                      = LoggerFactory.getLogger(TtlScheduler.class);
 
-    private final Set<String>              serviceIds               = Sets.newConcurrentHashSet();
+    private final Set<ConsulService2>      services                 = Sets.newConcurrentHashSet();
 
-    private final Set<String>              sessionIds               = Sets.newConcurrentHashSet();
+    private final Set<ConsulSession>       sessions                 = Sets.newConcurrentHashSet();
+
+    private final Set<ConsulService2>      failedservices           = Sets.newConcurrentHashSet();
+
+    private final Set<ConsulSession>       failedsessions           = Sets.newConcurrentHashSet();
 
     private final ScheduledExecutorService heartbeatServiceExecutor = Executors.newScheduledThreadPool(1,
                                                                                                        new NamedThreadFactory("CheckServiceTimer",
@@ -54,32 +57,48 @@ public class TtlScheduler {
                                                      ConsulConstants.HEARTBEAT_CIRCLE, TimeUnit.MILLISECONDS);
     }
 
-    public void addHeartbeatServcie(final NewService service) {
-        serviceIds.add(service.getId());
+    public void addHeartbeatServcie(final ConsulService2 service) {
+        services.add(service);
     }
 
-    public void addHeartbeatSession(final String sessionId) {
-        sessionIds.add(sessionId);
+    public void addHeartbeatSession(final ConsulSession session) {
+        sessions.add(session);
     }
 
-    public void removeHeartbeatServcie(final String serviceId) {
-        serviceIds.remove(serviceId);
+    public void removeHeartbeatServcie(final ConsulService2 service) {
+        services.remove(service);
+    }
+
+    public Set<ConsulService2> getFailedService() {
+        return failedservices;
+    }
+
+    public Set<ConsulSession> getFailedSession() {
+        return failedsessions;
+    }
+
+    public void cleanFailedTtl() {
+        failedsessions.clear();
+        failedservices.clear();
     }
 
     private class ConsulHeartbeatServiceTask implements Runnable {
 
         @Override
         public void run() {
-            try {
-                for (String checkId : serviceIds) {
+            for (ConsulService2 service : services) {
+                try {
+                    String checkId = service.getNewService().getId();
                     if (!checkId.startsWith("service:")) {
                         checkId = "service:" + checkId;
                     }
                     client.agentCheckPass(checkId);
                     log.debug("Sending consul heartbeat for: " + checkId);
+                } catch (Throwable e) {
+                    failedservices.add(service);
+                    services.remove(service);
+                    log.error(e.getMessage(), e);
                 }
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
             }
         }
     }
@@ -88,13 +107,20 @@ public class TtlScheduler {
 
         @Override
         public void run() {
-            try {
-                for (String sessionId : sessionIds) {
-                    Response<Session> response = client.renewSession(sessionId, QueryParams.DEFAULT);
-                    log.debug("Sending consul heartbeat for: " + response.getValue().getId());
+            Set<String> sessionIds = Sets.newHashSet();
+            for (ConsulSession session : sessions) {
+                try {
+                    String sessionId = session.getSessionId();
+                    if (!sessionIds.contains(sessionId)) {
+                        client.renewSession(sessionId, QueryParams.DEFAULT);
+                        sessionIds.add(sessionId);
+                    }
+                    log.debug("Sending consul heartbeat for: " + sessionId);
+                } catch (Throwable e) {
+                    failedsessions.addAll(sessions);
+                    sessions.clear();
+                    log.error(e.getMessage(), e);
                 }
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
             }
         }
     }

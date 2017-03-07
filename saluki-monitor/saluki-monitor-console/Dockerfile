@@ -1,8 +1,8 @@
 FROM yingjunjiao/runtime-image:1.0
 ENV TZ="Asia/Shanghai"
 ENV LANG C.UTF-8
-ADD saluki-monitor/saluki-monitor-console/build/libs/saluki-monitor-console-1.5.1.jar /root/app.jar
-ADD saluki-monitor/saluki-monitor-console/bin /root/
+ADD saluki-monitor/saluki-monitor-console/target/saluki-monitor-console-1.5.2.jar /root/app.jar
+ADD bin /root/
 RUN chmod +x /root/*.sh;mkdir /root/logs
 ENV JAVA_OPTS ""
 ENV APP_NAME saluki-monitor-web

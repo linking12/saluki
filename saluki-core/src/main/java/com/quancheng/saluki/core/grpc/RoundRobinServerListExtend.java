@@ -63,6 +63,11 @@ public final class RoundRobinServerListExtend<T> {
         return null;
     }
 
+    @Override
+    public RoundRobinServerListExtend<T> clone() {
+        return new RoundRobinServerListExtend<T>(this.tm, this.list);
+    }
+
     public List<SocketAddress> getServers() {
         List<SocketAddress> addresses = new ArrayList<SocketAddress>(list.size());
         for (EquivalentAddressGroup group : list) {

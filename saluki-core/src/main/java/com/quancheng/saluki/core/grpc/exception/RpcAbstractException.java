@@ -65,7 +65,8 @@ public abstract class RpcAbstractException extends RuntimeException {
         }
 
         return "error_message: " + message + ", status: " + motanErrorMsg.getStatus() + ", error_code: "
-               + motanErrorMsg.getErrorCode() + ",r=" + RpcContext.getContext().getAttachment(Constants.REMOTE_ADDRESS);
+               + motanErrorMsg.getErrorCode() + ",remoteaddress="
+               + RpcContext.getContext().getAttachment(Constants.PROVIDER_ADDRESS);
     }
 
     public int getStatus() {

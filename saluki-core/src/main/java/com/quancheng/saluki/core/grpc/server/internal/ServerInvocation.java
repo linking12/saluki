@@ -97,7 +97,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             @SuppressWarnings("unchecked")
             ServerCall<Message, Message> serverCall = (ServerCall<Message, Message>) field.get(responseObserver);
             InetSocketAddress remoteAddress = (InetSocketAddress) serverCall.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-            RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, remoteAddress.getHostString());
+            RpcContext.getContext().setAttachment(Constants.CONSUMER_ADDRESS, remoteAddress.getHostString());
         } catch (Exception e) {
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
             throw rpcFramwork;
@@ -113,7 +113,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             int concurrent = getConcurrent().get(); // 当前并发数
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
-            String consumer = RpcContext.getContext().getAttachment(Constants.REMOTE_ADDRESS);// 远程服务器地址
+            String consumer = RpcContext.getContext().getAttachment(Constants.CONSUMER_ADDRESS);// 远程服务器地址
             if (log.isDebugEnabled()) {
                 log.debug("Receiver %s request from %s,and return s% ", request.toString(), consumer,
                           response.toString());
@@ -136,9 +136,15 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                               MonitorService.INPUT, String.valueOf(request.getSerializedSize()), //
                                               MonitorService.OUTPUT, String.valueOf(response.getSerializedSize())));
         } catch (Throwable t) {
-            log.error("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
-                      + t.getMessage(), t);
+            log.warn("Failed to monitor count service " + this.serviceToInvoke.getClass() + ", cause: "
+                     + t.getMessage());
         }
+    }
+    public String getRpcName() {
+        return this.providerUrl.getServiceInterface() + ":" + method.getName();
+    }
+    public String getLocalAddressString() {
+        return this.providerUrl.getAddress();
     }
     private AtomicInteger getConcurrent() {
         String key = serviceToInvoke.getClass().getName() + "." + method.getName();

@@ -11,21 +11,27 @@ import java.lang.reflect.Field;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.concurrent.GuardedBy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
+import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.router.GrpcRouter;
+import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
 import io.grpc.Attributes.Key;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
-import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
 import io.grpc.Status;
 import io.grpc.TransportManager;
@@ -55,31 +61,32 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
     private static class RoundRobinLoadBalancer<T> extends LoadBalancer<T> {
 
-        private static final Logger            log             = LoggerFactory.getLogger(RoundRobinLoadBalancer.class);
+        private static final Logger           log             = LoggerFactory.getLogger(RoundRobinLoadBalancer.class);
 
-        private static final Status            SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
+        private static final Status           SHUTDOWN_STATUS = Status.UNAVAILABLE.augmentDescription("RoundRobinLoadBalancer has shut down");
 
-        private final Object                   lock            = new Object();
+        private final Object                  lock            = new Object();
 
-        private final TransportManager<T>      tm;
-
-        @GuardedBy("lock")
-        private RoundRobinServerListExtend<T>  addresses;
+        private final TransportManager<T>     tm;
 
         @GuardedBy("lock")
-        private InterimTransport<T>            interimTransport;
+        private RoundRobinServerListExtend<T> addresses;
 
         @GuardedBy("lock")
-        private Status                         nameResolutionError;
+        private InterimTransport<T>           interimTransport;
 
         @GuardedBy("lock")
-        private boolean                        closed;
+        private Status                        nameResolutionError;
 
-        private volatile NameResolver.Listener nameResolverListener;
+        @GuardedBy("lock")
+        private boolean                       closed;
 
-        private volatile List<SocketAddress>   remoteAddressList;
+        @GuardedBy("lock")
+        private GrpcRouter                    grpcRouter;
 
-        private volatile Attributes            callOptions_Affinity;
+        private volatile Attributes           nameNameResolver_attributes;
+
+        private volatile Attributes           clientInvoke_attributes;
 
         private RoundRobinLoadBalancer(TransportManager<T> tm){
             this.tm = tm;
@@ -87,7 +94,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public T pickTransport(Attributes affinity) {
-            this.callOptions_Affinity = affinity;
+            this.clientInvoke_attributes = affinity;
             final RoundRobinServerListExtend<T> addressesCopy;
             synchronized (lock) {
                 if (closed) {
@@ -105,31 +112,33 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 addressesCopy = addresses;
             }
             T t = addressesCopy.getTransportForNextServer();
-            this.doSaveRemoteInfo(addressesCopy);
+            mergeNameResolverAttribute2ClientInvokeAttribute(addressesCopy);
             return t;
         }
 
-        private void doSaveRemoteInfo(RoundRobinServerListExtend<T> serverList) {
+        private void mergeNameResolverAttribute2ClientInvokeAttribute(RoundRobinServerListExtend<T> serverList) {
             SocketAddress currentAddress = serverList.getCurrentServer();
             List<SocketAddress> addresses = serverList.getServers();
             HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
-            if (nameResolverListener != null) {
-                data.put(GrpcAsyncCall.NAMERESOVER_LISTENER, nameResolverListener);
+            for (Key<?> key : this.nameNameResolver_attributes.keys()) {
+                Object obj = this.nameNameResolver_attributes.get(key);
+                data.put(key, obj);
             }
-            if (remoteAddressList != null) {
-                data.put(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY, remoteAddressList);
+            for (Key<?> key : this.clientInvoke_attributes.keys()) {
+                Object obj = this.clientInvoke_attributes.get(key);
+                data.put(key, obj);
             }
             if (currentAddress != null) {
-                data.put(GrpcAsyncCall.REMOTE_ADDR_KEY, currentAddress);
+                data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentAddress);
             }
             if (addresses != null) {
-                data.put(GrpcAsyncCall.REMOTE_ADDR_KEYS, addresses);
+                data.put(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
             }
             try {
-                Class<?> classType = callOptions_Affinity.getClass();
+                Class<?> classType = clientInvoke_attributes.getClass();
                 Field field = classType.getDeclaredField("data");
                 field.setAccessible(true);
-                field.set(callOptions_Affinity, data);
+                field.set(clientInvoke_attributes, data);
             } catch (Exception e) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
@@ -140,38 +149,34 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         public void handleResolvedAddresses(List<? extends List<ResolvedServerInfo>> updatedServers,
                                             Attributes config) {
             try {
-                nameResolverListener = config.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
-                remoteAddressList = config.get(GrpcAsyncCall.REMOTE_ADDR_KEYS_REGISTRY);
+                this.nameNameResolver_attributes = config;
                 final InterimTransport<T> savedInterimTransport;
                 final RoundRobinServerListExtend<T> addressesCopy;
                 synchronized (lock) {
                     if (closed) {
                         return;
                     }
-                    RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
-                    for (List<ResolvedServerInfo> servers : updatedServers) {
-                        if (servers.isEmpty()) {
-                            continue;
-                        }
-                        for (ResolvedServerInfo server : servers) {
-                            listBuilder.add(server.getAddress());
-                        }
-                    }
-                    addresses = listBuilder.build();
+                    addresses = createRoundRobinServer(updatedServers);
                     addressesCopy = addresses;
+                    createGrpcRouterByNameResolver(config);
+                    // 如果有参数，说明不是第一次调用，refUrl是存在的
+                    if (clientInvoke_attributes != null) {
+                        addresses = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
+                    }
                     nameResolutionError = null;
                     savedInterimTransport = interimTransport;
                     interimTransport = null;
+
                 }
                 if (savedInterimTransport != null) {
                     savedInterimTransport.closeWithRealTransports(new Supplier<T>() {
 
                         @Override
                         public T get() {
+                            addresses = RoundRobinLoadBalancer.this.routerAddress(addressesCopy);
                             T t = addressesCopy.getTransportForNextServer();
-                            RoundRobinLoadBalancer.this.doSaveRemoteInfo(addressesCopy);
+                            RoundRobinLoadBalancer.this.mergeNameResolverAttribute2ClientInvokeAttribute(addressesCopy);
                             return t;
-
                         }
                     });
                 }
@@ -179,6 +184,96 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
                 log.error(e.getMessage(), e);
             }
 
+        }
+
+        /**
+         * <pre>
+         *  String routerMessage = "condition://host = 10.110.0.16 => host = 10.110.0.16";
+         * <pre>
+           String  routerMessage = "javascript://function route(refUrl,providerUrls) {"
+                                   + "var result = false;"
+                                   + "if(refUrl.host=='10.110.0.16'){"
+                                   + "   for (i = 0; i < providerUrls.length; i ++) {"
+                                   + "      if ('10.110.0.16' == providerUrls[i].host) {"
+                                   + "        result = true;"
+                                   + "      }else{"
+                                   + "        allMatchThen = false;"
+                                   + "        break;"
+                                   + "      }"
+                                   + "   }"
+                                   + "}"
+                                   + "return result;"
+                                +"}" ;
+         * </pre>
+         */
+        private RoundRobinServerListExtend<T> routerAddress(RoundRobinServerListExtend<T> addressesCopy) {
+            GrpcURL refUrl = this.clientInvoke_attributes.get(GrpcAsyncCall.GRPC_REF_URL);
+            synchronized (lock) {
+                GrpcRouter grpcRouterCopy = grpcRouter;
+                try {
+                    String routerRule = RpcContext.getContext().getAttachment("routerRule");
+                    if (routerRule != null) {
+                        grpcRouterCopy = GrpcRouterFactory.getInstance().createRouter(routerRule);
+                    }
+                } finally {
+                    if (grpcRouterCopy != null) {
+                        grpcRouterCopy.setRefUrl(refUrl);
+                        List<SocketAddress> updatedServers = Lists.newArrayList();
+                        for (SocketAddress server : addressesCopy.getServers()) {
+                            List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+                            if (grpcRouterCopy.match(providerUrls)) {
+                                updatedServers.add(server);
+                            }
+                        }
+                        if (updatedServers.isEmpty()) {
+                            throw new IllegalArgumentException("The router condition has stoped all server address");
+                        } else {
+                            RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+                            for (SocketAddress server : updatedServers) {
+                                listBuilder.add(server);
+                            }
+                            return listBuilder.build();
+                        }
+                    }
+                }
+            }
+            return addressesCopy;
+        }
+
+        private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {
+            Map<List<SocketAddress>, GrpcURL> addressMapping = this.nameNameResolver_attributes.get(GrpcNameResolverProvider.GRPC_ADDRESS_GRPCURL_MAPPING);
+            List<GrpcURL> providerUrls = Lists.newArrayList();
+            if (!addressMapping.isEmpty()) {
+                for (Map.Entry<List<SocketAddress>, GrpcURL> entry : addressMapping.entrySet()) {
+                    List<SocketAddress> allAddress = entry.getKey();
+                    if (allAddress.contains(address)) {
+                        providerUrls.add(entry.getValue());
+                    }
+                }
+            }
+            return providerUrls;
+        }
+
+        private void createGrpcRouterByNameResolver(Attributes config) {
+            String routerMessage = config.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
+            if (StringUtils.isNotEmpty(routerMessage)) {
+                grpcRouter = GrpcRouterFactory.getInstance().createRouter(routerMessage);
+            } else {
+                grpcRouter = null;
+            }
+        }
+
+        private RoundRobinServerListExtend<T> createRoundRobinServer(List<? extends List<ResolvedServerInfo>> updatedServers) {
+            RoundRobinServerListExtend.Builder<T> listBuilder = new RoundRobinServerListExtend.Builder<T>(tm);
+            for (List<ResolvedServerInfo> servers : updatedServers) {
+                if (servers.isEmpty()) {
+                    continue;
+                }
+                for (ResolvedServerInfo server : servers) {
+                    listBuilder.add(server.getAddress());
+                }
+            }
+            return listBuilder.build();
         }
 
         @Override

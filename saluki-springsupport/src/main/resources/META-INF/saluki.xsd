@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://code.quancheng.com/schema/saluki"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	targetNamespace="http://code.quancheng.com/schema/saluki">
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+
+	<xsd:complexType name="configType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="application" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc config application. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="registry" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[  The Rpc config registryAddress. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rpcPort" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[  The Rpc config realityRpcPort. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="httpPort" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[  The Rpc config realityRpcPort. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="referenceType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="interface" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config serviceClass. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="group" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config group. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="version" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config version. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="serviceType">
+		<xsd:attribute name="id" type="xsd:ID" />
+		<xsd:attribute name="interface" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config serviceClass. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="group" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config group. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="version" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The Rpc reference config version. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The service implementation instance bean id. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:element name="config" type="configType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ Base Config ]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="referer" type="referenceType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ Reference config ]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="service" type="serviceType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ Service config ]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+</xsd:schema>

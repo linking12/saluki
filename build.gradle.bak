@@ -1,0 +1,18 @@
+allprojects  {
+  apply plugin: 'maven'
+  group = 'com.quancheng.saluki'
+  version = '1.5.3-SNAPSHOT'
+}
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'groovy'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+  task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+  artifacts {
+        archives sourcesJar
+  }
+}

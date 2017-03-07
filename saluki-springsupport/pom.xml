@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>saluki-springsupport</artifactId>
+	<name>saluki-springsupport</name>
+	<parent>
+		<groupId>com.quancheng.saluki</groupId>
+		<artifactId>saluki</artifactId>
+		<version>1.5.2</version>
+	</parent>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<properties>
+		<spring-framework.version>4.3.3.RELEASE</spring-framework.version>
+		<os.detected.classifier>osx-x86_64</os.detected.classifier>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring-framework.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>saluki-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>saluki-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>saluki-registry-consul</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+</project>

@@ -11,33 +11,34 @@ import java.util.List;
 
 import com.quancheng.saluki.core.common.GrpcURL;
 
-import io.grpc.ResolvedServerInfo;
-
 /**
  * @author shimingliu 2016年12月29日 下午7:52:14
  * @version GrpcRouter.java, v 0.0.1 2016年12月29日 下午7:52:14 shimingliu
  */
 public abstract class GrpcRouter {
 
-    private final String  routerMessage;
+    private final String rule;
 
-    private final GrpcURL url;
+    private GrpcURL      refUrl;
 
-    public GrpcRouter(GrpcURL url, String routerMessage){
-        this.routerMessage = routerMessage;
-        this.url = url;
+    public GrpcRouter(String rule){
+        this.rule = rule;
         parseRouter();
     }
 
-    public String getRouterMessage() {
-        return routerMessage;
+    public String getRule() {
+        return rule;
     }
 
-    public GrpcURL getUrl() {
-        return url;
+    public GrpcURL getRefUrl() {
+        return refUrl;
+    }
+
+    public void setRefUrl(GrpcURL refUrl) {
+        this.refUrl = refUrl;
     }
 
     protected abstract void parseRouter();
 
-    public abstract List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers);
+    public abstract boolean match(List<GrpcURL> providerUrl);
 }

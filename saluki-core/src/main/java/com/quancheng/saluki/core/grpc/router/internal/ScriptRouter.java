@@ -9,10 +9,19 @@ package com.quancheng.saluki.core.grpc.router.internal;
 
 import java.util.List;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
-
-import io.grpc.ResolvedServerInfo;
 
 /**
  * @author shimingliu 2017年1月9日 下午2:24:56
@@ -20,20 +29,45 @@ import io.grpc.ResolvedServerInfo;
  */
 public class ScriptRouter extends GrpcRouter {
 
-    public ScriptRouter(GrpcURL url, String routerMessage){
-        super(url, routerMessage);
-        // TODO Auto-generated constructor stub
+    private static final Logger log = LoggerFactory.getLogger(ScriptRouter.class);
+
+    private ScriptEngine        engine;
+
+    public ScriptRouter(String type, String rule){
+        super(rule);
+        engine = new ScriptEngineManager().getEngineByName(type);
+        if (engine == null && StringUtils.equals(type, "javascript")) {
+            engine = new ScriptEngineManager().getEngineByName("js");
+        }
+        if (engine == null) {
+            throw new IllegalStateException("Unsupported route rule type: " + type + ", rule: " + rule);
+        }
     }
 
     @Override
     protected void parseRouter() {
-
+        // do nothing
     }
 
     @Override
-    public List<? extends List<ResolvedServerInfo>> router(List<? extends List<ResolvedServerInfo>> servers) {
-        // TODO Auto-generated method stub
-        return null;
+    public boolean match(List<GrpcURL> providerUrls) {
+        String rule = super.getRule();
+        try {
+            engine.eval(super.getRule());
+            Invocable invocable = (Invocable) engine;
+            GrpcURL refUrl = super.getRefUrl();
+            Object arg = new Gson().fromJson(refUrl.getParameterAndDecoded(Constants.ARG_KEY), Object.class);
+            Object obj = invocable.invokeFunction("route", refUrl.removeParameter(Constants.ARG_KEY), providerUrls,
+                                                  arg);
+            if (obj instanceof Boolean) {
+                return (Boolean) obj;
+            } else {
+                return true;
+            }
+        } catch (ScriptException | NoSuchMethodException e) {
+            log.error("route error , rule has been ignored. rule: " + rule + ", url: " + providerUrls, e);
+            return true;
+        }
     }
 
 }

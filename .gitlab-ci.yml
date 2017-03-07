@@ -1,0 +1,42 @@
+stages:
+  - jar-build
+  - docker-build
+before_script:
+  - aliimageclient=registry.docker.quancheng-ec.com:5000/saluki-example-client:V1.5.2-`TZ=CST-8 date '+%Y%m%d'` 
+  - aliimageserver=registry.docker.quancheng-ec.com:5000/saluki-example-server:V1.5.2-`TZ=CST-8 date '+%Y%m%d'`
+  - aliimagemonitor=registry.docker.quancheng-ec.com:5000/saluki-monitor:V1.5.2-`TZ=CST-8 date '+%Y%m%d'`
+  - hostname -i
+  - whoami
+  
+build_jar:
+  stage: jar-build
+  script:
+    - mvn clean install -U
+    - mvn deploy
+    - cd saluki-plugin/saluki-gradle-plugin
+    - gradle clean uploadArchives --refresh-dependencies
+  only:
+    - build
+    
+build_images:
+   stage: docker-build
+   script:
+    - echo `git rev-parse --short HEAD` >> saluki-monitor/saluki-monitor-console/bin/git.tag
+    - echo $image
+    - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - cd saluki-example/
+    - mvn clean install -U
+    - cd ..
+    - echo "Build Docker Image..."
+    - docker build --no-cache -t $aliimageclient -f saluki-example/saluki-example-client/Dockerfile .
+    - echo "Push Image:" $aliimageclient " to repository..."
+    - docker push $aliimageclient
+    - docker build --no-cache -t $aliimageserver -f saluki-example/saluki-example-server/Dockerfile .
+    - echo "Push Image:" $aliimageserver " to repository..."
+    - docker push $aliimageserver
+    - mvn clean install -U
+    - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
+    - echo "Push Image:" $aliimagemonitor " to repository..."
+    - docker push $aliimagemonitor
+   only:
+    - V1.5.1

@@ -3,3 +3,5 @@
 /.DS_Store
 /.project
 /build/
+/target/
+/bin/

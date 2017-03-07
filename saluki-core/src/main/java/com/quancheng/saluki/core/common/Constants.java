@@ -23,6 +23,7 @@ public class Constants {
     public static final String  ANYHOST_KEY                   = "anyhost";
     public static final String  METHODS_KEY                   = "methods";
     public static final String  METHOD_KEY                    = "method";
+    public static final String  ARG_KEY                       = "arg";
     public static final String  METHOD_RETRY_KEY              = "retries";
     public static final String  ANYHOST_VALUE                 = "0.0.0.0";
 
@@ -45,6 +46,8 @@ public class Constants {
     public static final int     RPCTYPE_BLOCKING              = 2;
     public static final int     RPC_ASYNC_DEFAULT_TIMEOUT     = 5000;
 
-    public static final String  REMOTE_ADDRESS                = "remoteaddress";
+    public static final String  PROVIDER_ADDRESS              = "provider";
+
+    public static final String  CONSUMER_ADDRESS              = "consumer";
 
 }
