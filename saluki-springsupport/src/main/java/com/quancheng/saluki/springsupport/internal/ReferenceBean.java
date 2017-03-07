@@ -38,6 +38,7 @@ public class ReferenceBean extends RpcReferenceConfig implements FactoryBean<Obj
         if (this.applicationContext != null) {
             ConfigBean configBean = applicationContext.getBean(ConfigBean.class);
             this.thrallProperties = configBean;
+            super.setAsync(true);
             this.addRegistyAddress();
             this.addHttpPort();
             return getProxyObj();

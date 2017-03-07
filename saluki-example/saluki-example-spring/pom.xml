@@ -85,15 +85,5 @@
 			<version>${netty-tcnative.version}</version>
 			<classifier>${os.detected.classifier}</classifier>
 		</dependency>
-		<dependency>
-			<groupId>org.mortbay.jetty.alpn</groupId>
-			<artifactId>alpn-boot</artifactId>
-			<version>8.1.11.v20170118</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mortbay.jetty.alpn</groupId>
-			<artifactId>jetty-alpn-agent</artifactId>
-			<version>2.0.6</version>
-		</dependency>
 	</dependencies>
 </project>
