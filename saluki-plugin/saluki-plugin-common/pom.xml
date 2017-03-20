@@ -12,7 +12,7 @@
 		<relativePath>../..</relativePath>
 	</parent>
 	<properties>
-		<protoc-jar.version>3.1.0.1</protoc-jar.version>
+		<protoc-jar.version>3.2.0</protoc-jar.version>
 		<commons-io.version>1.3.2</commons-io.version>
 	</properties>
 	<licenses>
