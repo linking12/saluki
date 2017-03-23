@@ -24,7 +24,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.context.annotation.Configuration;
 
 import com.quancheng.saluki.gateway.storage.support.StoreProxyRouteLocator;
-import com.quancheng.saluki.gateway.storage.support.ZuulRouteStore;
+import com.quancheng.saluki.gateway.storage.support.ZuulRouteRepository;
 
 /**
  * Registers a {@link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated through
@@ -36,7 +36,7 @@ import com.quancheng.saluki.gateway.storage.support.ZuulRouteStore;
 public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
 
     @Autowired
-    private ZuulRouteStore   zuulRouteStore;
+    private ZuulRouteRepository zuulRouteStore;
 
     @Autowired
     private DiscoveryClient  discovery;
