@@ -18,9 +18,8 @@ package com.quancheng.saluki.gateway.storage.support;
 import java.util.Map;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.zuul.filters.ProxyRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
-
+import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 
 /**
  * A simple {@link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated from configured
@@ -28,7 +27,7 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
  *
  * @author Jakub Narloch
  */
-public class StoreProxyRouteLocator extends ProxyRouteLocator {
+public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
     private final ZuulRouteStore store;
 

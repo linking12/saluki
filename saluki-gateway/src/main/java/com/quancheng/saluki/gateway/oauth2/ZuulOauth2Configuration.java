@@ -19,7 +19,6 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
 import com.quancheng.saluki.gateway.filters.pre.Oauth2AccessFilter;
-import com.quancheng.saluki.gateway.oauth2.limiter.RateLimiter;
 import com.quancheng.saluki.gateway.oauth2.support.Oauth2UserStore;
 
 /**
@@ -35,8 +34,8 @@ public class ZuulOauth2Configuration {
     @Autowired
     private Oauth2UserStore oauth2UserStore;
 
-    @Autowired
-    private RateLimiter     rateLimiter;
+    // @Autowired
+    // private RateLimiter rateLimiter;
 
     @Bean
     public JdbcTemplate jdbcTemplate() throws Exception {
@@ -55,7 +54,7 @@ public class ZuulOauth2Configuration {
 
     @Bean
     public Oauth2AccessFilter oauth2AccessFilter() {
-        return new Oauth2AccessFilter(oauth2UserStore, rateLimiter);
+        return new Oauth2AccessFilter(oauth2UserStore);
     }
 
 }

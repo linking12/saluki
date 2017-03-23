@@ -19,8 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.ZuulProxyConfiguration;
-import org.springframework.cloud.netflix.zuul.filters.ProxyRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
+import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.context.annotation.Configuration;
 
 import com.quancheng.saluki.gateway.storage.support.StoreProxyRouteLocator;
@@ -36,19 +36,19 @@ import com.quancheng.saluki.gateway.storage.support.ZuulRouteStore;
 public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
 
     @Autowired
-    private ZuulRouteStore zuulRouteStore;
+    private ZuulRouteStore   zuulRouteStore;
 
     @Autowired
-    private DiscoveryClient discovery;
+    private DiscoveryClient  discovery;
 
     @Autowired
-    private ZuulProperties zuulProperties;
+    private ZuulProperties   zuulProperties;
 
     @Autowired
     private ServerProperties server;
 
     @Override
-    public ProxyRouteLocator routeLocator() {
+    public DiscoveryClientRouteLocator routeLocator() {
         return new StoreProxyRouteLocator(server.getServletPath(), discovery, zuulProperties, zuulRouteStore);
     }
 }

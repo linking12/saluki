@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.quancheng.saluki.gateway.storage.support.MysqlZuulRouteStore;
 import com.quancheng.saluki.gateway.storage.support.ZuulRouteStore;
@@ -29,7 +30,7 @@ public class ZuulStoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ZuulRouteStore mysqlZuulRouteStore() {
-        return new MysqlZuulRouteStore();
+    public ZuulRouteStore mysqlZuulRouteStore(JdbcTemplate jdbcTemplate) {
+        return new MysqlZuulRouteStore(jdbcTemplate);
     }
 }

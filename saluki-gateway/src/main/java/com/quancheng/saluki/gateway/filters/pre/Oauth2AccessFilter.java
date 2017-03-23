@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.quancheng.saluki.gateway.oauth2.limiter.RateLimiter;
 import com.quancheng.saluki.gateway.oauth2.support.Oauth2UserStore;
 
 /**
@@ -22,12 +21,17 @@ public class Oauth2AccessFilter extends ZuulFilter {
 
     private final Oauth2UserStore oauth2Userstore;
 
-    private final RateLimiter     rateLimiter;
+    // private final RateLimiter rateLimiter;
 
-    public Oauth2AccessFilter(Oauth2UserStore userDao, RateLimiter rateLimiter){
+    // public Oauth2AccessFilter(Oauth2UserStore userDao, RateLimiter rateLimiter){
+    // super();
+    // this.oauth2Userstore = userDao;
+    // this.rateLimiter = rateLimiter;
+    // }
+
+    public Oauth2AccessFilter(Oauth2UserStore userDao){
         super();
         this.oauth2Userstore = userDao;
-        this.rateLimiter = rateLimiter;
     }
 
     @Override
@@ -52,11 +56,11 @@ public class Oauth2AccessFilter extends ZuulFilter {
         String auth = request.getHeader("Authorization");
         String accessToken = auth.split(" ")[1];
         String username = oauth2Userstore.loadUsernameByToken(accessToken);
-        if (!rateLimiter.access(username)) {
-            ctx.setSendZuulResponse(false);
-            ctx.setResponseStatusCode(401);
-            ctx.setResponseBody("The times of usage is limited");
-        }
+        // if (!rateLimiter.access(username)) {
+        // ctx.setSendZuulResponse(false);
+        // ctx.setResponseStatusCode(401);
+        // ctx.setResponseBody("The times of usage is limited");
+        // }
         return null;
     }
 
