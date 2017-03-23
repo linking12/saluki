@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
@@ -83,8 +84,8 @@ public class DataSourceConfiguration {
     @Value("{spring.datasource.connectionProperties}")
     private String              connectionProperties;
 
-    @Bean // 声明其为Bean实例
-    @Primary // 在同样的DataSource中，首先使用被标注的DataSource
+    @Bean
+    @Primary
     public DataSource dataSource() {
         DruidDataSource datasource = new DruidDataSource();
         datasource.setUrl(this.dbUrl);
@@ -112,5 +113,10 @@ public class DataSourceConfiguration {
         datasource.setConnectionProperties(connectionProperties);
 
         return datasource;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) throws Exception {
+        return new JdbcTemplate(dataSource);
     }
 }

@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.quancheng.saluki.gateway.oauth2.support.Oauth2UserStore;
+import com.quancheng.saluki.gateway.oauth2.security.UserDetailsService;
 
 /**
  * @author shimingliu 2017年3月23日 上午10:43:08
@@ -19,7 +19,7 @@ import com.quancheng.saluki.gateway.oauth2.support.Oauth2UserStore;
  */
 public class Oauth2AccessFilter extends ZuulFilter {
 
-    private final Oauth2UserStore oauth2Userstore;
+    private final UserDetailsService userDetailsService;
 
     // private final RateLimiter rateLimiter;
 
@@ -29,9 +29,9 @@ public class Oauth2AccessFilter extends ZuulFilter {
     // this.rateLimiter = rateLimiter;
     // }
 
-    public Oauth2AccessFilter(Oauth2UserStore userDao){
+    public Oauth2AccessFilter(UserDetailsService userDetailsService){
         super();
-        this.oauth2Userstore = userDao;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class Oauth2AccessFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         String auth = request.getHeader("Authorization");
         String accessToken = auth.split(" ")[1];
-        String username = oauth2Userstore.loadUsernameByToken(accessToken);
+        String username = userDetailsService.loadUsernameByToken(accessToken);
         // if (!rateLimiter.access(username)) {
         // ctx.setSendZuulResponse(false);
         // ctx.setResponseStatusCode(401);
