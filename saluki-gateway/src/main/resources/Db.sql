@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS `authority`;
 DROP TABLE IF EXISTS `user_authority`;
 DROP TABLE IF EXISTS `oauth_access_token`;
 DROP TABLE IF EXISTS `oauth_refresh_token`;
+DROP TABLE IF EXISTS `zuul_routes`;
 
 CREATE TABLE `zuul_routes` (
     `id` int NOT NULL AUTO_INCREMENT,

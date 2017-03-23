@@ -7,35 +7,33 @@ import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Entity
+@Table(name = "user")
 public class User {
 
     @Id
     @Column(updatable = false, nullable = false)
     @Size(min = 0, max = 50)
-    private String username;
+    private String         username;
 
     @Size(min = 0, max = 500)
-    private String password;
+    private String         password;
 
     @Email
     @Size(min = 0, max = 50)
-    private String email;
+    private String         email;
 
-    private boolean activated;
+    private boolean        activated;
 
     @Size(min = 0, max = 100)
     @Column(name = "activationkey")
-    private String activationKey;
+    private String         activationKey;
 
     @Size(min = 0, max = 100)
     @Column(name = "resetpasswordkey")
-    private String resetPasswordKey;
+    private String         resetPasswordKey;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_authority",
-            joinColumns = @JoinColumn(name = "username"),
-            inverseJoinColumns = @JoinColumn(name = "authority"))
+    @JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "username"), inverseJoinColumns = @JoinColumn(name = "authority"))
     private Set<Authority> authorities;
 
     public String getUsername() {
@@ -113,14 +111,8 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                ", activated='" + activated + '\'' +
-                ", activationKey='" + activationKey + '\'' +
-                ", resetPasswordKey='" + resetPasswordKey + '\'' +
-                ", authorities=" + authorities +
-                '}';
+        return "User{" + "username='" + username + '\'' + ", password='" + password + '\'' + ", email='" + email + '\''
+               + ", activated='" + activated + '\'' + ", activationKey='" + activationKey + '\''
+               + ", resetPasswordKey='" + resetPasswordKey + '\'' + ", authorities=" + authorities + '}';
     }
 }
