@@ -7,6 +7,7 @@
  */
 package com.quancheng.saluki.boot.autoconfigure;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -25,15 +26,13 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "saluki.grpc", name = "registryAddress")
+@ConditionalOnBean(value = GrpcProperties.class)
 @AutoConfigureAfter(WebAppAutoConfiguration.class)
 @EnableConfigurationProperties(GrpcProperties.class)
 public class GrpcAutoConfiguration {
 
-    private final GrpcProperties thrallProperties;
-
-    public GrpcAutoConfiguration(GrpcProperties thrallProperties){
-        this.thrallProperties = thrallProperties;
-    }
+    @Autowired
+    private GrpcProperties thrallProperties;
 
     @Bean
     @ConditionalOnBean(value = GrpcProperties.class, annotation = SalukiService.class)

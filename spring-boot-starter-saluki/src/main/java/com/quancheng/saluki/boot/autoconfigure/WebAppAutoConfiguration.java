@@ -7,6 +7,7 @@
  */
 package com.quancheng.saluki.boot.autoconfigure;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
+@ConditionalOnBean(value = GrpcProperties.class)
 public class WebAppAutoConfiguration implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
     private final GrpcProperties thrallProperties;
