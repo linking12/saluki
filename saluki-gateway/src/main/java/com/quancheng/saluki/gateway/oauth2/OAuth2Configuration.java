@@ -66,11 +66,8 @@ public class OAuth2Configuration {
                 .and()//
                 .authorizeRequests()//
                 .antMatchers("/web/**").permitAll()//
-                .antMatchers("/api/**")//
-                .authenticated();
-
+                .antMatchers("/api/**").authenticated();
         }
-
     }
 
     @Configuration
