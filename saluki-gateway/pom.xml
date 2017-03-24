@@ -23,7 +23,12 @@
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
-			<version>1.5.2-SNAPSHOT</version>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>spring-boot-starter-saluki-monitor</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>

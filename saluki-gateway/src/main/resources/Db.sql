@@ -15,6 +15,11 @@ CREATE TABLE `zuul_routes` (
     `strip_prefix` BOOL DEFAULT NULL,
     `retryable` BOOL DEFAULT NULL,
     `sensitiveHeaders` varchar(500) DEFAULT NULL,
+    `is_grpc` BOOL DEFAULT 0,
+    `group` varchar(100) DEFAULT NULL,
+    `version` varchar(100) DEFAULT NULL,
+    `service_name` varchar(500) DEFAULT NULL,
+    `method` varchar(100) DEFAULT NULL,
      PRIMARY KEY (`id`)
 );
 CREATE TABLE user (
