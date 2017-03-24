@@ -22,6 +22,14 @@ CREATE TABLE `zuul_routes` (
     `method` varchar(100) DEFAULT NULL,
      PRIMARY KEY (`id`)
 );
+CREATE TABLE `api-jar` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `jar_version` varchar(100) DEFAULT NULL,
+    `jar_url` varchar(100) DEFAULT NULL,
+    `create_time` DATETIME DEFAULT NULL,
+     PRIMARY KEY (`id`)
+);
+
 CREATE TABLE user (
   username VARCHAR(50) NOT NULL PRIMARY KEY,
   email VARCHAR(50),
