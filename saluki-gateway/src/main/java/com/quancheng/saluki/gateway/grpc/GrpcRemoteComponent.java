@@ -38,12 +38,17 @@ import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
+import sun.misc.BASE64Encoder;
+
+@SuppressWarnings("restriction")
 @Component
 public class GrpcRemoteComponent {
 
     private static final Logger                         logger              = LoggerFactory.getLogger(GrpcRemoteComponent.class);
 
-    private static final Gson                           gson                = new Gson();
+    private static final Gson                           GSON                = new Gson();
+
+    private static final String                         AUTHOR              = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
 
     private static final String                         PATH                = System.getProperty("user.home")
                                                                               + "/gateway";
@@ -106,9 +111,7 @@ public class GrpcRemoteComponent {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(3 * 1000);
         conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
-        @SuppressWarnings("restriction")
-        String author = new sun.misc.BASE64Encoder().encode(("liushiming:Hello899").getBytes());
-        conn.setRequestProperty("Authorization", "Basic " + author);
+        conn.setRequestProperty("Authorization", "Basic " + AUTHOR);
         InputStream inputStream = conn.getInputStream();
         byte[] getData = readInputStream(inputStream);
         File saveDir = new File(PATH);
@@ -116,6 +119,7 @@ public class GrpcRemoteComponent {
             saveDir.mkdir();
         }
         File file = new File(saveDir + File.separator + "api.jar");
+        file.deleteOnExit();
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(getData);
         if (fos != null) {
@@ -149,7 +153,7 @@ public class GrpcRemoteComponent {
             Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);
             Class<?> requestType = method.getParameterTypes()[0];
             Class<?> returnType = method.getReturnType();
-            Object request = gson.fromJson(requestParam, requestType);
+            Object request = GSON.fromJson(requestParam, requestType);
             String[] paramTypes = new String[] { requestType.getName(), returnType.getName() };
             Object[] args = new Object[] { request };
             Object reply = genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
