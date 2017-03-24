@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.gateway.controller;
+package com.quancheng.saluki.gateway.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,16 +13,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * @author shimingliu 2017年3月23日 下午8:01:44
- * @version WelComeController.java, v 0.0.1 2017年3月23日 下午8:01:44 shimingliu
+ * @author shimingliu 2017年3月24日 下午3:01:03
+ * @version WelcomeController.java, v 0.0.1 2017年3月24日 下午3:01:03 shimingliu
  */
 @Controller
-@RequestMapping("/welcome")
-public class WelComeController {
+@RequestMapping("/web/welcome")
+public class WelcomeController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public String sayHello() {
-        return "WelCome saluki gateway";
+        return "Hello,This is saluki gateway";
     }
+
 }
