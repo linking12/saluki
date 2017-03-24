@@ -17,10 +17,16 @@ package com.quancheng.saluki.gateway.storage.support;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties.ZuulRoute;
@@ -28,6 +34,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 
 /**
  * A simple {@link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated from configured
@@ -37,7 +44,13 @@ import com.google.common.collect.Lists;
  */
 public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
-    private final ZuulRouteRepository store;
+    private final Logger                   log             = LoggerFactory.getLogger(StoreProxyRouteLocator.class);
+
+    private final ZuulRouteRepository      store;
+
+    private final ScheduledExecutorService refreshExecutor = Executors.newScheduledThreadPool(1,
+                                                                                              new NamedThreadFactory("refreshZuulRoute",
+                                                                                                                     true));;
 
     /**
      * Creates new instance of {@link StoreProxyRouteLocator}
@@ -51,6 +64,32 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
                                   ZuulRouteRepository store){
         super(servletPath, discovery, properties);
         this.store = store;
+        refreshExecutor.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    refresh();
+                } catch (Throwable e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }, 0, 1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void refresh() {
+        doRefresh();
+    }
+
+    @Override
+    protected LinkedHashMap<String, ZuulRoute> locateRoutes() {
+        LinkedHashMap<String, ZuulRoute> routesMap = new LinkedHashMap<String, ZuulRoute>();
+        routesMap.putAll(super.locateRoutes());
+        for (ZuulProperties.ZuulRoute route : findAll()) {
+            routesMap.put(route.getPath(), route);
+        }
+        return routesMap;
     }
 
     /**
@@ -58,9 +97,7 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
      */
     @Override
     protected void addConfiguredRoutes(Map<String, ZuulProperties.ZuulRoute> routes) {
-        for (ZuulProperties.ZuulRoute route : findAll()) {
-            routes.put(route.getPath(), route);
-        }
+        super.addConfiguredRoutes(routes);
     }
 
     private List<ZuulProperties.ZuulRoute> findAll() {
@@ -72,8 +109,8 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
                 String path = input.getPath();
                 String service_id = input.getService_id();
                 String url = input.getUrl();
-                boolean strip_prefix = input.getStrip_prefix();
-                boolean retryable = input.getRetryable();
+                boolean strip_prefix = input.getStrip_prefix() != null ? input.getStrip_prefix() : true;
+                Boolean retryable = input.getRetryable();
                 String sensitiveHeader = input.getSensitiveHeaders();
                 String[] sensitiveHeaders = null;
                 if (sensitiveHeader != null) {

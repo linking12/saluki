@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
@@ -115,8 +114,4 @@ public class DataSourceConfiguration {
         return datasource;
     }
 
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) throws Exception {
-        return new JdbcTemplate(dataSource);
-    }
 }
