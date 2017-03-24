@@ -7,8 +7,12 @@
  */
 package com.quancheng.saluki.gateway.filters.route;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
@@ -22,7 +26,9 @@ import com.quancheng.saluki.gateway.storage.support.ZuulRouteEntity;
  */
 public class GrpcRemoteApiFilter extends ZuulFilter {
 
-    private GrpcRemoteComponent grpcRemote;
+    private static final JsonParser JSONPARSER = new JsonParser();
+
+    private GrpcRemoteComponent     grpcRemote;
 
     public GrpcRemoteApiFilter(GrpcRemoteComponent grpcRemote){
         this.grpcRemote = grpcRemote;
@@ -55,13 +61,37 @@ public class GrpcRemoteApiFilter extends ZuulFilter {
         String method = route.getMethod();
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequestWrapper request = (HttpServletRequestWrapper) ctx.getRequest();
-        String grpcRequestJson = request.getParameter("requestBody");
-        try {
-            return grpcRemote.callRemoteService(service, group, version, method, grpcRequestJson);
-        } catch (Throwable e) {
+        Map<?, ?> params = request.getParameterMap();
+        String grpcRequestJson = findJsonFromParams(params);
+        if (grpcRequestJson == null) {
             ctx.set("error.status_code", 500);
-            ctx.set("error.message", e.getMessage());
-            ctx.set("error.exception", e);
+            ctx.set("error.message", "not right param");
+        } else {
+            try {
+                return grpcRemote.callRemoteService(service, group, version, method, grpcRequestJson);
+            } catch (Throwable e) {
+                ctx.set("error.status_code", 500);
+                ctx.set("error.message", e.getMessage());
+                ctx.set("error.exception", e);
+            }
+        }
+        return null;
+    }
+
+    private String findJsonFromParams(Map<?, ?> params) {
+        Collection<?> paramValues = params.values();
+        for (Object value : paramValues) {
+            try {
+                if (value instanceof String) {
+                    String jsonValue = (String) value;
+                    JSONPARSER.parse(jsonValue);
+                    return jsonValue;
+                } else {
+                    continue;
+                }
+            } catch (JsonParseException e) {
+                continue;
+            }
         }
         return null;
     }
