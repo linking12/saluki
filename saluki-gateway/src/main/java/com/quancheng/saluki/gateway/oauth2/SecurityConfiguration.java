@@ -36,12 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()//
-           .antMatchers("/web/register")//
-           .antMatchers("/web/activate")//
-           .antMatchers("/web/lostpassword")//
-           .antMatchers("/web/resetpassword")//
-           .antMatchers("/web/welcome");//
-
+           .antMatchers("/web/**");
     }
 
     @Override
