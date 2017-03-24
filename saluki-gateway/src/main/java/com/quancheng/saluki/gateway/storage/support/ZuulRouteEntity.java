@@ -47,6 +47,21 @@ public class ZuulRouteEntity {
     @Column(name = "sensitiveHeaders")
     private String  sensitiveHeaders;
 
+    @Column(name = "is_grpc")
+    private Boolean is_grpc;
+
+    @Column(name = "service_name")
+    private String  service_name;
+
+    @Column(name = "group")
+    private String  group;
+
+    @Column(name = "version")
+    private String  version;
+
+    @Column(name = "method")
+    private String  method;
+
     public Long getId() {
         return id;
     }
@@ -109,6 +124,46 @@ public class ZuulRouteEntity {
 
     public void setSensitiveHeaders(String sensitiveHeaders) {
         this.sensitiveHeaders = sensitiveHeaders;
+    }
+
+    public Boolean getIs_grpc() {
+        return is_grpc;
+    }
+
+    public void setIs_grpc(Boolean is_grpc) {
+        this.is_grpc = is_grpc;
+    }
+
+    public String getService_name() {
+        return service_name;
+    }
+
+    public void setService_name(String service_name) {
+        this.service_name = service_name;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
 }

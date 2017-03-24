@@ -35,6 +35,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
+import com.quancheng.saluki.gateway.storage.RouterLocalCache;
 
 /**
  * A simple {@link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated from configured
@@ -101,7 +102,9 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private List<ZuulProperties.ZuulRoute> findAll() {
-        return Lists.transform(store.findAll(), new Function<ZuulRouteEntity, ZuulProperties.ZuulRoute>() {
+        List<ZuulRouteEntity> routers = store.findAll();
+        RouterLocalCache.getInstance().putAllRouters(routers);
+        return Lists.transform(routers, new Function<ZuulRouteEntity, ZuulProperties.ZuulRoute>() {
 
             @Override
             public ZuulRoute apply(ZuulRouteEntity input) {
