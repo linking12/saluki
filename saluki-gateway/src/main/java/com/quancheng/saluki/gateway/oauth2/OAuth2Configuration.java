@@ -65,9 +65,8 @@ public class OAuth2Configuration {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//
                 .and()//
                 .authorizeRequests()//
-                .antMatchers("/welcome/").permitAll()//
-                .antMatchers("/test/").permitAll()//
-                .antMatchers("/secure/**").authenticated();
+                .antMatchers("/*")//
+                .authenticated();
 
         }
 
