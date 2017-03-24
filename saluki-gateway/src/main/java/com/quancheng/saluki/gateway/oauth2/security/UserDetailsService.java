@@ -74,14 +74,14 @@ public class UserDetailsService implements org.springframework.security.core.use
 
     }
 
-    public String loadUsernameByToken(String token) {
+    public User loadUsernameByToken(String token) {
         if (token == null) {
             return null;
         }
         try {
             byte[] bytes = messageDigest.digest(token.getBytes("UTF-8"));
             String realToken = String.format("%032x", new BigInteger(1, bytes));
-            return userRepository.findUsernameByToken(realToken);
+            return userRepository.findByToken(realToken);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("UTF-8 encoding not available.  Fatal (should be in the JDK).");
         }

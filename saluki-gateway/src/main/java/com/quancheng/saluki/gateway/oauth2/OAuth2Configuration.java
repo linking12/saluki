@@ -22,18 +22,20 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import com.quancheng.saluki.gateway.filters.pre.Oauth2AccessFilter;
+import com.quancheng.saluki.gateway.filters.pre.Oauth2LimitAccessFilter;
 import com.quancheng.saluki.gateway.oauth2.security.Authorities;
 import com.quancheng.saluki.gateway.oauth2.security.CustomAuthenticationEntryPoint;
 import com.quancheng.saluki.gateway.oauth2.security.CustomLogoutSuccessHandler;
 import com.quancheng.saluki.gateway.oauth2.security.UserDetailsService;
 
+import redis.clients.jedis.JedisPool;
+
 @Configuration
 public class OAuth2Configuration {
 
     @Bean
-    public Oauth2AccessFilter oauth2AccessFilter(UserDetailsService userDetailservice) {
-        return new Oauth2AccessFilter(userDetailservice);
+    public Oauth2LimitAccessFilter oauth2AccessFilter(UserDetailsService userDetailservice, JedisPool jedisPool) {
+        return new Oauth2LimitAccessFilter(userDetailservice, jedisPool);
     }
 
     @Configuration

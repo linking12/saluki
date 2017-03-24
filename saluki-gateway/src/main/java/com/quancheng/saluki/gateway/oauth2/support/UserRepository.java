@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query
     User findByEmailAndResetPasswordKey(String email, String resetPasswordKey);
 
-    @Query(value = "select user_name from oauth_access_token where token_id=?1", nativeQuery = true)
-    String findUsernameByToken(String tokenId);
+    @Query(value = "select * from gateway.user u where exists(select user_name from oauth_access_token where user_name=u.username and  token_id=?1)", nativeQuery = true)
+    User findByToken(String tokenId);
 
 }

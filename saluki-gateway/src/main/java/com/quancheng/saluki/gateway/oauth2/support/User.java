@@ -36,6 +36,12 @@ public class User {
     @JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "username"), inverseJoinColumns = @JoinColumn(name = "authority"))
     private Set<Authority> authorities;
 
+    @Column(name = "intervalInMills")
+    private Long           intervalInMills;
+
+    @Column(name = "limit")
+    private Long           limit;
+
     public String getUsername() {
         return username;
     }
@@ -92,6 +98,22 @@ public class User {
         this.authorities = authorities;
     }
 
+    public Long getIntervalInMills() {
+        return intervalInMills;
+    }
+
+    public void setIntervalInMills(Long intervalInMills) {
+        this.intervalInMills = intervalInMills;
+    }
+
+    public Long getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Long limit) {
+        this.limit = limit;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -111,8 +133,9 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" + "username='" + username + '\'' + ", password='" + password + '\'' + ", email='" + email + '\''
-               + ", activated='" + activated + '\'' + ", activationKey='" + activationKey + '\''
-               + ", resetPasswordKey='" + resetPasswordKey + '\'' + ", authorities=" + authorities + '}';
+        return "User [username=" + username + ", password=" + password + ", email=" + email + ", activated=" + activated
+               + ", activationKey=" + activationKey + ", resetPasswordKey=" + resetPasswordKey + ", authorities="
+               + authorities + ", intervalInMills=" + intervalInMills + ", limit=" + limit + "]";
     }
+
 }
