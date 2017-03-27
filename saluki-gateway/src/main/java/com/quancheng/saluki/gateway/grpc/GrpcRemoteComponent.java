@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +26,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.CacheBuilder;
@@ -49,9 +51,6 @@ public class GrpcRemoteComponent {
     private static final Gson                           GSON                = new Gson();
 
     private static final String                         AUTHOR              = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
-
-    private static final String                         PATH                = System.getProperty("user.home")
-                                                                              + "/gateway";
 
     private static final LoadingCache<String, Class<?>> remoteServiceCache  = CacheBuilder.newBuilder()                                                                  //
                                                                                           .concurrencyLevel(8)                                                           //
@@ -85,12 +84,19 @@ public class GrpcRemoteComponent {
     @Autowired
     private ApiJarRepository                            apiJarRepository;
 
+    @Value("spring.devtools.restart.additional-paths")
+    private String                                      API_DIR_PATH;
+
+    private String                                      API_JAR_PATH;
+
     private final ScheduledExecutorService              downLoadApiExecutor = Executors.newScheduledThreadPool(1,
                                                                                                                new NamedThreadFactory("downLoadApi",
                                                                                                                                       true));
 
     @PostConstruct
     public void init() {
+
+        API_JAR_PATH = API_DIR_PATH + File.separator + "api.jar";
         downLoadApiExecutor.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -114,11 +120,11 @@ public class GrpcRemoteComponent {
         conn.setRequestProperty("Authorization", "Basic " + AUTHOR);
         InputStream inputStream = conn.getInputStream();
         byte[] getData = readInputStream(inputStream);
-        File saveDir = new File(PATH);
+        File saveDir = new File(API_DIR_PATH);
         if (!saveDir.exists()) {
             saveDir.mkdir();
         }
-        File file = new File(saveDir + File.separator + "api.jar");
+        File file = new File(API_JAR_PATH);
         file.deleteOnExit();
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(getData);
@@ -147,7 +153,9 @@ public class GrpcRemoteComponent {
         try {
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                serviceClass = ReflectUtils.name2class(serviceName);
+                URL jarUrl = new File(API_JAR_PATH).toURI().toURL();
+                URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { jarUrl });
+                serviceClass = ReflectUtils.name2class(urlClassLoader, serviceName);
                 remoteServiceCache.put(serviceName, serviceClass);
             }
             Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);

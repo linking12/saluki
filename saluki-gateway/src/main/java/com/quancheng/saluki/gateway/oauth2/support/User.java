@@ -39,7 +39,7 @@ public class User {
     @Column(name = "intervalInMills")
     private Long           intervalInMills;
 
-    @Column(name = "limit")
+    @Column(name = "limitPermission")
     private Long           limit;
 
     public String getUsername() {

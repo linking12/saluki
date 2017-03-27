@@ -16,13 +16,13 @@ CREATE TABLE `zuul_routes` (
     `retryable` BOOL DEFAULT NULL,
     `sensitiveHeaders` varchar(500) DEFAULT NULL,
     `is_grpc` BOOL DEFAULT 0,
-    `group` varchar(100) DEFAULT NULL,
-    `version` varchar(100) DEFAULT NULL,
+    `grpc_group` varchar(100) DEFAULT NULL,
+    `grpc_version` varchar(100) DEFAULT NULL,
     `service_name` varchar(500) DEFAULT NULL,
-    `method` varchar(100) DEFAULT NULL,
+    `grpc_method` varchar(100) DEFAULT NULL,
      PRIMARY KEY (`id`)
 );
-CREATE TABLE `api-jar` (
+CREATE TABLE `api_jar` (
     `id` int NOT NULL AUTO_INCREMENT,
     `jar_version` varchar(100) DEFAULT NULL,
     `jar_url` varchar(100) DEFAULT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE user (
   activationkey VARCHAR(50) DEFAULT NULL,
   resetpasswordkey VARCHAR(50) DEFAULT NULL,
   intervalInMills BIGINT(10) DEFAULT NULL,
-  limit INT DEFAULT NULL
+  limitPermission BIGINT(10) DEFAULT NULL
 );
 
 CREATE TABLE authority (

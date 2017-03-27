@@ -572,7 +572,7 @@ public final class ReflectUtils {
      * @param name name.
      * @return Class instance.
      */
-    private static Class<?> name2class(ClassLoader cl, String name) throws ClassNotFoundException {
+    public static Class<?> name2class(ClassLoader cl, String name) throws ClassNotFoundException {
         int c = 0, index = name.indexOf('[');
         if (index > 0) {
             c = (name.length() - index) / 2;

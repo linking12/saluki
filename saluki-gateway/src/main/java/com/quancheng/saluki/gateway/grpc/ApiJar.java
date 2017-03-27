@@ -20,7 +20,7 @@ import javax.persistence.Table;
  * @version ApiJar.java, v 0.0.1 2017年3月24日 下午6:09:30 shimingliu
  */
 @Entity
-@Table(name = "api-jar")
+@Table(name = "api_jar")
 public class ApiJar {
 
     @Id
@@ -31,7 +31,7 @@ public class ApiJar {
     @Column(name = "jar_version")
     private String jarVersion;
 
-    @Column(name = "path")
+    @Column(name = "jar_url")
     private String jarUrl;
 
     @Column(name = "creat_time")

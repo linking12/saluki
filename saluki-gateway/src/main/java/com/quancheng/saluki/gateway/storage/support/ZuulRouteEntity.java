@@ -53,13 +53,13 @@ public class ZuulRouteEntity {
     @Column(name = "service_name")
     private String  service_name;
 
-    @Column(name = "group")
+    @Column(name = "grpc_group")
     private String  group;
 
-    @Column(name = "version")
+    @Column(name = "grpc_version")
     private String  version;
 
-    @Column(name = "method")
+    @Column(name = "grpc_method")
     private String  method;
 
     public Long getId() {
