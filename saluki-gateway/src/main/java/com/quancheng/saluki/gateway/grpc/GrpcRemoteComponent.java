@@ -84,7 +84,7 @@ public class GrpcRemoteComponent {
     @Autowired
     private ApiJarRepository                            apiJarRepository;
 
-    @Value("spring.devtools.restart.additional-paths")
+    @Value("${gateway.api.dir}")
     private String                                      API_DIR_PATH;
 
     private String                                      API_JAR_PATH;

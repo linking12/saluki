@@ -7,7 +7,6 @@
  */
 package com.quancheng.saluki.boot.autoconfigure;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -15,7 +14,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @version ThrallProperties.java, v 0.0.1 2016年12月16日 下午4:58:23 shimingliu
  */
 
-@ConditionalOnProperty(prefix = "saluki.grpc", name = "registryAddress")
 @ConfigurationProperties(prefix = "saluki.grpc")
 public class GrpcProperties {
 

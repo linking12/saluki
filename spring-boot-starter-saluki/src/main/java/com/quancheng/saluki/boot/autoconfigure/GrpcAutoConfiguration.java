@@ -26,7 +26,6 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "saluki.grpc", name = "registryAddress")
-@ConditionalOnBean(value = GrpcProperties.class)
 @AutoConfigureAfter(WebAppAutoConfiguration.class)
 @EnableConfigurationProperties(GrpcProperties.class)
 public class GrpcAutoConfiguration {

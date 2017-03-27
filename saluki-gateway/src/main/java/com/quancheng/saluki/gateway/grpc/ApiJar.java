@@ -34,7 +34,7 @@ public class ApiJar {
     @Column(name = "jar_url")
     private String jarUrl;
 
-    @Column(name = "creat_time")
+    @Column(name = "create_time")
     private Date   createTime;
 
     public Long getId() {

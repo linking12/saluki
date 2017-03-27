@@ -25,7 +25,7 @@ CREATE TABLE `zuul_routes` (
 CREATE TABLE `api_jar` (
     `id` int NOT NULL AUTO_INCREMENT,
     `jar_version` varchar(100) DEFAULT NULL,
-    `jar_url` varchar(100) DEFAULT NULL,
+    `jar_url` varchar(1000) DEFAULT NULL,
     `create_time` DATETIME DEFAULT NULL,
      PRIMARY KEY (`id`)
 );
