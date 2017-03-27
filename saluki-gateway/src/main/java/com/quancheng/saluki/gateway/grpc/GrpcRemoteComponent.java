@@ -14,9 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,11 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
@@ -46,52 +44,29 @@ import sun.misc.BASE64Encoder;
 @Component
 public class GrpcRemoteComponent {
 
-    private static final Logger                         logger              = LoggerFactory.getLogger(GrpcRemoteComponent.class);
+    private static final Logger                logger              = LoggerFactory.getLogger(GrpcRemoteComponent.class);
 
-    private static final Gson                           GSON                = new Gson();
+    private static final Map<String, Class<?>> remoteServiceCache  = Maps.newConcurrentMap();
 
-    private static final String                         AUTHOR              = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
+    private static final Gson                  GSON                = new Gson();
 
-    private static final LoadingCache<String, Class<?>> remoteServiceCache  = CacheBuilder.newBuilder()                                                                  //
-                                                                                          .concurrencyLevel(8)                                                           //
-                                                                                          .expireAfterWrite(1,
-                                                                                                            TimeUnit.DAYS)                                               //
-                                                                                          .initialCapacity(10)                                                           //
-                                                                                          .maximumSize(100)                                                              //
-                                                                                          .recordStats()                                                                 //
-                                                                                          .removalListener(new RemovalListener<String, Class<?>>() {
-
-                                                                                              @Override
-                                                                                              public void onRemoval(RemovalNotification<String, Class<?>> notification) {
-                                                                                                  logger.info("remove key:"
-                                                                                                              + notification.getKey()
-                                                                                                              + ",value:"
-                                                                                                              + notification.getValue());
-                                                                                              }
-                                                                                          })                                                                             //
-                                                                                          .build(new CacheLoader<String, Class<?>>() {
-
-                                                                                              @Override
-                                                                                              public Class<?> load(String key) throws Exception {
-                                                                                                  return null;
-                                                                                              }
-
-                                                                                          });
+    private static final String                AUTHOR              = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
 
     @SalukiReference
-    private GenericService                              genricService;
+    private GenericService                     genricService;
 
     @Autowired
-    private ApiJarRepository                            apiJarRepository;
+    private ApiJarRepository                   apiJarRepository;
 
-    @Value("${gateway.api.dir}")
-    private String                                      API_DIR_PATH;
+    private String                             API_DIR_PATH        = System.getProperty("user.home") + "/saluki";
 
-    private String                                      API_JAR_PATH;
+    private String                             API_JAR_PATH;
 
-    private final ScheduledExecutorService              downLoadApiExecutor = Executors.newScheduledThreadPool(1,
-                                                                                                               new NamedThreadFactory("downLoadApi",
-                                                                                                                                      true));
+    private URLClassLoader                     urlClassLoader;
+
+    private final ScheduledExecutorService     downLoadApiExecutor = Executors.newScheduledThreadPool(1,
+                                                                                                      new NamedThreadFactory("downLoadApi",
+                                                                                                                             true));
 
     @PostConstruct
     public void init() {
@@ -110,6 +85,12 @@ public class GrpcRemoteComponent {
                 }
             }
         }, 0, 1, TimeUnit.DAYS);
+        try {
+            URL jarUrl = new File(API_JAR_PATH).toURI().toURL();
+            urlClassLoader = new URLClassLoader(new URL[] { jarUrl });
+        } catch (MalformedURLException e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 
     private void downloadApiJar(String urlStr) throws IOException {
@@ -153,8 +134,6 @@ public class GrpcRemoteComponent {
         try {
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                URL jarUrl = new File(API_JAR_PATH).toURI().toURL();
-                URLClassLoader urlClassLoader = new URLClassLoader(new URL[] { jarUrl });
                 serviceClass = ReflectUtils.name2class(urlClassLoader, serviceName);
                 remoteServiceCache.put(serviceName, serviceClass);
             }
