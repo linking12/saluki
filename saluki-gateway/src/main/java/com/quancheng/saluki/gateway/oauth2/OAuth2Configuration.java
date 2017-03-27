@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +30,22 @@ import com.quancheng.saluki.gateway.oauth2.security.CustomLogoutSuccessHandler;
 import com.quancheng.saluki.gateway.oauth2.security.UserDetailsService;
 
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
 public class OAuth2Configuration {
+
+    @Bean
+    public JedisPool redisPoolFactory(@Value("${spring.redis.pool.max-wait}") long maxWaitMillis,
+                                      @Value("${spring.redis.pool.max-idle}") int maxIdle,
+                                      @Value("${spring.redis.host}") String host,
+                                      @Value("${spring.redis.port}") int port) {
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(8);
+        jedisPoolConfig.setMaxWaitMillis(maxWaitMillis);
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port);
+        return jedisPool;
+    }
 
     @Bean
     public Oauth2LimitAccessFilter oauth2AccessFilter(UserDetailsService userDetailservice, JedisPool jedisPool) {
