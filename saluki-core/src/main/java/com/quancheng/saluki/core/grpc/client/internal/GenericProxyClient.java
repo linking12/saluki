@@ -37,11 +37,10 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
         this.refUrl = refUrl;
     }
 
-    public Class<?> doLoadClass(String className) {
+    private Class<?> doLoadClass(String className) {
         try {
             @SuppressWarnings("resource")
             GrpcClassLoader classLoader = new GrpcClassLoader();
-            classLoader.addClassPath();
             return classLoader.loadClass(className);
         } catch (Exception e) {
             throw new IllegalArgumentException("grpc  responseType must instanceof com.google.protobuf.GeneratedMessageV3",

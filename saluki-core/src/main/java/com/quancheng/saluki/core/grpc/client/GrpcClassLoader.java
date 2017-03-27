@@ -34,10 +34,11 @@ public class GrpcClassLoader extends URLClassLoader {
 
     private final Set<String>           extensions    = new HashSet<String>();
 
-    public GrpcClassLoader(){
-        super(new URL[] {}, null);
+    public GrpcClassLoader() throws IOException{
+        super(new URL[] {}, Thread.currentThread().getContextClassLoader());
         extensions.add(".jar");
         extensions.add(".zip");
+        addClassPath();
     }
 
     public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -55,8 +56,8 @@ public class GrpcClassLoader extends URLClassLoader {
         return dot != -1 && extensions.contains(file.substring(dot));
     }
 
-    public void addClassPath() throws IOException {
-        String jarDirectoryPath = System.getProperty("user.home") + "/saluki";
+    private void addClassPath() throws IOException {
+        String jarDirectoryPath = System.getProperty("user.home") + File.separator + "saluki";
         File jarDirectory = new File(jarDirectoryPath);
         if (jarDirectory.exists() && jarDirectory.isDirectory()) {
             File[] jars = jarDirectory.listFiles();
