@@ -17,7 +17,6 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.quancheng.saluki.core.utils.ClassHelper;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:58:47
@@ -36,7 +35,7 @@ public class GrpcClassLoader extends URLClassLoader {
     private final Set<String>           extensions    = new HashSet<String>();
 
     public GrpcClassLoader(){
-        super(new URL[] {}, ClassHelper.getClassLoader());
+        super(new URL[] {}, null);
         extensions.add(".jar");
         extensions.add(".zip");
     }

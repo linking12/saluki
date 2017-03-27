@@ -7,23 +7,17 @@
  */
 package com.quancheng.saluki.gateway.grpc;
 
-import java.io.File;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.quancheng.saluki.boot.SalukiReference;
+import com.quancheng.saluki.core.grpc.client.GrpcClassLoader;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -39,28 +33,12 @@ public class GrpcRemoteComponent {
     @SalukiReference(group = "default", version = "1.0.0")
     private GenericService                     genricService;
 
-    @Autowired
-    private ApiJarService                      apiJarService;
-
-    private URLClassLoader                     urlClassLoader;
-
-    @PostConstruct
-    public void init() {
-        String apiJarPath = apiJarService.getApiJarPath();
-        try {
-            URL jarUrl = new File(apiJarPath).toURI().toURL();
-            urlClassLoader = new URLClassLoader(new URL[] { jarUrl });
-        } catch (MalformedURLException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
     public Object callRemoteService(String serviceName, String group, String version, String methodName,
                                     String requestParam) throws Throwable {
         try {
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                serviceClass = ReflectUtils.name2class(urlClassLoader, serviceName);
+                serviceClass = ReflectUtils.name2class(new GrpcClassLoader(), serviceName);
                 remoteServiceCache.put(serviceName, serviceClass);
             }
             Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);

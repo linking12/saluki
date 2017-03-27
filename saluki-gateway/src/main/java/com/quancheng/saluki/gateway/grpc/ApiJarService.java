@@ -63,10 +63,6 @@ public class ApiJarService {
         }
     }
 
-    public String getApiJarPath() {
-        return this.API_JAR_PATH;
-    }
-
     private void downloadApiJar(String urlStr) throws IOException {
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
