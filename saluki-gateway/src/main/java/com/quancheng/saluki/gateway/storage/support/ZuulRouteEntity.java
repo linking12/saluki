@@ -44,7 +44,7 @@ public class ZuulRouteEntity {
     @Column(name = "retryable")
     private Boolean retryable;
 
-    @Column(name = "sensitiveHeaders")
+    @Column(name = "sensitive_headers")
     private String  sensitiveHeaders;
 
     @Column(name = "is_grpc")

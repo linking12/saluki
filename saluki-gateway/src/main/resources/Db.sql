@@ -14,7 +14,7 @@ CREATE TABLE `zuul_routes` (
     `url` varchar(500) DEFAULT NULL,
     `strip_prefix` BOOL DEFAULT NULL,
     `retryable` BOOL DEFAULT NULL,
-    `sensitiveHeaders` varchar(500) DEFAULT NULL,
+    `sensitive_headers` varchar(500) DEFAULT NULL,
     `is_grpc` BOOL DEFAULT 0,
     `grpc_group` varchar(100) DEFAULT NULL,
     `grpc_version` varchar(100) DEFAULT NULL,
