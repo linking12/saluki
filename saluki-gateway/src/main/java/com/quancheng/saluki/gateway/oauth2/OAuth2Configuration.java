@@ -123,7 +123,7 @@ public class OAuth2Configuration {
                    .authorizedGrantTypes("password", "refresh_token")//
                    .secret(propertyResolver.getProperty(PROP_SECRET))//
                    .accessTokenValiditySeconds(propertyResolver.getProperty(PROP_TOKEN_VALIDITY_SECONDS, Integer.class,
-                                                                            60 * 60 * 24));// token 有效期是12个小时
+                                                                            60 * 60 * 24));// token 有效期是24个小时
         }
 
         @Override
