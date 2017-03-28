@@ -38,7 +38,9 @@ public class GrpcRemoteComponent {
         try {
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                serviceClass = ReflectUtils.name2class(new GrpcClassLoader(), serviceName);
+                GrpcClassLoader classLoader = new GrpcClassLoader();
+                classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
+                serviceClass = ReflectUtils.name2class(classLoader, serviceName);
                 remoteServiceCache.put(serviceName, serviceClass);
             }
             Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);

@@ -41,10 +41,11 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
         try {
             @SuppressWarnings("resource")
             GrpcClassLoader classLoader = new GrpcClassLoader();
+            classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
             return classLoader.loadClass(className);
         } catch (Exception e) {
             throw new IllegalArgumentException("grpc  responseType must instanceof com.google.protobuf.GeneratedMessageV3",
-                                               new ClassNotFoundException("Class " + className + " not found"));
+                                               e);
         }
 
     }

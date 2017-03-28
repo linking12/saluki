@@ -8,14 +8,15 @@
 package com.quancheng.saluki.core.grpc.client;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FilenameFilter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -24,55 +25,107 @@ import com.google.common.collect.Sets;
  */
 public class GrpcClassLoader extends URLClassLoader {
 
-    static {
-        registerAsParallelCapable();
+    private static ConcurrentHashMap<String, Class<?>> cachedClasses  = new ConcurrentHashMap<String, Class<?>>();
+
+    private static final String                        API_REPOSITORY = System.getProperty("user.home") + File.separator
+                                                                        + "saluki";
+
+    private Set<URL>                                   cachedJarUrls  = Sets.newConcurrentHashSet();
+    
+    private ClassLoader                                systemClassLoader;
+
+    public GrpcClassLoader(){
+        super(new URL[] {}, null);
+        this.addURL();
     }
 
-    private final Map<String, Class<?>> cachedClasses = Maps.newConcurrentMap();
+    private void addURL() {
+        File file = new File(API_REPOSITORY);
+        if (file.exists() && file.isDirectory()) {
+            String[] jars = file.list(new FilenameFilter() {
 
-    private final Set<URL>              addedURL      = Sets.newConcurrentHashSet();
-
-    private final Set<String>           extensions    = new HashSet<String>();
-
-    public GrpcClassLoader() throws IOException{
-        super(new URL[] {}, Thread.currentThread().getContextClassLoader());
-        extensions.add(".jar");
-        extensions.add(".zip");
-        addClassPath();
-    }
-
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
-        if (cachedClasses.get(name) != null) {
-            return cachedClasses.get(name);
-        } else {
-            Class<?> clazz = loadClass(name, false);
-            cachedClasses.put(name, clazz);
-            return clazz;
-        }
-    }
-
-    private boolean isFileSupported(String file) {
-        int dot = file.lastIndexOf('.');
-        return dot != -1 && extensions.contains(file.substring(dot));
-    }
-
-    private void addClassPath() throws IOException {
-        String jarDirectoryPath = System.getProperty("user.home") + File.separator + "saluki";
-        File jarDirectory = new File(jarDirectoryPath);
-        if (jarDirectory.exists() && jarDirectory.isDirectory()) {
-            File[] jars = jarDirectory.listFiles();
-            for (File jar : jars) {
-                if (isFileSupported(jar.getName())) {
-                    URL url = jar.toURI().toURL();
-                    if (addedURL.contains(url)) {
-                        continue;
-                    } else {
-                        addedURL.add(url);
-                        addURL(url);
+                @Override
+                public boolean accept(File dir, String name) {
+                    if (name.endsWith(".jar")) {
+                        return true;
                     }
+                    return false;
+                }
+            });
+            for (int i = 0; i < jars.length; i++) {
+                try {
+                    URL url = new File(file.getAbsolutePath(), jars[i]).toURI().toURL();
+                    if (cachedJarUrls.contains(url)) {
+                        continue;
+                    }
+                    cachedJarUrls.add(url);
+                    super.addURL(url);
+                } catch (MalformedURLException e) {
+                    // igore
                 }
             }
         }
     }
 
+    @Override
+    protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        Class<?> clazz = null;
+        if (name.startsWith("com.quancheng")) {
+            clazz = resolveClassPath(name, resolve);
+            if (clazz == null) {
+                clazz = resolveSystemClassLoader(name, resolve);
+            }
+            if (clazz == null) {
+                throw new ClassNotFoundException(name);
+            }
+        } else {
+            clazz = resolveSystemClassLoader(name, resolve);
+        }
+        return clazz;
+    }
+
+    private Class<?> resolveClassPath(String name, boolean resolve) {
+        try {
+            Class<?> clazz = super.loadClass(name, resolve);
+            return clazz;
+        } catch (ClassNotFoundException ex) {
+            // Ignore.
+        }
+
+        return null;
+    }
+
+    private Class<?> resolveSystemClassLoader(String name, boolean resolve) {
+        if (systemClassLoader != null) {
+            try {
+                Class<?> clazz = systemClassLoader.loadClass(name);
+                if (resolve) {
+                    resolveClass(clazz);
+                }
+                return clazz;
+            } catch (ClassNotFoundException ex) {
+                // Ignore.
+            }
+        }
+
+        return null;
+    }
+
+    public static void addCachedClasses(Class<?> clz) {
+        cachedClasses.putIfAbsent(clz.getName(), clz);
+    }
+
+    public static void addCachedClasses(List<Class<?>> classes) {
+        for (Class<?> clz : classes) {
+            addCachedClasses(clz);
+        }
+    }
+
+    public static Map<String, Class<?>> getCachedClasses() {
+        return cachedClasses;
+    }
+
+    public void setSystemClassLoader(ClassLoader classLoader) {
+        this.systemClassLoader = classLoader;
+    }
 }
