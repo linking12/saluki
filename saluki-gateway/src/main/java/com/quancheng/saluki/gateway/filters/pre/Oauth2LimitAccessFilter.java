@@ -7,18 +7,18 @@
  */
 package com.quancheng.saluki.gateway.filters.pre;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.security.core.GrantedAuthority;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.quancheng.saluki.gateway.oauth2.security.Authorities;
 import com.quancheng.saluki.gateway.oauth2.security.UserDetailsService;
-import com.quancheng.saluki.gateway.oauth2.support.Authority;
-import com.quancheng.saluki.gateway.oauth2.support.User;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -60,14 +60,15 @@ public class Oauth2LimitAccessFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         String auth = request.getHeader("Authorization");
         String accessToken = auth.split(" ")[1];
-        User user = userDetailsService.loadUsernameByToken(accessToken);
-        Set<Authority> userAuthorities = user.getAuthorities();
-        Boolean isAdmin = userAuthorities.contains(Authorities.ROLE_ADMIN.name());
-        Boolean isAnyOne = userAuthorities.contains(Authorities.ROLE_ANONYMOUS.name());
+        Map<String, Object> user = userDetailsService.loadUsernameByToken(accessToken);
+        org.springframework.security.core.userdetails.User realUser = (org.springframework.security.core.userdetails.User) user.get("user");
+        Collection<GrantedAuthority> userAuthorities = realUser.getAuthorities();
+        Boolean isAdmin = isRole(userAuthorities, Authorities.ROLE_ADMIN);
+        Boolean isAnyOne = isRole(userAuthorities, Authorities.ROLE_ANONYMOUS);
         if (!isAdmin && !isAnyOne) {
-            String userName = user.getUsername();
-            Long intervalInMills = user.getIntervalInMills();
-            Long limit = user.getLimit();
+            String userName = realUser.getUsername();
+            Long intervalInMills = (Long) user.get("intervalInMills");
+            Long limit = (Long) user.get("limit");
             if (intervalInMills != null && intervalInMills != 0l && limit != null && limit != 0l) {
                 if (!access(userName, intervalInMills, limit)) {
                     ctx.setSendZuulResponse(false);
@@ -77,6 +78,15 @@ public class Oauth2LimitAccessFilter extends ZuulFilter {
             }
         }
         return null;
+    }
+
+    private boolean isRole(Collection<GrantedAuthority> userAuthorities, Authorities authorities) {
+        for (GrantedAuthority authority : userAuthorities) {
+            if (authority.getAuthority().equals(authorities.name())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public synchronized boolean access(String userId, long intervalInMills, long limit) {

@@ -32,7 +32,7 @@ public class User {
     @Column(name = "resetpasswordkey")
     private String         resetPasswordKey;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "username"), inverseJoinColumns = @JoinColumn(name = "authority"))
     private Set<Authority> authorities;
 

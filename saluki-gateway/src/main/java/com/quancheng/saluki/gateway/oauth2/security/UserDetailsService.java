@@ -6,6 +6,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -19,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.gateway.oauth2.support.Authority;
 import com.quancheng.saluki.gateway.oauth2.support.User;
 import com.quancheng.saluki.gateway.oauth2.support.UserRepository;
@@ -74,14 +77,28 @@ public class UserDetailsService implements org.springframework.security.core.use
 
     }
 
-    public User loadUsernameByToken(String token) {
+    public Map<String, Object> loadUsernameByToken(String token) {
         if (token == null) {
             return null;
         }
         try {
             byte[] bytes = messageDigest.digest(token.getBytes("UTF-8"));
             String realToken = String.format("%032x", new BigInteger(1, bytes));
-            return userRepository.findByToken(realToken);
+            User userFromDatabase = userRepository.findByToken(realToken);
+            List<String> authorities = userRepository.findUserAuthority(userFromDatabase.getUsername());
+            Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+            for (String authority : authorities) {
+                GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(authority);
+                grantedAuthorities.add(grantedAuthority);
+            }
+            Map<String, Object> userParam = Maps.newHashMap();
+            userParam.put("user",
+                          new org.springframework.security.core.userdetails.User(userFromDatabase.getUsername(),
+                                                                                 userFromDatabase.getPassword(),
+                                                                                 grantedAuthorities));
+            userParam.put("intervalInMills", userFromDatabase.getIntervalInMills());
+            userParam.put("limit", userFromDatabase.getLimit());
+            return userParam;
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("UTF-8 encoding not available.  Fatal (should be in the JDK).");
         }
