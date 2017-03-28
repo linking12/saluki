@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.quancheng.saluki.gateway.filters.route.GrpcRemoteApiFilter;
+import com.quancheng.saluki.gateway.filters.route.GrpcRemoteRouteFilter;
 
 /**
  * @author shimingliu 2017年3月28日 下午5:23:30
@@ -24,7 +24,7 @@ public class GrpcRemoteApiConfiguration {
     private GrpcRemoteComponent grpcRemoteComponent;
 
     @Bean
-    public GrpcRemoteApiFilter grpcRemoteApiFilter() {
-        return new GrpcRemoteApiFilter(grpcRemoteComponent);
+    public GrpcRemoteRouteFilter grpcRemoteApiFilter() {
+        return new GrpcRemoteRouteFilter(grpcRemoteComponent);
     }
 }

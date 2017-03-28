@@ -24,13 +24,13 @@ import com.quancheng.saluki.gateway.zuul.support.ZuulRouteEntity;
  * @author shimingliu 2017年3月23日 上午10:43:32
  * @version GrpcRemoteApiFilter.java, v 0.0.1 2017年3月23日 上午10:43:32 shimingliu
  */
-public class GrpcRemoteApiFilter extends ZuulFilter {
+public class GrpcRemoteRouteFilter extends ZuulFilter {
 
     private static final JsonParser JSONPARSER = new JsonParser();
 
     private GrpcRemoteComponent     grpcRemote;
 
-    public GrpcRemoteApiFilter(GrpcRemoteComponent grpcRemote){
+    public GrpcRemoteRouteFilter(GrpcRemoteComponent grpcRemote){
         this.grpcRemote = grpcRemote;
     }
 
