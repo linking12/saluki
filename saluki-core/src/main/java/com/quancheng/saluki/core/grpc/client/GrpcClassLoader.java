@@ -13,7 +13,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Sets;
 
@@ -23,14 +22,11 @@ import com.google.common.collect.Sets;
  */
 public class GrpcClassLoader extends URLClassLoader {
 
-    private static final ConcurrentHashMap<String, Class<?>> cachedClasses  = new ConcurrentHashMap<String, Class<?>>();
+    private static final String API_REPOSITORY = System.getProperty("user.home") + File.separator + "saluki";
 
-    private static final String                              API_REPOSITORY = System.getProperty("user.home")
-                                                                              + File.separator + "saluki";
+    private Set<URL>            cachedJarUrls  = Sets.newConcurrentHashSet();
 
-    private Set<URL>                                         cachedJarUrls  = Sets.newConcurrentHashSet();
-
-    private ClassLoader                                      systemClassLoader;
+    private ClassLoader         systemClassLoader;
 
     public GrpcClassLoader(){
         super(new URL[] {}, null);
@@ -84,13 +80,8 @@ public class GrpcClassLoader extends URLClassLoader {
 
     private Class<?> resolveClassPath(String name, boolean resolve) {
         try {
-            if (cachedClasses.contains(name)) {
-                return cachedClasses.get(name);
-            } else {
-                Class<?> clazz = super.loadClass(name, resolve);
-                cachedClasses.putIfAbsent(name, clazz);
-                return clazz;
-            }
+            Class<?> clazz = super.loadClass(name, resolve);
+            return clazz;
         } catch (ClassNotFoundException ex) {
             // Ignore.
         }
