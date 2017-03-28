@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.quancheng.saluki.gateway.storage;
+package com.quancheng.saluki.gateway.zuul;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,8 +26,8 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.quancheng.saluki.gateway.storage.support.StoreProxyRouteLocator;
-import com.quancheng.saluki.gateway.storage.support.ZuulRouteRepository;
+import com.quancheng.saluki.gateway.zuul.support.StoreProxyRouteLocator;
+import com.quancheng.saluki.gateway.zuul.support.ZuulRouteRepository;
 
 /***
  * Registers a{

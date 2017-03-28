@@ -17,8 +17,8 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
 import com.quancheng.saluki.gateway.grpc.GrpcRemoteComponent;
-import com.quancheng.saluki.gateway.storage.RouterLocalCache;
-import com.quancheng.saluki.gateway.storage.support.ZuulRouteEntity;
+import com.quancheng.saluki.gateway.zuul.RouterLocalCache;
+import com.quancheng.saluki.gateway.zuul.support.ZuulRouteEntity;
 
 /**
  * @author shimingliu 2017年3月23日 上午10:43:32

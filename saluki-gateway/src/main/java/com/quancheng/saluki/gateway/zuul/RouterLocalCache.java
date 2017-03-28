@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.gateway.storage;
+package com.quancheng.saluki.gateway.zuul;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -20,7 +20,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.gateway.storage.support.ZuulRouteEntity;
+import com.quancheng.saluki.gateway.zuul.support.ZuulRouteEntity;
 
 /**
  * @author shimingliu 2017年3月24日 下午6:35:47
