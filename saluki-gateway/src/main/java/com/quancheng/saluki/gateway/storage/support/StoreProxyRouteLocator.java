@@ -16,6 +16,7 @@
 package com.quancheng.saluki.gateway.storage.support;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,6 +77,13 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
                 }
             }
         }, 0, 1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public Collection<String> getIgnoredPaths() {
+        List<String> ignoredPath = Lists.newArrayList();
+        ignoredPath.add("/oauth/**");
+        return ignoredPath;
     }
 
     @Override

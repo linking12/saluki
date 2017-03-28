@@ -23,9 +23,12 @@ import org.springframework.cloud.netflix.zuul.ZuulProxyConfiguration;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
+import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.quancheng.saluki.gateway.filters.route.GrpcRemoteController;
+import com.quancheng.saluki.gateway.grpc.GrpcRemoteComponent;
 import com.quancheng.saluki.gateway.storage.support.StoreProxyRouteLocator;
 import com.quancheng.saluki.gateway.storage.support.ZuulRouteRepository;
 
@@ -50,10 +53,18 @@ public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
     @Autowired
     private ServerProperties    server;
 
+    @Autowired
+    private GrpcRemoteComponent grpcComponet;
+
     @Bean
     @Override
     @ConditionalOnMissingBean(RouteLocator.class)
     public DiscoveryClientRouteLocator routeLocator() {
         return new StoreProxyRouteLocator(server.getServletPath(), discovery, zuulProperties, zuulRouteStore);
+    }
+
+    @Bean
+    public ZuulController zuulController() {
+        return new GrpcRemoteController(grpcComponet);
     }
 }
