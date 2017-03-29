@@ -1,0 +1,114 @@
+<div class="row wrapper border-bottom white-bg page-heading" xmlns="http://www.w3.org/1999/html"> 
+   <div class="wrapper wrapper-content animated fadeInRight"> 
+    <div class="row"> 
+     <div class="col-lg-12"> 
+      <div class="ibox"> 
+       <div class="ibox-title"> 
+        <h3><span class="text-navy">任务列表</span></h3> 
+       </div> 
+       <div class="ibox-content"> 
+        <table class="table table-stripped toggle-arrow-tiny footable" data-page-size="5"> 
+         <thead> 
+          <tr> 
+           <th data-hide="all">ID</th> 
+           <th data-hide="all">索引名</th> 
+           <th data-hide="all">索引类型</th> 
+           <th data-hide="all">执行机器</th> 
+           <th data-hide="all">创建时间</th> 
+           <th data-hide="all">最新执行时间</th> 
+           <th data-hide="all">原始配置</th> 
+           <th data-hide="all">状态配置</th> 
+          </tr> 
+         </thead> 
+         <tbody>
+         #foreach($job in $jobs) 
+          <tr> 
+            <td>$job.id</td>
+            <td>$job.index</td>
+            <td>$job.type</td>
+            <td>$job.excuteNode</td>
+            <td>$job.createTime</td>
+            <td>#if($job.stateUpdateTime)$job.stateUpdateTime#end</td>
+            <td>
+              <button id="source_view_$job.id" class="btn btn-block btn-outline btn-rounded btn-info">查看</button>
+             </div>
+            </td>
+            <td>
+              <button id="state_view_$job.id" class="btn btn-block btn-outline btn-rounded btn-info">查看</button>
+            </td>
+          </tr> 
+         #end 
+         <div class="panel panel-info" id="settingDialog">
+         </tbody> 
+        </table> 
+        <div class="paginationbar"> 
+         <ul class='pagination pagination-centered'>
+          #if($page.firstPage) 
+          <li class="disabled"><a>首页</a></li> 
+          #else 
+          <li><a href="$page.url?page=0&size=${page.size}">首页</a></li> 
+          #end 
+          #if(!$page.hasPreviousPage) 
+          <li class="disabled"><a>&laquo;</a></li> 
+          #else 
+          #set($previousPage=$page.number - 1)  
+          <li><a href="$page.url?page=$previousPage&size=${page.size}" class="active">&laquo;</a></li> 
+          #end 
+          #foreach($item in $page.items) 
+             #if($item.current) 
+	          <li class="disabled"><a>${item.number}</a></li> 
+	         #else 
+	          #set($index=$item.number - 1)  
+	          <li><a href="$page.url?page=$index&size=${page.size}">${item.number}</a></li>
+	         #end 
+	      #end 
+	      #if(!$page.hasNextPage) 
+	          <li class="disabled"><a>&raquo;</a></li> 
+	      #else 
+	          <li><a href="$page.url?page=$page.number&size=${page.size}">&raquo;</a></li> 
+	      #end 
+	      #if($page.lastPage) 
+	          <li class="disabled"><a>末页</a></li>
+	      #else 
+	          #set($lastPage=$item.number - 1)  
+	          <li><a href="$page.url?page=$lastPage&size=${page.size}">末页</a></li> 
+	      #end 
+         </ul> 
+        </div> 
+       </div> 
+      </div> 
+     </div> 
+    </div> 
+   </div> 
+  </div> 
+<script>
+$(document).ready(function () {
+   $('#settingDialog').dialog({autoOpen: false,minWidth: 600,show: {effect: "blind",duration: 1000},hide: {effect: "explode",duration: 1000}});
+   #foreach($job in $jobs) 
+    var source_view = '#source_view_'+$job.id;
+    var state_view = '#state_view_'+$job.id;
+    $(source_view).on( "click", function() {
+       var options = {
+           dom: '#settingDialog'
+       };
+       var json = $job.sourceSetting;
+       var jf = new JsonFormater(options);
+       jf.doFormat(json);
+       $('#settingDialog').dialog( "open" );
+    });
+     $(state_view).on( "click", function() {
+          #if($job.stateSetting) 
+           var options = {
+               dom: '#settingDialog'
+           };
+	       var json = $job.stateSetting;
+	       var jf = new JsonFormater(options);
+	       jf.doFormat(json);
+	       $('#settingDialog').dialog( "open" );
+	      #else
+	       alert("任务未执行，没有最新状态数据");
+          #end
+    });
+   #end 
+});
+</script>

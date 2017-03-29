@@ -1,0 +1,14 @@
+<div class="error-box">
+    <div class="error-body text-left">
+      <h3>Failed URL: $url</h3>
+      <h3> 
+          $exception<br/>
+          #foreach($e in $exception.stackTrace) 
+             #if($velocityCount <= 20)
+               $e 
+             #end
+          #end
+      </h3>
+     </div>
+      <a href="/" class="btn btn-info btn-rounded waves-effect waves-light m-b-40">Back to home</a>
+ </div>

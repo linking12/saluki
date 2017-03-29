@@ -1,0 +1,28 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul class="nav metismenu" id="side-menu">
+            <li class="nav-header">
+                <div class="dropdown profile-element">
+                    <div class="env-element" id="current-env" env="daily">愚公管理后台</div>
+                </div>
+                <div class="logo-element">YuGong</div>
+            </li>
+            <li>
+                <a href="/jobs"><i class="fa fa-th"></i> <span class="nav-label">查看任务</span>
+                    <span class="label label-info pull-right">推荐</span></a>
+            </li>
+            <li>
+                <a href="/addJob"><i class="fa fa-random"></i><span class="nav-label">添加任务</span></a>
+            </li>
+            <li>
+                <a href="/cancelJobs"><i class="fa fa-file-text-o"></i><span class="nav-label">退出任务</span></a>
+            </li>
+            <li>
+                <a href="/deleteJobs"><i class="fa fa-bar-chart"></i><span class="nav-label">删除任务</span></a>
+            </li>
+            <li>
+                <a href="/uploadList"><i class="fa fa-th"></i><span class="nav-label">文件列表</span></a>
+            </li>
+        </ul>
+    </div>
+</nav>
