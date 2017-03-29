@@ -21,6 +21,7 @@
 		<os.detected.classifier>osx-x86_64</os.detected.classifier>
 	</properties>
 	<dependencies>
+		<!-- grpc -->
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>spring-boot-starter-saluki</artifactId>
@@ -31,6 +32,13 @@
 			<artifactId>spring-boot-starter-saluki-monitor</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-tcnative-boringssl-static</artifactId>
+			<version>${netty-tcnative.version}</version>
+			<classifier>${os.detected.classifier}</classifier>
+		</dependency>
+		<!-- oauth2 -->
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
@@ -70,6 +78,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- spring boot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -102,6 +111,12 @@
 			<version>${springboot.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-velocity</artifactId>
+			<version>${springboot.version}</version>
+		</dependency>
+		<!-- database -->
+		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.40</version>
@@ -111,6 +126,7 @@
 			<artifactId>druid</artifactId>
 			<version>1.0.26</version>
 		</dependency>
+		<!-- spring cloud zuul -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-zuul</artifactId>
@@ -135,12 +151,6 @@
 					</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-tcnative-boringssl-static</artifactId>
-			<version>${netty-tcnative.version}</version>
-			<classifier>${os.detected.classifier}</classifier>
 		</dependency>
 	</dependencies>
 	<build>
