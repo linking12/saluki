@@ -41,10 +41,16 @@ public class DefaultClientDetailsConfig implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        grantTypeRepository.save(Arrays.stream(DEFAULT_GRANT_TYPES).map(grantType -> GrantTypeEntity.builder().value(grantType).build()).collect(Collectors.toList()));
-
-        scopeRepository.save(Arrays.stream(DEFAULT_SCOPES).map(scope -> ScopeEntity.builder().value(scope).build()).collect(Collectors.toList()));
-
+        if (grantTypeRepository.count() == 0) {
+            grantTypeRepository.save(Arrays.stream(DEFAULT_GRANT_TYPES)//
+                                           .map(grantType -> GrantTypeEntity.builder().value(grantType).build())//
+                                           .collect(Collectors.toList()));
+        }
+        if (scopeRepository.count() == 0) {
+            scopeRepository.save(Arrays.stream(DEFAULT_SCOPES)//
+                                       .map(scope -> ScopeEntity.builder().value(scope).build())//
+                                       .collect(Collectors.toList()));
+        }
         BaseClientDetails clientDetails = new BaseClientDetails("test-client-id", null, "read,write,trust",
                                                                 "authorization_code,refresh_token", null);
         clientDetails.setClientSecret("test-client-id-secret-123");
