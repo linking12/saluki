@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="template/dashboard :: head('Dashboard')">
+<!-- This block will be replaced by template. -->
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <!-- Main Header -->
+    <header class="main-header" th:replace="template/dashboard :: main-header">
+        <!-- This block will be replaced by template. -->
+    </header>
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar" th:replace="template/dashboard :: main-sidebar">
+        <!-- This block will be replaced by template. -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                <h1>Your dashboard</h1>
+                <p>Hello, <span th:text="${#authentication.name}">User Name</span>, what should we do today?</p>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <!-- Your Page Content Here -->
+
+		<a th:href="@{/login.html}" sec:authorize="anonymous" class="btn btn-primary">Login</a>
+
+		<hr/>
+
+		<a th:href="@{/oauth/tokens}" sec:authorize="authenticated" class="btn btn-primary">Token管理</a>
+
+		<hr/>
+
+		<a th:href="@{/roles}" sec:authorize="authenticated" class="btn btn-primary">角色管理</a>
+
+		<a th:href="@{/users}" sec:authorize="authenticated" class="btn btn-primary">用户管理</a>
+
+		<hr/>
+
+		<a th:href="@{/clientDetails}" sec:authorize="authenticated" class="btn btn-primary">客户端管理</a>
+
+		<a th:href="@{/grantTypes}" sec:authorize="authenticated" class="btn btn-primary">授权方式管理</a>
+
+		<a th:href="@{/scopes}" sec:authorize="authenticated" class="btn btn-primary">授权范围管理</a>
+
+		<a th:href="@{/resourceIds}" sec:authorize="authenticated" class="btn btn-primary">资源ID管理</a>
+
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Main Footer -->
+<footer class="main-footer" th:replace="template/dashboard :: main-footer">
+    <!-- This block will be replaced by template. -->
+</footer>
+
+<th:block th:replace="template/dashboard :: control-sidebar">
+    <!-- This block will be replaced by template. --></th:block>
+</div>
+<!-- ./wrapper -->
+
+<th:block th:replace="template/dashboard :: required-js-scripts">
+    <!-- This block will be replaced by template. -->
+</th:block>
+<script type="text/javascript">
+    $(function() {
+       activeMenus('控制面板')
+    });
+</script>
+</body>
+</html>

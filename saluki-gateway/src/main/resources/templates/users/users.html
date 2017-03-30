@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:include="template/dashboard :: head('用户与权限管理 | 用户管理页面')">
+    <!-- This block will be replaced by template. -->
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <!-- Main Header -->
+    <header class="main-header" th:replace="template/dashboard :: main-header">
+        <!-- This block will be replaced by template. -->
+    </header>
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar" th:replace="template/dashboard :: main-sidebar">
+        <!-- This block will be replaced by template. -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                <h1>用户管理</h1>
+                <p>在这里管理用户（屁话）</p>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#" th:href="@{/}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+                <li>用户与权限管理</li>
+                <li class="active">用户管理</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <!-- Your Page Content Here -->
+            <div class="row">
+                <div class="col-md-12" th:include="template/messages :: messages">
+                    <!-- This block will be replaced by template. -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">用户列表</h3>
+                            <div class="box-tools">
+                                <th:block th:include="template/bootstrap :: page-navigation (pageable=${users})"></th:block>
+                            </div>
+                        </div>
+                        <div class="box-body table-responsive no-padding">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>用户名</th>
+                                    <th>拥有角色</th>
+                                    <th>操作</th>
+                                </tr>
+                                <tr th:each="user, iterStat : ${users}">
+                                    <td th:text="${user.id}">#</td>
+                                    <td th:text="${user.username}">User Name</td>
+                                    <td>
+                                        <span class="label label-primary" th:each="roleXref : ${user.roles}" th:text="${roleXref.role.name}">ADMIN</span>
+                                    </td>
+                                    <td>
+                                        <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-danger" th:attr="data-remove-confirm=|确认要删除用户 ${user.username} 吗？|"
+                                           href="#" th:href="@{|/users/_remove/${user.username}|}" role="button">删除</a>
+                                        <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-warning" href="#" th:href="@{'' (edit=${user.username})}" role="button">编辑</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="box-footer clearfix">
+                            <th:block th:include="template/bootstrap :: page-navigation (pageable=${users})"></th:block>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="box" sec:authorize="hasRole('ROLE_ADMIN')" th:if="${editUser}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">编辑用户</h3>
+                        </div>
+                        <form action="#" th:action="@{/users/_update}" method="post" th:object="${editUser}">
+                            <div class="box-body">
+                                <div class="form-group">
+                                    <label for="displayEditUsername">用户名</label>
+                                    <input class="form-control" id="displayEditUsername" type="text" placeholder="你的用户名" th:value="*{username}" disabled="disabled" />
+                                    <input type="hidden" th:value="*{username}" name="username"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="update-password">密码</label>
+                                    <input type="password" class="form-control" id="update-password" name="password" placeholder="密码" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="update-password-confirmation">重复密码</label>
+                                    <input type="password" class="form-control" id="update-password-confirmation" name="password-confirmation" placeholder="密码" />
+                                </div>
+                                <div class="form-group">
+                                    <label>角色</label>
+                                    <select multiple="multiple" name="roles" class="form-control select2">
+                                        <option value="ROLE" label="角色" th:each="role : ${roles}" th:value="${role.name}" th:label="${role.name}" th:text="${role.name}" th:selected="${#lists.contains(editUser.roles, role.name)}">角色</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                                <button type="submit" class="btn btn-primary">提交</button>
+                                <a type="button" class="btn btn-default" href="#" th:href="@{/users}">取消</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="box" sec:authorize="hasRole('ROLE_ADMIN')" th:unless="${editUser}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">增加用户</h3>
+                        </div>
+                        <form action="#" th:action="@{/users/_create}" method="post">
+                            <div class="box-body">
+                                <div class="form-group">
+                                    <label for="username">用户名</label>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required="required" value="" th:value="${username}" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">密码</label>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="密码" required="required" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="password-confirmation">重复密码</label>
+                                    <input type="password" class="form-control" id="password-confirmation" name="password-confirmation" placeholder="密码" required="required" />
+                                </div>
+                                <div class="form-group">
+                                    <label>角色</label>
+                                    <select multiple="multiple" name="roles" class="form-control select2">
+                                        <option value="ROLE" label="角色" th:each="role : ${roles}" th:value="${role.name}" th:label="${role.name}" th:text="${role.name}" th:selected="${#lists.contains(#objects.nullSafe(selectedRoles, {}), role.name)}">角色</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                                <button type="submit" class="btn btn-primary">提交</button>
+                                <a type="button" class="btn btn-default" href="#" th:href="@{/users}">取消</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Main Footer -->
+    <footer class="main-footer" th:replace="template/dashboard :: main-footer">
+        <!-- This block will be replaced by template. -->
+    </footer>
+
+    <th:block th:replace="template/dashboard :: control-sidebar">
+        <!-- This block will be replaced by template. --></th:block>
+</div>
+<!-- ./wrapper -->
+
+<th:block th:replace="template/dashboard :: required-js-scripts">
+    <!-- This block will be replaced by template. -->
+</th:block>
+<script type="text/javascript">
+    $(function() {
+       activeMenus('用户管理')
+    });
+</script>
+</body>
+</html>
+

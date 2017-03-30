@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:include="template/dashboard :: head('授权方式管理页面')">
+    <!-- This block will be replaced by template. -->
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <!-- Main Header -->
+    <header class="main-header" th:replace="template/dashboard :: main-header">
+        <!-- This block will be replaced by template. -->
+    </header>
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar" th:replace="template/dashboard :: main-sidebar">
+        <!-- This block will be replaced by template. -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                <h1>授权方式管理</h1>
+                <p>在这里管理授权方式（屁话）</p>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#" th:href="@{/}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+                <li>OAuth2 管理</li>
+                <li class="active">授权方式管理</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <!-- Your Page Content Here -->
+            <div class="row">
+                <div class="col-md-12" th:include="template/messages :: messages">
+                    <!-- This block will be replaced by template. -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">授权方式列表</h3>
+                            <div class="box-tools">
+                                <th:block th:include="template/bootstrap :: page-navigation (pageable=${grantTypes})"></th:block>
+                            </div>
+                        </div>
+                        <div class="box-body table-responsive no-padding">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>授权方式</th>
+                                    <th>操作</th>
+                                </tr>
+                                <tr th:each="grantType, iterStat : ${grantTypes}">
+                                    <td th:text="${grantType.id}">#</td>
+                                    <td th:text="${grantType.value}">Grant Type Name</td>
+                                    <td><a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-danger" th:attr="data-remove-confirm=|确认要删除授权方式 ${grantType.value} 吗？|"
+                                           href="#" th:href="@{|/grantTypes/_remove/${grantType.value}|}" role="button">删除</a></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="box-footer clearfix">
+                            <th:block th:include="template/bootstrap :: page-navigation (pageable=${grantTypes})"></th:block>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">增加授权方式</h3>
+                        </div>
+                        <form action="#" th:action="@{''}" method="post">
+                            <div class="box-body">
+                                <div class="form-group">
+                                    <label for="grantTypeName">授权方式名</label>
+                                    <input type="text" class="form-control" id="grantTypeName" name="grantTypeName" placeholder="授权方式名" required="required" value="" th:value="${grantTypeName}" />
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                                <button type="submit" class="btn btn-primary">提交</button>
+                                <a type="button" class="btn btn-default" href="#" th:href="@{/grantTypes}">取消</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Main Footer -->
+    <footer class="main-footer" th:replace="template/dashboard :: main-footer">
+        <!-- This block will be replaced by template. -->
+    </footer>
+
+    <th:block th:replace="template/dashboard :: control-sidebar">
+        <!-- This block will be replaced by template. --></th:block>
+</div>
+<!-- ./wrapper -->
+
+<th:block th:replace="template/dashboard :: required-js-scripts">
+    <!-- This block will be replaced by template. -->
+</th:block>
+<script type="text/javascript">
+    $(function() {
+       activeMenus('授权方式管理')
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+saluki:
+    grpc:
+        registryAddress: daily.quancheng-ec.com:8500
+security:
+    ignored: /resources/**, /webjars/**
+server:
+    context-path: /gateway
+    port: 9191
+spring:
+    application:
+        name: gateway
+    datasource:
+        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        driverClassName: com.mysql.jdbc.Driver
+        filters: stat,wall,log4j
+        initialSize: 5
+        maxActive: 20
+        maxPoolPreparedStatementPerConnectionSize: 20
+        maxWait: 60000
+        minEvictableIdleTimeMillis: 300000
+        minIdle: 5
+        password: 123456
+        poolPreparedStatements: true
+        testOnBorrow: false
+        testOnReturn: false
+        testWhileIdle: true
+        timeBetweenEvictionRunsMillis: 60000
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://192.168.99.100:3306/gateway?useUnicode=true&characterEncoding=utf-8
+        username: root
+        validationQuery: SELECT 1 FROM DUAL
+    jackson:
+        serialization:
+            indent_output: true
+    jpa:
+        database: MYSQL
+        generate-ddl: true
+        hibernate:
+            ddl-auto: update
+            naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        show-sql: true
+    profiles:
+        include: default-user-and-roles
+    redis:
+        host: 192.168.99.100
+        pool:
+            max-idle: 8
+            max-wait: -1
+        port: 6379
+    thymeleaf:
+        cache: false

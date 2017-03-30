@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="template/dashboard :: head('授权')">
+    <!-- This block will be replaced by template. -->
+</head>
+<body class="hold-transition login-page">
+
+<div class="login-box">
+    <div class="login-logo">
+        <b>OAuth2</b> 登录授权
+    </div>
+
+    <div class="login-box-body" sec:authorize="hasRole('ROLE_USER')">
+        <div class="alert alert-danger" th:if="${unapprovedExceptionMessage} != null">
+            <h2>我擦，粗错了……</h2>
+
+            <p>
+                Access could not be granted. (<span th:text="${unapprovedExceptionMessage}">For unknown reason.</span>)
+            </p>
+        </div>
+
+        <p class="login-box-msg"><span th:text="${client.clientId}"></span> 程序想要请您授权以下内容：</p>
+        <form id="confirmationForm" name="confirmationForm"
+              th:action="@{/oauth/authorize}" method="post">
+            <input name="user_oauth_approval" value="true" type="hidden" />
+            <div class="form-group has-feedback" th:each="scope: ${scopes}">
+                <span th:text="${scope.key}">Some Scope</span>
+                <span class="pull-right">
+                <label>
+                    <input type="radio" th:name="${scope.key}" value="true" th:checked="${scope.value}" class="flat-green"/> <i class="fa fa-unlock"></i> 许可
+                </label>
+                <label>
+                    <input type="radio" th:name="${scope.key}" value="false" th:checked="${!scope.value}" class="flat-red"/> <i class="fa fa-lock"></i> 拒绝
+                </label>
+                </span>
+            </div>
+            <div class="row">
+                <!-- /.col -->
+                <div class="col-xs-4 col-xs-offset-4">
+                    <button class="btn btn-primary" type="submit">确认并授权</button>
+                </div>
+                <!-- /.col -->
+            </div>
+        </form>
+        <div class="social-auth-links text-center">
+            <p>请许可上述授权范围并点击确认并授权按钮继续。</p>
+            <p>- OR -</p>
+            <p><a href="login.html" th:href="@{/login.html}">Or sign in as a different user</a></p>
+        </div>
+    </div>
+
+    <div class="lockscreen-footer text-center">
+        Copyright &copy; 2017 <b><a href="http://www.newni.com" class="text-black">Newnil</a></b><br/>
+        All rights reserved
+    </div>
+</div>
+<!-- /.center -->
+
+<th:block th:replace="template/dashboard :: required-js-scripts">
+    <!-- This block will be replaced by template. -->
+</th:block>
+</body>
+</html>
+
