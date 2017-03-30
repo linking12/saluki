@@ -25,7 +25,6 @@ import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsToScopesXrefEntit
 import com.quancheng.saluki.gateway.oauth2.entity.RedirectUriEntity;
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.GrantTypeRepository;
-import com.quancheng.saluki.gateway.oauth2.repository.RedirectUriRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.ResourceIdRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.ScopeRepository;
 
@@ -45,9 +44,6 @@ public class OAuth2DatabaseClientDetailsService implements ClientDetailsService,
     private ResourceIdRepository    resourceIdRepository;
 
     @Autowired
-    private RedirectUriRepository   redirectUriRepository;
-
-    @Autowired
     private PasswordEncoder         passwordEncoder;
 
     @Override
@@ -63,12 +59,6 @@ public class OAuth2DatabaseClientDetailsService implements ClientDetailsService,
         }
 
         ClientDetailsEntity clientDetailsEntity = ClientDetailsEntity.builder().clientId(clientDetails.getClientId()).clientSecret(clientDetails.getClientSecret()).accessTokenValiditySeconds(clientDetails.getAccessTokenValiditySeconds()).refreshTokenValiditySeconds(clientDetails.getRefreshTokenValiditySeconds()).build();
-
-        // 如果下面这段编译报错请升级jdk
-        // OAuth2DatabaseClientDetailsService.java:[64,30] unreported exception X; must be caught or declared to be
-        // thrown
-        // 或者将 ").orElseThrow(" 修改成 ").<ClientRegistrationException>orElseThrow("
-        // http://stackoverflow.com/a/25533461
 
         clientDetailsEntity.setAuthorizedGrantTypeXrefs(clientDetails.getAuthorizedGrantTypes().stream().map(grantType -> grantTypeRepository.findOneByValue(grantType).map(grantTypeEntity -> ClientDetailsToAuthorizedGrantTypeXrefEntity.builder().clientDetails(clientDetailsEntity).grantType(grantTypeEntity).build()).<ClientRegistrationException> orElseThrow(() -> new ClientRegistrationException("Unsupported grant type: "
                                                                                                                                                                                                                                                                                                                                                                                                              + grantType))).collect(Collectors.toSet()));
