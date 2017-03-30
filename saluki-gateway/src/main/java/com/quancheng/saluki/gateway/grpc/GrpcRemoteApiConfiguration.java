@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.quancheng.saluki.gateway.filters.route.GrpcRemoteRouteFilter;
+import com.quancheng.saluki.gateway.zuul.filter.GrpcRemoteRouteFilter;
 
 /**
  * @author shimingliu 2017年3月28日 下午5:23:30
