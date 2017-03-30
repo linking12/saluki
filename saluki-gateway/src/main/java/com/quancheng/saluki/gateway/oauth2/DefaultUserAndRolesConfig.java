@@ -53,7 +53,7 @@ public class DefaultUserAndRolesConfig implements InitializingBean {
 
         defaultRoleEntities.stream().forEach(roleEntity -> userRoleXrefRepository.save(UserRoleXrefEntity.builder().user(defaultAdminUserEntity).role(roleEntity).build()));
 
-        UserEntity defaultUserEntity = userRepository.findOneByUsername(DEFAULT_USER_USERNAME).orElseGet(() -> {
+        userRepository.findOneByUsername(DEFAULT_USER_USERNAME).orElseGet(() -> {
             UserEntity userEntity = UserEntity.builder().username(DEFAULT_USER_USERNAME).password(passwordEncoder.encode(DEFAULT_USER_PASSWORD)).build();
 
             roleRepository.findOneByName("USER").ifPresent(roleEntity -> userEntity.setRoles(Collections.singleton(UserRoleXrefEntity.builder().user(userEntity).role(roleEntity).build())));
