@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.gateway.grpc;
+package com.quancheng.saluki.gateway.grpc.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.quancheng.saluki.gateway.grpc.entity.ApiJar;
+import com.quancheng.saluki.gateway.grpc.repository.ApiJarRepository;
 
 import sun.misc.BASE64Encoder;
 

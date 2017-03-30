@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.gateway.zuul.cache;
+package com.quancheng.saluki.gateway.zuul.extend;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.quancheng.saluki.gateway.zuul;
+package com.quancheng.saluki.gateway.zuul.extend;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +36,6 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
-import com.quancheng.saluki.gateway.zuul.cache.RouterLocalCache;
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
 import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 

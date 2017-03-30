@@ -19,25 +19,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableJpaAuditing
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-            http
-                .exceptionHandling()
-                    .accessDeniedPage("/login.html?authorization_error=true")
-                    .and()
-                .logout()
-                    .permitAll()
-                    .and()
-                .formLogin()
-                    .loginPage("/login.html")
-                    .permitAll()
-                    .and()
-                .authorizeRequests()
-                .anyRequest().authenticated();
-        // @formatter:on
+        http//
+            .exceptionHandling()//
+            .accessDeniedPage("/login.html?authorization_error=true")//
+            .and()//
+            .logout()//
+            .permitAll()//
+            .and()//
+            .formLogin()//
+            .loginPage("/login.html")//
+            .permitAll()//
+            .and()//
+            .authorizeRequests()//
+            .anyRequest().authenticated();//
     }
 
     @Bean
@@ -46,7 +44,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuditorAware<String> auditorAwareBean(@Autowired AuthenticationTrustResolver authenticationTrustResolver) {
+    @Autowired
+    public AuditorAware<String> auditorAwareBean(AuthenticationTrustResolver authenticationTrustResolver) {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || authenticationTrustResolver.isAnonymous(authentication)) {

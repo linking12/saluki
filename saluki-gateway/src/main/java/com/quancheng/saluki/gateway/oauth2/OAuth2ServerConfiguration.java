@@ -17,7 +17,7 @@ import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsSe
 
 @Configuration
 @EnableAuthorizationServer
-public class OAuth2ServerConfig extends AuthorizationServerConfigurerAdapter {
+public class OAuth2ServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
     private DatabaseTokenStoreService          tokenStoreService;

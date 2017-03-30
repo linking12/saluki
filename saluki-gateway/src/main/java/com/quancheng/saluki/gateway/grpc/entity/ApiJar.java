@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.gateway.grpc;
+package com.quancheng.saluki.gateway.grpc.entity;
 
 import java.util.Date;
 

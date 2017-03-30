@@ -26,6 +26,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.quancheng.saluki.gateway.zuul.extend.StoreProxyRouteLocator;
 import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 
 /***

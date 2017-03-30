@@ -16,9 +16,9 @@ import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
-import com.quancheng.saluki.gateway.grpc.GrpcRemoteComponent;
-import com.quancheng.saluki.gateway.zuul.cache.RouterLocalCache;
+import com.quancheng.saluki.gateway.grpc.componet.GrpcRemoteComponent;
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
+import com.quancheng.saluki.gateway.zuul.extend.RouterLocalCache;
 
 /**
  * @author shimingliu 2017年3月23日 上午10:43:32

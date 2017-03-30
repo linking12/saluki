@@ -9,7 +9,7 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
  * Created by dewafer on 2017/1/6.
  */
 @Configuration
-public class TrustResolverConfig {
+public class TrustResolverConfiguration {
 
     @Bean
     public AuthenticationTrustResolver authenticationTrustResolver() {
