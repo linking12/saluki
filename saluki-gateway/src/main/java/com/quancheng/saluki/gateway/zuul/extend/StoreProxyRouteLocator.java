@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +36,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
@@ -53,7 +55,9 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
     private final ScheduledExecutorService refreshExecutor = Executors.newScheduledThreadPool(1,
                                                                                               new NamedThreadFactory("refreshZuulRoute",
-                                                                                                                     true));;
+                                                                                                                     true));
+
+    private volatile Boolean               hasLoaded       = false;
 
     /**
      * Creates new instance of {@link StoreProxyRouteLocator}
@@ -111,9 +115,15 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private List<ZuulProperties.ZuulRoute> findAll() {
-        List<ZuulRouteDto> routers = store.loadAllRoute();
+        Set<ZuulRouteDto> routers = Sets.newHashSet();
+        if (!hasLoaded) {
+            routers.addAll(store.loadAllRoute());
+            hasLoaded = true;
+        } else {
+            routers.addAll(store.loadTop10Route());
+        }
         RouterLocalCache.getInstance().putAllRouters(routers);
-        return Lists.transform(routers, new Function<ZuulRouteDto, ZuulProperties.ZuulRoute>() {
+        return Lists.transform(Lists.newArrayList(routers), new Function<ZuulRouteDto, ZuulProperties.ZuulRoute>() {
 
             @Override
             public ZuulRoute apply(ZuulRouteDto input) {

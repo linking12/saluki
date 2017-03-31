@@ -8,8 +8,8 @@
 package com.quancheng.saluki.gateway.zuul.filter;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -136,7 +136,7 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
     private ZuulRouteDto loadRouteFromCache() {
         RequestContext context = RequestContext.getCurrentContext();
         String requestPath = context.getRequest().getServletPath();
-        List<ZuulRouteDto> routes = RouterLocalCache.getInstance().getRouters();
+        Set<ZuulRouteDto> routes = RouterLocalCache.getInstance().getRouters();
         for (ZuulRouteDto route : routes) {
             if (route.getRoutePath().contains(requestPath)) {
                 return route;
