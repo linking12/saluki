@@ -14,7 +14,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -24,6 +23,7 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
 @Component
+@SuppressWarnings("resource")
 public class GrpcRemoteComponent {
 
     private static final Logger                logger             = LoggerFactory.getLogger(GrpcRemoteComponent.class);
@@ -35,12 +35,16 @@ public class GrpcRemoteComponent {
     @SalukiReference(group = "default", version = "1.0.0")
     private GenericService                     genricService;
 
-    public Object callRemoteService(String serviceName, String group, String version, String methodName,
+    public String callRemoteService(String serviceName, String group, String version, String methodName,
                                     String requestParam) throws Throwable {
         try {
+            assert (serviceName != null);
+            assert (group != null);
+            assert (version != null);
+            assert (methodName != null);
+            assert (requestParam != null && !requestParam.isEmpty());
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                @SuppressWarnings("resource")
                 GrpcClassLoader classLoader = new GrpcClassLoader();
                 classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
                 serviceClass = classLoader.loadClass(serviceName);
@@ -53,19 +57,23 @@ public class GrpcRemoteComponent {
             String[] paramTypes = new String[] { requestType.getName(), returnType.getName() };
             Object[] args = new Object[] { request };
             Object reply = genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
-            return reply;
+            return GSON.toJson(reply);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             logger.error(e.getMessage(), e);
             throw e;
         }
     }
 
-    public Object callRemoteService(String serviceName, String group, String version, String methodName,
+    public String callRemoteService(String serviceName, String group, String version, String methodName,
                                     Map<String, String> requestParam) throws Throwable {
         try {
+            assert (serviceName != null);
+            assert (group != null);
+            assert (version != null);
+            assert (methodName != null);
+            assert (requestParam != null && !requestParam.isEmpty());
             Class<?> serviceClass = remoteServiceCache.get(serviceName);
             if (serviceClass == null) {
-                @SuppressWarnings("resource")
                 GrpcClassLoader classLoader = new GrpcClassLoader();
                 classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
                 serviceClass = classLoader.loadClass(serviceName);
@@ -78,9 +86,10 @@ public class GrpcRemoteComponent {
             for (Map.Entry<String, String> entry : requestParam.entrySet()) {
                 String fieldName = entry.getKey();
                 String fieldValue = entry.getValue();
-                Field field = ReflectionUtils.findField(requestType, fieldName);
+                Field field = requestType.getDeclaredField(fieldName);
                 if (String.class.isAssignableFrom(field.getType())) {
-                    ReflectionUtils.setField(field, request, fieldValue);
+                    field.setAccessible(true);
+                    field.set(request, fieldValue);
                 } else {
                     throw new IllegalArgumentException("only support String");
                 }
@@ -88,7 +97,7 @@ public class GrpcRemoteComponent {
             String[] paramTypes = new String[] { requestType.getName(), returnType.getName() };
             Object[] args = new Object[] { request };
             Object reply = genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
-            return reply;
+            return GSON.toJson(reply);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             logger.error(e.getMessage(), e);
             throw e;

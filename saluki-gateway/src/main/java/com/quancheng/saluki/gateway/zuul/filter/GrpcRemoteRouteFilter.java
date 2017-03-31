@@ -11,13 +11,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.http.HttpServletRequestWrapper;
 import com.quancheng.saluki.gateway.grpc.componet.GrpcRemoteComponent;
 import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 import com.quancheng.saluki.gateway.zuul.extend.RouterLocalCache;
@@ -28,100 +29,98 @@ import com.quancheng.saluki.gateway.zuul.extend.RouterLocalCache;
  */
 public class GrpcRemoteRouteFilter extends ZuulFilter {
 
-    private static final JsonParser JSONPARSER = new JsonParser();
+    private static final JsonParser   JSONPARSER = new JsonParser();
 
-    private GrpcRemoteComponent     grpcRemote;
+    private final GrpcRemoteComponent remoteComponent;
 
     public GrpcRemoteRouteFilter(GrpcRemoteComponent grpcRemote){
-        this.grpcRemote = grpcRemote;
+        this.remoteComponent = grpcRemote;
     }
 
     @Override
     public boolean shouldFilter() {
-        ZuulRouteDto route = findRoute();
+        ZuulRouteDto route = loadRouteFromCache();
         return (route != null && route.getIsGrpc() != null) ? route.getIsGrpc() : false;
-    }
-
-    private ZuulRouteDto findRoute() {
-        RequestContext context = RequestContext.getCurrentContext();
-        String requestPath = context.getRequest().getServletPath();
-        List<ZuulRouteDto> routes = RouterLocalCache.getInstance().getRouters();
-        for (ZuulRouteDto route : routes) {
-            if (route.getRoutePath().contains(requestPath)) {
-                return route;
-            }
-        }
-        return null;
     }
 
     @Override
     public Object run() {
-        ZuulRouteDto route = findRoute();
-        String service = route.getServiceName();
-        String group = route.getGroup();
-        String version = route.getVersion();
-        String method = route.getMethod();
-        Map<String, String> fieldMap = route.getMappingField();
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequestWrapper request = (HttpServletRequestWrapper) ctx.getRequest();
-        // 如果有字段映射，使用字段映射
-        if (!fieldMap.isEmpty()) {
-            Map<String, String> valueMap = Maps.newHashMap();
-            for (Map.Entry<String, String> entry : fieldMap.entrySet()) {
-                String sourceFieldName = entry.getKey();
-                String targetFieldName = entry.getValue();
-                String fieldValue = request.getParameter(sourceFieldName);
-                valueMap.put(targetFieldName, fieldValue);
-            }
-            if (valueMap.isEmpty()) {
-                ctx.set("error.status_code", 400);
-                ctx.set("error.message", "param can not be empty");
-            } else {
-                try {
-                    return grpcRemote.callRemoteService(service, group, version, method, valueMap);
-                } catch (Throwable e) {
-                    ctx.set("error.status_code", 500);
-                    ctx.set("error.message", e.getMessage());
-                    ctx.set("error.exception", e);
-                }
-            }
-        } // 使用json传递
-        else {
-            Map<?, ?> params = request.getParameterMap();
-            String grpcRequestJson = this.findJsonFromParams(params);
-            if (grpcRequestJson == null) {
-                ctx.set("error.status_code", 400);
-                ctx.set("error.message", "have not find right param,param must be json");
-            } else {
-                try {
-                    return grpcRemote.callRemoteService(service, group, version, method, grpcRequestJson);
-                } catch (Throwable e) {
-                    ctx.set("error.status_code", 500);
-                    ctx.set("error.message", e.getMessage());
-                    ctx.set("error.exception", e);
-                }
-            }
+        ZuulRouteDto route = loadRouteFromCache();
+        Map<String, String> fieldMapping = route.getMappingField();
+        if (fieldMapping.isEmpty()) {
+            this.doJsonRun();
+        } else {
+            this.doFieldMappingRun();
         }
-
         return null;
     }
 
-    private String findJsonFromParams(Map<?, ?> params) {
-        Collection<?> paramValues = params.values();
-        for (Object value : paramValues) {
-            try {
-                if (value instanceof String) {
-                    String jsonValue = (String) value;
-                    JSONPARSER.parse(jsonValue);
-                    return jsonValue;
-                } else {
+    private void doJsonRun() {
+        ZuulRouteDto route = this.loadRouteFromCache();
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+        HttpServletResponse response = ctx.getResponse();
+        String jsonParam = null;
+        Collection<String[]> paramValues = request.getParameterMap().values();
+        for (String[] value : paramValues) {
+            for (String valueV : value) {
+                try {
+                    JSONPARSER.parse(valueV);
+                    jsonParam = valueV;
+                    break;
+                } catch (JsonParseException e) {
                     continue;
                 }
-            } catch (JsonParseException e) {
-                continue;
+            }
+            if (jsonParam != null) break;
+        }
+        if (jsonParam == null) {
+            ctx.set("error.status_code", 400);
+            ctx.set("error.message", "have not find right param,param must be json");
+        } else {
+            try {
+                String result = remoteComponent.callRemoteService(route.getServiceName(), route.getGroup(),
+                                                                  route.getVersion(), route.getMethod(), jsonParam);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("application/json; charset=UTF-8");
+                response.getWriter().print(result);
+            } catch (Throwable e) {
+                ctx.set("error.status_code", 500);
+                ctx.set("error.message", e.getMessage());
+                ctx.set("error.exception", e);
             }
         }
-        return null;
+    }
+
+    private void doFieldMappingRun() {
+        ZuulRouteDto route = this.loadRouteFromCache();
+        Map<String, String> fieldMap = route.getMappingField();
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+        HttpServletResponse response = ctx.getResponse();
+        Map<String, String> valueMap = Maps.newHashMap();
+        for (Map.Entry<String, String> entry : fieldMap.entrySet()) {
+            String sourceFieldName = entry.getKey();
+            String targetFieldName = entry.getValue();
+            String fieldValue = request.getParameter(sourceFieldName);
+            valueMap.put(targetFieldName, fieldValue);
+        }
+        if (valueMap.isEmpty()) {
+            ctx.set("error.status_code", 400);
+            ctx.set("error.message", "param can not be empty");
+        } else {
+            try {
+                String result = remoteComponent.callRemoteService(route.getServiceName(), route.getGroup(),
+                                                                  route.getVersion(), route.getMethod(), valueMap);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("application/json; charset=UTF-8");
+                response.getWriter().print(result);
+            } catch (Throwable e) {
+                ctx.set("error.status_code", 500);
+                ctx.set("error.message", e.getMessage());
+                ctx.set("error.exception", e);
+            }
+        }
     }
 
     @Override
@@ -133,4 +132,17 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
     public int filterOrder() {
         return 9;
     }
+
+    private ZuulRouteDto loadRouteFromCache() {
+        RequestContext context = RequestContext.getCurrentContext();
+        String requestPath = context.getRequest().getServletPath();
+        List<ZuulRouteDto> routes = RouterLocalCache.getInstance().getRouters();
+        for (ZuulRouteDto route : routes) {
+            if (route.getRoutePath().contains(requestPath)) {
+                return route;
+            }
+        }
+        return null;
+    }
+
 }

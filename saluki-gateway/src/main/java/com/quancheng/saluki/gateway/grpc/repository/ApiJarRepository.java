@@ -22,6 +22,6 @@ import com.quancheng.saluki.gateway.grpc.entity.ApiJarEntity;
 @Repository
 public interface ApiJarRepository extends JpaRepository<ApiJarEntity, String> {
 
-    @Query(value = "SELECT api FROM ApiJar api order by create_time desc")
+    @Query(value = "SELECT api FROM ApiJarEntity api order by create_time desc")
     List<ApiJarEntity> findLastesJar();
 }
