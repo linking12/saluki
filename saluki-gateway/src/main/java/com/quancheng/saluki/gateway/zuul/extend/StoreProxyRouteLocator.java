@@ -36,8 +36,8 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
-import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
-import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
+import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
+import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
 
 /**
  * A simple {@link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated from configured
@@ -49,7 +49,7 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
     private final Logger                   log             = LoggerFactory.getLogger(StoreProxyRouteLocator.class);
 
-    private final ZuulRouteRepository      store;
+    private final ZuulRouteService         store;
 
     private final ScheduledExecutorService refreshExecutor = Executors.newScheduledThreadPool(1,
                                                                                               new NamedThreadFactory("refreshZuulRoute",
@@ -64,7 +64,7 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
      * @param store the route store
      */
     public StoreProxyRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
-                                  ZuulRouteRepository store){
+                                  ZuulRouteService store){
         super(servletPath, discovery, properties);
         this.store = store;
         refreshExecutor.scheduleAtFixedRate(new Runnable() {
@@ -111,18 +111,18 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private List<ZuulProperties.ZuulRoute> findAll() {
-        List<ZuulRouteEntity> routers = store.findAll();
+        List<ZuulRouteDto> routers = store.loadAllRoute();
         RouterLocalCache.getInstance().putAllRouters(routers);
-        return Lists.transform(routers, new Function<ZuulRouteEntity, ZuulProperties.ZuulRoute>() {
+        return Lists.transform(routers, new Function<ZuulRouteDto, ZuulProperties.ZuulRoute>() {
 
             @Override
-            public ZuulRoute apply(ZuulRouteEntity input) {
-                String id = input.getRoute_id();
-                String path = input.getPath();
-                String service_id = input.getService_id();
-                String url = input.getUrl();
-                boolean strip_prefix = input.getStrip_prefix() != null ? input.getStrip_prefix() : true;
-                Boolean retryable = input.getRetryable();
+            public ZuulRoute apply(ZuulRouteDto input) {
+                String id = input.getRouteId();
+                String path = input.getRoutePath();
+                String service_id = input.getServiceId();
+                String url = input.getRouteUrl();
+                boolean strip_prefix = input.getStripPrefix() != null ? input.getStripPrefix() : true;
+                Boolean retryable = input.getRetryAble();
                 String sensitiveHeader = input.getSensitiveHeaders();
                 String[] sensitiveHeaders = null;
                 if (sensitiveHeader != null) {

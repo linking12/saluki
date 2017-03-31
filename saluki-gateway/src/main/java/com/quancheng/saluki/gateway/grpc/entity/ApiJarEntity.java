@@ -21,7 +21,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "api_jar")
-public class ApiJar {
+public class ApiJarEntity {
 
     @Id
     @GeneratedValue

@@ -20,7 +20,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
+import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 
 /**
  * @author shimingliu 2017年3月24日 下午6:35:47
@@ -28,35 +28,32 @@ import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
  */
 public class RouterLocalCache {
 
-    private static final Logger                                      logger             = LoggerFactory.getLogger(RouterLocalCache.class);
+    private static final Logger                                   logger             = LoggerFactory.getLogger(RouterLocalCache.class);
 
-    private static final String                                      GATE_WAY_CACHE_KEY = "GATEWAY_ROUTER";
+    private static final String                                   GATE_WAY_CACHE_KEY = "GATEWAY_ROUTER";
 
-    private static final LoadingCache<String, List<ZuulRouteEntity>> routerCache        = CacheBuilder.newBuilder()                                                                               //
-                                                                                                      .concurrencyLevel(8)                                                                        //
-                                                                                                      .expireAfterWrite(1,
-                                                                                                                        TimeUnit.DAYS)                                                            //
-                                                                                                      .initialCapacity(10)                                                                        //
-                                                                                                      .maximumSize(100)                                                                           //
-                                                                                                      .recordStats()                                                                              //
-                                                                                                      .removalListener(new RemovalListener<String, List<ZuulRouteEntity>>() {
+    private static final LoadingCache<String, List<ZuulRouteDto>> routerCache        = CacheBuilder.newBuilder()                                                                            //
+                                                                                                   .concurrencyLevel(8)                                                                     //
+                                                                                                   .expireAfterWrite(1,
+                                                                                                                     TimeUnit.DAYS)                                                         //
+                                                                                                   .initialCapacity(10)                                                                     //
+                                                                                                   .maximumSize(100)                                                                        //
+                                                                                                   .recordStats()                                                                           //
+                                                                                                   .removalListener(new RemovalListener<String, List<ZuulRouteDto>>() {
 
-                                                                                                          @Override
-                                                                                                          public void onRemoval(RemovalNotification<String, List<ZuulRouteEntity>> notification) {
-                                                                                                              logger.info("remove key:"
-                                                                                                                          + notification.getKey()
-                                                                                                                          + ",value:"
-                                                                                                                          + notification.getValue());
-                                                                                                          }
-                                                                                                      })                                                                                          //
-                                                                                                      .build(new CacheLoader<String, List<ZuulRouteEntity>>() {
+                                                                                                       @Override
+                                                                                                       public void onRemoval(RemovalNotification<String, List<ZuulRouteDto>> notification) {
 
-                                                                                                          @Override
-                                                                                                          public List<ZuulRouteEntity> load(String key) throws Exception {
-                                                                                                              return Lists.newArrayList();
-                                                                                                          }
+                                                                                                       }
+                                                                                                   })                                                                                       //
+                                                                                                   .build(new CacheLoader<String, List<ZuulRouteDto>>() {
 
-                                                                                                      });
+                                                                                                       @Override
+                                                                                                       public List<ZuulRouteDto> load(String key) throws Exception {
+                                                                                                           return Lists.newArrayList();
+                                                                                                       }
+
+                                                                                                   });
 
     private static class LazyHolder {
 
@@ -70,11 +67,11 @@ public class RouterLocalCache {
         return LazyHolder.INSTANCE;
     }
 
-    public void putAllRouters(List<ZuulRouteEntity> routers) {
+    public void putAllRouters(List<ZuulRouteDto> routers) {
         routerCache.put(GATE_WAY_CACHE_KEY, routers);
     }
 
-    public List<ZuulRouteEntity> getRouters() {
+    public List<ZuulRouteDto> getRouters() {
         try {
             return routerCache.get(GATE_WAY_CACHE_KEY);
         } catch (ExecutionException e) {

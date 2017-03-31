@@ -7,12 +7,14 @@
  */
 package com.quancheng.saluki.gateway.grpc.componet;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -48,6 +50,41 @@ public class GrpcRemoteComponent {
             Class<?> requestType = method.getParameterTypes()[0];
             Class<?> returnType = method.getReturnType();
             Object request = GSON.fromJson(requestParam, requestType);
+            String[] paramTypes = new String[] { requestType.getName(), returnType.getName() };
+            Object[] args = new Object[] { request };
+            Object reply = genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
+            return reply;
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    public Object callRemoteService(String serviceName, String group, String version, String methodName,
+                                    Map<String, String> requestParam) throws Throwable {
+        try {
+            Class<?> serviceClass = remoteServiceCache.get(serviceName);
+            if (serviceClass == null) {
+                @SuppressWarnings("resource")
+                GrpcClassLoader classLoader = new GrpcClassLoader();
+                classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
+                serviceClass = classLoader.loadClass(serviceName);
+                remoteServiceCache.put(serviceName, serviceClass);
+            }
+            Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);
+            Class<?> requestType = method.getParameterTypes()[0];
+            Class<?> returnType = method.getReturnType();
+            Object request = ReflectUtils.getEmptyObject(requestType);
+            for (Map.Entry<String, String> entry : requestParam.entrySet()) {
+                String fieldName = entry.getKey();
+                String fieldValue = entry.getValue();
+                Field field = ReflectionUtils.findField(requestType, fieldName);
+                if (String.class.isAssignableFrom(field.getType())) {
+                    ReflectionUtils.setField(field, request, fieldValue);
+                } else {
+                    throw new IllegalArgumentException("only support String");
+                }
+            }
             String[] paramTypes = new String[] { requestType.getName(), returnType.getName() };
             Object[] args = new Object[] { request };
             Object reply = genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);

@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import com.quancheng.saluki.gateway.oauth2.service.DatabaseUserDetailService;
 import com.quancheng.saluki.gateway.zuul.extend.StoreProxyRouteLocator;
 import com.quancheng.saluki.gateway.zuul.filter.LimitAccessFilter;
-import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
+import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
 
 import redis.clients.jedis.JedisPool;
 
@@ -43,7 +43,7 @@ import redis.clients.jedis.JedisPool;
 public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
 
     @Autowired
-    private ZuulRouteRepository       zuulRouteStore;
+    private ZuulRouteService          zuulRouteStore;
 
     @Autowired
     private DiscoveryClient           discovery;

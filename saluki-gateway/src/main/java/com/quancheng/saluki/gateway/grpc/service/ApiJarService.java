@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.quancheng.saluki.gateway.grpc.entity.ApiJar;
+import com.quancheng.saluki.gateway.grpc.entity.ApiJarEntity;
 import com.quancheng.saluki.gateway.grpc.repository.ApiJarRepository;
 
 import sun.misc.BASE64Encoder;
@@ -53,7 +53,7 @@ public class ApiJarService {
     }
 
     public Boolean saveJar(String jarVersion, String jarUrl) {
-        ApiJar apiJar = new ApiJar();
+        ApiJarEntity apiJar = new ApiJarEntity();
         apiJar.setJarUrl(jarUrl);
         apiJar.setJarVersion(jarVersion);
         apiJar.setCreateTime(new Date());

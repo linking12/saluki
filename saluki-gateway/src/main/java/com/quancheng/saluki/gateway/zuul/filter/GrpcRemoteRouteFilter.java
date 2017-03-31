@@ -11,13 +11,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
 import com.quancheng.saluki.gateway.grpc.componet.GrpcRemoteComponent;
-import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
+import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 import com.quancheng.saluki.gateway.zuul.extend.RouterLocalCache;
 
 /**
@@ -36,16 +38,16 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        ZuulRouteEntity route = findRoute();
-        return (route != null && route.getIs_grpc() != null) ? route.getIs_grpc() : false;
+        ZuulRouteDto route = findRoute();
+        return (route != null && route.getIsGrpc() != null) ? route.getIsGrpc() : false;
     }
 
-    private ZuulRouteEntity findRoute() {
+    private ZuulRouteDto findRoute() {
         RequestContext context = RequestContext.getCurrentContext();
         String requestPath = context.getRequest().getServletPath();
-        List<ZuulRouteEntity> routes = RouterLocalCache.getInstance().getRouters();
-        for (ZuulRouteEntity route : routes) {
-            if (route.getPath().contains(requestPath)) {
+        List<ZuulRouteDto> routes = RouterLocalCache.getInstance().getRouters();
+        for (ZuulRouteDto route : routes) {
+            if (route.getRoutePath().contains(requestPath)) {
                 return route;
             }
         }
@@ -54,27 +56,53 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
 
     @Override
     public Object run() {
-        ZuulRouteEntity route = findRoute();
-        String service = route.getService_name();
+        ZuulRouteDto route = findRoute();
+        String service = route.getServiceName();
         String group = route.getGroup();
         String version = route.getVersion();
         String method = route.getMethod();
+        Map<String, String> fieldMap = route.getMappingField();
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequestWrapper request = (HttpServletRequestWrapper) ctx.getRequest();
-        Map<?, ?> params = request.getParameterMap();
-        String grpcRequestJson = findJsonFromParams(params);
-        if (grpcRequestJson == null) {
-            ctx.set("error.status_code", 400);
-            ctx.set("error.message", "have not find right param,param must be json");
-        } else {
-            try {
-                return grpcRemote.callRemoteService(service, group, version, method, grpcRequestJson);
-            } catch (Throwable e) {
-                ctx.set("error.status_code", 500);
-                ctx.set("error.message", e.getMessage());
-                ctx.set("error.exception", e);
+        // 如果有字段映射，使用字段映射
+        if (!fieldMap.isEmpty()) {
+            Map<String, String> valueMap = Maps.newHashMap();
+            for (Map.Entry<String, String> entry : fieldMap.entrySet()) {
+                String sourceFieldName = entry.getKey();
+                String targetFieldName = entry.getValue();
+                String fieldValue = request.getParameter(sourceFieldName);
+                valueMap.put(targetFieldName, fieldValue);
+            }
+            if (valueMap.isEmpty()) {
+                ctx.set("error.status_code", 400);
+                ctx.set("error.message", "param can not be empty");
+            } else {
+                try {
+                    return grpcRemote.callRemoteService(service, group, version, method, valueMap);
+                } catch (Throwable e) {
+                    ctx.set("error.status_code", 500);
+                    ctx.set("error.message", e.getMessage());
+                    ctx.set("error.exception", e);
+                }
+            }
+        } // 使用json传递
+        else {
+            Map<?, ?> params = request.getParameterMap();
+            String grpcRequestJson = this.findJsonFromParams(params);
+            if (grpcRequestJson == null) {
+                ctx.set("error.status_code", 400);
+                ctx.set("error.message", "have not find right param,param must be json");
+            } else {
+                try {
+                    return grpcRemote.callRemoteService(service, group, version, method, grpcRequestJson);
+                } catch (Throwable e) {
+                    ctx.set("error.status_code", 500);
+                    ctx.set("error.message", e.getMessage());
+                    ctx.set("error.exception", e);
+                }
             }
         }
+
         return null;
     }
 

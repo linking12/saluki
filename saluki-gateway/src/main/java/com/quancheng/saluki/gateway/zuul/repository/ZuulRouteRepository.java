@@ -7,7 +7,11 @@
  */
 package com.quancheng.saluki.gateway.zuul.repository;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
@@ -19,4 +23,6 @@ import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
 @Repository
 public interface ZuulRouteRepository extends JpaRepository<ZuulRouteEntity, String> {
 
+    @Query(value = "select route from ZuulRouteEntity route")
+    public List<ZuulRouteEntity> findTop10Route(Pageable pageable);
 }

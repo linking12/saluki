@@ -13,15 +13,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.quancheng.saluki.gateway.grpc.entity.ApiJar;
+import com.quancheng.saluki.gateway.grpc.entity.ApiJarEntity;
 
 /**
  * @author shimingliu 2017年3月24日 下午6:12:58
  * @version ApiJarRepository.java, v 0.0.1 2017年3月24日 下午6:12:58 shimingliu
  */
 @Repository
-public interface ApiJarRepository extends JpaRepository<ApiJar, String> {
+public interface ApiJarRepository extends JpaRepository<ApiJarEntity, String> {
 
     @Query(value = "SELECT api FROM ApiJar api order by create_time desc")
-    List<ApiJar> findLastesJar();
+    List<ApiJarEntity> findLastesJar();
 }
