@@ -33,10 +33,12 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     public void configure(HttpSecurity http) throws Exception {
         http.anonymous()//
             .disable()//
-            .requestMatchers().antMatchers("/api/**")//
+            .requestMatchers()//
             .and().authorizeRequests()//
-            .antMatchers("/api/**").fullyAuthenticated()//
-            .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
+            .antMatchers("/api/**")//
+            .fullyAuthenticated()//
+            .and().exceptionHandling()//
+            .accessDeniedHandler(new OAuth2AccessDeniedHandler());
     }
 
 }
