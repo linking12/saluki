@@ -38,14 +38,14 @@ public class ApiJarService {
 
     private static final Logger logger       = LoggerFactory.getLogger(ApiJarService.class);
 
-    @Autowired
-    private ApiJarRepository    jarRespository;
-
     private static final String AUTHOR       = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
 
-    private String              API_DIR_PATH = System.getProperty("user.home") + "/saluki";
+    private String              API_DIR_PATH = System.getProperty("user.home") + File.separator + "saluki";
 
     private String              API_JAR_PATH;
+
+    @Autowired
+    private ApiJarRepository    jarRespository;
 
     @PostConstruct
     public void init() {
