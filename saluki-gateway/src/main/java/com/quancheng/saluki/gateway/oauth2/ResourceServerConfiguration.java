@@ -31,9 +31,13 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        /**
+         * @Waing 这里不要随便改动，会导致api调用失败
+         */
         http.anonymous()//
             .disable()//
             .requestMatchers()//
+            .antMatchers("/api/**")//
             .and().authorizeRequests()//
             .antMatchers("/api/**")//
             .fullyAuthenticated()//
