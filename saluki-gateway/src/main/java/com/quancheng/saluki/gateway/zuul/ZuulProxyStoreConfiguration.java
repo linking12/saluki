@@ -26,8 +26,12 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.quancheng.saluki.gateway.oauth2.service.DatabaseUserDetailService;
 import com.quancheng.saluki.gateway.zuul.extend.StoreProxyRouteLocator;
+import com.quancheng.saluki.gateway.zuul.filter.LimitAccessFilter;
 import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
+
+import redis.clients.jedis.JedisPool;
 
 /***
  * Registers a{
@@ -39,22 +43,33 @@ import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
 
     @Autowired
-    private ZuulRouteRepository zuulRouteStore;
+    private ZuulRouteRepository       zuulRouteStore;
 
     @Autowired
-    private DiscoveryClient     discovery;
+    private DiscoveryClient           discovery;
 
     @Autowired
-    private ZuulProperties      zuulProperties;
+    private ZuulProperties            zuulProperties;
 
     @Autowired
-    private ServerProperties    server;
+    private ServerProperties          server;
+
+    @Autowired
+    private DatabaseUserDetailService databaseUserDetailService;
+
+    @Autowired
+    private JedisPool                 jedisPool;
 
     @Bean
     @Override
     @ConditionalOnMissingBean(RouteLocator.class)
     public DiscoveryClientRouteLocator routeLocator() {
         return new StoreProxyRouteLocator(server.getServletPath(), discovery, zuulProperties, zuulRouteStore);
+    }
+
+    @Bean
+    public LimitAccessFilter limitAccessFilter() {
+        return new LimitAccessFilter(databaseUserDetailService, jedisPool);
     }
 
 }

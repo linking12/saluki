@@ -20,6 +20,9 @@ import org.springframework.context.annotation.Primary;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
 /**
  * @author shimingliu 2017年3月23日 下午2:24:45
  * @version DataSourceConfiguration.java, v 0.0.1 2017年3月23日 下午2:24:45 shimingliu
@@ -29,6 +32,9 @@ public class DataSourceConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
 
+    /**
+     * database
+     */
     @Value("${spring.datasource.url}")
     private String              dbUrl;
 
@@ -83,6 +89,18 @@ public class DataSourceConfiguration {
     @Value("{spring.datasource.connectionProperties}")
     private String              connectionProperties;
 
+    /**
+     * redis
+     */
+    @Value("${spring.redis.pool.max-wait}")
+    private long                maxWaitMillis;
+    @Value("${spring.redis.pool.max-idle}")
+    private int                 maxIdle;
+    @Value("${spring.redis.host}")
+    private String              host;
+    @Value("${spring.redis.port}")
+    private int                 port;
+
     @Bean
     @Primary
     public DataSource dataSource() {
@@ -114,4 +132,12 @@ public class DataSourceConfiguration {
         return datasource;
     }
 
+    @Bean
+    public JedisPool redisPoolFactory() {
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxWaitMillis(maxWaitMillis);
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port);
+        return jedisPool;
+    }
 }
