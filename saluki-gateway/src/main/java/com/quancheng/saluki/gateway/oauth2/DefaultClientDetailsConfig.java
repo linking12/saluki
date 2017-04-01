@@ -21,7 +21,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.ScopeRepository;
 import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsService;
 
 @Configuration
-@Profile("default-user-and-roles")
+@Profile("default-user-and-roles_route")
 public class DefaultClientDetailsConfig implements InitializingBean {
 
     private static final Logger                logger              = LoggerFactory.getLogger(DefaultClientDetailsConfig.class);

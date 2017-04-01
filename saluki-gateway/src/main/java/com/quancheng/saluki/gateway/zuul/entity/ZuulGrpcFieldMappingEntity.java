@@ -46,8 +46,11 @@ public class ZuulGrpcFieldMappingEntity extends AbstractPersistable<Long> {
     @Column(name = "target_field", nullable = false, unique = true, length = 100)
     private String          targetField;
 
+    @Column(name = "target_field_type", length = 100)
+    private String          targetFieldType;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH })
-    @JoinColumn(name = "route_id", nullable = false)
+    @JoinColumn(name = "route_id")
     private ZuulRouteEntity route;
 
 }

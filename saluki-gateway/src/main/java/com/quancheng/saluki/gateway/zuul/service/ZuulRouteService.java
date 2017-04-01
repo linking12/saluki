@@ -41,7 +41,7 @@ public class ZuulRouteService {
     }
 
     Function<ZuulRouteEntity, ZuulRouteDto> entity2Dto = zuulRouteEntity -> ZuulRouteDto.builder()//
-                                                                                        .routeId(zuulRouteEntity.getRoute_id())//
+                                                                                        .routeId(zuulRouteEntity.getZuul_route_id())//
                                                                                         .routePath(zuulRouteEntity.getPath())//
                                                                                         .serviceId(zuulRouteEntity.getService_id())//
                                                                                         .routeUrl(zuulRouteEntity.getUrl())//

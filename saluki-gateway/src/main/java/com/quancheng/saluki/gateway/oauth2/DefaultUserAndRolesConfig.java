@@ -20,7 +20,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.UserRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.UserRoleXrefRepository;
 
 @Configuration
-@Profile("default-user-and-roles")
+@Profile("default-user-and-roles_route")
 public class DefaultUserAndRolesConfig implements InitializingBean {
 
     private static final String    DEFAULT_ADMIN_USERNAME = "admin";
