@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<!--
-This is a starter template page. Use this page to start your new project from
-scratch. This page gets rid of all links and provides the needed markup only.
--->
+ 
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
 <head th:fragment="head(title)">
   <meta charset="utf-8"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <title th:inline="text">新牛 OAuth2 全家桶 | [[ ${title} ]]</title>
+  <title th:inline="text">Saluki 网关管理 | [[ ${title} ]]</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
   <!-- Bootstrap 3.3.6 -->
@@ -45,9 +42,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Logo -->
     <a href="index2.html" class="logo" th:href="@{/}">
       <!-- mini logo for sidebar mini 50x50 pixels -->
-      <span class="logo-mini"><b>桶</b></span>
+      <span class="logo-mini"><b>Saluki</b></span>
       <!-- logo for regular state and mobile devices -->
-      <span class="logo-lg"><b>OAuth2</b> 全家桶</span>
+      <span class="logo-lg"><b>Saluki</b> 网关</span>
     </a>
 
     <!-- Header Navbar -->
@@ -160,12 +157,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <!-- Main Footer -->
   <footer class="main-footer" th:fragment="main-footer">
-    <!-- To the right -->
-    <div class="pull-right hidden-xs text-muted">
-      新牛科技倾情奉献 😙 &nbsp; OAuth2 全家桶 v1.0.0
-    </div>
-    <!-- Default to the left -->
-    <strong>Copyright &copy; 2017 <a href="http://www.newnil.com" target="_blank">Newnil</a>.</strong> All rights reserved.
+    <strong>Copyright &copy; 2017 <a href="https://github.com/linking12/saluki" target="_blank">Saluki</a>.</strong> All rights reserved.
   </footer>
 
 <th:block th:fragment="control-sidebar">
