@@ -56,8 +56,8 @@ public class DefaultClientDetailsConfig implements InitializingBean {
                                        .map(scope -> ScopeEntity.builder().value(scope).build())//
                                        .collect(Collectors.toList()));
         }
-        BaseClientDetails clientDetails = new BaseClientDetails("Api", null, API_SCOPES, API_GRANT_TYPES, null);
-        clientDetails.setClientSecret("Api_Secret");
+        BaseClientDetails clientDetails = new BaseClientDetails("api", null, API_SCOPES, API_GRANT_TYPES, null);
+        clientDetails.setClientSecret("api");
         clientDetails.setRegisteredRedirectUri(Collections.emptySet());
         try {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
@@ -65,8 +65,8 @@ public class DefaultClientDetailsConfig implements InitializingBean {
             logger.warn(e.getMessage());
         }
 
-        clientDetails = new BaseClientDetails("Open_Api", null, API_SCOPES, API_GRANT_TYPES, null);
-        clientDetails.setClientSecret("Open_Api_Secret");
+        clientDetails = new BaseClientDetails("open_api", null, API_SCOPES, API_GRANT_TYPES, null);
+        clientDetails.setClientSecret("opean_api");
         clientDetails.setRegisteredRedirectUri(Collections.emptySet());
         try {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
