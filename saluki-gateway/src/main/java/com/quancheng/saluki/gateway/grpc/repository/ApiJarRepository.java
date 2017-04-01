@@ -7,8 +7,6 @@
  */
 package com.quancheng.saluki.gateway.grpc.repository;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,6 +20,6 @@ import com.quancheng.saluki.gateway.grpc.entity.ApiJarEntity;
 @Repository
 public interface ApiJarRepository extends JpaRepository<ApiJarEntity, String> {
 
-    @Query(value = "SELECT api FROM ApiJarEntity api order by create_time desc")
-    List<ApiJarEntity> findLastesJar();
+    @Query(value = "SELECT api FROM ApiJarEntity api order by api.createTime desc limit 1")
+    ApiJarEntity findLastesJar();
 }

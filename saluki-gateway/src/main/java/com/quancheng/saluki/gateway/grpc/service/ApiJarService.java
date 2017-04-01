@@ -15,6 +15,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.gateway.grpc.entity.ApiJarEntity;
 import com.quancheng.saluki.gateway.grpc.repository.ApiJarRepository;
 
@@ -36,20 +40,46 @@ import sun.misc.BASE64Encoder;
 @SuppressWarnings("restriction")
 public class ApiJarService {
 
-    private static final Logger logger       = LoggerFactory.getLogger(ApiJarService.class);
+    private static final Logger            logger          = LoggerFactory.getLogger(ApiJarService.class);
 
-    private static final String AUTHOR       = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
+    private static final String            AUTHOR          = new BASE64Encoder().encode(("liushiming:Hello899").getBytes());
 
-    private String              API_DIR_PATH = System.getProperty("user.home") + File.separator + "saluki";
+    private final ScheduledExecutorService refreshExecutor = Executors.newScheduledThreadPool(1,
+                                                                                              new NamedThreadFactory("refreshZuulRoute",
+                                                                                                                     true));
 
-    private String              API_JAR_PATH;
+    private String                         API_DIR_PATH    = System.getProperty("user.home") + File.separator
+                                                             + "saluki";
+
+    private String                         API_JAR_PATH;
 
     @Autowired
-    private ApiJarRepository    jarRespository;
+    private ApiJarRepository               jarRespository;
 
     @PostConstruct
     public void init() {
         API_JAR_PATH = API_DIR_PATH + File.separator + "api.jar";
+        refreshExecutor.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    refresh();
+                } catch (Throwable e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }, 0, 1, TimeUnit.MINUTES);
+    }
+
+    private void refresh() throws IOException {
+        ApiJarEntity entity = jarRespository.findLastesJar();
+        Date jarCreateTime = entity.getCreateTime();
+        Date now = new Date();
+        long times = (now.getTime() - jarCreateTime.getTime()) / (60 * 60);
+        if (times > 0 && times <= 30) {
+            this.downloadApiJar(entity.getJarUrl());
+        }
     }
 
     public Boolean saveJar(String jarVersion, String jarUrl) {
