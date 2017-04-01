@@ -19,7 +19,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.quancheng.saluki.gateway.grpc.componet.GrpcRemoteComponent;
+import com.quancheng.saluki.gateway.grpc.service.GrpcRemoteComponent;
 import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 import com.quancheng.saluki.gateway.zuul.extend.RouterLocalCache;
 

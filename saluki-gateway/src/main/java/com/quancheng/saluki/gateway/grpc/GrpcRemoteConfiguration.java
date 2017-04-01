@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.quancheng.saluki.gateway.grpc.componet.GrpcRemoteComponent;
+import com.quancheng.saluki.gateway.grpc.service.GrpcRemoteComponent;
 import com.quancheng.saluki.gateway.zuul.filter.GrpcRemoteRouteFilter;
 
 /**
