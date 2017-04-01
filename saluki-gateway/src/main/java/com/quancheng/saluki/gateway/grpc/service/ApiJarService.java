@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.quancheng.saluki.core.common.NamedThreadFactory;
@@ -73,12 +75,15 @@ public class ApiJarService {
     }
 
     private void refresh() throws IOException {
-        ApiJarEntity entity = jarRespository.findLastesJar();
-        Date jarCreateTime = entity.getCreateTime();
-        Date now = new Date();
-        long times = (now.getTime() - jarCreateTime.getTime()) / (60 * 60);
-        if (times > 0 && times <= 30) {
-            this.downloadApiJar(entity.getJarUrl());
+        List<ApiJarEntity> entitys = jarRespository.findLastesJar(new PageRequest(0, 1));
+        if (entitys.size() > 0) {
+            ApiJarEntity entity = entitys.get(0);
+            Date jarCreateTime = entity.getCreateTime();
+            Date now = new Date();
+            long times = (now.getTime() - jarCreateTime.getTime()) / (60 * 60);
+            if (times > 0 && times <= 30) {
+                this.downloadApiJar(entity.getJarUrl());
+            }
         }
     }
 

@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
@@ -35,7 +36,7 @@ public class ZuulRouteService {
     }
 
     public List<ZuulRouteDto> loadTop10Route() {
-        return zuulRouteRepository.findTop10Route().stream().map(entity2Dto)//
+        return zuulRouteRepository.findTop10Route(new PageRequest(0, 10)).stream().map(entity2Dto)//
                                   .collect(Collectors.toList());
     }
 
