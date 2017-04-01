@@ -69,7 +69,7 @@ public class ApiJarService {
                     logger.error(e.getMessage(), e);
                 }
             }
-        }, 0, 1, TimeUnit.MINUTES);
+        }, 0, 10, TimeUnit.MINUTES);
     }
 
     private void refresh() throws IOException {
