@@ -62,7 +62,6 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
         ZuulRouteDto route = this.loadRouteFromCache();
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
-        HttpServletResponse response = ctx.getResponse();
         String jsonParam = null;
         Collection<String[]> paramValues = request.getParameterMap().values();
         for (String[] value : paramValues) {
@@ -78,19 +77,17 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
             if (jsonParam != null) break;
         }
         if (jsonParam == null) {
-            ctx.set("error.status_code", 400);
-            ctx.set("error.message", "have not find right param,param must be json");
+            ctx.setResponseStatusCode(HttpServletResponse.SC_BAD_REQUEST);
+            ctx.setResponseBody("Can not find right param, the param must be json and must be only one");
         } else {
             try {
                 String result = remoteComponent.callRemoteService(route.getServiceName(), route.getGroup(),
                                                                   route.getVersion(), route.getMethod(), jsonParam);
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.setContentType("application/json; charset=UTF-8");
-                response.getWriter().print(result);
+                ctx.setResponseStatusCode(HttpServletResponse.SC_OK);
+                ctx.setResponseBody(result);
             } catch (Throwable e) {
-                ctx.set("error.status_code", 500);
-                ctx.set("error.message", e.getMessage());
-                ctx.set("error.exception", e);
+                ctx.setResponseStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                ctx.setResponseBody(e.getMessage());
             }
         }
     }

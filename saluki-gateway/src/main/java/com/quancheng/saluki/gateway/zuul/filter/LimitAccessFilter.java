@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -68,12 +69,11 @@ public class LimitAccessFilter extends ZuulFilter {
                 if (!access(user, intervalInMills, limits)) {
                     ctx.set("LimitAccess", Boolean.FALSE);
                     ctx.setSendZuulResponse(false);
-                    ctx.setResponseStatusCode(401);
+                    ctx.setResponseStatusCode(HttpServletResponse.SC_BAD_REQUEST);
                     ctx.setResponseBody("The times of usage is limited");
                 }
             }
         } catch (Throwable e) {
-
         }
         return null;
     }
