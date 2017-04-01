@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="template/dashboard :: head('登录')">
+    <!-- This block will be replaced by template. -->
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <!-- /.login-logo -->
+    <div class="login-box-body">
+        <p class="login-box-msg">Sign in to start your session</p>
+
+        <div class="alert alert-danger" role="alert" th:if="${param.containsKey('error')}">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4><i class="icon fa fa-warning"></i> Woops!</h4>
+
+            <p class="error">Your login attempt was not successful.</p>
+        </div>
+        <div class="alert alert-danger" role="alert" th:if="${param.containsKey('authorization_error')}">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4><i class="icon fa fa-warning"></i> Woops!</h4>
+
+            <p class="error">You are not permitted to access that resource.</p>
+        </div>
+        <div class="alert alert-success" role="alert" th:if="${param.containsKey('logout')}">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4><i class="icon fa fa-check"></i> OK</h4>
+            You've signed out.
+        </div>
+        <div class="alert alert-info" role="alert">
+            <p>We've got a grand total of 2 user: admin, user. Go ahead
+                and log in. Admin's password is "admin888", and user's password is "user888".</p>
+        </div>
+        <form th:action="@{/login.html}" method="post" role="form">
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control" placeholder="Username" name="username" value="admin"/>
+                <span class="glyphicon glyphicon-user form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" class="form-control" placeholder="Password" name="password" value="admin888"/>
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+                <!-- /.col -->
+                <div class="col-xs-4 col-xs-offset-8">
+                    <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+                </div>
+                <!-- /.col -->
+            </div>
+        </form>
+    </div>
+    <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+
+<th:block th:replace="template/dashboard :: required-js-scripts">
+    <!-- This block will be replaced by template. -->
+</th:block>
+</body>
+</html>
