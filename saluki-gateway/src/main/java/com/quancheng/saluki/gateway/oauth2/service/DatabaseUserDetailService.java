@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsEntity;
-import com.quancheng.saluki.gateway.oauth2.entity.ClientLimitEntity;
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsLimitEntity;
 import com.quancheng.saluki.gateway.oauth2.repository.AccessTokenRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.UserRepository;
@@ -51,7 +51,7 @@ public class DatabaseUserDetailService implements UserDetailsService {
                                                .orElseThrow(() -> new UsernameNotFoundException("Token " + tokenId
                                                                                                 + " was not found in the database"));
         ClientDetailsEntity details = clientDetailsRepository.findOneByClientId(clientId).get();
-        ClientLimitEntity clientLimit = details.getClientLimit();
+        ClientDetailsLimitEntity clientLimit = details.getClientLimit();
 
         return new ImmutableTriple<Long, String, Long>(clientLimit.getIntervalInMills(), clientId,
                                                        clientLimit.getLimits());

@@ -49,6 +49,6 @@ public class ClientDetailsEntity extends AbstractAuditable<Long> {
     private Set<RedirectUriEntity>                            redirectUris;
 
     @OneToOne(mappedBy = "clientDetail", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private ClientLimitEntity                                 clientLimit;
+    private ClientDetailsLimitEntity                                 clientLimit;
 
 }

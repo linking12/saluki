@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
 import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsEntity;
-import com.quancheng.saluki.gateway.oauth2.entity.ClientLimitEntity;
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsLimitEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.GrantTypeEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.ScopeEntity;
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
@@ -78,7 +78,7 @@ public class DefaultClientDetailsConfig implements InitializingBean {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
             // 每隔open_api 10秒内最多只能调用3次api
             ClientDetailsEntity detailEntity = clientDetailsRepository.findOneByClientId(clientDetails.getClientId()).get();
-            ClientLimitEntity limitEntity = ClientLimitEntity.builder().intervalInMills(10000L).limits(3L).build();
+            ClientDetailsLimitEntity limitEntity = ClientDetailsLimitEntity.builder().intervalInMills(10000L).limits(3L).build();
             detailEntity.setClientLimit(limitEntity);
             limitEntity.setClientDetail(detailEntity);
             clientDetailsRepository.save(detailEntity);

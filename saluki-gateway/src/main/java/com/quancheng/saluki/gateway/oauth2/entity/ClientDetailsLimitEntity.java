@@ -34,7 +34,7 @@ import lombok.ToString;
 @Builder
 @Entity
 @Table(name = "client_detail_limit")
-public class ClientLimitEntity extends AbstractPersistable<Long> {
+public class ClientDetailsLimitEntity extends AbstractPersistable<Long> {
 
     @Column(name = "intervalInMills")
     private Long                intervalInMills;
