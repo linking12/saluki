@@ -22,8 +22,8 @@
   </div> 
   <div id="wrapper"> 
    <!-- Top Navigation --> 
-   <nav class="navbar navbar-default navbar-static-top m-b-0" th:fragment="main-header">
-    <div class="navbar-header"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:fragment="main-header"> 
+    <div class="navbar-header">
      <a class="navbar-toggle hidden-sm hidden-md hidden-lg " href="javascript:void(0)" data-toggle="collapse" data-target=".navbar-collapse"><i class="ti-menu"></i></a> 
      <div class="top-left-part">
       <a class="logo" href="index.html"><b><img th:src="@{/resources/images/eliteadmin-logo.png}" alt="home" /></b><span class="hidden-xs"><img th:src="@{/resources/images/eliteadmin-text.png}" alt="home" /></span></a>
@@ -38,19 +38,25 @@
           <b class="hidden-xs"><span sec:authentication="name"/></b>
         </a> 
        <ul class="dropdown-menu dropdown-user animated flipInY"> 
-         <sec:authentication property="authorities" var="roles" scope="page" />
-		 <c:forEach var="role" items="${roles}">
-		    <li><a href="#"><i class="ti-user"></i>${role}</a></li> 
-		 </c:forEach>
+        <form th:action="@{/logout}" method="post" name="rolefrom" role="form" sec:authorize="authenticated">
+         <li th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+            <a href="#">
+              <i class="ti-arrow-up"></i> ROLE_ADMIN
+            </a>
+         </li> 
+         <li th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
+            <a href="#">
+              <i class="ti-arrow-down"></i> ROLE_USER
+            </a>
+         </li> 
          <li role="separator" class="divider"></li> 
          <li>
-           <form th:action="@{/logout}" method="post" name="rolefrom" role="form" sec:authorize="authenticated">
-               <a href='javascript:document.rolefrom.submit();'><i class="fa fa-power-off"></i> Logout</a>
-           </form>
+           <a href='javascript:document.rolefrom.submit();'><i class="fa fa-power-off"></i> Logout</a>
          </li> 
+        </form>
        </ul> 
       </li> 
-      <li class="right-side-toggle"> <a class="waves-effect waves-light" href="javascript:void(0)"><i class="ti-settings"></i></a></li> 
+      <li class="right-side-toggle"><a class="waves-effect waves-light" href="javascript:void(0)"><i class="ti-settings"></i></a></li> 
      </ul> 
     </div> 
    </nav> 
@@ -66,18 +72,24 @@
         </span>
        </a> 
        <ul class="nav nav-second-level"> 
-         <sec:authentication property="authorities" var="roles" scope="page" />
-		 <c:forEach var="role" items="${roles}">
-		    <li><a href="#"><i class="ti-user"></i>${role}</a></li> 
-		 </c:forEach>
-         <li>
-           <form th:action="@{/logout}" method="post" name="rolefrom" role="form" sec:authorize="authenticated">
-               <a href='javascript:document.rolefrom.submit();'><i class="fa fa-power-off"></i> Logout</a>
-           </form>
+        <form th:action="@{/logout}" method="post" name="roleform" role="form" sec:authorize="authenticated">
+         <li th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+            <a href="#">
+              <i class="ti-arrow-up"></i> ROLE_ADMIN
+            </a>
          </li> 
+         <li th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
+            <a href="#">
+              <i class="ti-arrow-down"></i> ROLE_USER
+            </a>
+         </li> 
+         <li>
+             <a href='javascript:document.roleform.submit();'><i class="fa fa-power-off"></i> Logout</a>
+         </li> 
+         </form>
        </ul> 
       </li>
-      <li class="nav-small-cap m-t-10">--- Main Menu</li>
+      <li class="nav-small-cap m-t-10">&nbsp;</li>
       <li><a href="widgets.html" class="waves-effect"><i data-icon="P" class="linea-icon linea-basic fa-fw"></i> <span class="hide-menu">Token管理</span></a> </li> 
       <li><a href="index.html" class="waves-effect"><i class="linea-icon linea-basic fa-fw" data-icon="7"></i> <span class="hide-menu">用户及角色管理<span class="fa arrow"></span></span></a> 
        <ul class="nav nav-second-level"> 
