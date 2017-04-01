@@ -9,7 +9,7 @@
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-example</artifactId>
 		<version>1.5.2-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<licenses>
 		<license>
