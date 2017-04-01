@@ -45,12 +45,15 @@ public class GrpcRemoteRouteFilter extends ZuulFilter {
 
     @Override
     public Object run() {
-        ZuulRouteDto route = loadRouteFromCache();
-        Map<String, String> fieldMapping = route.getMappingField();
-        if (fieldMapping.isEmpty()) {
-            this.doJsonRun();
-        } else {
-            this.doFieldMappingRun();
+        RequestContext ctx = RequestContext.getCurrentContext();
+        if (ctx.getBoolean("LimitAccess")) {
+            ZuulRouteDto route = loadRouteFromCache();
+            Map<String, String> fieldMapping = route.getMappingField();
+            if (fieldMapping.isEmpty()) {
+                this.doJsonRun();
+            } else {
+                this.doFieldMappingRun();
+            }
         }
         return null;
     }

@@ -58,6 +58,7 @@ public class LimitAccessFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         String auth = request.getHeader("Authorization");
         String accessToken = auth.split(" ")[1];
+        ctx.set("LimitAccess", Boolean.TRUE);
         try {
             Triple<Long, String, Long> clientTriple = databaseUserDetailService.loadClientByToken(accessToken);
             String user = clientTriple.getMiddle();
@@ -65,6 +66,7 @@ public class LimitAccessFilter extends ZuulFilter {
             Long limits = clientTriple.getRight();
             if (intervalInMills != null && intervalInMills != 0l && limits != null && limits != 0l) {
                 if (!access(user, intervalInMills, limits)) {
+                    ctx.set("LimitAccess", Boolean.FALSE);
                     ctx.setSendZuulResponse(false);
                     ctx.setResponseStatusCode(401);
                     ctx.setResponseBody("The times of usage is limited");
