@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,7 +29,11 @@ public class DefaultClientDetailsConfig implements InitializingBean {
     private static final String[]              DEFAULT_GRANT_TYPES = { "authorization_code", "refresh_token",
                                                                        "password" };
 
+    private static final String                API_GRANT_TYPES     = StringUtils.join(DEFAULT_GRANT_TYPES, ",");
+
     private static final String[]              DEFAULT_SCOPES      = { "read", "write", "trust" };
+
+    private static final String                API_SCOPES          = StringUtils.join(DEFAULT_SCOPES, ",");
 
     @Autowired
     private GrantTypeRepository                grantTypeRepository;
@@ -51,31 +56,18 @@ public class DefaultClientDetailsConfig implements InitializingBean {
                                        .map(scope -> ScopeEntity.builder().value(scope).build())//
                                        .collect(Collectors.toList()));
         }
-        BaseClientDetails clientDetails = new BaseClientDetails("test-client-id", null, "read,write,trust",
-                                                                "authorization_code,refresh_token", null);
-        clientDetails.setClientSecret("test-client-id-secret-123");
+        BaseClientDetails clientDetails = new BaseClientDetails("Api", null, API_SCOPES, API_GRANT_TYPES, null);
+        clientDetails.setClientSecret("Api_Secret");
         clientDetails.setRegisteredRedirectUri(Collections.emptySet());
-
         try {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
         } catch (ClientAlreadyExistsException e) {
             logger.warn(e.getMessage());
         }
 
-        clientDetails = new BaseClientDetails("test-res-client", null, null, null, null);
-        clientDetails.setClientSecret("test-res-client-secret-123");
-        clientDetails.setRegisteredRedirectUri(Collections.singleton("http://test.com"));
-
-        try {
-            oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
-        } catch (ClientAlreadyExistsException e) {
-            logger.warn(e.getMessage());
-        }
-
-        clientDetails = new BaseClientDetails("test_password_client", null, "trust", "password", null);
-        clientDetails.setClientSecret("1234567");
+        clientDetails = new BaseClientDetails("Open_Api", null, API_SCOPES, API_GRANT_TYPES, null);
+        clientDetails.setClientSecret("Open_Api_Secret");
         clientDetails.setRegisteredRedirectUri(Collections.emptySet());
-
         try {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
         } catch (ClientAlreadyExistsException e) {
