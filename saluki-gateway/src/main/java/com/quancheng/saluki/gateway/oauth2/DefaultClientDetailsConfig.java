@@ -14,8 +14,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsEntity;
+import com.quancheng.saluki.gateway.oauth2.entity.ClientLimitEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.GrantTypeEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.ScopeEntity;
+import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.GrantTypeRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.ScopeRepository;
 import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsService;
@@ -27,7 +30,7 @@ public class DefaultClientDetailsConfig implements InitializingBean {
     private static final Logger                logger              = LoggerFactory.getLogger(DefaultClientDetailsConfig.class);
 
     private static final String[]              DEFAULT_GRANT_TYPES = { "authorization_code", "refresh_token",
-                                                                       "password" };
+                                                                       "password", "client_credentials" };
 
     private static final String                API_GRANT_TYPES     = StringUtils.join(DEFAULT_GRANT_TYPES, ",");
 
@@ -43,6 +46,9 @@ public class DefaultClientDetailsConfig implements InitializingBean {
 
     @Autowired
     private OAuth2DatabaseClientDetailsService oAuth2DatabaseClientDetailsService;
+
+    @Autowired
+    private ClientDetailsRepository            clientDetailsRepository;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -66,10 +72,16 @@ public class DefaultClientDetailsConfig implements InitializingBean {
         }
 
         clientDetails = new BaseClientDetails("open_api", null, API_SCOPES, API_GRANT_TYPES, null);
-        clientDetails.setClientSecret("opean_api");
+        clientDetails.setClientSecret("open_api");
         clientDetails.setRegisteredRedirectUri(Collections.emptySet());
         try {
             oAuth2DatabaseClientDetailsService.addClientDetails(clientDetails);
+            // 每隔open_api 10秒内最多只能调用3次api
+            ClientDetailsEntity detailEntity = clientDetailsRepository.findOneByClientId(clientDetails.getClientId()).get();
+            ClientLimitEntity limitEntity = ClientLimitEntity.builder().intervalInMills(10000L).limits(3L).build();
+            detailEntity.setClientLimit(limitEntity);
+            limitEntity.setClientDetail(detailEntity);
+            clientDetailsRepository.save(detailEntity);
         } catch (ClientAlreadyExistsException e) {
             logger.warn(e.getMessage());
         }

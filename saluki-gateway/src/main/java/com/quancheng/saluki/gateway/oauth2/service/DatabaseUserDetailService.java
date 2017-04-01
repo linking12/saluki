@@ -13,19 +13,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsEntity;
+import com.quancheng.saluki.gateway.oauth2.entity.ClientLimitEntity;
 import com.quancheng.saluki.gateway.oauth2.repository.AccessTokenRepository;
+import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
 import com.quancheng.saluki.gateway.oauth2.repository.UserRepository;
 
 @Service
 public class DatabaseUserDetailService implements UserDetailsService {
 
-    private static final String   ROLE_PREFIX = "ROLE_";
+    private static final String     ROLE_PREFIX = "ROLE_";
 
     @Autowired
-    private UserRepository        userRepository;
+    private UserRepository          userRepository;
 
     @Autowired
-    private AccessTokenRepository accessTokenRepository;
+    private AccessTokenRepository   accessTokenRepository;
+
+    @Autowired
+    private ClientDetailsRepository clientDetailsRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -39,21 +45,16 @@ public class DatabaseUserDetailService implements UserDetailsService {
                                                                               + " was not found in the database"));
     }
 
-    public Triple<Long, UserDetails, Long> loadUserByToken(String tokenId) {
-        String username = accessTokenRepository.findOneByTokenId(tokenId)//
-                                               .map(accessTokenEntity -> accessTokenEntity.getUserName())//
+    public Triple<Long, String, Long> loadClientByToken(String tokenId) {
+        String clientId = accessTokenRepository.findOneByTokenId(tokenId)//
+                                               .map(accessTokenEntity -> accessTokenEntity.getClientId())//
                                                .orElseThrow(() -> new UsernameNotFoundException("Token " + tokenId
                                                                                                 + " was not found in the database"));
-        return userRepository.findOneByUsername(username).map(userEntity -> //
-        new ImmutableTriple<Long, UserDetails, Long>(userEntity.getUserLimit() != null ? userEntity.getUserLimit().getIntervalInMills() : null, //
-                                                     new User(userEntity.getUsername(), //
-                                                              userEntity.getPassword(), //
-                                                              userEntity.getRoles().stream().map(userRoleXRef -> //
-                                                              new SimpleGrantedAuthority(prefixRoleName(userRoleXRef.getRole().getName())))//
-                                                                        .collect(Collectors.toList())), //
-                                                     userEntity.getUserLimit() != null ? userEntity.getUserLimit().getLimits() : null))//
-                             .orElseThrow(() -> new UsernameNotFoundException("Token " + tokenId
-                                                                              + " was not found in the database"));
+        ClientDetailsEntity details = clientDetailsRepository.findOneByClientId(clientId).get();
+        ClientLimitEntity clientLimit = details.getClientLimit();
+
+        return new ImmutableTriple<Long, String, Long>(clientLimit.getIntervalInMills(), clientId,
+                                                       clientLimit.getLimits());
 
     }
 

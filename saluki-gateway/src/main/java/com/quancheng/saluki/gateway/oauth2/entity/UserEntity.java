@@ -59,6 +59,4 @@ public class UserEntity extends AbstractAuditable<Long> {
     @OneToMany(mappedBy = "authority", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserAuthorityXrefEntity> authorities;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserLimitEntity              userLimit;
 }

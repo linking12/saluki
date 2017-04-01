@@ -23,10 +23,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * @author shimingliu 2017年3月31日 下午1:33:21
- * @version UserLimitEntity.java, v 0.0.1 2017年3月31日 下午1:33:21 shimingliu
+ * @author shimingliu 2017年4月1日 下午2:07:02
+ * @version ClientLimitEntity.java, v 0.0.1 2017年4月1日 下午2:07:02 shimingliu
  */
-
 @Data
 @EqualsAndHashCode(of = { "intervalInMills", "limits" }, callSuper = true)
 @ToString(of = { "intervalInMills", "limits" }, callSuper = true)
@@ -34,16 +33,16 @@ import lombok.ToString;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "user_limit")
-public class UserLimitEntity extends AbstractPersistable<Long> {
+@Table(name = "client_detail_limit")
+public class ClientLimitEntity extends AbstractPersistable<Long> {
 
     @Column(name = "intervalInMills")
-    private Long       intervalInMills;
+    private Long                intervalInMills;
 
     @Column(name = "limits")
-    private Long       limits;
+    private Long                limits;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "client_id")
+    private ClientDetailsEntity clientDetail;
 }

@@ -19,18 +19,18 @@ public class ClientDetailsEntity extends AbstractAuditable<Long> {
     @NonNull
     @NotNull
     @Column(name = "client_id", unique = true, nullable = false, length = 200)
-    private String clientId;
+    private String                                            clientId;
 
     @NonNull
     @NotNull
     @Column(name = "client_secret", nullable = false)
-    private String clientSecret;
+    private String                                            clientSecret;
 
     @Column(name = "access_token_validity_seconds")
-    private Integer accessTokenValiditySeconds;
+    private Integer                                           accessTokenValiditySeconds;
 
     @Column(name = "refresh_token_validity_seconds")
-    private Integer refreshTokenValiditySeconds;
+    private Integer                                           refreshTokenValiditySeconds;
 
     @Singular
     @OneToMany(mappedBy = "clientDetails", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
@@ -38,14 +38,17 @@ public class ClientDetailsEntity extends AbstractAuditable<Long> {
 
     @Singular
     @OneToMany(mappedBy = "clientDetails", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<ClientDetailsToScopesXrefEntity> scopeXrefs;
+    private Set<ClientDetailsToScopesXrefEntity>              scopeXrefs;
 
     @Singular
     @OneToMany(mappedBy = "clientDetails", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<ClientDetailsToResourceIdXrefEntity> resourceIdXrefs;
+    private Set<ClientDetailsToResourceIdXrefEntity>          resourceIdXrefs;
 
     @Singular("redirectUri")
     @OneToMany(mappedBy = "clientDetails", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<RedirectUriEntity> redirectUris;
+    private Set<RedirectUriEntity>                            redirectUris;
+
+    @OneToOne(mappedBy = "clientDetail", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private ClientLimitEntity                                 clientLimit;
 
 }

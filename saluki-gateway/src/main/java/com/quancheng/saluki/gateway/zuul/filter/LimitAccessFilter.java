@@ -13,8 +13,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -60,19 +58,20 @@ public class LimitAccessFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         String auth = request.getHeader("Authorization");
         String accessToken = auth.split(" ")[1];
-        Triple<Long, UserDetails, Long> userTriple = databaseUserDetailService.loadUserByToken(accessToken);
-        UserDetails user = userTriple.getMiddle();
-        Long intervalInMills = userTriple.getLeft();
-        Long limits = userTriple.getRight();
-        if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            String userName = user.getUsername();
+        try {
+            Triple<Long, String, Long> clientTriple = databaseUserDetailService.loadClientByToken(accessToken);
+            String user = clientTriple.getMiddle();
+            Long intervalInMills = clientTriple.getLeft();
+            Long limits = clientTriple.getRight();
             if (intervalInMills != null && intervalInMills != 0l && limits != null && limits != 0l) {
-                if (!access(userName, intervalInMills, limits)) {
+                if (!access(user, intervalInMills, limits)) {
                     ctx.setSendZuulResponse(false);
                     ctx.setResponseStatusCode(401);
                     ctx.setResponseBody("The times of usage is limited");
                 }
             }
+        } catch (Throwable e) {
+
         }
         return null;
     }
