@@ -1,0 +1,14 @@
+# modules
+node_modules/
+site/bower_components/
+
+# build
+.tmp/
+.public/
+# dist/
+
+# generated
+.sass-cache
+
+# debug
+npm-debug.log

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+ <head> 
+  <meta charset="utf-8" /> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  <meta name="description" content="" /> 
+  <meta name="author" content="" /> 
+  <link rel="icon" type="image/png" sizes="16x16" th:href="@{/resources/images/favicon.png}" /> 
+  <title>Saluki Gateway</title> 
+  <link rel="stylesheet" th:href="@{/resources/bootstrap/dist/css/bootstrap.min.css}" /> 
+  <link rel="stylesheet" th:href="@{/resources/plugins/sidebar-nav/dist/sidebar-nav.min.css}" /> 
+  <link rel="stylesheet" th:href="@{/resources/plugins/morrisjs/morris.css}" /> 
+  <link rel="stylesheet" th:href="@{/resources/css/animate.css}" /> 
+  <link rel="stylesheet" th:href="@{/resources/css/style.css}" /> 
+  <link id="theme" rel="stylesheet" th:href="@{/resources/css/colors/blue.css}" /> 
+ </head> 
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <!-- Top Navigation --> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0"> 
+    <div class="navbar-header"> 
+     <a class="navbar-toggle hidden-sm hidden-md hidden-lg " href="javascript:void(0)" data-toggle="collapse" data-target=".navbar-collapse"><i class="ti-menu"></i></a> 
+     <div class="top-left-part">
+      <a class="logo" href="index.html"><b><img th:src="@{/resources/images/eliteadmin-logo.png}" alt="home" /></b><span class="hidden-xs"><img th:src="@{/resources/images/eliteadmin-text.png}" alt="home" /></span></a>
+     </div> 
+     <ul class="nav navbar-top-links navbar-left hidden-xs"> 
+      <li><a href="javascript:void(0)" class="open-close hidden-xs waves-effect waves-light"><i class="icon-arrow-left-circle ti-menu"></i></a></li> 
+     </ul> 
+     <ul class="nav navbar-top-links navbar-right pull-right"> 
+      <li class="dropdown"> <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"> <img th:src="@{/resources/images/users/varun.jpg}" alt="user-img" width="36" class="img-circle" /><b class="hidden-xs">Steave</b> </a> 
+       <ul class="dropdown-menu dropdown-user animated flipInY"> 
+        <li><a href="#"><i class="ti-user"></i> My Profile</a></li> 
+        <li><a href="#"><i class="ti-wallet"></i> My Balance</a></li> 
+        <li><a href="#"><i class="ti-email"></i> Inbox</a></li> 
+        <li role="separator" class="divider"></li> 
+        <li><a href="#"><i class="ti-settings"></i> Account Setting</a></li> 
+        <li role="separator" class="divider"></li> 
+        <li><a href="#"><i class="fa fa-power-off"></i> Logout</a></li> 
+       </ul> 
+      </li> 
+      <li class="right-side-toggle"> <a class="waves-effect waves-light" href="javascript:void(0)"><i class="ti-settings"></i></a></li> 
+     </ul> 
+    </div> 
+   </nav> 
+   <div class="navbar-default sidebar" role="navigation"> 
+    <div class="sidebar-nav navbar-collapse slimscrollsidebar"> 
+     <ul class="nav" id="side-menu">
+      <li class="user-pro"> <a href="#" class="waves-effect"><img th:src="@{/resources/images/users/varun.jpg}" alt="user-img" class="img-circle" /> <span class="hide-menu"> Steve Gection<span class="fa arrow"></span></span></a> 
+       <ul class="nav nav-second-level"> 
+        <li><a href="javascript:void(0)"><i class="ti-user"></i> My Profile</a></li> 
+        <li><a href="javascript:void(0)"><i class="ti-wallet"></i> My Balance</a></li> 
+        <li><a href="javascript:void(0)"><i class="ti-email"></i> Inbox</a></li> 
+        <li><a href="javascript:void(0)"><i class="ti-settings"></i> Account Setting</a></li> 
+        <li><a href="javascript:void(0)"><i class="fa fa-power-off"></i> Logout</a></li> 
+       </ul> </li>
+      <li class="nav-small-cap m-t-10">--- Main Menu</li>
+      <li><a href="widgets.html" class="waves-effect"><i data-icon="P" class="linea-icon linea-basic fa-fw"></i> <span class="hide-menu">Token管理</span></a> </li> 
+      <li><a href="index.html" class="waves-effect"><i class="linea-icon linea-basic fa-fw" data-icon="7"></i> <span class="hide-menu">用户及角色管理<span class="fa arrow"></span></span></a> 
+       <ul class="nav nav-second-level"> 
+        <li> <a href="index.html">用户管理</a></li> 
+        <li> <a href="index.html">角色管理</a></li> 
+       </ul> </li> 
+      <li><a href="index.html" class="waves-effect"><i class="linea-icon linea-basic fa-fw" data-icon="3"></i> <span class="hide-menu">OAuth2管理<span class="fa arrow"></span></span></a> 
+       <ul class="nav nav-second-level"> 
+        <li> <a href="index.html">客户端管理</a></li> 
+        <li> <a href="index.html">授权方式管理</a></li> 
+        <li> <a href="index2.html">授权范围管理</a></li> 
+        <li> <a href="index2.html">资源Id管理</a></li> 
+       </ul> </li> 
+      <li><a href="index.html" class="waves-effect"><i class="linea-icon linea-basic fa-fw" data-icon="4"></i> <span class="hide-menu">Zuul管理<span class="fa arrow"></span></span></a> 
+       <ul class="nav nav-second-level"> 
+        <li> <a href="index.html">Rest路由管理</a> </li> 
+       </ul> 
+       <ul class="nav nav-second-level"> 
+        <li> <a href="index.html">Grpc路由管理</a> </li> 
+       </ul> </li> 
+     </ul> 
+    </div> 
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">Inbox</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a href="index.html">Dashboard</a></li> 
+        <li class="active">Inbox</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+       asdf 
+     </div> 
+    </div> 
+    <footer class="footer text-center">
+      2016 &copy; Saluki Gateway
+    </footer> 
+   </div> 
+   <!-- /#page-wrapper --> 
+  </div> 
+  <!--conent end--> 
+  <script th:src="@{/resources/plugins/jquery/dist/jquery.min.js}"></script> 
+  <script th:src="@{/resources/bootstrap/dist/js/bootstrap.min.js}"></script> 
+  <script th:src="@{/resources/plugins/sidebar-nav/dist/sidebar-nav.min.js}"></script> 
+  <script th:src="@{/resources/js/jquery.slimscroll.js}"></script> 
+  <script th:src="@{/resources/js/waves.js}"></script> 
+  <script th:src="@{/resources/js/custom.min.js}"></script> 
+  <script th:src="@{/resources/plugins/styleswitcher/jQuery.style.switcher.js}"></script>   
+ </body>
+</html>
