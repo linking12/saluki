@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
-<head th:replace="template :: head('index')"></head>
+<head th:replace="template :: head"></head>
  <body> 
   <!--content begin--> 
   <div class="preloader"> 
@@ -16,12 +16,12 @@
     <div class="container-fluid"> 
      <div class="row bg-title"> 
       <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
-       <h4 class="page-title">Inbox</h4> 
+       <h4 class="page-title">Token管理</h4> 
       </div> 
       <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
        <ol class="breadcrumb"> 
-        <li><a href="index.html">Dashboard</a></li> 
-        <li class="active">Inbox</li> 
+        <li><a href="/gateway">Token管理</a></li> 
+        <li class="active">Token管理</li> 
        </ol> 
       </div> 
      </div> 
