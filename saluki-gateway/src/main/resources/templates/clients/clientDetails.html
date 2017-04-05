@@ -73,10 +73,13 @@
                                   <button type="button" class="btn btn-default btn-outline" data-toggle="collapse"
                                                     th:attr="data-target=|#redirect-uri-${clientDetails.id}|,aria-controls=|redirect-uri-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
                             </td>
-                            <td>
-                                <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-danger" th:attr="data-remove-confirm=|确认要删除客户端 ${clientDetails.clientId} 吗？|"
-                                   href="#" th:href="@{|/clientDetails.html/_remove/${clientDetails.clientId}|}" role="button">删除</a>
-                                <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-warning" href="#" th:href="@{'' (edit=${clientDetails.clientId})}" role="button">编辑</a>
+                            <td class="text-nowrap">
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{'' (edit=${clientDetails.clientId})}" data-toggle="tooltip" data-original-title="Edit"> 
+                                <i class="fa fa-pencil text-inverse m-r-10"></i> 
+                              </a> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{|/clientDetails.html/_remove/${clientDetails.clientId}|}" data-toggle="tooltip" data-original-title="Close"> 
+                                <i class="fa fa-close text-danger"></i> 
+                              </a> 
                             </td>
                         </tr>
                         <tr>
