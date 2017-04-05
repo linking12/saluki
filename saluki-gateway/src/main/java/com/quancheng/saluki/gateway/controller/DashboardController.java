@@ -10,7 +10,7 @@ public class DashboardController {
 
     @GetMapping
     public String indexPage() {
-        return "index";
+        return "redirect:/oauth/tokens";
     }
 
     @GetMapping("/login.html")

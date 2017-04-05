@@ -1,5 +1,9 @@
 package com.quancheng.saluki.gateway.controller;
 
+import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addErrorMessage;
+import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addSuccessMessage;
+import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addWarningMessage;
+
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringReader;
@@ -10,11 +14,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.NoSuchClientException;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.stereotype.Controller;
@@ -36,8 +40,6 @@ import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsSe
 
 import lombok.extern.slf4j.Slf4j;
 
-import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.*;
-
 @Slf4j
 @Controller
 @RequestMapping("/clientDetails")
@@ -55,9 +57,6 @@ public class ClientDetailsAdminController {
 
     @Autowired
     private ResourceIdRepository               resourceIdRepository;
-
-    @Autowired
-    private PasswordEncoder                    passwordEncoder;
 
     @Autowired
     private OAuth2DatabaseClientDetailsService clientDetailsService;

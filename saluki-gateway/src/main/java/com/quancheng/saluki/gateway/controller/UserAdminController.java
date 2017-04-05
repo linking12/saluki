@@ -52,7 +52,6 @@ public class UserAdminController {
         model.addAttribute("roles", roleRepository.findAll());
         if (!StringUtils.isEmpty(editUsername)) {
             model.addAttribute("editUser", userRepository.findOneByUsername(editUsername).map(userEntity -> {
-                // convert userEntity -> user(map)
                 Map<String, Object> editUserMap = new HashMap<>();
                 editUserMap.put("username", userEntity.getUsername());
                 editUserMap.put("roles",

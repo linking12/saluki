@@ -26,6 +26,7 @@ public final class RedirectMessageHelper {
         addMessage(attributes, "successMessages", message);
     }
 
+    @SuppressWarnings("unchecked")
     public static void addMessage(RedirectAttributes attributes, String type, String message) {
         if (attributes.getFlashAttributes().keySet().contains(type)) {
             ((List<String>) attributes.getFlashAttributes().get(type)).add(message);

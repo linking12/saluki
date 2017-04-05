@@ -24,35 +24,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
-import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsService;
-
 
 @Controller
 @PreAuthorize("hasRole('ROLE_ADMIN')")
-public class AdminController {
+public class TokenController {
 
     @Autowired
-    // N.B. the @Qualifier here should not be necessary (gh-298) but lots of users report
-    // needing it.
     @Qualifier("consumerTokenServices")
-    private ConsumerTokenServices tokenServices;
+    private ConsumerTokenServices   tokenServices;
 
     @Autowired
-    private OAuth2DatabaseClientDetailsService clientDetails;
-
-    @Autowired
-    private TokenStore tokenStore;
+    private TokenStore              tokenStore;
 
     @Autowired
     private ClientDetailsRepository clientDetailsRepository;
 
-
-    @RequestMapping(value = "/oauth/tokens", produces = {"application/json"})
+    @RequestMapping(value = "/oauth/tokens", produces = { "application/json" })
     @ResponseBody
     public HashMap<String, Collection<OAuth2AccessToken>> listAllTokens() {
         HashMap<String, Collection<OAuth2AccessToken>> result = new HashMap<String, Collection<OAuth2AccessToken>>();
         clientDetailsRepository.findAll().forEach(entity -> result.put(entity.getClientId(),
-                enhance(tokenStore.findTokensByClientId(entity.getClientId()))));
+                                                                       enhance(tokenStore.findTokensByClientId(entity.getClientId()))));
         return result;
     }
 
@@ -60,12 +52,12 @@ public class AdminController {
     public String tokenAdminPage(Model model) {
         HashMap<String, Collection<OAuth2AccessToken>> result = listAllTokens();
         model.addAttribute("tokensList", result);
-        return "admin";
+        return "tokens";
     }
 
     @RequestMapping(value = "/oauth/tokens/revoke", method = RequestMethod.POST)
-    public String revokeToken(@RequestParam("user") String user,
-                              @RequestParam("token") String token, Principal principal) throws Exception {
+    public String revokeToken(@RequestParam("user") String user, @RequestParam("token") String token,
+                              Principal principal) throws Exception {
         checkResourceOwner(user, principal);
         if (tokenServices.revokeToken(token)) {
             return "redirect:/oauth/tokens?revoke-success";
@@ -78,9 +70,8 @@ public class AdminController {
         if (principal instanceof OAuth2Authentication) {
             OAuth2Authentication authentication = (OAuth2Authentication) principal;
             if (!authentication.isClientOnly() && !user.equals(principal.getName())) {
-                throw new AccessDeniedException(
-                        String.format("User '%s' cannot obtain tokens for user '%s'",
-                                principal.getName(), user));
+                throw new AccessDeniedException(String.format("User '%s' cannot obtain tokens for user '%s'",
+                                                              principal.getName(), user));
             }
         }
     }
@@ -97,8 +88,7 @@ public class AdminController {
             if (StringUtils.isEmpty(userName)) {
                 userName = "Unknown";
             }
-            Map<String, Object> map = new HashMap<String, Object>(
-                    token.getAdditionalInformation());
+            Map<String, Object> map = new HashMap<String, Object>(token.getAdditionalInformation());
             map.put("user_name", userName);
             token.setAdditionalInformation(map);
             result.add(token);
