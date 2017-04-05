@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
-@RequestMapping("/clientDetails")
+@RequestMapping("/clientDetails.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class ClientDetailsAdminController {
 

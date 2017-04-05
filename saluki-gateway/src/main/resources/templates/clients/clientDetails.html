@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+<head th:replace="template :: head"></head>
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:replace="template :: main-header">
+   </nav>   
+   <div class="navbar-default sidebar" role="navigation" th:replace="template :: main-sidebar">
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">客户端管理</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a th:href="@{/clientDetails.html}">OAuth2管理</a></li> 
+        <li class="active">客户端管理</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+          <div class="white-box">
+            <div class="table-responsive">
+	            <table id="myTable" class="table table-striped">
+	              <thead>
+	                <tr>
+                        <th>#</th>
+                        <th>客户端ID</th>
+                        <th>AccessToken<br/>有效秒数</th>
+                        <th>RefreshToken<br/>有效秒数</th>
+                        <th>授权方式</th>
+                        <th>授权范围</th>
+                        <th>可用资源ID</th>
+                        <th>已注册<br/>跳转URI</th>
+                        <th>操作</th>
+                    </tr>
+	              </thead>
+	              <th:block th:each="clientDetails, iterStat : ${clientDetailsList}">
+                        <tr>
+                            <td th:text="${clientDetails.id}" rowspan="2">#</td>
+                            <td th:text="${clientDetails.clientId}" rowspan="2">客户端ID</td>
+                            <td th:text="${clientDetails.accessTokenValiditySeconds}">AccessToken<br/>有效秒数</td>
+                            <td th:text="${clientDetails.refreshTokenValiditySeconds}">RefreshToken<br/>有效秒数</td>
+                            <td>
+                                <span class="label label-primary" th:each="xref : ${clientDetails.authorizedGrantTypeXrefs}" th:text="${xref.grantType.value}">授权方式</span>
+                            </td>
+                            <td>
+                                <span class="label label-info" th:each="xref : ${clientDetails.scopeXrefs}" th:inline="text">[[${xref.scope.value}]]&nbsp;<span class="glyphicon glyphicon-ok" th:if="${xref.autoApprove}" data-toggle="tooltip" title="自动授权"></span></span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-default" data-toggle="collapse"
+                                        th:attr="data-target=|#resource-id-${clientDetails.id}|,aria-controls=|resource-id-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-default" data-toggle="collapse"
+                                        th:attr="data-target=|#redirect-uri-${clientDetails.id}|,aria-controls=|redirect-uri-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
+                            </td>
+                            <td>
+                                <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-danger" th:attr="data-remove-confirm=|确认要删除客户端 ${clientDetails.clientId} 吗？|"
+                                   href="#" th:href="@{|/clientDetails.html/_remove/${clientDetails.clientId}|}" role="button">删除</a>
+                                <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-warning" href="#" th:href="@{'' (edit=${clientDetails.clientId})}" role="button">编辑</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7">
+                                <div class="collapse" th:attr="id=|resource-id-${clientDetails.id}|">
+                                    <h6>可用资源ID</h6>
+                                    <span class="label label-success" th:each="xref : ${clientDetails.resourceIdXrefs}" th:text="${xref.resourceId.value}">可用资源ID</span>
+                                </div>
+                                <hr/>
+                                <div class="collapse" th:attr="id=|redirect-uri-${clientDetails.id}|">
+                                    <h6>已注册跳转URI</h6>
+                                    <ul>
+                                        <li th:each="urlXref, urlXrefIterStat : ${clientDetails.redirectUris}" th:text="${urlXref.value}">url</li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                   </th:block>
+	            </table>
+            </div>
+          </div>
+     </div> 
+    </div> 
+    <footer class="main-footer" th:replace="template :: main-footer">
+    </footer>
+   </div> 
+  </div> 
+ <th:block th:replace="template :: required-js-scripts">
+ </th:block>
+ </body>
+</html>
