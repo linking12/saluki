@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class RedirectMessageHelper {
-    private RedirectMessageHelper() {
-    }
 
+    private RedirectMessageHelper(){
+    }
 
     public static void addErrorMessage(RedirectAttributes attributes, String errorMessage) {
         addMessage(attributes, "dangerMessages", errorMessage);
