@@ -119,56 +119,56 @@ public class ClientDetailsAdminController {
             addErrorMessage(attributes, "客户端ID " + clientId + " 已存在。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         if (!PASSWORD_WORD_PATTERN.matcher(clientSecret).matches()) {
             addErrorMessage(attributes, "客户端密码含有非法字符。（只能使用[a-zA-Z0-9]，至少6位）");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         if (accessTokenValiditySeconds != null && accessTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "AccessToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "RefreshToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         // 检查授权方式
         if (!checkGrantTypeValidation(grantTypes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         // 检查授权范围
         if (!checkScopeValidation(scopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         // 检查自动授权范围
         if (!checkScopeValidation(autoApproveScopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         // 检查资源ID
         if (!checkResourceIdValidation(resourceIds, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html";
         }
 
         Set<String> redirectUrisList = new HashSet<>();
@@ -203,7 +203,7 @@ public class ClientDetailsAdminController {
 
         addSuccessMessage(attributes, "客户端 " + clientId + " 注册成功。");
 
-        return "redirect:/clientDetails";
+        return "redirect:/clientDetails.html";
     }
 
     @RequestMapping(path = "/_update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
@@ -223,7 +223,7 @@ public class ClientDetailsAdminController {
             addErrorMessage(attributes, "找不到客户端ID " + clientId);
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         if (!StringUtils.isEmpty(clientSecret)) {
@@ -231,7 +231,7 @@ public class ClientDetailsAdminController {
                 addErrorMessage(attributes, "客户端密码含有非法字符。（只能使用[a-zA-Z0-9]，至少6位）");
                 resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes,
                                    scopes, autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-                return "redirect:/clientDetails?edit=" + clientId;
+                return "redirect:/clientDetails.html?edit=" + clientId;
             }
         }
 
@@ -239,42 +239,42 @@ public class ClientDetailsAdminController {
             addErrorMessage(attributes, "AccessToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "RefreshToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查授权方式
         if (!checkGrantTypeValidation(grantTypes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查授权范围
         if (!checkScopeValidation(scopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查自动授权范围
         if (!checkScopeValidation(autoApproveScopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查资源ID
         if (!checkResourceIdValidation(resourceIds, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails?edit=" + clientId;
+            return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         Set<String> redirectUrisList = new HashSet<>();
@@ -313,7 +313,7 @@ public class ClientDetailsAdminController {
 
         addSuccessMessage(attributes, "客户端 " + clientId + " 更新成功。");
 
-        return "redirect:/clientDetails";
+        return "redirect:/clientDetails.html";
     }
 
     private boolean checkGrantTypeValidation(List<String> grantTypes, RedirectAttributes attributes) {
@@ -382,7 +382,7 @@ public class ClientDetailsAdminController {
             addWarningMessage(attributes, "没有找到客户端ID " + clientId + " 对应的客户端。");
         }
 
-        return "redirect:/clientDetails";
+        return "redirect:/clientDetails.html";
     }
 
 }

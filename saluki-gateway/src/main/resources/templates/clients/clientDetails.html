@@ -41,24 +41,37 @@
                         <th>操作</th>
                     </tr>
 	              </thead>
-	              <th:block th:each="clientDetails, iterStat : ${clientDetailsList}">
+	              <tbody>
+	                  <th:block th:each="clientDetails, iterStat : ${clientDetailsList}">
                         <tr>
-                            <td th:text="${clientDetails.clientId}" rowspan="2">客户端ID</td>
-                            <td th:text="${clientDetails.accessTokenValiditySeconds}">AccessToken<br/>有效秒数</td>
-                            <td th:text="${clientDetails.refreshTokenValiditySeconds}">RefreshToken<br/>有效秒数</td>
+                            <td th:text="${clientDetails.clientId}"/>
+                            <td th:text="${clientDetails.accessTokenValiditySeconds}"/>
+                            <td th:text="${clientDetails.refreshTokenValiditySeconds}"/>
                             <td>
-                                <span class="label label-primary" th:each="xref : ${clientDetails.authorizedGrantTypeXrefs}" th:text="${xref.grantType.value}">授权方式</span>
+                              <ul class="common-list">
+		                          <li th:each="xref : ${clientDetails.authorizedGrantTypeXrefs}" th:inline="text">
+		                            <a href="javascript:void(0)"><i class="fa fa-check text-success"></i>
+		                             [[${xref.grantType.value}]]
+		                            </a>
+		                          </li>
+                              </ul>
                             </td>
                             <td>
-                                <span class="label label-info" th:each="xref : ${clientDetails.scopeXrefs}" th:inline="text">[[${xref.scope.value}]]&nbsp;<span class="glyphicon glyphicon-ok" th:if="${xref.autoApprove}" data-toggle="tooltip" title="自动授权"></span></span>
+                              <ul class="common-list">
+		                          <li th:each="xref : ${clientDetails.scopeXrefs}" th:inline="text">
+		                            <a href="javascript:void(0)"><i class="fa fa-check text-success"></i>
+		                             [[${xref.scope.value}]]
+		                            </a>
+		                          </li>
+                              </ul>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-default" data-toggle="collapse"
-                                        th:attr="data-target=|#resource-id-${clientDetails.id}|,aria-controls=|resource-id-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
+                                  <button type="button" class="btn btn-default btn-outline" data-toggle="collapse"
+                                                    th:attr="data-target=|#resource-id-${clientDetails.id}|,aria-controls=|resource-id-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-default" data-toggle="collapse"
-                                        th:attr="data-target=|#redirect-uri-${clientDetails.id}|,aria-controls=|redirect-uri-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
+                                  <button type="button" class="btn btn-default btn-outline" data-toggle="collapse"
+                                                    th:attr="data-target=|#redirect-uri-${clientDetails.id}|,aria-controls=|redirect-uri-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
                             </td>
                             <td>
                                 <a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-danger" th:attr="data-remove-confirm=|确认要删除客户端 ${clientDetails.clientId} 吗？|"
@@ -67,21 +80,25 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="7">
-                                <div class="collapse" th:attr="id=|resource-id-${clientDetails.id}|">
-                                    <h6>可用资源ID</h6>
-                                    <span class="label label-success" th:each="xref : ${clientDetails.resourceIdXrefs}" th:text="${xref.resourceId.value}">可用资源ID</span>
-                                </div>
-                                <hr/>
-                                <div class="collapse" th:attr="id=|redirect-uri-${clientDetails.id}|">
-                                    <h6>已注册跳转URI</h6>
-                                    <ul>
-                                        <li th:each="urlXref, urlXrefIterStat : ${clientDetails.redirectUris}" th:text="${urlXref.value}">url</li>
-                                    </ul>
-                                </div>
+                            <td colspan="4">
+                                 <div class="collapse" th:attr="id=|resource-id-${clientDetails.id}|">
+                                   <h3 class="box-title">可用资源ID</h3>
+                                   <span class="label label-success" th:each="xref : ${clientDetails.resourceIdXrefs}" th:text="${xref.resourceId.value}"/>
+                                 </div>
                             </td>
-                        </tr>
-                   </th:block>
+                            <td colspan="4">
+                                 <div class="collapse" th:attr="id=|redirect-uri-${clientDetails.id}|">
+                                    <h3 class="box-title">已注册跳转URI</h3>
+                                    <ul class="list-group">
+					                  <li class="list-group-item list-group-item-success" th:each="urlXref, urlXrefIterStat : ${clientDetails.redirectUris}" th:inline="text">
+					                   [[${urlXref.value}]]
+					                  </li>
+                                    </ul>
+                                 </div>
+                            </td>
+                         </tr>
+                       </th:block>
+                   </tbody>
 	            </table>
             </div>
           </div>
