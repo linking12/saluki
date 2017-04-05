@@ -31,7 +31,6 @@
 	            <table id="myTable" class="table table-striped">
 	              <thead>
 	                <tr>
-                        <th>#</th>
                         <th>客户端ID</th>
                         <th>AccessToken<br/>有效秒数</th>
                         <th>RefreshToken<br/>有效秒数</th>
@@ -44,7 +43,6 @@
 	              </thead>
 	              <th:block th:each="clientDetails, iterStat : ${clientDetailsList}">
                         <tr>
-                            <td th:text="${clientDetails.id}" rowspan="2">#</td>
                             <td th:text="${clientDetails.clientId}" rowspan="2">客户端ID</td>
                             <td th:text="${clientDetails.accessTokenValiditySeconds}">AccessToken<br/>有效秒数</td>
                             <td th:text="${clientDetails.refreshTokenValiditySeconds}">RefreshToken<br/>有效秒数</td>
