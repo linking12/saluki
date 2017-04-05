@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/")
-public class DashboardController {
+public class IndexController {
 
     @GetMapping
     public String indexPage() {
-        return "redirect:/oauth/tokens";
+        return "redirect:/oauth/tokens.html";
     }
 
     @GetMapping("/login.html")

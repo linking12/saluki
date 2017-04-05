@@ -21,12 +21,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
 
 @Controller
-@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class TokenController {
 
     @Autowired
@@ -39,23 +37,22 @@ public class TokenController {
     @Autowired
     private ClientDetailsRepository clientDetailsRepository;
 
-    @RequestMapping(value = "/oauth/tokens", produces = { "application/json" })
-    @ResponseBody
-    public HashMap<String, Collection<OAuth2AccessToken>> listAllTokens() {
+    private HashMap<String, Collection<OAuth2AccessToken>> listAllTokens() {
         HashMap<String, Collection<OAuth2AccessToken>> result = new HashMap<String, Collection<OAuth2AccessToken>>();
         clientDetailsRepository.findAll().forEach(entity -> result.put(entity.getClientId(),
                                                                        enhance(tokenStore.findTokensByClientId(entity.getClientId()))));
         return result;
     }
 
-    @RequestMapping("/oauth/tokens")
+    @RequestMapping("/oauth/tokens.html")
     public String tokenAdminPage(Model model) {
         HashMap<String, Collection<OAuth2AccessToken>> result = listAllTokens();
         model.addAttribute("tokensList", result);
         return "tokens";
     }
 
-    @RequestMapping(value = "/oauth/tokens/revoke", method = RequestMethod.POST)
+    @RequestMapping(value = "/oauth/tokens/revoke.html", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String revokeToken(@RequestParam("user") String user, @RequestParam("token") String token,
                               Principal principal) throws Exception {
         checkResourceOwner(user, principal);
