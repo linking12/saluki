@@ -57,9 +57,9 @@ public class TokenController {
                               Principal principal) throws Exception {
         checkResourceOwner(user, principal);
         if (tokenServices.revokeToken(token)) {
-            return "redirect:/oauth/tokens?revoke-success";
+            return "redirect:/oauth/tokens.html?revoke-success";
         } else {
-            return "redirect:/oauth/tokens?revoke-empty";
+            return "redirect:/oauth/tokens.html?revoke-empty";
         }
     }
 

@@ -56,7 +56,7 @@
 	                   <td th:text="${token.scope}"/>
 	                   <td th:text="${token.refreshToken}"/>
 	                   <td>
-		                  <form th:action="@{/oauth/tokens/revoke}" method="post">
+		                  <form th:action="@{/oauth/tokens/revoke.html}" method="post">
 	                        <input type="hidden" name="user" th:value="${token.additionalInformation.user_name}" />
 	                        <input type="hidden" name="token" th:value="${token.value}" />
 	                        <button type="submit" class="btn btn-danger">Revoke</button>
