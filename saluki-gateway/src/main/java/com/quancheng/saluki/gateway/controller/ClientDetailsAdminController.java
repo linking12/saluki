@@ -63,33 +63,38 @@ public class ClientDetailsAdminController {
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
                                                              MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String listAll(@RequestParam(name = "edit", required = false) String editClientDetails, Model model,
+    public String listAll(@RequestParam(name = "type", required = false) String editType,
+                          @RequestParam(name = "edit", required = false) String editClientDetails, Model model,
                           Pageable pageable) {
 
-        if (!StringUtils.isEmpty(editClientDetails)) {
-            clientDetailsRepository.findOneByClientId(editClientDetails).map(clientDetailsEntity -> {
+        if (!StringUtils.isEmpty(editType)) {
+            if (!StringUtils.isEmpty(editClientDetails)) {
+                clientDetailsRepository.findOneByClientId(editClientDetails).map(clientDetailsEntity -> {
 
-                model.addAttribute("clientId", clientDetailsEntity.getClientId());
-                model.addAttribute("accessTokenValiditySeconds", clientDetailsEntity.getAccessTokenValiditySeconds());
-                model.addAttribute("refreshTokenValiditySeconds", clientDetailsEntity.getRefreshTokenValiditySeconds());
-                model.addAttribute("selectedGrantTypes",
-                                   clientDetailsEntity.getAuthorizedGrantTypeXrefs().stream().map(xref -> xref.getGrantType().getValue()).collect(Collectors.toList()));
-                model.addAttribute("selectedScopes",
-                                   clientDetailsEntity.getScopeXrefs().stream().map(xref -> xref.getScope().getValue()).collect(Collectors.toList()));
-                model.addAttribute("selectedAutoApproveScopes",
-                                   clientDetailsEntity.getScopeXrefs().stream().filter(ClientDetailsToScopesXrefEntity::getAutoApprove).map(xref -> xref.getScope().getValue()).collect(Collectors.toList()));
-                model.addAttribute("selectedResourceIds",
-                                   clientDetailsEntity.getResourceIdXrefs().stream().map(xref -> xref.getResourceId().getValue()).collect(Collectors.toList()));
-                model.addAttribute("redirectUris",
-                                   clientDetailsEntity.getRedirectUris().stream().map(RedirectUriEntity::getValue).collect(Collectors.joining(System.lineSeparator())));
-                return null;
-            });
+                    model.addAttribute("clientId", clientDetailsEntity.getClientId());
+                    model.addAttribute("accessTokenValiditySeconds",
+                                       clientDetailsEntity.getAccessTokenValiditySeconds());
+                    model.addAttribute("refreshTokenValiditySeconds",
+                                       clientDetailsEntity.getRefreshTokenValiditySeconds());
+                    model.addAttribute("selectedGrantTypes",
+                                       clientDetailsEntity.getAuthorizedGrantTypeXrefs().stream().map(xref -> xref.getGrantType().getValue()).collect(Collectors.toList()));
+                    model.addAttribute("selectedScopes",
+                                       clientDetailsEntity.getScopeXrefs().stream().map(xref -> xref.getScope().getValue()).collect(Collectors.toList()));
+                    model.addAttribute("selectedAutoApproveScopes",
+                                       clientDetailsEntity.getScopeXrefs().stream().filter(ClientDetailsToScopesXrefEntity::getAutoApprove).map(xref -> xref.getScope().getValue()).collect(Collectors.toList()));
+                    model.addAttribute("selectedResourceIds",
+                                       clientDetailsEntity.getResourceIdXrefs().stream().map(xref -> xref.getResourceId().getValue()).collect(Collectors.toList()));
+                    model.addAttribute("redirectUris",
+                                       clientDetailsEntity.getRedirectUris().stream().map(RedirectUriEntity::getValue).collect(Collectors.joining(System.lineSeparator())));
+                    return null;
+                });
+            }
+            model.addAttribute("grantTypes", grantTypeRepository.findAll());
+            model.addAttribute("scopes", scopeRepository.findAll());
+            model.addAttribute("resourceIds", resourceIdRepository.findAll());
+            return "clients/clientDetail";
         }
-
         model.addAttribute("clientDetailsList", clientDetailsRepository.findAll(pageable));
-        model.addAttribute("grantTypes", grantTypeRepository.findAll());
-        model.addAttribute("scopes", scopeRepository.findAll());
-        model.addAttribute("resourceIds", resourceIdRepository.findAll());
         return "clients/clientDetails";
     }
 

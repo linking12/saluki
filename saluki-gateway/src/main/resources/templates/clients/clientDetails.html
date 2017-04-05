@@ -26,8 +26,9 @@
       </div> 
      </div> 
      <div class="row">
+          
           <div class="white-box">
-            <div class="table-responsive">
+            <div class="dataTables_wrapper">
 	            <table id="myTable" class="table table-striped">
 	              <thead>
 	                <tr>
@@ -74,10 +75,13 @@
                                                     th:attr="data-target=|#redirect-uri-${clientDetails.id}|,aria-controls=|redirect-uri-${clientDetails.id}|" aria-expanded="false" >点击查看</button>
                             </td>
                             <td class="text-nowrap">
-                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{'' (edit=${clientDetails.clientId})}" data-toggle="tooltip" data-original-title="Edit"> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{'' (type=add)}" data-toggle="tooltip" data-original-title="Add"> 
+                                <i class="fa fa-plus text-inverse m-r-10"></i> 
+                              </a> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{''(type=edit,edit=${clientDetails.clientId})}" data-toggle="tooltip" data-original-title="Edit"> 
                                 <i class="fa fa-pencil text-inverse m-r-10"></i> 
                               </a> 
-                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{|/clientDetails.html/_remove/${clientDetails.clientId}|}" data-toggle="tooltip" data-original-title="Close"> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{|/clientDetails.html/_remove/${clientDetails.clientId}|}" data-toggle="tooltip" data-original-title="Remove"> 
                                 <i class="fa fa-close text-danger"></i> 
                               </a> 
                             </td>
