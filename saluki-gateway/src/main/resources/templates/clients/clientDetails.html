@@ -35,6 +35,7 @@
 	              <thead>
 	                <tr>
                         <th>客户端ID</th>
+                        <th>客户端Secret</th>
                         <th>AccessToken<br/>有效秒数</th>
                         <th>RefreshToken<br/>有效秒数</th>
                         <th>授权方式</th>
@@ -48,6 +49,7 @@
 	                  <th:block th:each="clientDetails, iterStat : ${clientDetailsList}">
                         <tr>
                             <td th:text="${clientDetails.clientId}"/>
+                            <td th:text="${clientDetails.clientSecret}"/>
                             <td th:text="${clientDetails.accessTokenValiditySeconds}"/>
                             <td th:text="${clientDetails.refreshTokenValiditySeconds}"/>
                             <td>
