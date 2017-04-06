@@ -26,11 +26,15 @@
       </div> 
      </div> 
      <div class="row">
+          <div class="white-box" th:replace="template :: alerts"/>
+      </div>
+     <div class="row">
+        <div class="white-box">
         <div class="panel panel-info">
            <div class="panel-heading" th:text="${param.containsKey('edit')?'编辑客户端':'增加客户端'}"/>
            <div class="panel-wrapper collapse in" aria-expanded="true">
               <div class="panel-body">
-                  <form th:action="${param.containsKey('edit')}? @{/clientDetails/_update} : @{/clientDetails/_create}" method="post">
+                  <form th:action="${param.containsKey('edit')}? @{/clientDetails.html/_update} : @{/clientDetails.html/_create}" method="post">
 		              <div class="form-body">
 				                <div class="row">
 				                  <div class="col-md-6">
@@ -144,6 +148,7 @@
      </div> 
      <footer class="main-footer" th:replace="template :: main-footer"/>
      </div> 
+    </div>
   </div> 
  <th:block th:replace="template :: required-js-scripts">
  </th:block>

@@ -117,63 +117,63 @@ public class ClientDetailsAdminController {
             addErrorMessage(attributes, "客户端ID " + clientId + " 含有非法字符。（只能使用[a-zA-Z0-9_]）");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         if (clientDetailsRepository.findOneByClientId(clientId).isPresent()) {
             addErrorMessage(attributes, "客户端ID " + clientId + " 已存在。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         if (!PASSWORD_WORD_PATTERN.matcher(clientSecret).matches()) {
             addErrorMessage(attributes, "客户端密码含有非法字符。（只能使用[a-zA-Z0-9]，至少6位）");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         if (accessTokenValiditySeconds != null && accessTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "AccessToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "RefreshToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查授权方式
         if (!checkGrantTypeValidation(grantTypes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查授权范围
         if (!checkScopeValidation(scopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查自动授权范围
         if (!checkScopeValidation(autoApproveScopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查资源ID
         if (!checkResourceIdValidation(resourceIds, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
-            return "redirect:/clientDetails.html";
+            return "redirect:/clientDetails.html?type=add";
         }
 
         Set<String> redirectUrisList = new HashSet<>();

@@ -127,8 +127,27 @@
       </div> 
      </div> 
      <div class="row">
-      asdf
-     </div> 
+        <div class="col-md-12">
+          <div th:fragment="alerts">
+            <div class="alert alert-success alert-dismissable" th:each="message : ${#objects.nullSafe(successMessages, {})}" >
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                 <span th:text="${message}">您有一条新消息。(success)</span>
+            </div>
+            <div class="alert alert-info alert-dismissable" th:each="message : ${#objects.nullSafe(infoMessages, #objects.nullSafe(messages, {}))}" >
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <span th:text="${message}">您有一条新消息。(info)</span>
+            </div>
+            <div class="alert alert-warning alert-dismissable" th:each="message : ${#objects.nullSafe(warningMessages, {})}" >
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <span th:text="${message}">您有一条新消息。(warning)</span>
+            </div>
+            <div class="alert alert-danger alert-dismissable" th:each="message : ${#objects.nullSafe(dangerMessages, {})}" >
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <span th:text="${message}">您有一条新消息。(danger)</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div> 
     <footer class="footer text-center" th:fragment="main-footer">
       2016 &copy; Saluki Gateway
