@@ -30,19 +30,20 @@
            <div class="panel-heading" th:text="${param.containsKey('edit')?'编辑客户端':'增加客户端'}"/>
            <div class="panel-wrapper collapse in" aria-expanded="true">
               <div class="panel-body">
-                  <form action="#">
+                  <form th:action="${param.containsKey('edit')}? @{/clientDetails/_update} : @{/clientDetails/_create}" method="post">
 		              <div class="form-body">
 				                <div class="row">
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">客户端Id</label>
-				                      <input type="text" id="firstName" class="form-control" placeholder="客户端Id"/>
+				                      <input type="text" class="form-control" id="clientId" name="clientId" placeholder="客户端ID" required="required" th:value="${clientId}" th:disabled="${param['edit']}" />
+                                      <input type="hidden" name="clientId" th:value="${clientId}" th:if="${param.containsKey('edit')}" />
 				                     </div>
 				                  </div>
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">客户端Secret</label>
-				                      <input type="text" id="lastName" class="form-control" placeholder="客户端密码"/>
+				                       <input type="text" class="form-control" id="clientSecret" name="clientSecret" placeholder="客户端密码" required="required" th:required="not ${param['edit']}" />
 				                    </div>
 				                  </div>
 				                </div>
@@ -50,26 +51,23 @@
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">AccessToken有效秒数</label>
-				                      <input type="text" id="firstName" class="form-control" placeholder="AccessToken有效秒数"/>
+				                      <input type="number" class="form-control" id="accessTokenValiditySeconds" name="accessTokenValiditySeconds" placeholder="AccessToken有效秒数" th:value="${accessTokenValiditySeconds}" />
 				                     </div>
 				                  </div>
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">RefreshToken有效秒数</label>
-				                      <input type="text" id="lastName" class="form-control" placeholder="RefreshToken有效秒数"/>
+				                       <input type="number" class="form-control" id="refreshTokenValiditySeconds" name="refreshTokenValiditySeconds" placeholder="RefreshToken有效秒数" th:value="${refreshTokenValiditySeconds}" />
 				                    </div>
 				                  </div>
 				                </div>
 				                <div class="row">
 				                  <div class="col-md-12">
 				                    <div class="form-group">
-				                      <label class="control-label">授权方式</label>
-				                      <select class="form-control" data-placeholder="授权方式" tabindex="1">
-				                        <option value="Category 1">Category 1</option>
-				                        <option value="Category 2">Category 2</option>
-				                        <option value="Category 3">Category 5</option>
-				                        <option value="Category 4">Category 4</option>
-				                      </select>
+				                       <label class="control-label">授权方式</label>
+				                       <select class="selectpicker" name="grantTypes" multiple="multiple" data-style="form-control">
+							                <option th:each="grantType : ${grantTypes}" th:value="${grantType.value}" th:selected="${#lists.contains(#objects.nullSafe(selectedGrantTypes, {}), grantType.value)}" th:text="${grantType.value}">授权方式</option>
+                					   </select>
 				                    </div>
 				                  </div>
 				                </div>
@@ -77,59 +75,35 @@
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">授权范围</label>
-				                      <select class="form-control" data-placeholder="授权范围" tabindex="1">
-				                        <option value="Category 1">Category 1</option>
-				                        <option value="Category 2">Category 2</option>
-				                        <option value="Category 3">Category 5</option>
-				                        <option value="Category 4">Category 4</option>
-				                      </select>
+				                      <select class="selectpicker" name="scopes" multiple="multiple" data-style="form-control">
+							                  <option th:each="scope : ${scopes}" th:value="${scope.value}" th:selected="${#lists.contains(#objects.nullSafe(selectedScopes, {}), scope.value)}" th:text="${scope.value}">授权范围</option>
+                					   </select>
 				                    </div>
 				                  </div>
 				                  <div class="col-md-6">
 				                    <div class="form-group">
 				                      <label class="control-label">自动授权范围</label>
-				                      <select class="form-control" data-placeholder="自动授权范围" tabindex="1">
-				                        <option value="Category 1">Category 1</option>
-				                        <option value="Category 2">Category 2</option>
-				                        <option value="Category 3">Category 5</option>
-				                        <option value="Category 4">Category 4</option>
-				                      </select>
+				                      <select class="selectpicker" name="autoApproveScopes" multiple="multiple" data-style="form-control">
+							                 <option th:each="scope : ${scopes}" th:value="${scope.value}" th:selected="${#lists.contains(#objects.nullSafe(selectedAutoApproveScopes, {}), scope.value)}" th:text="${scope.value}">授权范围</option>
+                					  </select>
 				                    </div>
 				                  </div>
 				                </div>
 				                <div class="row">
 				                  <div class="col-md-12">
 				                      <div class="form-group">
-			                          <label class="control-label col-md-3">全范围自动授权</label>
-				                          <div class="col-md-9">
-						                      <div class="radio-list">
-						                          <label class="radio-inline">
-						                              <input type="radio" name="optionsRadios2" value="option1"/>
-						                              Free 
-						                          </label>
-						                          <label class="radio-inline">
-						                              <input type="radio" name="optionsRadios2" value="option2" checked=""/>
-						                              Professional 
-						                          </label>
-						                      </div>
-				                          </div>
+			                          <label class="control-label">全范围自动授权</label>
+				                      <input type="checkbox" name="autoApproveAll" value="true" th:checked="${autoApproveAll}" />
 			                          </div>
 				                   </div>
-				                 </div>
-				                 <div class="row">
-				                  <div class="col-md-6">
-				                    <div class="form-group">
-				                       &nbsp;
-				                     </div>
-				                  </div>
 				                 </div>
 				                 <div class="row">
 				                   <div class="col-md-12">
 				                     <div class="form-group">
 					                 <label class="col-md-12">可用资源Id</label>
-					                 <div class="col-md-12">
-					                  <textarea class="form-control" rows="5"></textarea>
-					                 </div>
+					                 <select class="selectpicker" name="resourceIds" multiple="multiple" data-style="form-control">
+							                 <option th:each="resourceId : ${resourceIds}" th:value="${resourceId.value}" th:selected="${#lists.contains(#objects.nullSafe(selectedResourceIds, {}), resourceId.value)}" th:text="${resourceId.value}">可用资源ID</option>
+                					 </select>
 					               </div>
 				                  </div>
 				                 </div>
@@ -138,7 +112,8 @@
 				                     <div class="form-group">
 					                 <label class="col-md-12">注册跳转URL</label>
 					                 <div class="col-md-12">
-					                  <textarea class="form-control" rows="5"></textarea>
+					                  <textarea class="form-control" rows="3" name="redirectUris" th:text="${redirectUris}"></textarea>
+					                  <span class="help-block">一行一个URI</span>
 					                 </div>
 					               </div>
 				                  </div>
@@ -155,7 +130,7 @@
 			                    <div class="row">
 			                      <div class="col-md-offset-5 col-md-9">
 			                        <button type="submit" class="btn btn-success">Submit</button>
-			                        <button type="button" class="btn btn-default">Cancel</button>
+			                        <a type="button" class="btn btn-default" th:href="@{/clientDetails.html}">Cancel</a>
 			                      </div>
 			                    </div>
 			                  </div>
