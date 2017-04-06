@@ -268,7 +268,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         if (!StringUtils.isEmpty(clientSecret)) {
@@ -277,7 +277,7 @@ public class ClientDetailsAdminController {
                 resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes,
                                    scopes, autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                    intervalInMills, limits);
-                return "redirect:/clientDetails.html?edit=" + clientId;
+                return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
             }
         }
 
@@ -286,7 +286,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
@@ -294,7 +294,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         // 检查授权方式
@@ -302,7 +302,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         // 检查授权范围
@@ -310,7 +310,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         // 检查自动授权范围
@@ -318,7 +318,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         // 检查资源ID
@@ -326,7 +326,7 @@ public class ClientDetailsAdminController {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
                                autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
                                intervalInMills, limits);
-            return "redirect:/clientDetails.html?edit=" + clientId;
+            return "redirect:/clientDetails.html?type=edit&edit=" + clientId;
         }
 
         Set<String> redirectUrisList = new HashSet<>();
@@ -373,29 +373,39 @@ public class ClientDetailsAdminController {
     }
 
     private boolean checkGrantTypeValidation(List<String> grantTypes, RedirectAttributes attributes) {
-        List<String> invalidGrantTypes = new ArrayList<>();
-        grantTypes.forEach(grantType -> {
-            if (!grantTypeRepository.findOneByValue(grantType).isPresent()) {
-                invalidGrantTypes.add(grantType);
-            }
-        });
+        if (grantTypes.isEmpty()) {
+            addErrorMessage(attributes, "授权方式至少选择一个");
+            return false;
+        } else {
+            List<String> invalidGrantTypes = new ArrayList<>();
+            grantTypes.forEach(grantType -> {
+                if (!grantTypeRepository.findOneByValue(grantType).isPresent()) {
+                    invalidGrantTypes.add(grantType);
+                }
+            });
+            invalidGrantTypes.forEach(grantType -> addErrorMessage(attributes, "授权方式 " + grantType + " 无效。"));
+            return invalidGrantTypes.isEmpty();
+        }
 
-        invalidGrantTypes.forEach(grantType -> addErrorMessage(attributes, "授权方式 " + grantType + " 无效。"));
-
-        return invalidGrantTypes.isEmpty();
     }
 
     private boolean checkScopeValidation(List<String> scopes, RedirectAttributes attributes) {
-        List<String> invalidScopes = new ArrayList<>();
-        scopes.forEach(scope -> {
-            if (!scopeRepository.findOneByValue(scope).isPresent()) {
-                invalidScopes.add(scope);
-            }
-        });
+        if (scopes.isEmpty()) {
+            addErrorMessage(attributes, "授权范围至少选择一个");
+            return false;
+        }else{
+            List<String> invalidScopes = new ArrayList<>();
+            scopes.forEach(scope -> {
+                if (!scopeRepository.findOneByValue(scope).isPresent()) {
+                    invalidScopes.add(scope);
+                }
+            });
 
-        invalidScopes.forEach(scope -> addErrorMessage(attributes, "授权范围 " + scope + " 无效。"));
+            invalidScopes.forEach(scope -> addErrorMessage(attributes, "授权范围 " + scope + " 无效。"));
 
-        return invalidScopes.isEmpty();
+            return invalidScopes.isEmpty();
+        }
+       
     }
 
     private boolean checkResourceIdValidation(List<String> resourceIds, RedirectAttributes attributes) {
