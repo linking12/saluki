@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsEntity;
+import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsLimitEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.ClientDetailsToScopesXrefEntity;
 import com.quancheng.saluki.gateway.oauth2.entity.RedirectUriEntity;
 import com.quancheng.saluki.gateway.oauth2.repository.ClientDetailsRepository;
@@ -86,6 +88,11 @@ public class ClientDetailsAdminController {
                                        clientDetailsEntity.getResourceIdXrefs().stream().map(xref -> xref.getResourceId().getValue()).collect(Collectors.toList()));
                     model.addAttribute("redirectUris",
                                        clientDetailsEntity.getRedirectUris().stream().map(RedirectUriEntity::getValue).collect(Collectors.joining(System.lineSeparator())));
+                    ClientDetailsLimitEntity limit = clientDetailsEntity.getClientLimit();
+                    if (limit != null) {
+                        model.addAttribute("intervalInMills", limit.getIntervalInMills());
+                        model.addAttribute("limits", limit.getLimits());
+                    }
                     return null;
                 });
             }
@@ -111,68 +118,93 @@ public class ClientDetailsAdminController {
                          @RequestParam(name = "autoApproveAll", defaultValue = "false") boolean autoApproveAll,
                          @RequestParam(name = "autoApproveScopes", defaultValue = "") List<String> autoApproveScopes,
                          @RequestParam(name = "resourceIds", defaultValue = "") List<String> resourceIds,
-                         @RequestParam("redirectUris") String redirectUris, RedirectAttributes attributes) {
+                         @RequestParam("redirectUris") String redirectUris,
+                         @RequestParam("intervalInMills") Integer intervalInMills,
+                         @RequestParam("limits") Integer limits, RedirectAttributes attributes) {
 
         if (!CLIENT_ID_PATTERN.matcher(clientId).matches()) {
             addErrorMessage(attributes, "客户端ID " + clientId + " 含有非法字符。（只能使用[a-zA-Z0-9_]）");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         if (clientDetailsRepository.findOneByClientId(clientId).isPresent()) {
             addErrorMessage(attributes, "客户端ID " + clientId + " 已存在。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         if (!PASSWORD_WORD_PATTERN.matcher(clientSecret).matches()) {
             addErrorMessage(attributes, "客户端密码含有非法字符。（只能使用[a-zA-Z0-9]，至少6位）");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         if (accessTokenValiditySeconds != null && accessTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "AccessToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "RefreshToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
+        if (intervalInMills != null && intervalInMills < 0) {
+            addErrorMessage(attributes, "限流间隔时间不能小于零");
+            resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
+            return "redirect:/clientDetails.html?type=add";
+        }
+        if (limits != null && limits < 0) {
+            addErrorMessage(attributes, "限流间隔次数不能小于零");
+            resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
+            return "redirect:/clientDetails.html?type=add";
+        }
         // 检查授权方式
         if (!checkGrantTypeValidation(grantTypes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查授权范围
         if (!checkScopeValidation(scopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查自动授权范围
         if (!checkScopeValidation(autoApproveScopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
         // 检查资源ID
         if (!checkResourceIdValidation(resourceIds, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?type=add";
         }
 
@@ -205,7 +237,12 @@ public class ClientDetailsAdminController {
         baseClientDetails.setRegisteredRedirectUri(redirectUrisList);
 
         clientDetailsService.addClientDetails(baseClientDetails);
-
+        // 每隔open_api 10秒内最多只能调用3次api
+        ClientDetailsEntity detailEntity = clientDetailsRepository.findOneByClientId(baseClientDetails.getClientId()).get();
+        ClientDetailsLimitEntity limitEntity = ClientDetailsLimitEntity.builder().intervalInMills(10000L).limits(3L).build();
+        detailEntity.setClientLimit(limitEntity);
+        limitEntity.setClientDetail(detailEntity);
+        clientDetailsRepository.save(detailEntity);
         addSuccessMessage(attributes, "客户端 " + clientId + " 注册成功。");
 
         return "redirect:/clientDetails.html";
@@ -222,12 +259,15 @@ public class ClientDetailsAdminController {
                          @RequestParam(name = "autoApproveAll", defaultValue = "false") boolean autoApproveAll,
                          @RequestParam(name = "autoApproveScopes", defaultValue = "") List<String> autoApproveScopes,
                          @RequestParam(name = "resourceIds", defaultValue = "") List<String> resourceIds,
-                         @RequestParam("redirectUris") String redirectUris, RedirectAttributes attributes) {
+                         @RequestParam("redirectUris") String redirectUris,
+                         @RequestParam("intervalInMills") Integer intervalInMills,
+                         @RequestParam("limits") Integer limits, RedirectAttributes attributes) {
 
         if (!clientDetailsRepository.findOneByClientId(clientId).isPresent()) {
             addErrorMessage(attributes, "找不到客户端ID " + clientId);
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
@@ -235,7 +275,8 @@ public class ClientDetailsAdminController {
             if (!PASSWORD_WORD_PATTERN.matcher(clientSecret).matches()) {
                 addErrorMessage(attributes, "客户端密码含有非法字符。（只能使用[a-zA-Z0-9]，至少6位）");
                 resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes,
-                                   scopes, autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                                   scopes, autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                                   intervalInMills, limits);
                 return "redirect:/clientDetails.html?edit=" + clientId;
             }
         }
@@ -243,42 +284,48 @@ public class ClientDetailsAdminController {
         if (accessTokenValiditySeconds != null && accessTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "AccessToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         if (refreshTokenValiditySeconds != null && refreshTokenValiditySeconds < 0) {
             addErrorMessage(attributes, "RefreshToken有效秒数不能小于零。");
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查授权方式
         if (!checkGrantTypeValidation(grantTypes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查授权范围
         if (!checkScopeValidation(scopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查自动授权范围
         if (!checkScopeValidation(autoApproveScopes, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
         // 检查资源ID
         if (!checkResourceIdValidation(resourceIds, attributes)) {
             resetRequestParams(clientId, accessTokenValiditySeconds, refreshTokenValiditySeconds, grantTypes, scopes,
-                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes);
+                               autoApproveAll, autoApproveScopes, resourceIds, redirectUris, attributes,
+                               intervalInMills, limits);
             return "redirect:/clientDetails.html?edit=" + clientId;
         }
 
@@ -311,13 +358,17 @@ public class ClientDetailsAdminController {
         baseClientDetails.setRegisteredRedirectUri(redirectUrisList);
 
         clientDetailsService.updateClientDetails(baseClientDetails);
-
+        // 每隔open_api 10秒内最多只能调用3次api
+        ClientDetailsEntity detailEntity = clientDetailsRepository.findOneByClientId(baseClientDetails.getClientId()).get();
+        if (detailEntity != null) {
+            detailEntity.getClientLimit().setIntervalInMills(intervalInMills.longValue());
+            detailEntity.getClientLimit().setLimits(limits.longValue());
+            clientDetailsRepository.save(detailEntity);
+        }
         if (!StringUtils.isEmpty(clientSecret)) {
             clientDetailsService.updateClientSecret(clientId, clientSecret);
         }
-
         addSuccessMessage(attributes, "客户端 " + clientId + " 更新成功。");
-
         return "redirect:/clientDetails.html";
     }
 
@@ -363,7 +414,8 @@ public class ClientDetailsAdminController {
     private void resetRequestParams(String clientId, Integer accessTokenValiditySeconds,
                                     Integer refreshTokenValiditySeconds, List<String> grantTypes, List<String> scopes,
                                     boolean autoApproveAll, List<String> autoApproveScopes, List<String> resourceIds,
-                                    String redirectUris, RedirectAttributes attributes) {
+                                    String redirectUris, RedirectAttributes attributes, Integer intervalInMills,
+                                    Integer limits) {
 
         attributes.addFlashAttribute("clientId", clientId);
         attributes.addFlashAttribute("accessTokenValiditySeconds", accessTokenValiditySeconds);
@@ -374,6 +426,8 @@ public class ClientDetailsAdminController {
         attributes.addFlashAttribute("selectedAutoApproveScopes", autoApproveScopes);
         attributes.addFlashAttribute("selectedResourceIds", resourceIds);
         attributes.addFlashAttribute("redirectUris", redirectUris);
+        attributes.addFlashAttribute("intervalInMills", intervalInMills);
+        attributes.addFlashAttribute("limits", limits);
 
     }
 

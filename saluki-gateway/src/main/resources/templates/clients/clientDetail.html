@@ -66,6 +66,20 @@
 				                  </div>
 				                </div>
 				                <div class="row">
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">限流间隔时间</label>
+				                      <input type="number" class="form-control" id="intervalInMills" name="intervalInMills" placeholder="限流间隔时间" th:value="${intervalInMills}" />
+				                     </div>
+				                  </div>
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">限流间隔次数</label>
+				                       <input type="number" class="form-control" id="limits" name="limits" placeholder="限流间隔次数" th:value="${limits}" />
+				                    </div>
+				                  </div>
+				                </div>
+				                <div class="row">
 				                  <div class="col-md-12">
 				                    <div class="form-group">
 				                       <label class="control-label">授权方式</label>
