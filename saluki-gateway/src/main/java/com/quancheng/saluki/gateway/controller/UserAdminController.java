@@ -45,20 +45,23 @@ public class UserAdminController {
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
                                                              MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String listAllUsers(@RequestParam(name = "edit", required = false) String editUsername, Model model,
+    public String listAllUsers(@RequestParam(name = "type", required = false) String editType,
+                               @RequestParam(name = "edit", required = false) String editUsername, Model model,
                                Pageable pageable) {
-
-        model.addAttribute("users", userRepository.findAll(pageable));
         model.addAttribute("roles", roleRepository.findAll());
-        if (!StringUtils.isEmpty(editUsername)) {
-            model.addAttribute("editUser", userRepository.findOneByUsername(editUsername).map(userEntity -> {
-                Map<String, Object> editUserMap = new HashMap<>();
-                editUserMap.put("username", userEntity.getUsername());
-                editUserMap.put("roles",
-                                userEntity.getRoles().stream().map(xref -> xref.getRole().getName()).collect(Collectors.toList()));
-                return editUserMap;
-            }).orElse(null));
+        if (!StringUtils.isEmpty(editType)) {
+            if (!StringUtils.isEmpty(editUsername)) {
+                model.addAttribute("editUser", userRepository.findOneByUsername(editUsername).map(userEntity -> {
+                    Map<String, Object> editUserMap = new HashMap<>();
+                    editUserMap.put("username", userEntity.getUsername());
+                    editUserMap.put("roles",
+                                    userEntity.getRoles().stream().map(xref -> xref.getRole().getName()).collect(Collectors.toList()));
+                    return editUserMap;
+                }).orElse(null));
+            }
+            return "userrole/user";
         }
+        model.addAttribute("users", userRepository.findAll(pageable));
         return "userrole/users";
     }
 
