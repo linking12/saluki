@@ -75,7 +75,7 @@ public class ApiJarService {
     }
 
     private void refresh() throws IOException {
-        List<ApiJarEntity> entitys = jarRespository.findLastesJar(new PageRequest(0, 1));
+        List<ApiJarEntity> entitys = jarRespository.findLatestJar(new PageRequest(0, 1));
         if (entitys.size() > 0) {
             ApiJarEntity entity = entitys.get(0);
             Date jarCreateTime = entity.getCreateTime();
