@@ -22,7 +22,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.ScopeRepository;
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.*;
 
 @Controller
-@RequestMapping("/scopes")
+@RequestMapping("/scopes.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class ScopeAdminController {
 
@@ -58,7 +58,7 @@ public class ScopeAdminController {
             attributes.addFlashAttribute("scopeValue", scopeValue);
         }
 
-        return "redirect:/scopes";
+        return "redirect:/scopes.html";
     }
 
     @RequestMapping(path = "/_remove/{scopeValue}", method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
@@ -84,7 +84,7 @@ public class ScopeAdminController {
             return null;
         });
 
-        return "redirect:/scopes";
+        return "redirect:/scopes.html";
     }
 
 }

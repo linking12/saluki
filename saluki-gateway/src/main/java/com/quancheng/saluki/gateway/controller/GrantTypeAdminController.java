@@ -21,7 +21,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.GrantTypeRepository;
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.*;
 
 @Controller
-@RequestMapping("/grantTypes")
+@RequestMapping("/grantTypes.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class GrantTypeAdminController {
 
@@ -57,7 +57,7 @@ public class GrantTypeAdminController {
             attributes.addFlashAttribute("grantTypeName", grantTypeName);
         }
 
-        return "redirect:/grantTypes";
+        return "redirect:/grantTypes.html";
     }
 
     @RequestMapping(path = "/_remove/{grantTypeName}", method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
@@ -83,7 +83,7 @@ public class GrantTypeAdminController {
             return null;
         });
 
-        return "redirect:/grantTypes";
+        return "redirect:/grantTypes.html";
     }
 
 }
