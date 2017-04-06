@@ -146,6 +146,23 @@
               <span th:text="${message}">您有一条新消息。(danger)</span>
             </div>
           </div>
+          <th:block th:fragment="page-navigation(pageable)">
+		          <ul class="pagination pagination-sm no-margin pull-right" th:if="${pageable.totalPages}">
+		            <li th:class="${pageable.hasPrevious()}? '' : 'disabled' ">
+		              <a href="#" th:href="${pageable.hasPrevious()}? @{''(page=${pageable.number - 1})} : '#' " aria-label="Previous">
+		                <span aria-hidden="true">&laquo;</span>
+		              </a>
+		            </li>
+		            <li th:each="number : ${#numbers.sequence(1, pageable.totalPages)}">
+		              <a th:href="@{'' (page=${number - 1})}" href="#" th:text="${number}">1</a>
+		            </li>
+		            <li th:class="${pageable.hasNext()}? '' : 'disabled' ">
+		              <a href="#" th:href="${pageable.hasNext()}? @{''(page=${pageable.number + 1})} : '#' " aria-label="Next">
+		                <span aria-hidden="true">&raquo;</span>
+		              </a>
+		            </li>
+		          </ul>
+           </th:block>
         </div>
       </div>
     </div> 
