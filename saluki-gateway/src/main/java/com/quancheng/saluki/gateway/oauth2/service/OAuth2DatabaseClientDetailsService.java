@@ -58,7 +58,11 @@ public class OAuth2DatabaseClientDetailsService implements ClientDetailsService,
             throw new ClientAlreadyExistsException("Client ID already exists");
         }
 
-        ClientDetailsEntity clientDetailsEntity = ClientDetailsEntity.builder().clientId(clientDetails.getClientId()).clientSecret(clientDetails.getClientSecret()).accessTokenValiditySeconds(clientDetails.getAccessTokenValiditySeconds()).refreshTokenValiditySeconds(clientDetails.getRefreshTokenValiditySeconds()).build();
+        ClientDetailsEntity clientDetailsEntity = ClientDetailsEntity.builder()//
+                                                                     .clientId(clientDetails.getClientId())//
+                                                                     .clientSecret(clientDetails.getClientSecret())//
+                                                                     .accessTokenValiditySeconds(clientDetails.getAccessTokenValiditySeconds())//
+                                                                     .refreshTokenValiditySeconds(clientDetails.getRefreshTokenValiditySeconds()).build();
 
         clientDetailsEntity.setAuthorizedGrantTypeXrefs(clientDetails.getAuthorizedGrantTypes().stream().map(grantType -> grantTypeRepository.findOneByValue(grantType).map(grantTypeEntity -> ClientDetailsToAuthorizedGrantTypeXrefEntity.builder().clientDetails(clientDetailsEntity).grantType(grantTypeEntity).build()).<ClientRegistrationException> orElseThrow(() -> new ClientRegistrationException("Unsupported grant type: "
                                                                                                                                                                                                                                                                                                                                                                                                              + grantType))).collect(Collectors.toSet()));
