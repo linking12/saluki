@@ -30,7 +30,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.UserRepository;
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.*;
 
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/users.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class UserAdminController {
 
@@ -59,7 +59,7 @@ public class UserAdminController {
                 return editUserMap;
             }).orElse(null));
         }
-        return "users/users";
+        return "userrole/users";
     }
 
     private static final Pattern USER_NAME_PATTERN     = Pattern.compile("^[a-zA-Z0-9_]+$");
@@ -76,26 +76,26 @@ public class UserAdminController {
             addErrorMessage(attributes, "用户名 " + username + " 含有非法字符。（只能使用[a-zA-Z0-9_]）");
             attributes.addFlashAttribute("username", username);
             attributes.addFlashAttribute("selectedRoles", roles);
-            return "redirect:/users";
+            return "redirect:/users.html";
         }
 
         if (userRepository.findOneByUsername(username).isPresent()) {
             addErrorMessage(attributes, "用户名 " + username + " 已被注册");
             attributes.addFlashAttribute("username", username);
             attributes.addFlashAttribute("selectedRoles", roles);
-            return "redirect:/users";
+            return "redirect:/users.html";
         }
 
         if (!checkPasswordValidation(password, passwordConfirmation, attributes)) {
             attributes.addFlashAttribute("username", username);
             attributes.addFlashAttribute("selectedRoles", roles);
-            return "redirect:/users";
+            return "redirect:/users.html";
         }
 
         if (!checkRoleValidation(roles, attributes)) {
             attributes.addFlashAttribute("username", username);
             attributes.addFlashAttribute("selectedRoles", roles);
-            return "redirect:/users";
+            return "redirect:/users.html";
         }
 
         UserEntity userEntity = UserEntity.builder().username(username).password(passwordEncoder.encode(password)).build();
@@ -110,7 +110,7 @@ public class UserAdminController {
 
         addSuccessMessage(attributes, "用户 " + username + " 创建成功。");
 
-        return "redirect:/users";
+        return "redirect:/users.html";
     }
 
     @RequestMapping(path = "/_update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
@@ -123,12 +123,12 @@ public class UserAdminController {
 
         if (!StringUtils.isEmpty(password)) {
             if (!checkPasswordValidation(password, passwordConfirmation, attributes)) {
-                return "redirect:/users?edit=" + username;
+                return "redirect:/users.html?edit=" + username;
             }
         }
 
         if (!checkRoleValidation(roles, attributes)) {
-            return "redirect:/users?edit=" + username;
+            return "redirect:/users.html?edit=" + username;
         }
 
         userRepository.findOneByUsername(username).map(userEntity -> {
@@ -157,7 +157,7 @@ public class UserAdminController {
             return null;
         });
 
-        return "redirect:/users";
+        return "redirect:/users.html";
     }
 
     private boolean checkRoleValidation(List<String> roles, RedirectAttributes attributes) {
@@ -211,7 +211,7 @@ public class UserAdminController {
             });
         }
 
-        return "redirect:/users";
+        return "redirect:/users.html";
     }
 
 }

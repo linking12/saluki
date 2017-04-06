@@ -24,7 +24,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.RoleRepository;
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.*;
 
 @Controller
-@RequestMapping("/roles")
+@RequestMapping("/roles.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class RoleAdminController {
 
@@ -36,7 +36,7 @@ public class RoleAdminController {
     public String listAllRoles(Model model, Pageable pageable) {
 
         model.addAttribute("roles", roleRepository.findAll(pageable));
-        return "roles/roles";
+        return "userrole/roles";
     }
 
     private static final Pattern ROLE_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]+$");
@@ -59,7 +59,7 @@ public class RoleAdminController {
             addErrorMessage(attributes, "角色名 " + roleName + " 含有非法字符。（只能使用[a-zA-Z0-9_]）");
             attributes.addFlashAttribute("roleName", roleName);
         }
-        return "redirect:/roles";
+        return "redirect:/roles.html";
     }
 
     private static final String[]     INVINCIBLE_ROLES      = { "ADMIN", "USER" };
@@ -93,6 +93,6 @@ public class RoleAdminController {
             });
         }
 
-        return "redirect:/roles";
+        return "redirect:/roles.html";
     }
 }

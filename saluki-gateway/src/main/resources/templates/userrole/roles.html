@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+<head th:replace="template :: head"></head>
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:replace="template :: main-header">
+   </nav>   
+   <div class="navbar-default sidebar" role="navigation" th:replace="template :: main-sidebar">
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">授权范围</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a th:href="@{/clientDetails.html}">OAuth2管理</a></li> 
+        <li class="active">授权范围</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+          <div class="white-box">
+            <div class="dataTables_wrapper">
+	            <table id="myTable" class="table table-striped">
+	              <thead>
+	                 <tr>
+                         <th>#</th>
+                         <th>角色名</th>
+                     </tr>
+	              </thead>
+	              <tbody>
+	                  <th:block th:each="role, iterStat : ${roles}">
+                        <tr>
+                            <td th:text="${role.id}">#</td>
+                            <td th:text="${role.name}">Role Name</td>
+                        </tr>
+                       </th:block>
+                   </tbody>
+	            </table>
+            </div>
+          </div>
+     </div> 
+    </div> 
+    <footer class="main-footer" th:replace="template :: main-footer">
+    </footer>
+   </div> 
+  </div> 
+ <th:block th:replace="template :: required-js-scripts">
+ </th:block>
+ </body>
+</html>
