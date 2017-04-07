@@ -76,7 +76,7 @@ public class RestRouteAdminController {
         if (zuulRouteRepository.findOneByRouteId(routeId).isPresent()) {
             addErrorMessage(attributes, routeId + "已经存在 ");
             resetRequestParams(routeId, routePath, routeUrl, stripPrefix, retryAble, sensitiveHeaders, attributes);
-            return "redirect:/clientDetails.html?type=add";
+            return "redirect:/restRoute.html?type=add";
         }
         ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
                                                     .zuul_route_id(routeId)//

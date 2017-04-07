@@ -51,10 +51,11 @@ public class GrpcRouteAdminController {
 
                     model.addAttribute("routeId", zuulRouteEntity.getZuul_route_id());
                     model.addAttribute("routePath", zuulRouteEntity.getPath());
-                    model.addAttribute("routeUrl", zuulRouteEntity.getUrl());
-                    model.addAttribute("stripPrefix", zuulRouteEntity.getStrip_prefix());
-                    model.addAttribute("retryAble", zuulRouteEntity.getRetryable());
-                    model.addAttribute("sensitiveHeaders", zuulRouteEntity.getSensitiveHeaders());
+                    model.addAttribute("isGrpc", true);
+                    model.addAttribute("serviceName", zuulRouteEntity.getService_name());
+                    model.addAttribute("group", zuulRouteEntity.getGroup());
+                    model.addAttribute("version", zuulRouteEntity.getVersion());
+                    model.addAttribute("method", zuulRouteEntity.getMethod());
                     return null;
                 });
             }
@@ -68,51 +69,53 @@ public class GrpcRouteAdminController {
                                                                                                                                          MediaType.APPLICATION_XHTML_XML_VALUE })
     public String create(@RequestParam(name = "routeId", required = true) String routeId,
                          @RequestParam(name = "routePath", required = true) String routePath,
-                         @RequestParam(name = "routeUrl", required = true) String routeUrl,
-                         @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
-                         @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
-                         @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
-                         RedirectAttributes attributes) {
+                         @RequestParam(name = "isGrpc", required = true) Boolean isGrpc,
+                         @RequestParam(name = "serviceName", required = true) String serviceName,
+                         @RequestParam(name = "group", required = true) String group,
+                         @RequestParam(name = "version", required = true) String version,
+                         @RequestParam(name = "method", required = true) String method, RedirectAttributes attributes) {
         if (zuulRouteRepository.findOneByRouteId(routeId).isPresent()) {
             addErrorMessage(attributes, routeId + "已经存在 ");
-            resetRequestParams(routeId, routePath, routeUrl, stripPrefix, retryAble, sensitiveHeaders, attributes);
-            return "redirect:/clientDetails.html?type=add";
+            resetRequestParams(routeId, routePath, isGrpc, serviceName, group, version, method, attributes);
+            return "redirect:/grpcRoute.html?type=add";
         }
-        ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
+        ZuulRouteEntity entityGrpc = ZuulRouteEntity.builder()//
                                                     .zuul_route_id(routeId)//
                                                     .path(routePath)//
-                                                    .strip_prefix(stripPrefix)//
-                                                    .retryable(retryAble)//
-                                                    .url(routeUrl)//
-                                                    .sensitiveHeaders(sensitiveHeaders)//
+                                                    .is_grpc(true)//
+                                                    .service_name(serviceName)//
+                                                    .group(group)//
+                                                    .version(version)//
+                                                    .method(method)//
                                                     .build();
-        zuulRouteRepository.save(entityRest);
-        return "redirect:/restRoute.html";
+        zuulRouteRepository.save(entityGrpc);
+        return "redirect:/grpcRoute.html";
     }
 
     @RequestMapping(path = "/_update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
                                                                                                                                          MediaType.APPLICATION_XHTML_XML_VALUE })
     public String update(@RequestParam(name = "routeId", required = true) String routeId,
                          @RequestParam(name = "routePath", required = true) String routePath,
-                         @RequestParam(name = "routeUrl", required = true) String routeUrl,
-                         @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
-                         @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
-                         @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
-                         RedirectAttributes attributes) {
+                         @RequestParam(name = "isGrpc", required = true) Boolean isGrpc,
+                         @RequestParam(name = "serviceName", required = true) String serviceName,
+                         @RequestParam(name = "group", required = true) String group,
+                         @RequestParam(name = "version", required = true) String version,
+                         @RequestParam(name = "method", required = true) String method, RedirectAttributes attributes) {
 
         zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
             zuulRouteEntity.setZuul_route_id(routeId);
             zuulRouteEntity.setPath(routePath);
-            zuulRouteEntity.setUrl(routeUrl);
-            zuulRouteEntity.setStrip_prefix(stripPrefix);
-            zuulRouteEntity.setRetryable(retryAble);
-            zuulRouteEntity.setSensitiveHeaders(sensitiveHeaders);
+            zuulRouteEntity.setIs_grpc(true);
+            zuulRouteEntity.setService_name(serviceName);
+            zuulRouteEntity.setGroup(group);
+            zuulRouteEntity.setVersion(version);
+            zuulRouteEntity.setMethod(method);
             return zuulRouteRepository.save(zuulRouteEntity);
         }).orElseGet(() -> {
             addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
             return null;
         });
-        return "redirect:/restRoute.html";
+        return "redirect:/grpcRoute.html";
     }
 
     @RequestMapping(path = "/_remove/{routeId}", method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
@@ -127,18 +130,19 @@ public class GrpcRouteAdminController {
             addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
             return null;
         });
-        return "redirect:/restRoute.html";
+        return "redirect:/grpcRoute.html";
     }
 
-    private void resetRequestParams(String routeId, String routePath, String routeUrl, Boolean stripPrefix,
-                                    Boolean retryAble, String sensitiveHeaders, RedirectAttributes attributes) {
+    private void resetRequestParams(String routeId, String routePath, Boolean isGrpc, String serviceName, String group,
+                                    String version, String method, RedirectAttributes attributes) {
 
         attributes.addFlashAttribute("routeId", routeId);
         attributes.addFlashAttribute("routePath", routePath);
-        attributes.addFlashAttribute("routeUrl", routeUrl);
-        attributes.addFlashAttribute("stripPrefix", stripPrefix);
-        attributes.addFlashAttribute("retryAble", retryAble);
-        attributes.addFlashAttribute("sensitiveHeaders", sensitiveHeaders);
+        attributes.addFlashAttribute("isGrpc", isGrpc);
+        attributes.addFlashAttribute("serviceName", serviceName);
+        attributes.addFlashAttribute("group", group);
+        attributes.addFlashAttribute("version", version);
+        attributes.addFlashAttribute("method", method);
 
     }
 }

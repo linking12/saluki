@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+<head th:replace="template :: head"></head>
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:replace="template :: main-header">
+   </nav>   
+   <div class="navbar-default sidebar" role="navigation" th:replace="template :: main-sidebar">
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">客户端管理</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a th:href="@{/clientDetails.html}">OAuth2管理</a></li> 
+        <li class="active">客户端管理</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+          <div class="white-box" th:replace="template :: alerts"/>
+     </div>
+     <div class="row">
+        <div class="white-box">
+        <div class="panel panel-info">
+           <div class="panel-heading" th:text="${param.containsKey('edit')?'编辑路由规则':'添加路由规则'}"/>
+           <div class="panel-wrapper collapse in" aria-expanded="true">
+              <div class="panel-body">
+                  <form th:action="${param.containsKey('edit')}? @{/grpcRoute.html/_update} : @{/grpcRoute.html/_create}" method="post">
+		              <div class="form-body">
+				                <div class="row">
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">路由Id</label>
+				                      <input type="text" class="form-control" id="routeId" name="routeId" placeholder="路由Id" required="required" th:value="${routeId}" th:disabled="${param['edit']}" />
+                                      <input type="hidden" name="routeId" th:value="${routeId}" th:if="${param.containsKey('edit')}" />
+				                     </div>
+				                  </div>
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">路由path</label>
+				                       <input type="text" class="form-control" id="routePath" name="routePath" placeholder="path,必须以/api开头" required="required" th:value="${routePath}" />
+				                    </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
+				                     <div class="form-group">
+			                           <label class="control-label">是否Grpc</label>
+				                       <input type="checkbox" name="isGrpc" value="false" th:checked="${isGrpc}" />
+				                       <br/>
+			                         </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
+				                    <div class="form-group">
+				                      <label class="control-label">服务名</label>
+				                      <input type="text" class="form-control" id="serviceName" name="serviceName" placeholder="serviceName" required="required" th:value="${serviceName}" />
+				                     </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
+				                    <div class="form-group">
+				                      <label class="control-label">组名</label>
+				                      <input type="text" class="form-control" id="group" name="group" placeholder="group" required="required" th:value="${group}" />
+				                     </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
+				                    <div class="form-group">
+				                      <label class="control-label">版本</label>
+				                      <input type="text" class="form-control" id="version" name="version" placeholder="version" required="required" th:value="${version}" />
+				                     </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
+				                    <div class="form-group">
+				                      <label class="control-label">方法名</label>
+				                      <input type="text" class="form-control" id="method" name="method" placeholder="method" required="required" th:value="${method}" />
+				                     </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                   <div class="col-md-12">
+				                      &nbsp;
+					               </div>
+				               </div>
+		               </div>
+		               <div class="form-actions">
+			                <div class="row">
+			                  <div class="col-md-12">
+			                    <div class="row">
+			                      <div class="col-md-offset-5 col-md-9">
+			                        <button type="submit" class="btn btn-success">Submit</button>
+			                        <a type="button" class="btn btn-default" th:href="@{/grpcRoute.html}">Cancel</a>
+			                      </div>
+			                    </div>
+			                  </div>
+			                </div>
+                       </div>
+                  </form>
+              </div>
+            </div>
+          </div>  
+        </div>
+     </div> 
+     <footer class="main-footer" th:replace="template :: main-footer"/>
+     </div> 
+    </div>
+  </div> 
+ <th:block th:replace="template :: required-js-scripts">
+ </th:block>
+ </body>
+</html>
