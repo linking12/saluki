@@ -58,10 +58,10 @@ public class GrpcRouteAdminController {
                     return null;
                 });
             }
-            return "route/restroute";
+            return "route/grpcroute";
         }
-        model.addAttribute("routeList", zuulRouteRepository.findAllRest(pageable));
-        return "route/restroutes";
+        model.addAttribute("routeList", zuulRouteRepository.findAllGrpc(pageable));
+        return "route/grpcroutes";
     }
 
     @RequestMapping(path = "/_create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
