@@ -8,10 +8,12 @@
 package com.quancheng.saluki.gateway.zuul.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
@@ -31,4 +33,8 @@ public interface ZuulRouteRepository extends JpaRepository<ZuulRouteEntity, Stri
 
     @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=1 order by route.modifyTime desc")
     public List<ZuulRouteEntity> findAllGrpc(Pageable pageable);
+
+    @Query(value = "select route from ZuulRouteEntity route where route.zuul_route_id = :route_Id")
+    Optional<ZuulRouteEntity> findOneByRouteId(@Param("route_Id") String route_Id);
+
 }

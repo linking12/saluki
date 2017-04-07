@@ -39,7 +39,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "zuul_routes")
 public class ZuulRouteEntity extends AbstractPersistable<Long> {
 
-    @Column(name = "zuul_route_id")
+    @Column(name = "zuul_route_id", unique = true, nullable = false, length = 200)
     private String                          zuul_route_id;
 
     @Column(name = "path")

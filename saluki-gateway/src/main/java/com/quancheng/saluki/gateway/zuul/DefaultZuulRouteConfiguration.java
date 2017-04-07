@@ -31,23 +31,31 @@ public class DefaultZuulRouteConfiguration implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         if (routeRepository.count() == 0) {
-            ZuulRouteEntity entity = ZuulRouteEntity.builder()//
-                                                    .zuul_route_id("hello")//
-                                                    .path("/api/hello")//
-                                                    .is_grpc(true)//
-                                                    .service_name("com.quancheng.examples.service.HelloService")//
-                                                    .method("sayHello")//
-                                                    .group("example")//
-                                                    .version("1.0.0")//
-                                                    .build();
+            ZuulRouteEntity entityGrpc = ZuulRouteEntity.builder()//
+                                                        .zuul_route_id("helloGrpc")//
+                                                        .path("/api/helloGrpc")//
+                                                        .is_grpc(true)//
+                                                        .service_name("com.quancheng.examples.service.HelloService")//
+                                                        .method("sayHello")//
+                                                        .group("example")//
+                                                        .version("1.0.0")//
+                                                        .build();
+
+            ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
+                                                        .zuul_route_id("helloRest")//
+                                                        .path("/api/helloRest")//
+                                                        .strip_prefix(true)//
+                                                        .url("http://www.baidu.com")//
+                                                        .build();
 
             ZuulGrpcFieldMappingEntity fieldMapping = ZuulGrpcFieldMappingEntity.builder()//
                                                                                 .sourceField("name")//
                                                                                 .targetField("name")//
                                                                                 .targetFieldType("string").build();
-            fieldMapping.setRoute(entity);
-            entity.setFieldMapping(Sets.newHashSet(fieldMapping));
-            routeRepository.save(entity);
+            fieldMapping.setRoute(entityGrpc);
+            entityGrpc.setFieldMapping(Sets.newHashSet(fieldMapping));
+            routeRepository.save(entityGrpc);
+            routeRepository.save(entityRest);
         }
 
     }
