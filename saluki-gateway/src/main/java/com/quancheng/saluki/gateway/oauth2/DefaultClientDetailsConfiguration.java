@@ -25,9 +25,9 @@ import com.quancheng.saluki.gateway.oauth2.service.OAuth2DatabaseClientDetailsSe
 
 @Configuration
 @Profile("default-user-and-roles_route")
-public class DefaultClientDetailsConfig implements InitializingBean {
+public class DefaultClientDetailsConfiguration implements InitializingBean {
 
-    private static final Logger                logger              = LoggerFactory.getLogger(DefaultClientDetailsConfig.class);
+    private static final Logger                logger              = LoggerFactory.getLogger(DefaultClientDetailsConfiguration.class);
 
     private static final String[]              DEFAULT_GRANT_TYPES = { "authorization_code", "refresh_token",
                                                                        "password", "client_credentials" };

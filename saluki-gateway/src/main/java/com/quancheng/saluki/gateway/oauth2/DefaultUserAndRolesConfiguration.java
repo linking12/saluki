@@ -21,7 +21,7 @@ import com.quancheng.saluki.gateway.oauth2.repository.UserRoleXrefRepository;
 
 @Configuration
 @Profile("default-user-and-roles_route")
-public class DefaultUserAndRolesConfig implements InitializingBean {
+public class DefaultUserAndRolesConfiguration implements InitializingBean {
 
     private static final String    DEFAULT_ADMIN_USERNAME = "admin";
     private static final String    DEFAULT_ADMIN_PASSWORD = "admin888";
