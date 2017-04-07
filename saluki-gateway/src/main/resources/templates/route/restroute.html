@@ -65,7 +65,7 @@
 			                           <label class="control-label">是否忽略前缀stripPrefix</label>
 				                       <input type="checkbox" name="stripPrefix" value="false" th:checked="${stripPrefix}" />
 				                       <br/>
-				                       <span>(使用了zuul.prefix配置的前提，目前暂不支持)</span>
+				                       <span>(使用了zuul.prefix配置的前提，目前暂不支持,不要打钩)</span>
 			                         </div>
 				                  </div>
 				                </div>
@@ -81,7 +81,7 @@
 				                  <div class="col-md-12">
 				                    <div class="form-group">
 				                      <label class="control-label">覆盖全局Header</label>
-				                      <input type="text" class="form-control" id="sensitiveHeaders" name="sensitiveHeaders" placeholder="Cookie,Set-Cookie,Authorization" required="required" th:value="${sensitiveHeaders}"/>
+				                      <input type="text" class="form-control" id="sensitiveHeaders" name="sensitiveHeaders" placeholder="Cookie,Set-Cookie,Authorization" th:value="${sensitiveHeaders}"/>
 				                     </div>
 				                  </div>
 				                </div>
