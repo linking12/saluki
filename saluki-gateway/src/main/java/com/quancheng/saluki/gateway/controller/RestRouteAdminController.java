@@ -12,6 +12,10 @@ import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addS
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addWarningMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,10 +38,15 @@ import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 @Controller
 @RequestMapping("/restRoute.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
-public class RestRouteAdminController {
+public class RestRouteAdminController implements ApplicationEventPublisherAware {
 
     @Autowired
-    private ZuulRouteRepository zuulRouteRepository;
+    private ZuulRouteRepository       zuulRouteRepository;
+
+    @Autowired
+    private Environment               environment;
+
+    private ApplicationEventPublisher publisher;
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
                                                              MediaType.APPLICATION_XHTML_XML_VALUE })
@@ -87,6 +96,7 @@ public class RestRouteAdminController {
                                                     .sensitiveHeaders(sensitiveHeaders)//
                                                     .build();
         zuulRouteRepository.save(entityRest);
+        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
         return "redirect:/restRoute.html";
     }
 
@@ -112,6 +122,7 @@ public class RestRouteAdminController {
             addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
             return null;
         });
+        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
         return "redirect:/restRoute.html";
     }
 
@@ -122,6 +133,7 @@ public class RestRouteAdminController {
         zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
             zuulRouteRepository.delete(zuulRouteEntity);
             addSuccessMessage(attributes, "路由 " + routeId + " 已删除。");
+            publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
             return zuulRouteEntity;
         }).orElseGet(() -> {
             addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
@@ -142,4 +154,8 @@ public class RestRouteAdminController {
 
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.publisher = applicationEventPublisher;
+    }
 }

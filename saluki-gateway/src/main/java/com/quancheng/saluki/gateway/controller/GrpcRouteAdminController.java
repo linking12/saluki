@@ -185,6 +185,7 @@ public class GrpcRouteAdminController implements ApplicationEventPublisherAware 
         zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
             zuulRouteRepository.delete(zuulRouteEntity);
             addSuccessMessage(attributes, "路由 " + routeId + " 已删除。");
+            publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
             return zuulRouteEntity;
         }).orElseGet(() -> {
             addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
