@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +28,7 @@ import com.quancheng.saluki.gateway.grpc.service.ApiJarService;
  */
 
 @Controller
-@RequestMapping("/grpcRoute.html")
+@RequestMapping("/api.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class ApiAdminController {
 
@@ -39,8 +40,11 @@ public class ApiAdminController {
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
                                                              MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String listAllApiJar(Model model, Pageable pageable) {
-
+    public String listAllApiJar(@RequestParam(name = "type", required = false) String editType, Model model,
+                                Pageable pageable) {
+        if (!StringUtils.isEmpty(editType)) {
+            return "api/api";
+        }
         model.addAttribute("apis", jarRespository.findAll(pageable));
         return "api/apis";
     }
