@@ -48,17 +48,12 @@ public class DefaultZuulRouteConfiguration implements InitializingBean {
                                                         .url("http://www.baidu.com")//
                                                         .build();
 
-            ZuulGrpcFieldMappingEntity fieldMapping1 = ZuulGrpcFieldMappingEntity.builder()//
-                                                                                 .sourceField("name")//
-                                                                                 .targetField("name")//
-                                                                                 .targetFieldType("string").build();
-            ZuulGrpcFieldMappingEntity fieldMapping2 = ZuulGrpcFieldMappingEntity.builder()//
-                                                                                 .sourceField("name1")//
-                                                                                 .targetField("name1")//
-                                                                                 .targetFieldType("string").build();
-            fieldMapping1.setRoute(entityGrpc);
-            fieldMapping2.setRoute(entityGrpc);
-            entityGrpc.setFieldMapping(Sets.newHashSet(fieldMapping1, fieldMapping2));
+            ZuulGrpcFieldMappingEntity fieldMapping = ZuulGrpcFieldMappingEntity.builder()//
+                                                                                .sourceField("name")//
+                                                                                .targetField("name")//
+                                                                                .targetFieldType("string").build();
+            fieldMapping.setRoute(entityGrpc);
+            entityGrpc.setFieldMapping(Sets.newHashSet(fieldMapping));
             routeRepository.save(entityGrpc);
             routeRepository.save(entityRest);
         }
