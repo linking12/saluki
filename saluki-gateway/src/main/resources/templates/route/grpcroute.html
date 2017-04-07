@@ -93,6 +93,15 @@
 				                  </div>
 				                </div>
 				                <div class="row">
+				                  <div class="col-md-12">
+				                      <label class="control-label">字段映射</label>
+					                  <textarea class="form-control" rows="3" name="fieldMapping" th:text="${fieldMapping}">
+					                     restParam1->grpcParam1,restParam2->grpcParam2
+					                  </textarea>
+					                  <span class="help-block">restParam->grpcParam 多个以,号分割</span>
+					                 </div>
+				                </div>
+				                <div class="row">
 				                   <div class="col-md-12">
 				                      &nbsp;
 					               </div>

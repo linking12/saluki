@@ -11,6 +11,9 @@ import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addE
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addSuccessMessage;
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addWarningMessage;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -24,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
+import com.quancheng.saluki.gateway.zuul.entity.ZuulGrpcFieldMappingEntity;
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
 import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 
@@ -56,6 +62,19 @@ public class GrpcRouteAdminController {
                     model.addAttribute("group", zuulRouteEntity.getGroup());
                     model.addAttribute("version", zuulRouteEntity.getVersion());
                     model.addAttribute("method", zuulRouteEntity.getMethod());
+                    Set<ZuulGrpcFieldMappingEntity> mappingEntitys = zuulRouteEntity.getFieldMapping();
+                    StringBuilder fieldMapping = new StringBuilder("");
+                    int index = 0;
+                    for (ZuulGrpcFieldMappingEntity mappingEntity : mappingEntitys) {
+                        fieldMapping.append(mappingEntity.getSourceField());
+                        fieldMapping.append("->");
+                        fieldMapping.append(mappingEntity.getTargetField());
+                        if (index != mappingEntitys.size() - 1) {
+                            fieldMapping.append(",");
+                        }
+                        index++;
+                    }
+                    model.addAttribute("fieldMapping", fieldMapping.toString());
                     return null;
                 });
             }
@@ -73,7 +92,8 @@ public class GrpcRouteAdminController {
                          @RequestParam(name = "serviceName", required = true) String serviceName,
                          @RequestParam(name = "group", required = true) String group,
                          @RequestParam(name = "version", required = true) String version,
-                         @RequestParam(name = "method", required = true) String method, RedirectAttributes attributes) {
+                         @RequestParam(name = "method", required = true) String method,
+                         @RequestParam(name = "fieldMapping") String fieldMapping, RedirectAttributes attributes) {
         if (zuulRouteRepository.findOneByRouteId(routeId).isPresent()) {
             addErrorMessage(attributes, routeId + "已经存在 ");
             resetRequestParams(routeId, routePath, isGrpc, serviceName, group, version, method, attributes);
@@ -88,6 +108,18 @@ public class GrpcRouteAdminController {
                                                     .version(version)//
                                                     .method(method)//
                                                     .build();
+        Map<String, String> map = Splitter.on(",").withKeyValueSeparator("->").split(fieldMapping);
+        Set<ZuulGrpcFieldMappingEntity> zuulGrpcFieldMappingEntitys = Sets.newHashSet();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            ZuulGrpcFieldMappingEntity zuulGrpcFieldMappingEntity = ZuulGrpcFieldMappingEntity.builder()//
+                                                                                              .sourceField(entry.getKey())//
+                                                                                              .targetField(entry.getValue())//
+                                                                                              .targetFieldType("string").build();
+            zuulGrpcFieldMappingEntity.setRoute(entityGrpc);
+            zuulGrpcFieldMappingEntitys.add(zuulGrpcFieldMappingEntity);
+        }
+
+        entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
         zuulRouteRepository.save(entityGrpc);
         return "redirect:/grpcRoute.html";
     }
@@ -100,21 +132,38 @@ public class GrpcRouteAdminController {
                          @RequestParam(name = "serviceName", required = true) String serviceName,
                          @RequestParam(name = "group", required = true) String group,
                          @RequestParam(name = "version", required = true) String version,
-                         @RequestParam(name = "method", required = true) String method, RedirectAttributes attributes) {
+                         @RequestParam(name = "method", required = true) String method,
+                         @RequestParam(name = "fieldMapping") String fieldMapping, RedirectAttributes attributes) {
 
         zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
-            zuulRouteEntity.setZuul_route_id(routeId);
-            zuulRouteEntity.setPath(routePath);
-            zuulRouteEntity.setIs_grpc(true);
-            zuulRouteEntity.setService_name(serviceName);
-            zuulRouteEntity.setGroup(group);
-            zuulRouteEntity.setVersion(version);
-            zuulRouteEntity.setMethod(method);
-            return zuulRouteRepository.save(zuulRouteEntity);
+            zuulRouteRepository.delete(zuulRouteEntity);
+            return zuulRouteEntity;
         }).orElseGet(() -> {
             addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
             return null;
         });
+        ZuulRouteEntity entityGrpc = ZuulRouteEntity.builder()//
+                                                    .zuul_route_id(routeId)//
+                                                    .path(routePath)//
+                                                    .is_grpc(true)//
+                                                    .service_name(serviceName)//
+                                                    .group(group)//
+                                                    .version(version)//
+                                                    .method(method)//
+                                                    .build();
+        Map<String, String> map = Splitter.on(",").withKeyValueSeparator("->").split(fieldMapping);
+        Set<ZuulGrpcFieldMappingEntity> zuulGrpcFieldMappingEntitys = Sets.newHashSet();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            ZuulGrpcFieldMappingEntity zuulGrpcFieldMappingEntity = ZuulGrpcFieldMappingEntity.builder()//
+                                                                                              .sourceField(entry.getKey())//
+                                                                                              .targetField(entry.getValue())//
+                                                                                              .targetFieldType("string").build();
+            zuulGrpcFieldMappingEntity.setRoute(entityGrpc);
+            zuulGrpcFieldMappingEntitys.add(zuulGrpcFieldMappingEntity);
+        }
+
+        entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
+        zuulRouteRepository.save(entityGrpc);
         return "redirect:/grpcRoute.html";
     }
 
