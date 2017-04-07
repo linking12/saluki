@@ -44,7 +44,7 @@ public class DefaultZuulRouteConfiguration implements InitializingBean {
             ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
                                                         .zuul_route_id("helloRest")//
                                                         .path("/api/helloRest")//
-                                                        .strip_prefix(true)//
+                                                        .strip_prefix(false)//
                                                         .url("http://www.baidu.com")//
                                                         .build();
 
