@@ -10,6 +10,7 @@ package com.quancheng.saluki.gateway.zuul.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,10 +30,10 @@ public interface ZuulRouteRepository extends JpaRepository<ZuulRouteEntity, Stri
     public List<ZuulRouteEntity> findTop10Route(Pageable pageable);
 
     @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=0 or route.is_grpc=null order by route.id desc")
-    public List<ZuulRouteEntity> findAllRest(Pageable pageable);
+    public Page<ZuulRouteEntity> findAllRest(Pageable pageable);
 
     @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=1 order by route.id desc")
-    public List<ZuulRouteEntity> findAllGrpc(Pageable pageable);
+    public Page<ZuulRouteEntity> findAllGrpc(Pageable pageable);
 
     @Query(value = "select route from ZuulRouteEntity route where route.zuul_route_id = :route_Id")
     Optional<ZuulRouteEntity> findOneByRouteId(@Param("route_Id") String route_Id);
