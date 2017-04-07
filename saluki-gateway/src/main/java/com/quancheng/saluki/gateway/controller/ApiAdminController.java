@@ -55,6 +55,6 @@ public class ApiAdminController {
                                RedirectAttributes attributes) {
 
         apiJarService.saveJar(jarVersion, jarUrl);
-        return "api/apis";
+        return "redirect:/api.html";
     }
 }
