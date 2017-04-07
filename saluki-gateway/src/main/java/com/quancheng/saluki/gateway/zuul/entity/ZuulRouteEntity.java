@@ -75,9 +75,6 @@ public class ZuulRouteEntity extends AbstractPersistable<Long> {
     @Column(name = "grpc_method")
     private String                          method;
 
-    @Column(name = "modify_time")
-    private Date                            modifyTime;
-
     @OneToMany(mappedBy = "route", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ZuulGrpcFieldMappingEntity> fieldMapping;
 

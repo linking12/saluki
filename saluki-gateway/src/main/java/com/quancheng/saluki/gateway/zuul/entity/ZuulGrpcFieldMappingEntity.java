@@ -39,11 +39,11 @@ import lombok.NoArgsConstructor;
 public class ZuulGrpcFieldMappingEntity extends AbstractPersistable<Long> {
 
     @NotNull
-    @Column(name = "source_field", nullable = false, unique = true, length = 100)
+    @Column(name = "source_field", nullable = false, length = 100)
     private String          sourceField;
 
     @NotNull
-    @Column(name = "target_field", nullable = false, unique = true, length = 100)
+    @Column(name = "target_field", nullable = false, length = 100)
     private String          targetField;
 
     @Column(name = "target_field_type", length = 100)

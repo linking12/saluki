@@ -25,13 +25,13 @@ import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
 @Repository
 public interface ZuulRouteRepository extends JpaRepository<ZuulRouteEntity, String> {
 
-    @Query(value = "select route from ZuulRouteEntity route order by route.modifyTime desc")
+    @Query(value = "select route from ZuulRouteEntity route order by route.id desc")
     public List<ZuulRouteEntity> findTop10Route(Pageable pageable);
 
-    @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=0 or route.is_grpc=null order by route.modifyTime desc")
+    @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=0 or route.is_grpc=null order by route.id desc")
     public List<ZuulRouteEntity> findAllRest(Pageable pageable);
 
-    @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=1 order by route.modifyTime desc")
+    @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=1 order by route.id desc")
     public List<ZuulRouteEntity> findAllGrpc(Pageable pageable);
 
     @Query(value = "select route from ZuulRouteEntity route where route.zuul_route_id = :route_Id")
