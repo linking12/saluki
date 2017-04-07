@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import com.quancheng.saluki.gateway.grpc.repository.ApiJarRepository;
 import com.quancheng.saluki.gateway.grpc.service.ApiJarService;
 
 /**
@@ -22,16 +23,21 @@ import com.quancheng.saluki.gateway.grpc.service.ApiJarService;
 @Profile("default-user-and-roles_route")
 public class DefaultGrpcConfiguration implements InitializingBean {
 
-    private static final String DEFAULT_API_URL     = "http://repo.quancheng-ec.com/repository/maven-snapshots/com/quancheng/shared/shared.api/1.1.6-SNAPSHOT/shared.api-1.1.6-20170104.091634-32.jar";
+    private static final String DEFAULT_API_URL     = "http://repo.quancheng-ec.com/repository/maven-snapshots/com/quancheng/shared/shared.api/1.1.12-SNAPSHOT/shared.api-1.1.12-20170407.093310-449.jar";
 
-    private static final String DEFAULT_API_VERSION = "1.1.6-SNAPSHOT";
+    private static final String DEFAULT_API_VERSION = "1.1.12-SNAPSHOT";
 
     @Autowired
     private ApiJarService       apiJarService;
 
+    @Autowired
+    private ApiJarRepository    jarRespository;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        apiJarService.saveJar(DEFAULT_API_VERSION, DEFAULT_API_URL);
+        if (jarRespository.count() == 0) {
+            apiJarService.saveJar(DEFAULT_API_VERSION, DEFAULT_API_URL);
+        }
     }
 
 }
