@@ -25,4 +25,7 @@ public interface ZuulRouteRepository extends JpaRepository<ZuulRouteEntity, Stri
 
     @Query(value = "select route from ZuulRouteEntity route order by route.modifyTime desc")
     public List<ZuulRouteEntity> findTop10Route(Pageable pageable);
+
+    @Query(value = "select route from ZuulRouteEntity route where route.is_grpc=0 or route.is_grpc=null order by route.modifyTime desc")
+    public List<ZuulRouteEntity> findAllRest(Pageable pageable);
 }
