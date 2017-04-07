@@ -8,6 +8,8 @@
 package com.quancheng.saluki.gateway.controller;
 
 import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addErrorMessage;
+import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addSuccessMessage;
+import static com.quancheng.saluki.gateway.controller.RedirectMessageHelper.addWarningMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,13 +27,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.quancheng.saluki.gateway.zuul.entity.ZuulRouteEntity;
 import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * @author shimingliu 2017年4月7日 上午10:31:11
  * @version RouteAdminController.java, v 0.0.1 2017年4月7日 上午10:31:11 shimingliu
  */
-@Slf4j
 @Controller
 @RequestMapping("/restRoute.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -110,6 +110,21 @@ public class RestRouteAdminController {
             return zuulRouteRepository.save(zuulRouteEntity);
         }).orElseGet(() -> {
             addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
+            return null;
+        });
+        return "redirect:/restRoute.html";
+    }
+
+    @RequestMapping(path = "/_remove/{routeId}", method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
+                                                                                          MediaType.APPLICATION_XHTML_XML_VALUE })
+    public String deleteRoute(@PathVariable("routeId") String routeId, RedirectAttributes attributes) {
+
+        zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
+            zuulRouteRepository.delete(zuulRouteEntity);
+            addSuccessMessage(attributes, "路由 " + routeId + " 已删除。");
+            return zuulRouteEntity;
+        }).orElseGet(() -> {
+            addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
             return null;
         });
         return "redirect:/restRoute.html";
