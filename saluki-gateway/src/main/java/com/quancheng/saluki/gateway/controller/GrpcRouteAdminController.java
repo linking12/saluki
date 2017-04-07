@@ -15,6 +15,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,10 +44,15 @@ import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 @Controller
 @RequestMapping("/grpcRoute.html")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
-public class GrpcRouteAdminController {
+public class GrpcRouteAdminController implements ApplicationEventPublisherAware {
 
     @Autowired
-    private ZuulRouteRepository zuulRouteRepository;
+    private ZuulRouteRepository       zuulRouteRepository;
+
+    @Autowired
+    private Environment               environment;
+
+    private ApplicationEventPublisher publisher;
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
                                                              MediaType.APPLICATION_XHTML_XML_VALUE })
@@ -121,6 +130,7 @@ public class GrpcRouteAdminController {
 
         entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
         zuulRouteRepository.save(entityGrpc);
+        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
         return "redirect:/grpcRoute.html";
     }
 
@@ -164,6 +174,7 @@ public class GrpcRouteAdminController {
 
         entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
         zuulRouteRepository.save(entityGrpc);
+        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
         return "redirect:/grpcRoute.html";
     }
 
@@ -193,5 +204,10 @@ public class GrpcRouteAdminController {
         attributes.addFlashAttribute("version", version);
         attributes.addFlashAttribute("method", method);
 
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.publisher = applicationEventPublisher;
     }
 }

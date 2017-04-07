@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -49,15 +48,11 @@ import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
  */
 public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
-    private final Logger                   log             = LoggerFactory.getLogger(StoreProxyRouteLocator.class);
+    private final Logger           log       = LoggerFactory.getLogger(StoreProxyRouteLocator.class);
 
-    private final ZuulRouteService         store;
+    private final ZuulRouteService store;
 
-    private final ScheduledExecutorService refreshExecutor = Executors.newScheduledThreadPool(1,
-                                                                                              new NamedThreadFactory("refreshZuulRoute",
-                                                                                                                     true));
-
-    private volatile Boolean               hasLoaded       = false;
+    private volatile Boolean       hasLoaded = false;
 
     /**
      * Creates new instance of {@link StoreProxyRouteLocator}
@@ -71,17 +66,6 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
                                   ZuulRouteService store){
         super(servletPath, discovery, properties);
         this.store = store;
-        refreshExecutor.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    refresh();
-                } catch (Throwable e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }, 0, 1, TimeUnit.MINUTES);
     }
 
     @Override
@@ -89,11 +73,6 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
         List<String> ignoredPath = Lists.newArrayList();
         ignoredPath.add("/oauth/**");
         return ignoredPath;
-    }
-
-    @Override
-    public void refresh() {
-        doRefresh();
     }
 
     @Override
