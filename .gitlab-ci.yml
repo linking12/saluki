@@ -21,6 +21,7 @@ build_images:
     - echo `git rev-parse --short HEAD` >> saluki-monitor/saluki-monitor-console/bin/git.tag
     - echo $image
     - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - mvn clean install -Dmaven.test.skip=true
     - docker build --no-cache -t $aliimagemonitor -f saluki-monitor/saluki-monitor-console/Dockerfile .
     - echo "Push Image:" $aliimagemonitor " to repository..."
     - docker push $aliimagemonitor
