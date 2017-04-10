@@ -10,7 +10,7 @@ before_script:
 build_jar:
   stage: jar-build
   script:
-    - mvn clean install -U
+    - mvn clean install -U -Dmaven.test.skip=true
     - mvn deploy
   only:
     - develop
