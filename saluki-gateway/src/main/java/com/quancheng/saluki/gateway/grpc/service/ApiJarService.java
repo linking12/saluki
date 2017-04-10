@@ -101,7 +101,7 @@ public class ApiJarService {
         }
     }
 
-    private void downloadApiJar(String urlStr) throws IOException {
+    public void downloadApiJar(String urlStr) throws IOException {
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(3 * 1000);

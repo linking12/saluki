@@ -37,6 +37,8 @@ public class DefaultGrpcConfiguration implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         if (jarRespository.count() == 0) {
             apiJarService.saveJar(DEFAULT_API_VERSION, DEFAULT_API_URL);
+        } else {
+            apiJarService.downloadApiJar(DEFAULT_API_URL);
         }
     }
 
