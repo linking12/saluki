@@ -12,8 +12,6 @@ build_jar:
   script:
     - mvn clean install -U
     - mvn deploy
-    - cd saluki-plugin/saluki-gradle-plugin
-    - gradle clean uploadArchives --refresh-dependencies
   only:
     - develop
     
