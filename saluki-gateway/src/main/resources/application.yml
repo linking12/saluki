@@ -19,15 +19,15 @@ spring:
         maxWait: 60000
         minEvictableIdleTimeMillis: 300000
         minIdle: 5
-        password: 123456
+        password: ${JDBC_PASSWORD}
         poolPreparedStatements: true
         testOnBorrow: false
         testOnReturn: false
         testWhileIdle: true
         timeBetweenEvictionRunsMillis: 60000
         type: com.alibaba.druid.pool.DruidDataSource
-        url: jdbc:mysql://192.168.99.100:3306/gateway?useUnicode=true&characterEncoding=utf-8
-        username: root
+        url: jdbc:mysql://${JDBC_URL}:3306/gateway?useUnicode=true&characterEncoding=utf-8
+        username: ${JDBC_USERNAME}
         validationQuery: SELECT 1 FROM DUAL
     jackson:
         serialization:
@@ -45,10 +45,11 @@ spring:
     profiles:
         include: default-user-and-roles_route
     redis:
-        host: 192.168.99.100
+        host: ${REDIS_URL}
         pool:
             max-idle: 8
             max-wait: -1
         port: 6379
+        password: ${REDIS_PASSWORD}
     thymeleaf:
         cache: false

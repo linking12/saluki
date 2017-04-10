@@ -100,6 +100,8 @@ public class DataSourceConfiguration {
     private String              host;
     @Value("${spring.redis.port}")
     private int                 port;
+    @Value("${spring.redis.password}")
+    private String              redisPassord;
 
     @Bean
     @Primary
@@ -137,7 +139,7 @@ public class DataSourceConfiguration {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxIdle(maxIdle);
         jedisPoolConfig.setMaxWaitMillis(maxWaitMillis);
-        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port);
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, 0, redisPassord);
         return jedisPool;
     }
 }
