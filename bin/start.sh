@@ -10,4 +10,4 @@ JAVA_OPTS="${JAVA_OPTS} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/root/l
 JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true"
 JAVA_OPTS="${JAVA_OPTS} -Dsun.net.client.defaultConnectTimeout=10000"
 JAVA_OPTS="${JAVA_OPTS} -Dsun.net.client.defaultReadTimeout=30000"
-java -javaagent:/root/pinpoint-agent-1.6.1-SNAPSHOT/pinpoint-bootstrap-1.6.1-SNAPSHOT.jar -Dpinpoint.agentId=saluki_gateway-$LOCAL_IP -Dpinpoint.applicationName=saluki_gateway $JAVA_OPTS -jar ./app.jar
+java -javaagent:/root/pinpoint-agent-1.6.1-SNAPSHOT/pinpoint-bootstrap-1.6.1-SNAPSHOT.jar -Dpinpoint.agentId=${APP_NAME}-$LOCAL_IP -Dpinpoint.applicationName=${APP_NAME} $JAVA_OPTS -jar ./app.jar
