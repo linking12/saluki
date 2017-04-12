@@ -1,4 +1,4 @@
-FROM yingjunjiao/runtime-image:1.0
+FROM quancheng/runtime-image:1.1
 ENV TZ="Asia/Shanghai"
 ENV LANG C.UTF-8
 RUN apk add --update curl && \
