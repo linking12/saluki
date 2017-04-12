@@ -11,6 +11,6 @@ RUN mkdir /root/pinpoint-agent-1.6.1-SNAPSHOT \
 	&& unzip -o -d /root/pinpoint-agent-1.6.1-SNAPSHOT /root/pinpoint-agent-1.6.1-SNAPSHOT/pinpoint-agent-1.6.1-SNAPSHOT.zip \
     && rm -r /root/pinpoint-agent-1.6.1-SNAPSHOT/pinpoint-agent-1.6.1-SNAPSHOT.zip
 ENV JAVA_OPTS ""
-ENV APP_NAME saluki-gateway
+ENV APP_NAME gateway
 WORKDIR /root
 CMD ["./start.sh"]
