@@ -42,6 +42,7 @@
 		<quancheng.starter.version>1.0.1-SNAPSHOT</quancheng.starter.version>
 		<log4j.version>2.2</log4j.version>
 		<netty-tcnative.version>1.1.33.Fork26</netty-tcnative.version>
+		<hystrix.version>1.5.11</hystrix.version>
 	</properties>
 	<scm>
 		<url>https://github.com/linking12/saluki</url>
@@ -116,6 +117,17 @@
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
 				<version>4.5.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.netflix.hystrix</groupId>
+				<artifactId>hystrix-core</artifactId>
+				<version>${hystrix.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
