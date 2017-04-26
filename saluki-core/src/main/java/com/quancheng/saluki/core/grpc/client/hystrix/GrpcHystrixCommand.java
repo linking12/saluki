@@ -30,7 +30,7 @@ import io.grpc.MethodDescriptor;
  */
 public abstract class GrpcHystrixCommand extends HystrixObservableCommand<Message> {
 
-    public GrpcHystrixCommand(Setter setter, GrpcURL refUrl, MethodDescriptor<Message, Message> methodDesc){
+    public GrpcHystrixCommand(GrpcURL refUrl, MethodDescriptor<Message, Message> methodDesc){
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(refUrl.getServiceInterface()))//
                     .andCommandKey(HystrixCommandKey.Factory.asKey(methodDesc.getFullMethodName()))//
                     .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withCircuitBreakerRequestVolumeThreshold(20)// 10秒钟内至少19此请求失败，熔断器才发挥起作用

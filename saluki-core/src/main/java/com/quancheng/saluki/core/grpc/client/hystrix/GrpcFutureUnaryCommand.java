@@ -29,7 +29,7 @@ import rx.Subscriber;
  * @author liushiming 2017年4月26日 下午5:21:49
  * @version $Id: UnaryCommand.java, v 0.0.1 2017年4月26日 下午5:21:49 liushiming
  */
-public class GrpcUnaryCommand extends GrpcHystrixCommand {
+public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
 
     private final GrpcAsyncCall                      grpcAsyncCall;
 
@@ -39,9 +39,9 @@ public class GrpcUnaryCommand extends GrpcHystrixCommand {
 
     private final int                                timeOut;
 
-    public GrpcUnaryCommand(Setter setter, GrpcAsyncCall grpcAsyncCall, GrpcURL refUrl,
-                            MethodDescriptor<Message, Message> methodDesc, Message request, int timeOut){
-        super(setter, refUrl, methodDesc);
+    public GrpcFutureUnaryCommand(GrpcAsyncCall grpcAsyncCall, GrpcURL refUrl,
+                                  MethodDescriptor<Message, Message> methodDesc, Message request, int timeOut){
+        super(refUrl, methodDesc);
         this.grpcAsyncCall = grpcAsyncCall;
         this.methodDesc = methodDesc;
         this.request = request;

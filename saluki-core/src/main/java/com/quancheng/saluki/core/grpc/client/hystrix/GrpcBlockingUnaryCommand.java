@@ -35,9 +35,9 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
 
     private final MethodDescriptor<Message, Message> methodDesc;
 
-    public GrpcBlockingUnaryCommand(Setter setter, GrpcAsyncCall grpcAsyncCall, GrpcURL refUrl,
+    public GrpcBlockingUnaryCommand(GrpcAsyncCall grpcAsyncCall, GrpcURL refUrl,
                                     MethodDescriptor<Message, Message> methodDesc, Message request){
-        super(setter, refUrl, methodDesc);
+        super(refUrl, methodDesc);
         this.grpcAsyncCall = grpcAsyncCall;
         this.methodDesc = methodDesc;
         this.request = request;
