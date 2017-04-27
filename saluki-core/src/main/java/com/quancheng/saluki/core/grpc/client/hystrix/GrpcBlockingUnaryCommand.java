@@ -18,7 +18,9 @@ package com.quancheng.saluki.core.grpc.client.hystrix;
 import java.util.concurrent.ExecutionException;
 
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
@@ -51,6 +53,8 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
         try {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get();
         } catch (InterruptedException | ExecutionException e) {
+            RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS,
+                                                  String.valueOf(grpcAsyncCall.getRemoteAddress()));
             RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.BIZ_DEFAULT_EXCEPTION);
             throw rpcService;
         }

@@ -118,7 +118,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     public InetSocketAddress getProviderServer() {
         InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
-        RpcContext.getContext().set(Constants.REMOTE_ADDRESS, currentServer);
+        RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, String.valueOf(currentServer));
         return currentServer;
     }
 

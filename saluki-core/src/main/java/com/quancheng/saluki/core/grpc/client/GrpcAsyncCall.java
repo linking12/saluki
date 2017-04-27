@@ -52,6 +52,8 @@ public interface GrpcAsyncCall {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
+    public SocketAddress getRemoteAddress();
+
     public static void cacheAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
         HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
         for (Key<?> key : affinity.keys()) {
@@ -74,6 +76,11 @@ public interface GrpcAsyncCall {
                                                     final Attributes atributes) {
         CallOptions callOptions = CallOptions.DEFAULT.withAffinity(atributes);
         return new GrpcAsyncCall() {
+
+            @Override
+            public SocketAddress getRemoteAddress() {
+                return callOptions.getAffinity().get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+            }
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
@@ -116,6 +123,7 @@ public interface GrpcAsyncCall {
                     throw Status.fromThrowable(e).asRuntimeException();
                 }
             }
+
         };
     }
 

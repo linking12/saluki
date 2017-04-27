@@ -7,7 +7,6 @@
  */
 package com.quancheng.saluki.core.grpc.server.internal;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,12 +18,9 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
-import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -73,26 +69,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            collect(reqProtoBufer, respProtoBufer, start, true);
-            Throwable target = e.getCause();
-            log.error(target.getMessage(), target);
-            RpcServiceException rpcBizError = new RpcServiceException(target);
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcBizError.getMessage())//
-                                                                    .withCause(rpcBizError).asRuntimeException();
-            responseObserver.onError(statusException);
-        } catch (ProtobufException e) {
-            collect(reqProtoBufer, respProtoBufer, start, true);
-            RpcFrameworkException rpcFramworkError = new RpcFrameworkException(e);
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(rpcFramworkError.getMessage())//
-                                                                    .withCause(rpcFramworkError).asRuntimeException();
-            responseObserver.onError(statusException);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             collect(reqProtoBufer, respProtoBufer, start, true);
-            RpcServiceException rpcBizError = new RpcServiceException(e);
-            StatusRuntimeException statusException = Status.INTERNAL.withDescription(e.getMessage())//
-                                                                    .withCause(rpcBizError).asRuntimeException();
+            StatusRuntimeException statusException = Status.UNAVAILABLE.withCause(e).asRuntimeException();
             responseObserver.onError(statusException);
         } finally {
             log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", providerUrl.getServiceInterface(),
