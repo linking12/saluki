@@ -95,6 +95,9 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
                                                                     .withCause(rpcBizError).asRuntimeException();
             responseObserver.onError(statusException);
         } finally {
+            log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", providerUrl.getServiceInterface(),
+                                   method.getName(),
+                                   RpcContext.getContext().getAttachment(Constants.CONSUMER_ADDRESS)));
             getConcurrent().decrementAndGet();
         }
     }
@@ -110,11 +113,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             String service = providerUrl.getServiceInterface(); // 获取服务名称
             String method = this.method.getName(); // 获取方法名
             String consumer = RpcContext.getContext().getAttachment(Constants.CONSUMER_ADDRESS);// 远程服务器地址
-            if (log.isDebugEnabled()) {
-                log.debug("Receiver %s request from %s,and return s% ", request.toString(), consumer,
-                          response.toString());
-            }
-
             String host = providerUrl.getHost();
             int rpcPort = providerUrl.getPort();
             int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);

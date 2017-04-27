@@ -73,7 +73,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public void handleResolvedAddresses(List<ResolvedServerInfoGroup> servers, Attributes attributes) {
-            // save the nameresovle cache include routemessage listeners address
+            // 保存namesovle的attibutes信息
             this.nameResovleCache = attributes;
             Set<EquivalentAddressGroup> currentAddrs = subchannels.keySet();
             Set<EquivalentAddressGroup> latestAddrs = resolvedServerInfoGroupToEquivalentAddressGroup(servers);
