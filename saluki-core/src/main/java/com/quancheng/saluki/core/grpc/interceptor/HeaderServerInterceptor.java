@@ -46,7 +46,7 @@ public class HeaderServerInterceptor implements ServerInterceptor {
             @Override
             public void request(int numMessages) {
                 InetSocketAddress remoteAddress = (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-                RpcContext.getContext().setAttachment(Constants.CONSUMER_ADDRESS, remoteAddress.getHostString());
+                RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, remoteAddress.getHostString());
                 copyMetadataToThreadLocal(headers);
                 super.request(numMessages);
             }

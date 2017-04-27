@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
 import io.grpc.MethodDescriptor;
@@ -42,6 +43,7 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
         this.grpcAsyncCall = grpcAsyncCall;
         this.methodDesc = methodDesc;
         this.request = request;
+
     }
 
     @Override
@@ -49,7 +51,7 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
         try {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get();
         } catch (InterruptedException | ExecutionException e) {
-            RpcServiceException rpcService = new RpcServiceException(e);
+            RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.BIZ_DEFAULT_EXCEPTION);
             throw rpcService;
         }
     }

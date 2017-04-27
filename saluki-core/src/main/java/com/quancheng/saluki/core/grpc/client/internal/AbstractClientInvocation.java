@@ -29,7 +29,6 @@ import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
-import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
@@ -109,11 +108,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
             throw rpcFramwork;
-        } catch (Exception e) {
-            collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
-            log.error(e.getMessage(), e);
-            RpcServiceException rpcService = new RpcServiceException(e);
-            throw rpcService;
         } finally {
             log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
                                    getProviderServer()));
@@ -124,7 +118,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     public InetSocketAddress getProviderServer() {
         InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
-        RpcContext.getContext().set(Constants.PROVIDER_ADDRESS, currentServer);
+        RpcContext.getContext().set(Constants.REMOTE_ADDRESS, currentServer);
         return currentServer;
     }
 
@@ -151,6 +145,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     private void collect(String serviceName, String methodName, Message request, Message response, long start,
                          boolean error) {
         try {
+            String provider = getProviderServer().getHostName();
             if (request == null || response == null) {
                 return;
             }
@@ -158,7 +153,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             int concurrent = getConcurrent(serviceName, methodName).get(); // 当前并发数
             String service = serviceName; // 获取服务名称
             String method = methodName; // 获取方法名
-            String provider = getProviderServer().getHostName();
             String host = refUrl.getHost();
             Integer port = refUrl.getPort();
             if (clientServerMonitor == null) {

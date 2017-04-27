@@ -24,6 +24,7 @@ import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallCl
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes;
+import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
 import io.grpc.Grpc;
@@ -32,8 +33,6 @@ import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
 import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.Attributes.Key;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
@@ -85,14 +84,8 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             } else {
                 if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
                     String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                    StatusRuntimeException newException;
-                    if (errorCause != null) {
-                        newException = status.withDescription(errorCause).asRuntimeException();
-                        completionFuture.setException(newException);
-                    } else {
-                        newException = status.asRuntimeException();
-                        newException.printStackTrace();
-                    }
+                    Exception serverException = status.withDescription(errorCause).asRuntimeException();
+                    completionFuture.setException(serverException);
                     notify.resetChannel();
                     return;
                 } else {

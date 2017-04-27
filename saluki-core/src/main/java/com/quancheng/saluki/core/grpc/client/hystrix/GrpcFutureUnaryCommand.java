@@ -59,9 +59,10 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
                 RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
                 throw rpcService;
             } else {
-                RpcServiceException rpcService = new RpcServiceException(e);
+                RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.BIZ_DEFAULT_EXCEPTION);
                 throw rpcService;
             }
         }
     }
+
 }
