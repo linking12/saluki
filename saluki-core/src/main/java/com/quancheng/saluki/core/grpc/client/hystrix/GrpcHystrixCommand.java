@@ -16,10 +16,11 @@
 package com.quancheng.saluki.core.grpc.client.hystrix;
 
 import com.google.protobuf.Message;
+import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandProperties;
-import com.netflix.hystrix.HystrixObservableCommand;
+import com.netflix.hystrix.HystrixThreadPoolProperties;
 import com.quancheng.saluki.core.common.GrpcURL;
 
 import io.grpc.MethodDescriptor;
@@ -28,7 +29,9 @@ import io.grpc.MethodDescriptor;
  * @author liushiming 2017年4月26日 下午6:16:32
  * @version $Id: GrpcHystrixObservableCommand.java, v 0.0.1 2017年4月26日 下午6:16:32 liushiming
  */
-public abstract class GrpcHystrixCommand extends HystrixObservableCommand<Message> {
+public abstract class GrpcHystrixCommand extends HystrixCommand<Message> {
+
+    private static final int DEFAULT_THREADPOOL_CORE_SIZE = 30;
 
     public GrpcHystrixCommand(GrpcURL refUrl, MethodDescriptor<Message, Message> methodDesc){
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(refUrl.getServiceInterface()))//
@@ -36,7 +39,14 @@ public abstract class GrpcHystrixCommand extends HystrixObservableCommand<Messag
                     .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withCircuitBreakerRequestVolumeThreshold(20)// 10秒钟内至少19此请求失败，熔断器才发挥起作用
                                                                           .withCircuitBreakerSleepWindowInMilliseconds(30000)// 熔断器中断请求30秒后会进入半打开状态,放部分流量过去重试
                                                                           .withCircuitBreakerErrorThresholdPercentage(50)// 错误率达到50开启熔断保护
-                                                                          .withExecutionTimeoutEnabled(false)));// 禁用hystrix的超时
+                                                                          .withExecutionTimeoutEnabled(false))// 禁用这里的超时
+                    .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(getThreadPoolCoreSize(refUrl)))// 线程池为30
+        );
+
+    }
+
+    private static int getThreadPoolCoreSize(GrpcURL refUrl) {
+        return DEFAULT_THREADPOOL_CORE_SIZE;
 
     }
 }

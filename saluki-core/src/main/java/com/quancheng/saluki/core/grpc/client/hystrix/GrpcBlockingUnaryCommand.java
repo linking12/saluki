@@ -20,8 +20,6 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 
 import io.grpc.MethodDescriptor;
-import rx.Observable;
-import rx.Subscriber;
 
 /**
  * @author liushiming 2017年4月26日 下午5:56:29
@@ -44,21 +42,8 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
     }
 
     @Override
-    protected Observable<Message> construct() {
-        return Observable.create(new Observable.OnSubscribe<Message>() {
-
-            @Override
-            public void call(Subscriber<? super Message> observer) {
-                try {
-                    if (!observer.isUnsubscribed()) {
-                        Message result = grpcAsyncCall.unaryFuture(request, methodDesc).get();
-                        observer.onNext(result);
-                        observer.onCompleted();
-                    }
-                } catch (Exception e) {
-                    observer.onError(e);
-                }
-            }
-        });
+    protected Message run() throws Exception {
+        return grpcAsyncCall.unaryFuture(request, methodDesc).get();
     }
+
 }

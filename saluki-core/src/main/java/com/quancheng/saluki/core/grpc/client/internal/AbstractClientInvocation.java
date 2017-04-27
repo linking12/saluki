@@ -12,9 +12,6 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -31,7 +28,6 @@ import com.quancheng.saluki.core.grpc.client.GrpcResponse;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
-import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
@@ -93,15 +89,15 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             switch (request.getMethodRequest().getCallType()) {
                 case Constants.RPCTYPE_ASYNC:
                     respProtoBufer = new GrpcFutureUnaryCommand(grpcAsyncCall, refUrl, methodDesc, reqProtoBufer,
-                                                                timeOut).toObservable().toBlocking().toFuture().get();
+                                                                timeOut).execute();
                     break;
                 case Constants.RPCTYPE_BLOCKING:
                     respProtoBufer = new GrpcBlockingUnaryCommand(grpcAsyncCall, refUrl, methodDesc,
-                                                                  reqProtoBufer).toObservable().toBlocking().toFuture().get();
+                                                                  reqProtoBufer).execute();
                     break;
                 default:
                     respProtoBufer = new GrpcFutureUnaryCommand(grpcAsyncCall, refUrl, methodDesc, reqProtoBufer,
-                                                                timeOut).toObservable().toBlocking().toFuture().get();
+                                                                timeOut).execute();
                     break;
             }
             Class<?> respPojoType = request.getMethodRequest().getResponseType();
@@ -109,14 +105,11 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             Object respPojo = response.getResponseArg();
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, false);
             return respPojo;
-        } catch (ProtobufException | InterruptedException | ExecutionException e) {
+        } catch (ProtobufException e) {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             if (e instanceof ProtobufException) {
                 RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
                 throw rpcFramwork;
-            } else if (e instanceof TimeoutException) {
-                RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
-                throw rpcService;
             } else {
                 RpcServiceException rpcService = new RpcServiceException(e);
                 throw rpcService;
