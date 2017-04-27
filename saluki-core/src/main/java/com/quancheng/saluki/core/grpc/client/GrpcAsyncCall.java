@@ -7,7 +7,9 @@
  */
 package com.quancheng.saluki.core.grpc.client;
 
+import java.lang.reflect.Field;
 import java.net.SocketAddress;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -17,6 +19,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.async.AbstractRetryingRpcListener;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.async.RetryingUnaryRpcCallListener;
 
@@ -27,6 +30,7 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.NameResolver;
 import io.grpc.Status;
+import io.grpc.Attributes.Key;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:54:44
@@ -47,6 +51,24 @@ public interface GrpcAsyncCall {
     public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
+
+    public static void cacheAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
+        HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+        for (Key<?> key : affinity.keys()) {
+            Object obj = affinity.get(key);
+            data.put(key, obj);
+        }
+        data.putAll(toAddData);
+        try {
+            Class<?> classType = affinity.getClass();
+            Field field = classType.getDeclaredField("data");
+            field.setAccessible(true);
+            field.set(affinity, data);
+        } catch (Exception e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
+        }
+    }
 
     public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions,
                                                     final Attributes atributes) {

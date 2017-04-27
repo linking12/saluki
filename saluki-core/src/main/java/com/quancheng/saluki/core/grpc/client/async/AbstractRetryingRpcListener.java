@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,12 +26,14 @@ import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 import io.grpc.Attributes;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
 import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.Attributes.Key;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
@@ -67,37 +70,48 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     @Override
     public void onClose(Status status, Metadata trailers) {
-        GrpcNotify notify = new GrpcNotify(callOptions.getAffinity());
-        Status.Code code = status.getCode();
-        if (code == Status.Code.OK) {
-            onOK();
-            // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
-            if (retryCount > 0) {
-                notify.resetChannel();
-            }
-            return;
-        } else {
-            if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                StatusRuntimeException newException;
-                if (errorCause != null) {
-                    newException = status.withDescription(errorCause).asRuntimeException();
-                    completionFuture.setException(newException);
-                } else {
-                    newException = status.asRuntimeException();
-                    newException.printStackTrace();
+        try {
+            cacheCurrentServer();
+        } finally {
+            GrpcNotify notify = new GrpcNotify(callOptions.getAffinity());
+            Status.Code code = status.getCode();
+            if (code == Status.Code.OK) {
+                onOK();
+                // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
+                if (retryCount > 0) {
+                    notify.resetChannel();
                 }
-                notify.resetChannel();
                 return;
             } else {
-                log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
-                call = null;
-                notify.onRefreshChannel();
-                retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
-                                              TimeUnit.MILLISECONDS);
-                retryCount += 1;
+                if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                    String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
+                    StatusRuntimeException newException;
+                    if (errorCause != null) {
+                        newException = status.withDescription(errorCause).asRuntimeException();
+                        completionFuture.setException(newException);
+                    } else {
+                        newException = status.asRuntimeException();
+                        newException.printStackTrace();
+                    }
+                    notify.resetChannel();
+                    return;
+                } else {
+                    log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
+                    call = null;
+                    notify.onRefreshChannel();
+                    retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
+                                                  TimeUnit.MILLISECONDS);
+                    retryCount += 1;
+                }
             }
         }
+    }
+
+    private void cacheCurrentServer() {
+        SocketAddress currentServer = call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+        HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+        data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentServer);
+        GrpcAsyncCall.cacheAffinity(this.callOptions.getAffinity(), data);
     }
 
     protected abstract void onOK();

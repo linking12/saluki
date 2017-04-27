@@ -5,25 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Created by huangsheng.hs on 2015/1/27.
  */
 public class TypeDefinition {
 
-    @JsonIgnore
     private String                      id;
 
     private String                      type;
 
-    @JsonIgnore
     private List<TypeDefinition>        items;
 
-    @JsonIgnore
     private List<String>                enums;
 
-    @JsonIgnore
     private String                      $ref;
 
     private Map<String, TypeDefinition> properties;

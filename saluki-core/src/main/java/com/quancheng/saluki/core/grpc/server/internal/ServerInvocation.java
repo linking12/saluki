@@ -7,10 +7,8 @@
  */
 package com.quancheng.saluki.core.grpc.server.internal;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,17 +16,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
-import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -67,7 +64,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         Message respProtoBufer = null;
         long start = System.currentTimeMillis();
         try {
-            responseObserverSpecial(responseObserver);
             getConcurrent().getAndIncrement();
             Class<?> requestType = GrpcReflectUtil.getTypedReq(method);
             Object reqPojo = SerializerUtils.Protobuf2Pojo(reqProtoBufer, requestType);
@@ -100,21 +96,6 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             responseObserver.onError(statusException);
         } finally {
             getConcurrent().decrementAndGet();
-        }
-    }
-
-    private void responseObserverSpecial(StreamObserver<Message> responseObserver) {
-        try {
-            Class<?> classType = responseObserver.getClass();
-            Field field = classType.getDeclaredField("call");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            ServerCall<Message, Message> serverCall = (ServerCall<Message, Message>) field.get(responseObserver);
-            InetSocketAddress remoteAddress = (InetSocketAddress) serverCall.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-            RpcContext.getContext().setAttachment(Constants.CONSUMER_ADDRESS, remoteAddress.getHostString());
-        } catch (Exception e) {
-            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-            throw rpcFramwork;
         }
     }
 
