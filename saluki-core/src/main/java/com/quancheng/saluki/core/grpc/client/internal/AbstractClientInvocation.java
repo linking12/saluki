@@ -107,13 +107,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             return respPojo;
         } catch (ProtobufException e) {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
-            if (e instanceof ProtobufException) {
-                RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-                throw rpcFramwork;
-            } else {
-                RpcServiceException rpcService = new RpcServiceException(e);
-                throw rpcService;
-            }
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
         } catch (Exception e) {
             collect(serviceName, methodName, reqProtoBufer, respProtoBufer, start, true);
             log.error(e.getMessage(), e);

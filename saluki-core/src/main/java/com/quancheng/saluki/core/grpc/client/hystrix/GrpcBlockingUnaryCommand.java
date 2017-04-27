@@ -15,9 +15,12 @@
  */
 package com.quancheng.saluki.core.grpc.client.hystrix;
 
+import java.util.concurrent.ExecutionException;
+
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
 import io.grpc.MethodDescriptor;
 
@@ -43,7 +46,12 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
 
     @Override
     protected Message run() throws Exception {
-        return grpcAsyncCall.unaryFuture(request, methodDesc).get();
+        try {
+            return grpcAsyncCall.unaryFuture(request, methodDesc).get();
+        } catch (InterruptedException | ExecutionException e) {
+            RpcServiceException rpcService = new RpcServiceException(e);
+            throw rpcService;
+        }
     }
 
 }
