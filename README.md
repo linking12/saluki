@@ -100,3 +100,6 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 	<version>1.5.3-SNAPSHOT</version>
 </dependency>
 ```
+
+* 启动访问http://localhost:8080/doc
+![login](./doc/service.jpeg)
