@@ -101,5 +101,5 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 </dependency>
 ```
 
-* 启动访问http://localhost:8080/doc，可进行服务测试
+* 启动spring boot main，并访问localhost:8080/doc,可进行服务测试
 ![login](./doc/service.jpeg)
