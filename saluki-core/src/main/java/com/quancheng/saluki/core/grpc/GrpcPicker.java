@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
@@ -103,7 +104,7 @@ public class GrpcPicker extends SubchannelPicker {
     }
 
     private void mergeNameResolver2Affinity(Attributes affinity, List<SocketAddress> addresses) {
-        HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+        HashMap<Key<?>, Object> data = Maps.newHashMap();
         for (Key<?> key : this.nameResovleCache.keys()) {
             Object obj = this.nameResovleCache.get(key);
             data.put(key, obj);
@@ -112,10 +113,8 @@ public class GrpcPicker extends SubchannelPicker {
             Object obj = affinity.get(key);
             data.put(key, obj);
         }
-        if (addresses != null) {
-            data.put(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
-        }
-        GrpcAsyncCall.cacheAffinity(affinity, data);
+        data.put(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
+        GrpcAsyncCall.updateAffinity(affinity, data);
     }
 
     private void routerAddress(Attributes affinity) {

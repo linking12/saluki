@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
@@ -102,9 +103,9 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     private void cacheCurrentServer() {
         SocketAddress currentServer = call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-        HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+        HashMap<Key<?>, Object> data = Maps.newHashMap();
         data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentServer);
-        GrpcAsyncCall.cacheAffinity(this.callOptions.getAffinity(), data);
+        GrpcAsyncCall.updateAffinity(callOptions.getAffinity(), data);
     }
 
     protected abstract void onOK();

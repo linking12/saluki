@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -54,8 +55,8 @@ public interface GrpcAsyncCall {
 
     public SocketAddress getRemoteAddress();
 
-    public static void cacheAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
-        HashMap<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+    public static void updateAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
+        HashMap<Key<?>, Object> data = Maps.newHashMap();
         for (Key<?> key : affinity.keys()) {
             Object obj = affinity.get(key);
             data.put(key, obj);
@@ -63,9 +64,14 @@ public interface GrpcAsyncCall {
         data.putAll(toAddData);
         try {
             Class<?> classType = affinity.getClass();
-            Field field = classType.getDeclaredField("data");
-            field.setAccessible(true);
-            field.set(affinity, data);
+            Field[] fields = classType.getDeclaredFields();
+            for (Field field : fields) {
+                if (HashMap.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    field.set(affinity, data);
+                    break;
+                }
+            }
         } catch (Exception e) {
             RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
             throw rpcFramwork;
