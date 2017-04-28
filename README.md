@@ -23,7 +23,41 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 ```
 # Quick Start
 
-* 首先使用saluki提供的gradle或maven插件根据protoc文件生成interface及pojo模型,包括grpc提供的插件
+* 首先配置grpc提供的gradle货maven插件生成stub
+
+```
+<build>
+  <extensions>
+    <extension>
+      <groupId>kr.motd.maven</groupId>
+      <artifactId>os-maven-plugin</artifactId>
+      <version>1.4.1.Final</version>
+    </extension>
+  </extensions>
+  <plugins>
+    <plugin>
+      <groupId>org.xolstice.maven.plugins</groupId>
+      <artifactId>protobuf-maven-plugin</artifactId>
+      <version>0.5.0</version>
+      <configuration>
+        <protocArtifact>com.google.protobuf:protoc:3.0.2:exe:${os.detected.classifier}</protocArtifact>
+        <pluginId>grpc-java</pluginId>
+        <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.2.0:exe:${os.detected.classifier}</pluginArtifact>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>compile</goal>
+            <goal>compile-custom</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+
+```
+* 再次添加saluki提供的gradle或maven插件根据protoc文件生成interface及pojo模型
 
 ```
 <dependency>
@@ -32,21 +66,22 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 	<version>1.5.3-SNAPSHOT</version>
 	<scope>provided</scope>
 </dependency>
+
 <plugin>
-		<groupId>com.quancheng.saluki</groupId>
-		<artifactId>saluki-maven-plugin</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
-		<configuration>
-			<protoPath>src/main/proto</protoPath>
-			<buildPath>target/generated-sources/protobuf/java</buildPath>
-		</configuration>
-		<executions>
-			<execution>
-				<goals>
-					<goal>proto2java</goal>
-				</goals>
-			</execution>
-		</executions>
+	<groupId>com.quancheng.saluki</groupId>
+	<artifactId>saluki-maven-plugin</artifactId>
+	<version>1.5.3-SNAPSHOT</version>
+	<configuration>
+		<protoPath>src/main/proto</protoPath>
+		<buildPath>target/generated-sources/protobuf/java</buildPath>
+	</configuration>
+	<executions>
+		<execution>
+			<goals>
+				<goal>proto2java</goal>
+			</goals>
+		</execution>
+	</executions>
 </plugin>
 
 ```
