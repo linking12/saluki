@@ -6,7 +6,7 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 
 * 服务注册及发现，提供集群环境的服务发现及治理能力
 * 服务路由，基于javascript路由规则配置及host的路由规则配置
-* 熔断机及隔离，基于hystrix来进行的熔断机隔离
+* 熔断机及隔离，基于hystrix来进行的熔断、隔离
 * 简化开发方式，对于Grpc原生stub方式进行封装，提供了使用interface和java Bean作为服务契约的方式
 * 与spring-boot进行集成，提供了autoconfig的方式
 
