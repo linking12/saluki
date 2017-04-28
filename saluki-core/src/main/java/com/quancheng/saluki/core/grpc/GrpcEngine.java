@@ -195,6 +195,7 @@ public final class GrpcEngine {
         public PooledObject<Channel> wrap(Channel value) {
             return new DefaultPooledObject<Channel>(value);
         }
+        
 
     }
 }
