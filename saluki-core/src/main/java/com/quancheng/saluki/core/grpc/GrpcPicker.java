@@ -147,6 +147,8 @@ public class GrpcPicker extends SubchannelPicker {
                         List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
                         if (grpcRouter.match(providerUrls)) {
                             updatedServers.add(server);
+                        } else {
+                            subchannel.shutdown();
                         }
                     }
                     if (updatedServers.isEmpty()) {
@@ -154,6 +156,7 @@ public class GrpcPicker extends SubchannelPicker {
                     } else {
                         Subchannel routedSubchannel = this.buildSubchannel(updatedServers);
                         routedSubchannes.add(routedSubchannel);
+                        routedSubchannel.requestConnection();
                     }
                 }
                 this.list = Collections.unmodifiableList(routedSubchannes);
