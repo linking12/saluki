@@ -100,6 +100,10 @@ public class ProtobufSerializer implements IProtobufSerializer {
                         Class<?> pojoClzz = field.getType();
                         Object potoValue = fromProtobuf((Message) protobufValue, pojoClzz);
                         setPojoFieldValue(pojo, setter, potoValue, protobufAttribute);
+                        // 对于对象自己嵌自己的，只转换一次，防止重复递归
+                        if (pojoClazz.equals(pojoClzz)) {
+                            continue;
+                        }
                     } else if (protobufValue instanceof ProtocolMessageEnum) {
                         Class<?> enumClzz = field.getType();
                         ProtocolMessageEnum protocolEnum = (ProtocolMessageEnum) protobufValue;

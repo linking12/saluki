@@ -8,8 +8,8 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
-		<version>1.5.2</version>
-		<relativePath>../..</relativePath>
+		<version>1.5.3-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<properties>
 		<protoc-jar.version>3.1.0.1</protoc-jar.version>

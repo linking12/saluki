@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
@@ -23,13 +25,15 @@ import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallCl
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes;
+import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
+import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
 
@@ -66,37 +70,42 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
 
     @Override
     public void onClose(Status status, Metadata trailers) {
-        GrpcNotify notify = new GrpcNotify(callOptions.getAffinity());
-        Status.Code code = status.getCode();
-        if (code == Status.Code.OK) {
-            onOK();
-            // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
-            if (retryCount > 0) {
-                notify.resetChannel();
-            }
-            return;
-        } else {
-            if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
-                String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                StatusRuntimeException newException;
-                if (errorCause != null) {
-                    newException = status.withDescription(errorCause).asRuntimeException();
-                    completionFuture.setException(newException);
-                } else {
-                    newException = status.asRuntimeException();
-                    newException.printStackTrace();
+        try {
+            cacheCurrentServer();
+        } finally {
+            GrpcNotify notify = new GrpcNotify(callOptions.getAffinity());
+            Status.Code code = status.getCode();
+            if (code == Status.Code.OK) {
+                onOK();
+                // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
+                if (retryCount > 0) {
+                    notify.resetChannel();
                 }
-                notify.resetChannel();
                 return;
             } else {
-                log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
-                call = null;
-                notify.onRefreshChannel();
-                retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
-                                              TimeUnit.MILLISECONDS);
-                retryCount += 1;
+                if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                    String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
+                    Exception serverException = status.withDescription(errorCause).asRuntimeException();
+                    completionFuture.setException(serverException);
+                    notify.resetChannel();
+                    return;
+                } else {
+                    log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
+                    call = null;
+                    notify.onRefreshChannel();
+                    retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
+                                                  TimeUnit.MILLISECONDS);
+                    retryCount += 1;
+                }
             }
         }
+    }
+
+    private void cacheCurrentServer() {
+        SocketAddress currentServer = call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+        HashMap<Key<?>, Object> data = Maps.newHashMap();
+        data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentServer);
+        GrpcAsyncCall.updateAffinity(callOptions.getAffinity(), data);
     }
 
     protected abstract void onOK();
@@ -201,7 +210,8 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                     ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, affinity);
                     resolvedServers.add(serverInfo);
                 }
-                listener.onUpdate(Collections.singletonList(resolvedServers), affinity);
+                ResolvedServerInfoGroup serversGroup = ResolvedServerInfoGroup.builder().addAll(resolvedServers).build();
+                listener.onUpdate(Collections.singletonList(serversGroup), affinity);
             }
         }
     }

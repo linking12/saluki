@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author shimingliu 2016年12月16日 下午4:58:23
  * @version ThrallProperties.java, v 0.0.1 2016年12月16日 下午4:58:23 shimingliu
  */
+
 @ConfigurationProperties(prefix = "saluki.grpc")
 public class GrpcProperties {
 

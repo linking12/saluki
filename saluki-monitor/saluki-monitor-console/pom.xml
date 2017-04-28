@@ -8,8 +8,8 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
-		<version>1.5.2</version>
-		<relativePath>../..</relativePath>
+		<version>1.5.3-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<licenses>
 		<license>
@@ -56,11 +56,6 @@
 			<artifactId>httpclient</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.quancheng.shared</groupId>
-			<artifactId>mybatis-spring-boot-starter</artifactId>
-			<version>${quancheng.starter.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-consul-config</artifactId>
 			<version>${springcloud.version}</version>
@@ -93,6 +88,22 @@
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>spring-boot-starter-saluki-monitor</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>1.0.26</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>6.0.5</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -101,6 +112,14 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${springboot.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

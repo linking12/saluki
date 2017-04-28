@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
+import com.quancheng.saluki.core.grpc.util.SerializerUtils;
 
 import io.grpc.ForwardingServerCall.SimpleForwardingServerCall;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
@@ -44,8 +45,8 @@ public class HeaderServerInterceptor implements ServerInterceptor {
 
             @Override
             public void request(int numMessages) {
-                InetSocketAddress remoteAddress = (InetSocketAddress) call.attributes().get(ServerCall.REMOTE_ADDR_KEY);
-                RpcContext.getContext().setAttachment(Constants.CONSUMER_ADDRESS, remoteAddress.getHostString());
+                InetSocketAddress remoteAddress = (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+                RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, remoteAddress.getHostString());
                 copyMetadataToThreadLocal(headers);
                 super.request(numMessages);
             }

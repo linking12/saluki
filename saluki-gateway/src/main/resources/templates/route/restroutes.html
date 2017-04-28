@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+<head th:replace="template :: head"></head>
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:replace="template :: main-header">
+   </nav>   
+   <div class="navbar-default sidebar" role="navigation" th:replace="template :: main-sidebar">
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">Rest路由管理</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a th:href="@{/restRoute.html}">Rest路由管理</a></li> 
+        <li class="active">Rest路由管理</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+          <div class="white-box" th:replace="template :: alerts"/>
+     </div>
+     <div class="row">
+          <div class="white-box">
+            <div class="dataTables_wrapper">
+	            <table id="myTable" class="table table-striped">
+	              <thead>
+	                <tr>
+                        <th>路由Id</th>
+                        <th>路由Path</th>
+                        <th>路由Url</th>
+                        <th>是否忽略前缀<br/>stripPrefix</th>
+                        <th>是否重试<br/>retryAble</th>
+                        <th>覆盖全局Header<br/>sensitiveHeaders</th>
+                        <th>操作</th>
+                    </tr>
+	              </thead>
+	              <tbody>
+	                  <th:block th:each="route, iterStat : ${routeList}">
+                        <tr>
+                            <td th:text="${route.zuul_route_id}"/>
+                            <td th:text="${route.path}"/>
+                            <td th:text="${route.url}"/>
+                            <td th:text="${route.strip_prefix}"/>
+                            <td th:text="${route.retryable}"/>
+                            <td th:text="${route.sensitiveHeaders}"/>
+                            <td class="text-nowrap">
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{'' (type=add)}" data-toggle="tooltip" data-original-title="Add"> 
+                                <i class="fa fa-plus text-inverse m-r-10"></i> 
+                              </a> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{''(type=edit,edit=${route.zuul_route_id})}" data-toggle="tooltip" data-original-title="Edit"> 
+                                <i class="fa fa-pencil text-inverse m-r-10"></i> 
+                              </a> 
+                              <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{|/restRoute.html/_remove/${route.zuul_route_id}|}" data-toggle="tooltip" data-original-title="Remove"> 
+                                <i class="fa fa-close text-danger"></i> 
+                              </a> 
+                            </td>
+                        </tr>
+                       </th:block>
+                       <th:block th:include="template :: page-navigation (pageable=${routeList})"/>
+                   </tbody>
+	            </table>
+            </div>
+          </div>
+     </div> 
+    </div> 
+    <footer class="main-footer" th:replace="template :: main-footer">
+    </footer>
+   </div> 
+  </div> 
+ <th:block th:replace="template :: required-js-scripts">
+ </th:block>
+ </body>
+</html>

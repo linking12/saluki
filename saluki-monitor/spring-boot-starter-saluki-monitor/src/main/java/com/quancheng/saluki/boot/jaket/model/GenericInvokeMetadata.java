@@ -5,9 +5,11 @@ import java.util.List;
 /**
  * @author bw on 11/25/15.
  */
+@SuppressWarnings("rawtypes")
 public class GenericInvokeMetadata {
+
     private String signature;
-    private List parameterTypes;
+    private List   parameterTypes;
     private Object returnType;
 
     public String getSignature() {
@@ -36,10 +38,7 @@ public class GenericInvokeMetadata {
 
     @Override
     public String toString() {
-        return "GenericInvokeMetadata{" +
-                "signature='" + signature + '\'' +
-                ", parameterTypes=" + parameterTypes +
-                ", returnType=" + returnType +
-                '}';
+        return "GenericInvokeMetadata{" + "signature='" + signature + '\'' + ", parameterTypes=" + parameterTypes
+               + ", returnType=" + returnType + '}';
     }
 }

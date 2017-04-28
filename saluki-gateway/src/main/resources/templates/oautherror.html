@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="template :: head">
+</head>
+<body>
+<!-- Preloader -->
+<div class="preloader">
+  <div class="cssload-speeding-wheel"></div>
+</div>
+<section id="wrapper" class="login-register">
+   <div class="error-box">
+    <div class="error-body text-center">
+      <h1>啊偶……! Something went wrong.</h1>
+      <p class="text-muted m-t-30 m-b-30">
+                <span th:text="${message}"></span>
+                (
+                <span th:text="${error.summary}"></span>
+                )
+      </p>
+      <a href="/gateway" class="btn btn-info btn-rounded waves-effect waves-light m-b-40">Back to home</a> </div>
+     <footer class="main-footer" th:replace="template :: main-footer">
+     </footer>
+  </div>
+</section>
+<th:block th:replace="template :: required-js-scripts">
+</th:block>
+</body>
+</html>

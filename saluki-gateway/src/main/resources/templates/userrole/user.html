@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="zh-CN">
+<head th:replace="template :: head"></head>
+ <body> 
+  <!--content begin--> 
+  <div class="preloader"> 
+   <div class="cssload-speeding-wheel"></div> 
+  </div> 
+  <div id="wrapper"> 
+   <nav class="navbar navbar-default navbar-static-top m-b-0" th:replace="template :: main-header">
+   </nav>   
+   <div class="navbar-default sidebar" role="navigation" th:replace="template :: main-sidebar">
+   </div> 
+   <!-- Left navbar-header end --> 
+   <div id="page-wrapper"> 
+    <div class="container-fluid"> 
+     <div class="row bg-title"> 
+      <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12"> 
+       <h4 class="page-title">用户管理</h4> 
+      </div> 
+      <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+       <ol class="breadcrumb"> 
+        <li><a th:href="@{/users.html}">用户管理</a></li> 
+        <li class="active">用户管理</li> 
+       </ol> 
+      </div> 
+     </div> 
+     <div class="row">
+          <div class="white-box" th:replace="template :: alerts"/>
+     </div>
+     <div class="row">
+        <div class="white-box">
+        <div class="panel panel-info">
+           <div class="panel-heading" th:text="${param.containsKey('edit')?'编辑用户':'增加用户'}"/>
+           <div class="panel-wrapper collapse in" aria-expanded="true">
+              <div class="panel-body">
+                  <form th:action="${param.containsKey('edit')}? @{/users.html/_update} : @{/users.html/_create}" method="post" th:object="${editUser}">
+		              <div class="form-body">
+				                <div class="row">
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">用户名</label>
+				                      <input class="form-control" id="displayEditUsername" type="text" placeholder="你的用户名" th:value="*{username}" disabled="disabled" th:if="${param.containsKey('edit')}" />
+                                      <input type="hidden" th:value="*{username}" name="username" th:if="${param.containsKey('edit')}"/>
+                                      <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required="required" value="" th:value="${username}" th:if="${!param.containsKey('edit')}"/>
+				                     </div>
+				                  </div>
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                       <label class="control-label">角色</label>
+				                       <select class="selectpicker" name="roles" multiple="multiple" data-style="form-control">
+				                            <option th:if="${!param.containsKey('edit')}" value="ROLE" label="角色" th:each="role : ${roles}" th:value="${role.name}" th:label="${role.name}" th:text="${role.name}" th:selected="${#lists.contains(#objects.nullSafe(selectedRoles, {}), role.name)}">角色</option>
+							                <option th:if="${param.containsKey('edit')}" value="ROLE" label="角色" th:each="role : ${roles}" th:value="${role.name}" th:label="${role.name}" th:text="${role.name}" th:selected="${#lists.contains(editUser.roles, role.name)}">角色</option>
+                					   </select>
+				                    </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">密码</label>
+				                      <input type="password" class="form-control" id="update-password" name="password" placeholder="密码" />
+				                     </div>
+				                  </div>
+				                  <div class="col-md-6">
+				                    <div class="form-group">
+				                      <label class="control-label">重复密码</label>
+				                      <input type="password" class="form-control" id="update-password-confirmation" name="password-confirmation" placeholder="密码" />
+				                     </div>
+				                  </div>
+				                </div>
+				               <div class="row">
+				                   <div class="col-md-12">
+				                      &nbsp;
+					               </div>
+				               </div>
+		               </div>
+		               <div class="form-actions">
+			                <div class="row">
+			                  <div class="col-md-12">
+			                    <div class="row">
+			                      <div class="col-md-offset-5 col-md-9">
+			                        <button type="submit" class="btn btn-success">Submit</button>
+			                        <a type="button" class="btn btn-default" th:href="@{/users.html}">Cancel</a>
+			                      </div>
+			                    </div>
+			                  </div>
+			                </div>
+                       </div>
+                  </form>
+              </div>
+            </div>
+          </div>  
+        </div>
+     </div> 
+     <footer class="main-footer" th:replace="template :: main-footer"/>
+     </div> 
+    </div>
+  </div> 
+ <th:block th:replace="template :: required-js-scripts">
+ </th:block>
+ </body>
+</html>

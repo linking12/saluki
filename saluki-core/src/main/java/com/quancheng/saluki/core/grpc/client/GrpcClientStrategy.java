@@ -49,7 +49,7 @@ public class GrpcClientStrategy {
             String[] methodNames = StringUtils.split(refUrl.getParameter(Constants.METHODS_KEY), ",");
             int retries = refUrl.getParameter((Constants.METHOD_RETRY_KEY), 0);
             Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
-            return new GenericProxyClient<Object>(new GrpcClassLoader(), methodRetries, refUrl);
+            return new GenericProxyClient<Object>(methodRetries, refUrl);
         } else {
             if (isGrpcStub) {
                 String stubClassName = refUrl.getParameter(Constants.INTERFACECLASS_KEY);

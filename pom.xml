@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3-SNAPSHOT</version>
 	<inceptionYear>2017</inceptionYear>
 	<packaging>pom</packaging>
 	<licenses>
@@ -26,9 +25,10 @@
 		<module>saluki-monitor/saluki-monitor-console</module>
 		<module>saluki-plugin/saluki-maven-plugin</module>
 		<module>saluki-plugin/saluki-plugin-common</module>
+		<module>saluki-gateway</module>
 	</modules>
 	<properties>
-		<grpc-all.version>1.0.1</grpc-all.version>
+		<grpc-all.version>1.2.0</grpc-all.version>
 		<guava.version>20.0</guava.version>
 		<slf4j-api.version>1.7.21</slf4j-api.version>
 		<commons-lang3.version>3.4</commons-lang3.version>
@@ -37,11 +37,12 @@
 		<javassist.version>3.22.0-CR1</javassist.version>
 		<protobuf-java.version>3.0.0</protobuf-java.version>
 		<httpclient.version>4.5.1</httpclient.version>
-		<springboot.version>1.4.1.RELEASE</springboot.version>
+		<springboot.version>1.4.2.RELEASE</springboot.version>
 		<springcloud.version>1.0.0.RELEASE</springcloud.version>
 		<quancheng.starter.version>1.0.1-SNAPSHOT</quancheng.starter.version>
 		<log4j.version>2.2</log4j.version>
 		<netty-tcnative.version>1.1.33.Fork26</netty-tcnative.version>
+		<hystrix.version>1.5.11</hystrix.version>
 	</properties>
 	<scm>
 		<url>https://github.com/linking12/saluki</url>
@@ -116,6 +117,17 @@
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
 				<version>4.5.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.netflix.hystrix</groupId>
+				<artifactId>hystrix-core</artifactId>
+				<version>${hystrix.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

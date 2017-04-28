@@ -7,16 +7,20 @@
  */
 package com.quancheng.saluki.core.grpc.client;
 
+import java.lang.reflect.Field;
 import java.net.SocketAddress;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.async.AbstractRetryingRpcListener;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.async.RetryingUnaryRpcCallListener;
 
@@ -27,6 +31,7 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.NameResolver;
 import io.grpc.Status;
+import io.grpc.Attributes.Key;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:54:44
@@ -48,10 +53,40 @@ public interface GrpcAsyncCall {
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
+    public SocketAddress getRemoteAddress();
+
+    public static void updateAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
+        HashMap<Key<?>, Object> data = Maps.newHashMap();
+        for (Key<?> key : affinity.keys()) {
+            Object obj = affinity.get(key);
+            data.put(key, obj);
+        }
+        data.putAll(toAddData);
+        try {
+            Class<?> classType = affinity.getClass();
+            Field[] fields = classType.getDeclaredFields();
+            for (Field field : fields) {
+                if (HashMap.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    field.set(affinity, data);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+            throw rpcFramwork;
+        }
+    }
+
     public static GrpcAsyncCall createGrpcAsyncCall(final Channel channel, final RetryOptions retryOptions,
                                                     final Attributes atributes) {
         CallOptions callOptions = CallOptions.DEFAULT.withAffinity(atributes);
         return new GrpcAsyncCall() {
+
+            @Override
+            public SocketAddress getRemoteAddress() {
+                return callOptions.getAffinity().get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+            }
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
@@ -94,6 +129,7 @@ public interface GrpcAsyncCall {
                     throw Status.fromThrowable(e).asRuntimeException();
                 }
             }
+
         };
     }
 

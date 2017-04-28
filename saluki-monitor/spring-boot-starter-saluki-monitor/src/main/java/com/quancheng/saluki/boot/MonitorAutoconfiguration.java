@@ -16,6 +16,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -23,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 
 /**
  * @author shimingliu 2016年12月20日 下午3:44:35
@@ -74,5 +77,24 @@ public class MonitorAutoconfiguration {
         }
 
     };
+
+    @Configuration
+    @AutoConfigureAfter(WebMvcAutoConfiguration.class)
+    public static class HystrixEventStreamConfig {
+
+        @Bean
+        public HystrixMetricsStreamServlet hystrixMetricsStreamServlet() {
+            return new HystrixMetricsStreamServlet();
+        }
+
+        @Bean
+        public ServletRegistrationBean registration(HystrixMetricsStreamServlet servlet) {
+            ServletRegistrationBean registrationBean = new ServletRegistrationBean();
+            registrationBean.setServlet(servlet);
+            registrationBean.setEnabled(true);
+            registrationBean.addUrlMappings("/hystrix.stream");
+            return registrationBean;
+        }
+    }
 
 }
