@@ -28,7 +28,7 @@ import com.google.protobuf.ProtocolStringList;
  * @author shimingliu 2016年12月17日 下午1:43:38
  * @version Proto2Interface.java, v 0.0.1 2016年12月17日 下午1:43:38 shimingliu
  */
-public class Proto2Service {
+public class CommonProto2Java {
 
     private final String        discoveryRoot;
 
@@ -38,14 +38,14 @@ public class Proto2Service {
 
     private Map<String, String> pojoTypes;
 
-    private Proto2Service(String discoveryRoot, String generatePath){
+    private CommonProto2Java(String discoveryRoot, String generatePath){
         this.discoveryRoot = discoveryRoot;
         this.generatePath = generatePath;
         this.commondProtoc = CommandProtoc.configProtoPath(discoveryRoot);
     }
 
-    public static Proto2Service forConfig(String discoveryRoot, String generatePath) {
-        return new Proto2Service(discoveryRoot, generatePath);
+    public static CommonProto2Java forConfig(String discoveryRoot, String generatePath) {
+        return new CommonProto2Java(discoveryRoot, generatePath);
     }
 
     public void generateFile(String protoPath) {

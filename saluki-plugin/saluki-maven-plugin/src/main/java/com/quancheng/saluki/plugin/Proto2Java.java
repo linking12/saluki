@@ -19,7 +19,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.common.collect.Lists;
-import com.quancheng.plugin.common.Proto2Service;
+import com.quancheng.plugin.common.CommonProto2Java;
 
 /**
  * @author shimingliu 2016年12月17日 下午12:31:10
@@ -40,7 +40,7 @@ public class Proto2Java extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         File deirectory = new File(protoPath);
         listAllProtoFile(deirectory);
-        Proto2Service protp2ServicePojo = Proto2Service.forConfig(protoPath, buildPath);
+        CommonProto2Java protp2ServicePojo = CommonProto2Java.forConfig(protoPath, buildPath);
         for (File file : allProtoFile) {
             if (file.exists()) {
                 String protoFilePath = file.getPath();
