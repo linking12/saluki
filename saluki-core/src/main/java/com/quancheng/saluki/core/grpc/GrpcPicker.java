@@ -79,7 +79,7 @@ public class GrpcPicker extends SubchannelPicker {
         this.routerAddress(affinity);
         if (size > 0) {
             Subchannel subchannel = nextSubchannel();
-            mergeNameResolver2Affinity(affinity, subchannel.getAddresses().getAddresses());
+            mergeAffinity(affinity, subchannel.getAddresses().getAddresses());
             return PickResult.withSubchannel(subchannel);
         }
         if (status != null) {
@@ -103,7 +103,7 @@ public class GrpcPicker extends SubchannelPicker {
         }
     }
 
-    private void mergeNameResolver2Affinity(Attributes affinity, List<SocketAddress> addresses) {
+    private void mergeAffinity(Attributes affinity, List<SocketAddress> addresses) {
         HashMap<Key<?>, Object> data = Maps.newHashMap();
         for (Key<?> key : this.nameResovleCache.keys()) {
             Object obj = this.nameResovleCache.get(key);
@@ -152,7 +152,7 @@ public class GrpcPicker extends SubchannelPicker {
                     if (updatedServers.isEmpty()) {
                         throw new IllegalArgumentException("The router condition has stoped all server address");
                     } else {
-                        Subchannel routedSubchannel = this.buildSubchannel(updatedServers);
+                        Subchannel routedSubchannel = buildSubchannel(updatedServers);
                         routedSubchannes.add(routedSubchannel);
                         routedSubchannel.requestConnection();
                     }
