@@ -78,9 +78,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         int timeOut = request.getMethodRequest().getCallTimeout();
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
-        RetryOptions retryConfig = createRetryOption(methodName);
-        Attributes attributes = this.buildAttributes(refUrl);
-        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryConfig, attributes);
+        RetryOptions retryOption = createRetryOption(methodName);
+        Attributes attributes = createAffinity(refUrl);
+        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryOption, attributes);
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
@@ -122,7 +122,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return currentServer;
     }
 
-    private Attributes buildAttributes(GrpcURL url) {
+    private Attributes createAffinity(GrpcURL url) {
         Attributes attributes = Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
         this.attributes = attributes;
         return attributes;
