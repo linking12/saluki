@@ -1,6 +1,5 @@
 package com.quancheng.saluki.example.server;
 
-import com.google.common.base.Preconditions;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;

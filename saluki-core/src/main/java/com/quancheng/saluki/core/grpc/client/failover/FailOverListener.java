@@ -30,7 +30,6 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 /**
  * @author liushiming 2017年5月2日 下午5:42:42
