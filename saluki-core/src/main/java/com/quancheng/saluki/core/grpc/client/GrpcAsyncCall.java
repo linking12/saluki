@@ -17,8 +17,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal;
-import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
+import com.quancheng.saluki.core.grpc.client.async.ClientCallInternal;
 import com.quancheng.saluki.core.grpc.client.async.RetryCallListener;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -99,14 +98,13 @@ public interface GrpcAsyncCall {
             /**
              * Help Method
              */
-            private AsyncCallClientInternal<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
-                AsyncCallClientInternal<Message, Message> asyncRpc = AsyncCallInternal.createGrpcAsyncCall(channel,
-                                                                                                           method);
+            private ClientCallInternal<Message, Message> buildAsyncRpc(MethodDescriptor<Message, Message> method) {
+                ClientCallInternal<Message, Message> asyncRpc = ClientCallInternal.create(channel, method);
                 return asyncRpc;
             }
 
             private <ReqT, RespT> RetryCallListener<ReqT, RespT> createUnaryListener(ReqT request,
-                                                                                     AsyncCallClientInternal<ReqT, RespT> rpc) {
+                                                                                     ClientCallInternal<ReqT, RespT> rpc) {
                 return new RetryCallListener<ReqT, RespT>(retryOptions, request, rpc, callOptions);
             }
 

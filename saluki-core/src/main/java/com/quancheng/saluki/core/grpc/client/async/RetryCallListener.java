@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
-import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes.Key;
@@ -27,28 +26,22 @@ import io.grpc.Status;
 
 public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
-    private final static Logger                              log                  = LoggerFactory.getLogger(RetryCallListener.class);
+    private final static Logger                         log                  = LoggerFactory.getLogger(RetryCallListener.class);
 
-    private final ScheduledExecutorService                   retryExecutorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService              retryExecutorService = Executors.newScheduledThreadPool(1);
 
-    private final RetryOptions                               retryOptions;
+    private final RetryOptions                          retryOptions;
 
-    private final AsyncCallClientInternal<Request, Response> rpc;
+    private final ClientCallInternal<Request, Response> rpc;
 
-    private final Request                                    request;
+    private final Request                               request;
 
-    private final CallOptions                                callOptions;
+    private final CallOptions                           callOptions;
 
-    private CompletionFuture<Request, Response>              completionFuture;
-
-    private ClientCall<Request, Response>                    clientCall;
-
-    private int                                              retryCount;
-
-    private Response                                         response;
+    private volatile Response                           response;
 
     public RetryCallListener(RetryOptions retryOptions, Request request,
-                             AsyncCallClientInternal<Request, Response> retryableRpc, CallOptions callOptions){
+                             ClientCallInternal<Request, Response> retryableRpc, CallOptions callOptions){
         this.retryOptions = retryOptions;
         this.request = request;
         this.rpc = retryableRpc;
@@ -61,6 +54,8 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
         completionFuture.set(response);
     }
 
+    private volatile int retries;
+
     @Override
     public void onClose(Status status, Metadata trailers) {
         try {
@@ -72,28 +67,32 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
                 if (response == null) {
                     completionFuture.setException(Status.INTERNAL.withDescription("No value received for unary call").asRuntimeException());
                 }
-                if (retryCount > 0) {
+                if (retries > 0) {
                     notify.resetChannel();
                 }
                 return;
             } else {
-                if (retryCount > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                if (retries > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
                     String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
                     Exception serverException = status.withDescription(errorCause).asRuntimeException();
                     completionFuture.setException(serverException);
                     notify.resetChannel();
                     return;
                 } else {
-                    log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
+                    log.error(String.format("Retrying failed call. Failure #%d", retries), status.getCause());
                     clientCall = null;
                     notify.refreshChannel();
                     retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
                                                   TimeUnit.MILLISECONDS);
-                    retryCount += 1;
+                    retries += 1;
                 }
             }
         }
     }
+
+    private volatile CompletionFuture<Request, Response> completionFuture;
+
+    private volatile ClientCall<Request, Response>       clientCall;
 
     @Override
     public void run() {
@@ -107,7 +106,7 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
     }
 
     public void cancel() {
-        if (this.clientCall != null) {
+        if (clientCall != null) {
             clientCall.cancel("User requested cancelation.", null);
         }
     }

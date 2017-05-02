@@ -9,29 +9,25 @@ import io.grpc.ClientCall.Listener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
-public interface AsyncCallInternal {
+public interface ClientCallInternal<Request, Response> {
 
-    public static interface AsyncCallClientInternal<REQUEST, RESPONSE> {
+    public ClientCall<Request, Response> newCall(CallOptions callOptions);
 
-        public ClientCall<REQUEST, RESPONSE> newCall(CallOptions callOptions);
+    public void start(ClientCall<Request, Response> call, Request request, ClientCall.Listener<Response> listener,
+                      Metadata metadata);
 
-        public void start(ClientCall<REQUEST, RESPONSE> call, REQUEST request, ClientCall.Listener<RESPONSE> listener,
-                          Metadata metadata);
+    public static <Request, Response> ClientCallInternal<Request, Response> create(final Channel channel,
+                                                                                                final MethodDescriptor<Request, Response> method) {
 
-    }
-
-    public static <RequestT, ResponseT> AsyncCallClientInternal<RequestT, ResponseT> createGrpcAsyncCall(final Channel channel,
-                                                                                                         final MethodDescriptor<RequestT, ResponseT> method) {
-
-        return new AsyncCallClientInternal<RequestT, ResponseT>() {
+        return new ClientCallInternal<Request, Response>() {
 
             @Override
-            public ClientCall<RequestT, ResponseT> newCall(CallOptions callOptions) {
+            public ClientCall<Request, Response> newCall(CallOptions callOptions) {
                 return channel.newCall(method, callOptions);
             }
 
             @Override
-            public void start(ClientCall<RequestT, ResponseT> call, RequestT request, Listener<ResponseT> listener,
+            public void start(ClientCall<Request, Response> call, Request request, Listener<Response> listener,
                               Metadata metadata) {
                 RpcContext.getContext().removeAttachment("routerRule");
                 call.start(listener, metadata);
