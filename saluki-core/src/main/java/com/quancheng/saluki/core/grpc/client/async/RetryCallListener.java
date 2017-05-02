@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
+ * confidential and proprietary information of Quancheng-ec.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Quancheng-ec.com.
+ */
 package com.quancheng.saluki.core.grpc.client.async;
 
 import java.net.SocketAddress;
@@ -24,6 +31,10 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 
+/**
+ * @author liushiming 2017年5月2日 下午5:42:42
+ * @version $Id: RetryCallListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
+ */
 public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
     private final static Logger              log              = LoggerFactory.getLogger(RetryCallListener.class);
