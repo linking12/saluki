@@ -47,7 +47,7 @@ public interface GrpcClientCall {
 
     public Attributes getAffinity();
 
-    public static GrpcClientCall create(final Channel channel, final RetryOptions retryOptions, final GrpcURL refUrl) {
+    public static GrpcClientCall create(final Channel channel, final Integer retryOptions, final GrpcURL refUrl) {
         Attributes affinity = Attributes.newBuilder().set(GrpcClientCall.GRPC_REF_URL, refUrl).build();
         CallOptions callOptions = CallOptions.DEFAULT.withAffinity(affinity);
         return new GrpcClientCall() {

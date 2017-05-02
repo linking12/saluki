@@ -2,12 +2,9 @@ package com.quancheng.saluki.core.grpc.client.async;
 
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +26,28 @@ import io.grpc.Status;
 
 public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
-    private final static Logger                       log                  = LoggerFactory.getLogger(RetryCallListener.class);
+    private final static Logger              log              = LoggerFactory.getLogger(RetryCallListener.class);
 
-    private final ScheduledExecutorService            retryExecutorService = Executors.newScheduledThreadPool(1);
+    private final ExecutorService            retryExecutor    = Executors.newSingleThreadScheduledExecutor();
 
-    private final RetryOptions                        retryOptions;
+    private final CompletionFuture<Response> completionFuture = new CompletionFuture<Response>();
+
+    private static final class CompletionFuture<Response> extends AbstractFuture<Response> {
+
+        @Override
+        protected boolean set(Response resp) {
+            return super.set(resp);
+        }
+
+        @Override
+        protected boolean setException(Throwable throwable) {
+            throwable.setStackTrace(new StackTraceElement[] {});
+            return super.setException(throwable);
+        }
+
+    }
+
+    private final Integer                             retriesOptions;
 
     private final Channel                             channel;
 
@@ -45,9 +59,9 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
 
     private volatile Response                         response;
 
-    public RetryCallListener(final RetryOptions retryOptions, final Request request, final Channel channel,
+    public RetryCallListener(final Integer retriesOptions, final Request request, final Channel channel,
                              final MethodDescriptor<Request, Response> method, final CallOptions callOptions){
-        this.retryOptions = retryOptions;
+        this.retriesOptions = retriesOptions;
         this.request = request;
         this.channel = channel;
         this.method = method;
@@ -82,36 +96,52 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
                 retries.set(0);
                 return;
             } else {
-                if (retries.get() > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                if (retries.get() >= retriesOptions || retriesOptions == 0) {
                     String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
                     Exception serverException = status.withDescription(errorCause).asRuntimeException();
                     completionFuture.setException(serverException);
                     notify.resetChannel();
                     return;
                 } else {
-                    log.error(String.format("Retrying failed call. Failure #%d，Current Server is %s", retries.get(),
+                    log.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s", retries.get(),
                                             String.valueOf(currentServer)),
                               status.getCause());
-                    clientCall = null;
                     notify.refreshChannel();
-                    retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
-                                                  TimeUnit.MILLISECONDS);
+                    retryExecutor.execute(new RetryListenerWrap(this));
                     retries.getAndIncrement();
                 }
             }
         }
     }
 
-    private volatile CompletionFuture<Request, Response> completionFuture;
+    private static final class RetryListenerWrap implements Runnable {
 
-    private volatile ClientCall<Request, Response>       clientCall;
+        private final static Logger log = LoggerFactory.getLogger(RetryListenerWrap.class);
+
+        private Runnable            listener;
+
+        public RetryListenerWrap(Runnable listener){
+            this.listener = listener;
+        }
+
+        @Override
+        public void run() {
+            try {
+                listener.run();
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
+    }
+
+    private volatile ClientCall<Request, Response> clientCall;
 
     @Override
     public void run() {
         ClientCall<Request, Response> clientCallCopy = channel.newCall(method, callOptions);
         RpcContext.getContext().removeAttachment("routerRule");
         try {
-            completionFuture = new CompletionFuture<Request, Response>(clientCall);
             clientCallCopy.start(this, new Metadata());
             clientCallCopy.request(1);
             try {
@@ -144,34 +174,6 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
     private SocketAddress getCurrentServer() {
         SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         return currentServer;
-    }
-
-    private static final class CompletionFuture<Request, Response> extends AbstractFuture<Response> {
-
-        protected ClientCall<Request, Response> clientCall;
-
-        public CompletionFuture(ClientCall<Request, Response> call){
-            this.clientCall = call;
-        }
-
-        @Override
-        protected void interruptTask() {
-            if (clientCall != null) {
-                clientCall.cancel("Request interrupted.", null);
-            }
-        }
-
-        @Override
-        protected boolean set(@Nullable Response resp) {
-            return super.set(resp);
-        }
-
-        @Override
-        protected boolean setException(Throwable throwable) {
-            throwable.setStackTrace(new StackTraceElement[] {});
-            return super.setException(throwable);
-        }
-
     }
 
 }

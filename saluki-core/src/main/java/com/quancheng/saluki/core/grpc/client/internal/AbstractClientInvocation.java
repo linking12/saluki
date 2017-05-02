@@ -25,7 +25,6 @@ import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
 import com.quancheng.saluki.core.grpc.client.async.GrpcClientCall;
-import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -78,7 +77,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         int timeOut = request.getMethodRequest().getCallTimeout();
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
-        RetryOptions retryOption = createRetryOption(methodName);
+        Integer retryOption = createRetryOption(methodName);
         GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
         attributes = clientCall.getAffinity();
         long start = System.currentTimeMillis();
@@ -122,16 +121,20 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return currentServer;
     }
 
-    private RetryOptions createRetryOption(String methodName) {
+    private Integer createRetryOption(String methodName) {
         if (methodRetries.size() == 1 && methodRetries.containsKey("*")) {
             Integer retries = methodRetries.get("*");
-            return new RetryOptions(retries, true);
+            if (retries != null) {
+                return retries;
+            } else {
+                return 0;
+            }
         } else {
             Integer retries = methodRetries.get(methodName);
             if (retries != null) {
-                return new RetryOptions(retries, true);
+                return retries;
             } else {
-                return new RetryOptions(0, false);
+                return 0;
             }
         }
     }
