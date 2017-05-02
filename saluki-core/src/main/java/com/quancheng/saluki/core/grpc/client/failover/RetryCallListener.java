@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.core.grpc.client.async;
+package com.quancheng.saluki.core.grpc.client.failover;
 
 import java.net.SocketAddress;
 import java.util.HashMap;
