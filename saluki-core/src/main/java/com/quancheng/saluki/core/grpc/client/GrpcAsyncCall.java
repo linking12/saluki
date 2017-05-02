@@ -17,21 +17,19 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.async.AbstractRetryingRpcListener;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
-import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
+import com.quancheng.saluki.core.grpc.client.async.RetryCallListener;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
-import com.quancheng.saluki.core.grpc.client.async.RetryingUnaryRpcCallListener;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 
 import io.grpc.Attributes;
+import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
-import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.NameResolver;
 import io.grpc.Status;
-import io.grpc.Attributes.Key;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:54:44
@@ -107,17 +105,17 @@ public interface GrpcAsyncCall {
                 return asyncRpc;
             }
 
-            private <ReqT, RespT> RetryingUnaryRpcCallListener<ReqT, RespT> createUnaryListener(ReqT request,
-                                                                                                AsyncCallClientInternal<ReqT, RespT> rpc) {
-                return new RetryingUnaryRpcCallListener<>(retryOptions, request, rpc, callOptions, new Metadata());
+            private <ReqT, RespT> RetryCallListener<ReqT, RespT> createUnaryListener(ReqT request,
+                                                                                     AsyncCallClientInternal<ReqT, RespT> rpc) {
+                return new RetryCallListener<ReqT, RespT>(retryOptions, request, rpc, callOptions);
             }
 
-            private <ReqT, RespT, OutputT> ListenableFuture<OutputT> getCompletionFuture(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
+            private <ReqT, RespT> ListenableFuture<RespT> getCompletionFuture(RetryCallListener<ReqT, RespT> listener) {
                 listener.run();
                 return listener.getCompletionFuture();
             }
 
-            private <ReqT, RespT, OutputT> OutputT getBlockingResult(AbstractRetryingRpcListener<ReqT, RespT, OutputT> listener) {
+            private <ReqT, RespT> RespT getBlockingResult(RetryCallListener<ReqT, RespT> listener) {
                 try {
                     listener.run();
                     return listener.getCompletionFuture().get();

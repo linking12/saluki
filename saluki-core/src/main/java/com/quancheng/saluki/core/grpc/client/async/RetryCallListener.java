@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
 import com.quancheng.saluki.core.grpc.client.async.AsyncCallInternal.AsyncCallClientInternal;
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
@@ -26,37 +25,40 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.Status;
 
-public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> extends ClientCall.Listener<ResponseT> implements Runnable {
+public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
-    private final static Logger                                log              = LoggerFactory.getLogger(AbstractRetryingRpcListener.class);
+    private final static Logger                              log                  = LoggerFactory.getLogger(RetryCallListener.class);
 
-    private final RetryOptions                                 retryOptions;
+    private final ScheduledExecutorService                   retryExecutorService = Executors.newScheduledThreadPool(1);
 
-    private final AsyncCallClientInternal<RequestT, ResponseT> rpc;
+    private final RetryOptions                               retryOptions;
 
-    private final RequestT                                     request;
+    private final AsyncCallClientInternal<Request, Response> rpc;
 
-    private final CallOptions                                  callOptions;
+    private final Request                                    request;
 
-    private final ScheduledExecutorService                     retryExecutorService;
+    private final CallOptions                                callOptions;
 
-    private final Metadata                                     originalMetadata;
+    private CompletionFuture<Request, Response>              completionFuture;
 
-    protected final GrpcFuture<ResultT>                        completionFuture = new GrpcFuture<>();
+    private ClientCall<Request, Response>                    clientCall;
 
-    protected ClientCall<RequestT, ResponseT>                  call;
+    private int                                              retryCount;
 
-    private int                                                retryCount;
+    private Response                                         response;
 
-    public AbstractRetryingRpcListener(RetryOptions retryOptions, RequestT request,
-                                       AsyncCallClientInternal<RequestT, ResponseT> retryableRpc,
-                                       CallOptions callOptions, Metadata originalMetadata){
+    public RetryCallListener(RetryOptions retryOptions, Request request,
+                             AsyncCallClientInternal<Request, Response> retryableRpc, CallOptions callOptions){
         this.retryOptions = retryOptions;
         this.request = request;
         this.rpc = retryableRpc;
         this.callOptions = callOptions;
-        this.retryExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("HaClientRetry", true));
-        this.originalMetadata = originalMetadata;
+    }
+
+    @Override
+    public void onMessage(Response message) {
+        response = message;
+        completionFuture.set(response);
     }
 
     @Override
@@ -67,8 +69,9 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
             NameResolverNotify notify = new NameResolverNotify(callOptions.getAffinity());
             Status.Code code = status.getCode();
             if (code == Status.Code.OK) {
-                onOK();
-                // 如果是重试导致成功的，重置状态，这里不能随便reset，会导致lb失败
+                if (response == null) {
+                    completionFuture.setException(Status.INTERNAL.withDescription("No value received for unary call").asRuntimeException());
+                }
                 if (retryCount > 0) {
                     notify.resetChannel();
                 }
@@ -82,7 +85,7 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
                     return;
                 } else {
                     log.error(String.format("Retrying failed call. Failure #%d", retryCount), status.getCause());
-                    call = null;
+                    clientCall = null;
                     notify.refreshChannel();
                     retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
                                                   TimeUnit.MILLISECONDS);
@@ -92,50 +95,52 @@ public abstract class AbstractRetryingRpcListener<RequestT, ResponseT, ResultT> 
         }
     }
 
+    @Override
+    public void run() {
+        clientCall = rpc.newCall(callOptions);
+        completionFuture = new CompletionFuture<Request, Response>(clientCall);
+        rpc.start(this.clientCall, this.request, this, new Metadata());
+    }
+
+    public ListenableFuture<Response> getCompletionFuture() {
+        return completionFuture;
+    }
+
+    public void cancel() {
+        if (this.clientCall != null) {
+            clientCall.cancel("User requested cancelation.", null);
+        }
+    }
+
     private void cacheCurrentServer() {
-        SocketAddress currentServer = call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+        SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         HashMap<Key<?>, Object> data = Maps.newHashMap();
         data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentServer);
         GrpcAsyncCall.updateAffinity(callOptions.getAffinity(), data);
     }
 
-    protected abstract void onOK();
+    private static final class CompletionFuture<Request, Response> extends AbstractFuture<Response> {
 
-    public ListenableFuture<ResultT> getCompletionFuture() {
-        return completionFuture;
-    }
+        protected ClientCall<Request, Response> clientCall;
 
-    @Override
-    public void run() {
-        Metadata metadata = new Metadata();
-        metadata.merge(originalMetadata);
-        this.call = rpc.newCall(callOptions);
-        rpc.start(this.call, this.request, this, metadata);
-    }
-
-    public void cancel() {
-        if (this.call != null) {
-            call.cancel("User requested cancelation.", null);
+        public CompletionFuture(ClientCall<Request, Response> call){
+            this.clientCall = call;
         }
-    }
-
-    protected class GrpcFuture<RespT> extends AbstractFuture<RespT> {
 
         @Override
         protected void interruptTask() {
-            if (call != null) {
-                call.cancel("Request interrupted.", null);
+            if (clientCall != null) {
+                clientCall.cancel("Request interrupted.", null);
             }
         }
 
         @Override
-        protected boolean set(@Nullable RespT resp) {
+        protected boolean set(@Nullable Response resp) {
             return super.set(resp);
         }
 
         @Override
         protected boolean setException(Throwable throwable) {
-            // 这个的stackTrace置为空的原因是，这个eror是服务端抛出的，但是这里的trace却是打印客户端的信息，所以要置为空
             throwable.setStackTrace(new StackTraceElement[] {});
             return super.setException(throwable);
         }
