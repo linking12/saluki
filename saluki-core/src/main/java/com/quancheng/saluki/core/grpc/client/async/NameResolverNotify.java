@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 
 import io.grpc.Attributes;
 import io.grpc.NameResolver;
@@ -54,10 +54,10 @@ public class NameResolverNotify {
     private final Attributes            affinity;
 
     public NameResolverNotify(Attributes affinity){
-        this.current_server = affinity.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
-        this.roundrobined_servers = affinity.get(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS);
-        this.registry_servers = affinity.get(GrpcAsyncCall.REGISTRY_REMOTE_ADDR_KEYS);
-        this.listener = affinity.get(GrpcAsyncCall.NAMERESOVER_LISTENER);
+        this.current_server = affinity.get(ClientCallExternal.CURRENT_ADDR_KEY);
+        this.roundrobined_servers = affinity.get(ClientCallExternal.ROUNDROBINED_REMOTE_ADDR_KEYS);
+        this.registry_servers = affinity.get(ClientCallExternal.REGISTRY_REMOTE_ADDR_KEYS);
+        this.listener = affinity.get(ClientCallExternal.NAMERESOVER_LISTENER);
         this.affinity = affinity;
     }
 

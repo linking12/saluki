@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
@@ -113,8 +113,8 @@ public class GrpcPicker extends SubchannelPicker {
             Object obj = affinity.get(key);
             data.put(key, obj);
         }
-        data.put(GrpcAsyncCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
-        GrpcAsyncCall.updateAffinity(affinity, data);
+        data.put(ClientCallExternal.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
+        ClientCallExternal.updateAffinity(affinity, data);
     }
 
     private void routerAddress(Attributes affinity) {
@@ -136,7 +136,7 @@ public class GrpcPicker extends SubchannelPicker {
         } finally {
             if (grpcRouter != null) {
                 List<Subchannel> subchannels = this.list;
-                GrpcURL refUrl = affinity.get(GrpcAsyncCall.GRPC_REF_URL);
+                GrpcURL refUrl = affinity.get(ClientCallExternal.GRPC_REF_URL);
                 grpcRouter.setRefUrl(refUrl);
                 List<Subchannel> routedSubchannes = Lists.newArrayList();
                 for (Subchannel subchannel : subchannels) {

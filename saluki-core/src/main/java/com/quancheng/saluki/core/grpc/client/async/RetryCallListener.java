@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes.Key;
@@ -32,7 +32,7 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
 
     private final RetryOptions                          retryOptions;
 
-    private final ClientCallInternal<Request, Response> rpc;
+    private final ClientCallInternal<Request, Response> clientCallInternal;
 
     private final Request                               request;
 
@@ -44,7 +44,7 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
                              ClientCallInternal<Request, Response> retryableRpc, CallOptions callOptions){
         this.retryOptions = retryOptions;
         this.request = request;
-        this.rpc = retryableRpc;
+        this.clientCallInternal = retryableRpc;
         this.callOptions = callOptions;
     }
 
@@ -96,9 +96,9 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
 
     @Override
     public void run() {
-        clientCall = rpc.newCall(callOptions);
+        clientCall = clientCallInternal.newCall(callOptions);
         completionFuture = new CompletionFuture<Request, Response>(clientCall);
-        rpc.start(this.clientCall, this.request, this, new Metadata());
+        clientCallInternal.start(this.clientCall, this.request, this);
     }
 
     public ListenableFuture<Response> getCompletionFuture() {
@@ -114,8 +114,8 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
     private void cacheCurrentServer() {
         SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         HashMap<Key<?>, Object> data = Maps.newHashMap();
-        data.put(GrpcAsyncCall.CURRENT_ADDR_KEY, currentServer);
-        GrpcAsyncCall.updateAffinity(callOptions.getAffinity(), data);
+        data.put(ClientCallExternal.CURRENT_ADDR_KEY, currentServer);
+        ClientCallExternal.updateAffinity(callOptions.getAffinity(), data);
     }
 
     private static final class CompletionFuture<Request, Response> extends AbstractFuture<Response> {

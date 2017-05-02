@@ -13,11 +13,10 @@ public interface ClientCallInternal<Request, Response> {
 
     public ClientCall<Request, Response> newCall(CallOptions callOptions);
 
-    public void start(ClientCall<Request, Response> call, Request request, ClientCall.Listener<Response> listener,
-                      Metadata metadata);
+    public void start(ClientCall<Request, Response> call, Request request, ClientCall.Listener<Response> listener);
 
     public static <Request, Response> ClientCallInternal<Request, Response> create(final Channel channel,
-                                                                                                final MethodDescriptor<Request, Response> method) {
+                                                                                   final MethodDescriptor<Request, Response> method) {
 
         return new ClientCallInternal<Request, Response>() {
 
@@ -27,10 +26,9 @@ public interface ClientCallInternal<Request, Response> {
             }
 
             @Override
-            public void start(ClientCall<Request, Response> call, Request request, Listener<Response> listener,
-                              Metadata metadata) {
+            public void start(ClientCall<Request, Response> call, Request request, Listener<Response> listener) {
                 RpcContext.getContext().removeAttachment("routerRule");
-                call.start(listener, metadata);
+                call.start(listener, new Metadata());
                 call.request(1);
                 try {
                     call.sendMessage(request);

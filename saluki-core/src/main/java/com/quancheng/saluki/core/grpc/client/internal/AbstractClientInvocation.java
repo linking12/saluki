@@ -22,7 +22,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
@@ -79,8 +79,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
         RetryOptions retryOption = createRetryOption(methodName);
-        Attributes attributes = createAffinity(refUrl);
-        GrpcAsyncCall grpcAsyncCall = GrpcAsyncCall.createGrpcAsyncCall(channel, retryOption, attributes);
+        ClientCallExternal grpcAsyncCall = ClientCallExternal.create(channel, retryOption, refUrl);
+        attributes = grpcAsyncCall.getAffinity();
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
@@ -117,15 +117,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     public InetSocketAddress getProviderServer() {
-        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcAsyncCall.CURRENT_ADDR_KEY);
+        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(ClientCallExternal.CURRENT_ADDR_KEY);
         RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, String.valueOf(currentServer));
         return currentServer;
-    }
-
-    private Attributes createAffinity(GrpcURL url) {
-        Attributes attributes = Attributes.newBuilder().set(GrpcAsyncCall.GRPC_REF_URL, url).build();
-        this.attributes = attributes;
-        return attributes;
     }
 
     private RetryOptions createRetryOption(String methodName) {

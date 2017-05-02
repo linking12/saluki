@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.Registry;
@@ -237,10 +237,10 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         private Attributes buildAttributes(Map<List<SocketAddress>, GrpcURL> addressUrlMapping) {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
-                builder.set(GrpcAsyncCall.NAMERESOVER_LISTENER, listener);
+                builder.set(ClientCallExternal.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(GrpcAsyncCall.REGISTRY_REMOTE_ADDR_KEYS, addresses);
+                builder.set(ClientCallExternal.REGISTRY_REMOTE_ADDR_KEYS, addresses);
             }
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {
