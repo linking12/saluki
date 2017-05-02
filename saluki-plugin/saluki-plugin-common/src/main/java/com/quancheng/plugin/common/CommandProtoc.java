@@ -24,18 +24,18 @@ import com.google.protobuf.DescriptorProtos.FileDescriptorSet;
  * @author shimingliu 2016年12月21日 下午3:06:47
  * @version CommondProtoc.java, v 0.0.1 2016年12月21日 下午3:06:47 shimingliu
  */
-public class CommondProtoc {
+public class CommandProtoc {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommondProtoc.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommandProtoc.class);
 
     private final String        discoveryRoot;
 
-    private CommondProtoc(String discoveryRoot){
+    private CommandProtoc(String discoveryRoot){
         this.discoveryRoot = discoveryRoot;
     }
 
-    public static CommondProtoc configProtoPath(String discoveryRoot) {
-        return new CommondProtoc(discoveryRoot);
+    public static CommandProtoc configProtoPath(String discoveryRoot) {
+        return new CommandProtoc(discoveryRoot);
     }
 
     public FileDescriptorSet invoke(String protoPath) {

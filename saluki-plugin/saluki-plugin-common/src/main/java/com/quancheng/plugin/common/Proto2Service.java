@@ -28,24 +28,24 @@ import com.google.protobuf.ProtocolStringList;
  * @author shimingliu 2016年12月17日 下午1:43:38
  * @version Proto2Interface.java, v 0.0.1 2016年12月17日 下午1:43:38 shimingliu
  */
-public class Proto2ServicePojo {
+public class Proto2Service {
 
     private final String        discoveryRoot;
 
     private final String        generatePath;
 
-    private final CommondProtoc commondProtoc;
+    private final CommandProtoc commondProtoc;
 
     private Map<String, String> pojoTypes;
 
-    private Proto2ServicePojo(String discoveryRoot, String generatePath){
+    private Proto2Service(String discoveryRoot, String generatePath){
         this.discoveryRoot = discoveryRoot;
         this.generatePath = generatePath;
-        this.commondProtoc = CommondProtoc.configProtoPath(discoveryRoot);
+        this.commondProtoc = CommandProtoc.configProtoPath(discoveryRoot);
     }
 
-    public static Proto2ServicePojo forConfig(String discoveryRoot, String generatePath) {
-        return new Proto2ServicePojo(discoveryRoot, generatePath);
+    public static Proto2Service forConfig(String discoveryRoot, String generatePath) {
+        return new Proto2Service(discoveryRoot, generatePath);
     }
 
     public void generateFile(String protoPath) {
