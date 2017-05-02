@@ -29,16 +29,8 @@ import io.grpc.ResolvedServerInfo;
 import io.grpc.ResolvedServerInfoGroup;
 
 /**
- * <strong>描述：</strong>TODO 描述 <br>
- * <strong>功能：</strong><br>
- * <strong>使用场景：</strong><br>
- * <strong>注意事项：</strong>
- * <ul>
- * <li></li>
- * </ul>
- * 
  * @author liushiming 2017年5月2日 下午12:45:20
- * @version $Id: NameResolverNotify.java, v 0.0.1 2017年5月2日 下午12:45:20 liushiming Exp $
+ * @version $Id: NameResolverNotify.java, v 0.0.1 2017年5月2日 下午12:45:20 liushiming
  */
 public class NameResolverNotify {
 
