@@ -109,8 +109,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
             } else {
                 if (retries.get() >= retriesOptions || retriesOptions == 0) {
                     String serverExceptionStackTrace = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                    StatusRuntimeException statusException = Status.UNAVAILABLE.withDescription(serverExceptionStackTrace).asRuntimeException();
-                    completionFuture.setException(statusException);
+                    completionFuture.setException(Status.UNAVAILABLE.withDescription(serverExceptionStackTrace).asRuntimeException());
                     notify.resetChannel();
                     return;
                 } else {
