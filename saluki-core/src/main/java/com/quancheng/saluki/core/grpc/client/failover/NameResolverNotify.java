@@ -44,7 +44,7 @@ public class NameResolverNotify {
 
     public NameResolverNotify(Attributes affinity){
         this.current_server = affinity.get(GrpcClientCall.CURRENT_ADDR_KEY);
-        this.registry_servers = affinity.get(GrpcClientCall.REGISTRY_REMOTE_ADDR_KEYS);
+        this.registry_servers = affinity.get(GrpcClientCall.REMOTE_ADDR_KEYS);
         this.listener = affinity.get(GrpcClientCall.NAMERESOVER_LISTENER);
         this.affinity = affinity;
     }

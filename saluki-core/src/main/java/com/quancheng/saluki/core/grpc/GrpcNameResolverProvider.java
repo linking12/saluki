@@ -240,7 +240,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 builder.set(GrpcClientCall.NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(GrpcClientCall.REGISTRY_REMOTE_ADDR_KEYS, addresses);
+                builder.set(GrpcClientCall.REMOTE_ADDR_KEYS, addresses);
             }
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {
