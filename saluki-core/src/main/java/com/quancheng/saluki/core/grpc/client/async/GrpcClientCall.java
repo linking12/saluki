@@ -5,7 +5,7 @@
  * use it only in accordance with the terms of the license agreement you entered
  * into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.core.grpc.client;
+package com.quancheng.saluki.core.grpc.client.async;
 
 import java.lang.reflect.Field;
 import java.net.SocketAddress;
@@ -17,9 +17,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.async.ClientCallInternal;
-import com.quancheng.saluki.core.grpc.client.async.RetryCallListener;
-import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 
 import io.grpc.Attributes;
@@ -34,7 +31,7 @@ import io.grpc.Status;
  * @author shimingliu 2016年12月14日 下午9:54:44
  * @version GrpcAsyncCall.java, v 0.0.1 2016年12月14日 下午9:54:44 shimingliu
  */
-public interface ClientCallExternal {
+public interface GrpcClientCall {
 
     public static final Attributes.Key<GrpcURL>               GRPC_REF_URL                  = Attributes.Key.of("grpc-refurl");
 
@@ -52,11 +49,10 @@ public interface ClientCallExternal {
 
     public Attributes getAffinity();
 
-    public static ClientCallExternal create(final Channel channel, final RetryOptions retryOptions,
-                                            final GrpcURL refUrl) {
-        Attributes affinity = Attributes.newBuilder().set(ClientCallExternal.GRPC_REF_URL, refUrl).build();
+    public static GrpcClientCall create(final Channel channel, final RetryOptions retryOptions, final GrpcURL refUrl) {
+        Attributes affinity = Attributes.newBuilder().set(GrpcClientCall.GRPC_REF_URL, refUrl).build();
         CallOptions callOptions = CallOptions.DEFAULT.withAffinity(affinity);
-        return new ClientCallExternal() {
+        return new GrpcClientCall() {
 
             @Override
             public Attributes getAffinity() {
@@ -65,38 +61,30 @@ public interface ClientCallExternal {
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
-                return getFuture(createListener(request, createInternal(method)));
+                RetryCallListener<Message, Message> retryCallListener = new RetryCallListener<Message, Message>(retryOptions,
+                                                                                                                request,
+                                                                                                                channel,
+                                                                                                                method,
+                                                                                                                callOptions);
+                retryCallListener.run();
+                return retryCallListener.getCompletionFuture();
             }
 
             @Override
             public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method) {
-                return getBlocking(createListener(request, createInternal(method)));
-            }
-
-            private ClientCallInternal<Message, Message> createInternal(MethodDescriptor<Message, Message> method) {
-                ClientCallInternal<Message, Message> asyncRpc = ClientCallInternal.create(channel, method);
-                return asyncRpc;
-            }
-
-            private <ReqT, RespT> RetryCallListener<ReqT, RespT> createListener(ReqT request,
-                                                                                ClientCallInternal<ReqT, RespT> rpc) {
-                return new RetryCallListener<ReqT, RespT>(retryOptions, request, rpc, callOptions);
-            }
-
-            private <ReqT, RespT> ListenableFuture<RespT> getFuture(RetryCallListener<ReqT, RespT> listener) {
-                listener.run();
-                return listener.getCompletionFuture();
-            }
-
-            private <ReqT, RespT> RespT getBlocking(RetryCallListener<ReqT, RespT> listener) {
+                RetryCallListener<Message, Message> retryCallListener = new RetryCallListener<Message, Message>(retryOptions,
+                                                                                                                request,
+                                                                                                                channel,
+                                                                                                                method,
+                                                                                                                callOptions);
                 try {
-                    listener.run();
-                    return listener.getCompletionFuture().get();
+                    retryCallListener.run();
+                    return retryCallListener.getCompletionFuture().get();
                 } catch (InterruptedException e) {
-                    listener.cancel();
+                    retryCallListener.cancel();
                     throw Status.CANCELLED.withCause(e).asRuntimeException();
                 } catch (ExecutionException e) {
-                    listener.cancel();
+                    retryCallListener.cancel();
                     throw Status.fromThrowable(e).asRuntimeException();
                 }
             }

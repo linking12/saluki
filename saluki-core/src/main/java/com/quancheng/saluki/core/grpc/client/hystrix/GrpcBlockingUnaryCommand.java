@@ -21,7 +21,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
+import com.quancheng.saluki.core.grpc.client.async.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
@@ -33,13 +33,13 @@ import io.grpc.MethodDescriptor;
  */
 public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
 
-    private final ClientCallExternal                 grpcAsyncCall;
+    private final GrpcClientCall                 grpcAsyncCall;
 
     private final Message                            request;
 
     private final MethodDescriptor<Message, Message> methodDesc;
 
-    public GrpcBlockingUnaryCommand(ClientCallExternal grpcAsyncCall, GrpcURL refUrl,
+    public GrpcBlockingUnaryCommand(GrpcClientCall grpcAsyncCall, GrpcURL refUrl,
                                     MethodDescriptor<Message, Message> methodDesc, Message request){
         super(refUrl, methodDesc);
         this.grpcAsyncCall = grpcAsyncCall;
@@ -54,7 +54,7 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get();
         } catch (InterruptedException | ExecutionException e) {
             RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS,
-                                                  String.valueOf(grpcAsyncCall.getAffinity().get(ClientCallExternal.CURRENT_ADDR_KEY)));
+                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.CURRENT_ADDR_KEY)));
             RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.BIZ_DEFAULT_EXCEPTION);
             throw rpcService;
         }

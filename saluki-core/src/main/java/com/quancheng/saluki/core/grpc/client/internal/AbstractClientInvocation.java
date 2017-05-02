@@ -22,9 +22,9 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
+import com.quancheng.saluki.core.grpc.client.async.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.client.async.RetryOptions;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
@@ -79,23 +79,23 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         // 准备Grpc调用参数end
         Channel channel = request.getChannel();
         RetryOptions retryOption = createRetryOption(methodName);
-        ClientCallExternal grpcAsyncCall = ClientCallExternal.create(channel, retryOption, refUrl);
-        attributes = grpcAsyncCall.getAffinity();
+        GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
+        attributes = clientCall.getAffinity();
         long start = System.currentTimeMillis();
         getConcurrent(serviceName, methodName).incrementAndGet();
         try {
             reqProtoBufer = request.getRequestArg();
             switch (request.getMethodRequest().getCallType()) {
                 case Constants.RPCTYPE_ASYNC:
-                    respProtoBufer = new GrpcFutureUnaryCommand(grpcAsyncCall, refUrl, methodDesc, reqProtoBufer,
+                    respProtoBufer = new GrpcFutureUnaryCommand(clientCall, refUrl, methodDesc, reqProtoBufer,
                                                                 timeOut).execute();
                     break;
                 case Constants.RPCTYPE_BLOCKING:
-                    respProtoBufer = new GrpcBlockingUnaryCommand(grpcAsyncCall, refUrl, methodDesc,
+                    respProtoBufer = new GrpcBlockingUnaryCommand(clientCall, refUrl, methodDesc,
                                                                   reqProtoBufer).execute();
                     break;
                 default:
-                    respProtoBufer = new GrpcFutureUnaryCommand(grpcAsyncCall, refUrl, methodDesc, reqProtoBufer,
+                    respProtoBufer = new GrpcFutureUnaryCommand(clientCall, refUrl, methodDesc, reqProtoBufer,
                                                                 timeOut).execute();
                     break;
             }
@@ -117,7 +117,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     public InetSocketAddress getProviderServer() {
-        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(ClientCallExternal.CURRENT_ADDR_KEY);
+        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcClientCall.CURRENT_ADDR_KEY);
         RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, String.valueOf(currentServer));
         return currentServer;
     }

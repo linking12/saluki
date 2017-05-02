@@ -14,37 +14,42 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.grpc.client.ClientCallExternal;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 
 public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
-    private final static Logger                         log                  = LoggerFactory.getLogger(RetryCallListener.class);
+    private final static Logger                       log                  = LoggerFactory.getLogger(RetryCallListener.class);
 
-    private final ScheduledExecutorService              retryExecutorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService            retryExecutorService = Executors.newScheduledThreadPool(1);
 
-    private final RetryOptions                          retryOptions;
+    private final RetryOptions                        retryOptions;
 
-    private final ClientCallInternal<Request, Response> clientCallInternal;
+    private final Channel                             channel;
 
-    private final Request                               request;
+    private final MethodDescriptor<Request, Response> method;
 
-    private final CallOptions                           callOptions;
+    private final Request                             request;
 
-    private volatile Response                           response;
+    private final CallOptions                         callOptions;
 
-    public RetryCallListener(RetryOptions retryOptions, Request request,
-                             ClientCallInternal<Request, Response> retryableRpc, CallOptions callOptions){
+    private volatile Response                         response;
+
+    public RetryCallListener(final RetryOptions retryOptions, final Request request, final Channel channel,
+                             final MethodDescriptor<Request, Response> method, final CallOptions callOptions){
         this.retryOptions = retryOptions;
         this.request = request;
-        this.clientCallInternal = retryableRpc;
+        this.channel = channel;
+        this.method = method;
         this.callOptions = callOptions;
     }
 
@@ -96,9 +101,27 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
 
     @Override
     public void run() {
-        clientCall = clientCallInternal.newCall(callOptions);
-        completionFuture = new CompletionFuture<Request, Response>(clientCall);
-        clientCallInternal.start(this.clientCall, this.request, this);
+        ClientCall<Request, Response> clientCallCopy = channel.newCall(method, callOptions);
+        RpcContext.getContext().removeAttachment("routerRule");
+        try {
+            completionFuture = new CompletionFuture<Request, Response>(clientCall);
+            clientCallCopy.start(this, new Metadata());
+            clientCallCopy.request(1);
+            try {
+                clientCallCopy.sendMessage(request);
+            } catch (Throwable t) {
+                clientCallCopy.cancel("Exception in sendMessage.", t);
+                throw t;
+            }
+            try {
+                clientCallCopy.halfClose();
+            } catch (Throwable t) {
+                clientCallCopy.cancel("Exception in halfClose.", t);
+                throw t;
+            }
+        } finally {
+            clientCall = clientCallCopy;
+        }
     }
 
     public ListenableFuture<Response> getCompletionFuture() {
@@ -114,8 +137,8 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
     private void cacheCurrentServer() {
         SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         HashMap<Key<?>, Object> data = Maps.newHashMap();
-        data.put(ClientCallExternal.CURRENT_ADDR_KEY, currentServer);
-        ClientCallExternal.updateAffinity(callOptions.getAffinity(), data);
+        data.put(GrpcClientCall.CURRENT_ADDR_KEY, currentServer);
+        GrpcClientCall.updateAffinity(callOptions.getAffinity(), data);
     }
 
     private static final class CompletionFuture<Request, Response> extends AbstractFuture<Response> {
