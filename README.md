@@ -24,6 +24,7 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 # Quick Start
 
 * 首先在proto文件工程配置grpc提供的gradle货maven插件生成stub
+示例：https://github.com/linking12/saluki/tree/master/saluki-service
 
 ```
 <build>
@@ -85,6 +86,10 @@ saluki是以Grpc作为底层，提供一套高性能、易于使用的分布式�
 </plugin>
 
 ```
+
+添加后在生成Grpc的相关类之后，同时会生成interface及bean
+![interface](./doc/interface.jpeg)
+![bean](./doc/bean.jpeg)
 
 * 应用上两步生成的artifactId，添加spring-boot-saluki依赖
 
