@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -59,12 +60,15 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
         completionFuture.set(response);
     }
 
-    private volatile int retries;
+    private final AtomicInteger retries = new AtomicInteger(0);
 
     @Override
     public void onClose(Status status, Metadata trailers) {
+        SocketAddress currentServer = getCurrentServer();
         try {
-            cacheCurrentServer();
+            HashMap<Key<?>, Object> data = Maps.newHashMap();
+            data.put(GrpcClientCall.CURRENT_ADDR_KEY, currentServer);
+            GrpcClientCall.updateAffinity(callOptions.getAffinity(), data);
         } finally {
             NameResolverNotify notify = new NameResolverNotify(callOptions.getAffinity());
             Status.Code code = status.getCode();
@@ -72,24 +76,26 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
                 if (response == null) {
                     completionFuture.setException(Status.INTERNAL.withDescription("No value received for unary call").asRuntimeException());
                 }
-                if (retries > 0) {
+                if (retries.get() > 0) {
                     notify.resetChannel();
                 }
+                retries.set(0);
                 return;
             } else {
-                if (retries > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
+                if (retries.get() > retryOptions.getReties() || !retryOptions.isEnableRetry()) {
                     String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
                     Exception serverException = status.withDescription(errorCause).asRuntimeException();
                     completionFuture.setException(serverException);
                     notify.resetChannel();
                     return;
                 } else {
-                    log.error(String.format("Retrying failed call. Failure #%d", retries), status.getCause());
+                    log.error(String.format("Retrying failed call. Failure #%d，Current Server is %s", retries.get(),
+                                            String.valueOf(currentServer)),
+                              status.getCause());
                     clientCall = null;
                     notify.refreshChannel();
-                    retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
-                                                  TimeUnit.MILLISECONDS);
-                    retries += 1;
+                    retryExecutorService.schedule(new RetryListenerWrap(this), 0, TimeUnit.MILLISECONDS);
+                    retries.getAndIncrement();
                 }
             }
         }
@@ -134,11 +140,9 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
         }
     }
 
-    private void cacheCurrentServer() {
+    private SocketAddress getCurrentServer() {
         SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-        HashMap<Key<?>, Object> data = Maps.newHashMap();
-        data.put(GrpcClientCall.CURRENT_ADDR_KEY, currentServer);
-        GrpcClientCall.updateAffinity(callOptions.getAffinity(), data);
+        return currentServer;
     }
 
     private static final class CompletionFuture<Request, Response> extends AbstractFuture<Response> {

@@ -113,7 +113,6 @@ public class GrpcPicker extends SubchannelPicker {
             Object obj = affinity.get(key);
             data.put(key, obj);
         }
-        data.put(GrpcClientCall.ROUNDROBINED_REMOTE_ADDR_KEYS, addresses);
         GrpcClientCall.updateAffinity(affinity, data);
     }
 

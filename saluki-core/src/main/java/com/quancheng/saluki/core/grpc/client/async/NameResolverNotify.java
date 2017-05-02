@@ -42,8 +42,6 @@ import io.grpc.ResolvedServerInfoGroup;
  */
 public class NameResolverNotify {
 
-    private final List<SocketAddress>   roundrobined_servers;
-
     private final List<SocketAddress>   registry_servers;
 
     private final SocketAddress         current_server;
@@ -54,7 +52,6 @@ public class NameResolverNotify {
 
     public NameResolverNotify(Attributes affinity){
         this.current_server = affinity.get(GrpcClientCall.CURRENT_ADDR_KEY);
-        this.roundrobined_servers = affinity.get(GrpcClientCall.ROUNDROBINED_REMOTE_ADDR_KEYS);
         this.registry_servers = affinity.get(GrpcClientCall.REGISTRY_REMOTE_ADDR_KEYS);
         this.listener = affinity.get(GrpcClientCall.NAMERESOVER_LISTENER);
         this.affinity = affinity;
@@ -62,12 +59,12 @@ public class NameResolverNotify {
 
     public void refreshChannel() {
         List<SocketAddress> serversCopy = Lists.newArrayList();
-        if (listener != null && current_server != null && roundrobined_servers != null) {
+        if (listener != null && current_server != null && registry_servers != null) {
             InetSocketAddress currentSock = (InetSocketAddress) current_server;
-            int serverSize = roundrobined_servers.size();
+            int serverSize = registry_servers.size();
             if (serverSize >= 2) {
                 for (int i = 0; i < serverSize; i++) {
-                    InetSocketAddress inetSock = (InetSocketAddress) roundrobined_servers.get(i);
+                    InetSocketAddress inetSock = (InetSocketAddress) registry_servers.get(i);
                     boolean hostequal = inetSock.getHostName().equals(currentSock.getHostName());
                     boolean portequal = inetSock.getPort() == currentSock.getPort();
                     if (!hostequal || !portequal) {
@@ -75,7 +72,7 @@ public class NameResolverNotify {
                     }
                 }
             } else {
-                serversCopy.addAll(roundrobined_servers);
+                serversCopy.addAll(registry_servers);
             }
             if (serversCopy.size() != 0) {
                 notifyChannel(serversCopy);
