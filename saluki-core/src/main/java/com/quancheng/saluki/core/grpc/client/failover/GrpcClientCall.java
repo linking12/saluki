@@ -59,7 +59,7 @@ public interface GrpcClientCall {
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
-                RetryCallListener<Message, Message> retryCallListener = new RetryCallListener<Message, Message>(retryOptions,
+                FailOverListener<Message, Message> retryCallListener = new FailOverListener<Message, Message>(retryOptions,
                                                                                                                 request,
                                                                                                                 channel,
                                                                                                                 method,
@@ -70,7 +70,7 @@ public interface GrpcClientCall {
 
             @Override
             public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method) {
-                RetryCallListener<Message, Message> retryCallListener = new RetryCallListener<Message, Message>(retryOptions,
+                FailOverListener<Message, Message> retryCallListener = new FailOverListener<Message, Message>(retryOptions,
                                                                                                                 request,
                                                                                                                 channel,
                                                                                                                 method,

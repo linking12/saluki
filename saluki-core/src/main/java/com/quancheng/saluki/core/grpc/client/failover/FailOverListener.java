@@ -35,9 +35,9 @@ import io.grpc.Status;
  * @author liushiming 2017年5月2日 下午5:42:42
  * @version $Id: RetryCallListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
  */
-public class RetryCallListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
+public class FailOverListener<Request, Response> extends ClientCall.Listener<Response> implements Runnable {
 
-    private final static Logger              log              = LoggerFactory.getLogger(RetryCallListener.class);
+    private final static Logger              log              = LoggerFactory.getLogger(FailOverListener.class);
 
     private final ExecutorService            retryExecutor    = Executors.newSingleThreadScheduledExecutor();
 
@@ -70,7 +70,7 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
 
     private volatile Response                         response;
 
-    public RetryCallListener(final Integer retriesOptions, final Request request, final Channel channel,
+    public FailOverListener(final Integer retriesOptions, final Request request, final Channel channel,
                              final MethodDescriptor<Request, Response> method, final CallOptions callOptions){
         this.retriesOptions = retriesOptions;
         this.request = request;
