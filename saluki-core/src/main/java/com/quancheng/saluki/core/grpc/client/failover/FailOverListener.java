@@ -30,6 +30,7 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 /**
  * @author liushiming 2017年5月2日 下午5:42:42
@@ -52,7 +53,6 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
         @Override
         protected boolean setException(Throwable throwable) {
-            throwable.setStackTrace(new StackTraceElement[] {});
             return super.setException(throwable);
         }
 
@@ -71,7 +71,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
     private volatile Response                         response;
 
     public FailOverListener(final Integer retriesOptions, final Request request, final Channel channel,
-                             final MethodDescriptor<Request, Response> method, final CallOptions callOptions){
+                            final MethodDescriptor<Request, Response> method, final CallOptions callOptions){
         this.retriesOptions = retriesOptions;
         this.request = request;
         this.channel = channel;
@@ -99,7 +99,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
             Status.Code code = status.getCode();
             if (code == Status.Code.OK) {
                 if (response == null) {
-                    completionFuture.setException(Status.INTERNAL.withDescription("No value received for unary call").asRuntimeException());
+                    completionFuture.setException(Status.UNAVAILABLE.withDescription("No value received for unary call").asRuntimeException());
                 }
                 if (retries.get() > 0) {
                     notify.resetChannel();
@@ -108,9 +108,9 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
                 return;
             } else {
                 if (retries.get() >= retriesOptions || retriesOptions == 0) {
-                    String errorCause = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                    Exception serverException = status.withDescription(errorCause).asRuntimeException();
-                    completionFuture.setException(serverException);
+                    String serverExceptionStackTrace = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
+                    StatusRuntimeException statusException = Status.UNAVAILABLE.withDescription(serverExceptionStackTrace).asRuntimeException();
+                    completionFuture.setException(statusException);
                     notify.resetChannel();
                     return;
                 } else {
