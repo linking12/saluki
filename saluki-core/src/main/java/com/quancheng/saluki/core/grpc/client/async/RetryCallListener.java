@@ -94,7 +94,8 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
                               status.getCause());
                     clientCall = null;
                     notify.refreshChannel();
-                    retryExecutorService.schedule(new RetryListenerWrap(this), 0, TimeUnit.MILLISECONDS);
+                    retryExecutorService.schedule(new RetryListenerWrap(this), retryOptions.nextBackoffMillis(),
+                                                  TimeUnit.MILLISECONDS);
                     retries.getAndIncrement();
                 }
             }
@@ -170,6 +171,7 @@ public class RetryCallListener<Request, Response> extends ClientCall.Listener<Re
             throwable.setStackTrace(new StackTraceElement[] {});
             return super.setException(throwable);
         }
+
     }
 
 }
