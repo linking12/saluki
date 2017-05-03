@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.NotifyListener.NotifyRouterListener;
 import com.quancheng.saluki.core.registry.Registry;
@@ -52,6 +51,10 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
     public static final Attributes.Key<String>                            GRPC_ROUTER_MESSAGE          = Attributes.Key.of("grpc-router");
 
     public static final Attributes.Key<Map<List<SocketAddress>, GrpcURL>> GRPC_ADDRESS_GRPCURL_MAPPING = Attributes.Key.of("grpc-address-mapping");
+
+    public static final Attributes.Key<List<SocketAddress>>               REMOTE_ADDR_KEYS             = Attributes.Key.of("remote-addresss");
+
+    public static final Attributes.Key<NameResolver.Listener>             NAMERESOVER_LISTENER         = Attributes.Key.of("nameResolver-Listener");
 
     private final GrpcURL                                                 subscribeUrl;
 
@@ -234,10 +237,10 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
         private Attributes buildAttributes(Map<List<SocketAddress>, GrpcURL> addressUrlMapping) {
             Attributes.Builder builder = Attributes.newBuilder();
             if (listener != null) {
-                builder.set(GrpcClientCall.NAMERESOVER_LISTENER, listener);
+                builder.set(NAMERESOVER_LISTENER, listener);
             }
             if (addresses != null) {
-                builder.set(GrpcClientCall.REMOTE_ADDR_KEYS, addresses);
+                builder.set(REMOTE_ADDR_KEYS, addresses);
             }
             String routeMessage = this.routerMessages.get(subscribeUrl.getGroup());
             if (routeMessage != null) {

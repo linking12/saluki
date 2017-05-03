@@ -19,14 +19,12 @@ import static io.grpc.ConnectivityState.IDLE;
 
 import java.net.SocketAddress;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
@@ -34,7 +32,6 @@ import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
-import io.grpc.Attributes.Key;
 import io.grpc.ConnectivityStateInfo;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.LoadBalancer.Helper;
@@ -75,11 +72,12 @@ public class GrpcPicker extends SubchannelPicker {
 
     @Override
     public PickResult pickSubchannel(PickSubchannelArgs args) {
-        Attributes affinity = args.getCallOptions().getAffinity();
-        this.routerAddress(affinity);
+        Map<String, Object> affinity = args.getCallOptions().getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
+        GrpcURL refUrl = (GrpcURL) affinity.get(GrpcClientCall.GRPC_REF_URL);
+        this.routerAddress(refUrl);
         if (size > 0) {
             Subchannel subchannel = nextSubchannel();
-            mergeAffinity(affinity, subchannel.getAddresses().getAddresses());
+            affinity.put(GrpcClientCall.GRPC_NAMERESOVER_ATTRIBUTES, nameResovleCache);
             return PickResult.withSubchannel(subchannel);
         }
         if (status != null) {
@@ -103,20 +101,7 @@ public class GrpcPicker extends SubchannelPicker {
         }
     }
 
-    private void mergeAffinity(Attributes affinity, List<SocketAddress> addresses) {
-        HashMap<Key<?>, Object> data = Maps.newHashMap();
-        for (Key<?> key : this.nameResovleCache.keys()) {
-            Object obj = this.nameResovleCache.get(key);
-            data.put(key, obj);
-        }
-        for (Key<?> key : affinity.keys()) {
-            Object obj = affinity.get(key);
-            data.put(key, obj);
-        }
-        GrpcClientCall.updateAffinity(affinity, data);
-    }
-
-    private void routerAddress(Attributes affinity) {
+    private void routerAddress(GrpcURL refUrl) {
         GrpcRouter grpcRouter = null;
         try {
             String currentRouterRule = null;
@@ -135,7 +120,6 @@ public class GrpcPicker extends SubchannelPicker {
         } finally {
             if (grpcRouter != null) {
                 List<Subchannel> subchannels = this.list;
-                GrpcURL refUrl = affinity.get(GrpcClientCall.GRPC_REF_URL);
                 grpcRouter.setRefUrl(refUrl);
                 List<Subchannel> routedSubchannes = Lists.newArrayList();
                 for (Subchannel subchannel : subchannels) {

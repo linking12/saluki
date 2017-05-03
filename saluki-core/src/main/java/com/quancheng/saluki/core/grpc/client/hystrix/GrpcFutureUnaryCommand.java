@@ -58,7 +58,7 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS,
-                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.CURRENT_ADDR_KEY)));
+                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY)));
             if (e instanceof TimeoutException) {
                 RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
                 throw rpcService;

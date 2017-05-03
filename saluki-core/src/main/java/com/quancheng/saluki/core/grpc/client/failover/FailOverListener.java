@@ -8,7 +8,7 @@
 package com.quancheng.saluki.core.grpc.client.failover;
 
 import java.net.SocketAddress;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,12 +16,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.common.RpcContext;
 
-import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -88,12 +86,11 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
     @Override
     public void onClose(Status status, Metadata trailers) {
         SocketAddress currentServer = getCurrentServer();
+        Map<String, Object> affinity = callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
         try {
-            HashMap<Key<?>, Object> data = Maps.newHashMap();
-            data.put(GrpcClientCall.CURRENT_ADDR_KEY, currentServer);
-            GrpcClientCall.updateAffinity(callOptions.getAffinity(), data);
+            affinity.put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, currentServer);
         } finally {
-            NameResolverNotify notify = new NameResolverNotify(callOptions.getAffinity());
+            NameResolverNotify notify = new NameResolverNotify(affinity);
             Status.Code code = status.getCode();
             if (code == Status.Code.OK) {
                 if (response == null) {

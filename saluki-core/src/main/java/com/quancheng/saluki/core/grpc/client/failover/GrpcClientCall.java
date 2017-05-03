@@ -7,24 +7,17 @@
  */
 package com.quancheng.saluki.core.grpc.client.failover;
 
-import java.lang.reflect.Field;
-import java.net.SocketAddress;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 
-import io.grpc.Attributes;
-import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
-import io.grpc.NameResolver;
 import io.grpc.Status;
 
 /**
@@ -33,37 +26,39 @@ import io.grpc.Status;
  */
 public interface GrpcClientCall {
 
-    public static final Attributes.Key<GrpcURL>               GRPC_REF_URL         = Attributes.Key.of("grpc-refurl");
+    public static final CallOptions.Key<ConcurrentHashMap<String, Object>> CALLOPTIONS_CUSTOME_KEY     = CallOptions.Key.of("custom_options",
+                                                                                                                            new ConcurrentHashMap<String, Object>());
 
-    public static final Attributes.Key<SocketAddress>         CURRENT_ADDR_KEY     = Attributes.Key.of("current-address");
+    public static final String                                             GRPC_REF_URL                = "grpc-refurl";
 
-    public static final Attributes.Key<List<SocketAddress>>   REMOTE_ADDR_KEYS     = Attributes.Key.of("remote-addresss");
+    public static final String                                             GRPC_CURRENT_ADDR_KEY       = "current-address";
 
-    public static final Attributes.Key<NameResolver.Listener> NAMERESOVER_LISTENER = Attributes.Key.of("nameResolver-Listener");
+    public static final String                                             GRPC_NAMERESOVER_ATTRIBUTES = "nameresolver-attributes";
 
     public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method);
 
     public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-    public Attributes getAffinity();
+    public Map<String, Object> getAffinity();
 
     public static GrpcClientCall create(final Channel channel, final Integer retryOptions, final GrpcURL refUrl) {
-        Attributes affinity = Attributes.newBuilder().set(GrpcClientCall.GRPC_REF_URL, refUrl).build();
-        CallOptions callOptions = CallOptions.DEFAULT.withAffinity(affinity);
+        ConcurrentHashMap<String, Object> customOptions = new ConcurrentHashMap<String, Object>();
+        customOptions.put(GRPC_REF_URL, refUrl);
+        CallOptions callOptions = CallOptions.DEFAULT.withOption(CALLOPTIONS_CUSTOME_KEY, customOptions);
         return new GrpcClientCall() {
 
             @Override
-            public Attributes getAffinity() {
-                return affinity;
+            public Map<String, Object> getAffinity() {
+                return callOptions.getOption(CALLOPTIONS_CUSTOME_KEY);
             }
 
             @Override
             public ListenableFuture<Message> unaryFuture(Message request, MethodDescriptor<Message, Message> method) {
                 FailOverListener<Message, Message> retryCallListener = new FailOverListener<Message, Message>(retryOptions,
-                                                                                                                request,
-                                                                                                                channel,
-                                                                                                                method,
-                                                                                                                callOptions);
+                                                                                                              request,
+                                                                                                              channel,
+                                                                                                              method,
+                                                                                                              callOptions);
                 retryCallListener.run();
                 return retryCallListener.getCompletionFuture();
             }
@@ -71,10 +66,10 @@ public interface GrpcClientCall {
             @Override
             public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method) {
                 FailOverListener<Message, Message> retryCallListener = new FailOverListener<Message, Message>(retryOptions,
-                                                                                                                request,
-                                                                                                                channel,
-                                                                                                                method,
-                                                                                                                callOptions);
+                                                                                                              request,
+                                                                                                              channel,
+                                                                                                              method,
+                                                                                                              callOptions);
                 try {
                     retryCallListener.run();
                     return retryCallListener.getCompletionFuture().get();
@@ -88,29 +83,6 @@ public interface GrpcClientCall {
             }
 
         };
-    }
-
-    public static void updateAffinity(Attributes affinity, HashMap<Key<?>, Object> toAddData) {
-        HashMap<Key<?>, Object> data = Maps.newHashMap();
-        for (Key<?> key : affinity.keys()) {
-            Object obj = affinity.get(key);
-            data.put(key, obj);
-        }
-        data.putAll(toAddData);
-        try {
-            Class<?> classType = affinity.getClass();
-            Field[] fields = classType.getDeclaredFields();
-            for (Field field : fields) {
-                if (HashMap.class.isAssignableFrom(field.getType())) {
-                    field.setAccessible(true);
-                    field.set(affinity, data);
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-            throw rpcFramwork;
-        }
     }
 
 }

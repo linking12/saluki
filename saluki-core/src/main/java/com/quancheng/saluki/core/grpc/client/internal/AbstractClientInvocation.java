@@ -33,7 +33,6 @@ import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
-import io.grpc.Attributes;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
 
@@ -53,7 +52,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     private volatile GrpcURL                           refUrl;
 
-    private volatile Attributes                        attributes;
+    private volatile Map<String, Object>               attributes;
 
     public AbstractClientInvocation(Map<String, Integer> methodRetries){
         this.methodRetries = methodRetries;
@@ -116,7 +115,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
 
     public InetSocketAddress getProviderServer() {
-        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcClientCall.CURRENT_ADDR_KEY);
+        InetSocketAddress currentServer = (InetSocketAddress) attributes.get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
         RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, String.valueOf(currentServer));
         return currentServer;
     }

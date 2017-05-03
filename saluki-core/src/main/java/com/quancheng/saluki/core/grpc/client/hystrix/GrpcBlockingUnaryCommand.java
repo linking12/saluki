@@ -54,7 +54,7 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get();
         } catch (InterruptedException | ExecutionException e) {
             RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS,
-                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.CURRENT_ADDR_KEY)));
+                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY)));
             RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.BIZ_DEFAULT_EXCEPTION);
             throw rpcService;
         }

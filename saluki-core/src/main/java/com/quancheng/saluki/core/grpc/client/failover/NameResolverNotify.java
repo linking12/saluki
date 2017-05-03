@@ -19,8 +19,10 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.quancheng.saluki.core.grpc.GrpcNameResolverProvider;
 
 import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
@@ -40,11 +42,12 @@ public class NameResolverNotify {
 
     private final Attributes            affinity;
 
-    public NameResolverNotify(Attributes affinity){
-        this.current_server = affinity.get(GrpcClientCall.CURRENT_ADDR_KEY);
-        this.registry_servers = affinity.get(GrpcClientCall.REMOTE_ADDR_KEYS);
-        this.listener = affinity.get(GrpcClientCall.NAMERESOVER_LISTENER);
-        this.affinity = affinity;
+    public NameResolverNotify(Map<String, Object> affinity){
+        this.current_server = (SocketAddress) affinity.get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+        Attributes nameresoveCache = (Attributes) affinity.get(GrpcClientCall.GRPC_NAMERESOVER_ATTRIBUTES);
+        this.registry_servers = nameresoveCache.get(GrpcNameResolverProvider.REMOTE_ADDR_KEYS);
+        this.listener = nameresoveCache.get(GrpcNameResolverProvider.NAMERESOVER_LISTENER);
+        this.affinity = nameresoveCache;
     }
 
     public void refreshChannel() {
