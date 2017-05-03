@@ -1,5 +1,6 @@
 package com.quancheng.saluki.core.utils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -22,6 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.Lists;
 
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -904,6 +907,110 @@ public final class ReflectUtils {
     public static boolean isPublicInstanceField(Field field) {
         return Modifier.isPublic(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())
                && !Modifier.isFinal(field.getModifiers()) && !field.isSynthetic();
+    }
+
+    public static Class<?> getTypedOfReq(Method method) {
+        Class<?>[] params = method.getParameterTypes();
+        return params[0];
+    }
+
+    public static Class<?> getTypeOfRep(Method method) {
+        return method.getReturnType();
+    }
+
+    public static Annotation findAnnotationFromClass(Class<?> target, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : target.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation findAnnotationFromMethod(Method method, Class<? extends Annotation> annotation) {
+        for (Annotation targetAnnotation : method.getAnnotations()) {
+            if (annotation.isAssignableFrom(targetAnnotation.annotationType())) {
+                return targetAnnotation;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static Object classInstance(Class<?> clazz) {
+        checkPackageAccess(clazz);
+        try {
+            Constructor<?> con = clazz.getDeclaredConstructor();
+            con.setAccessible(true);
+            Object obj = con.newInstance();
+            return obj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void checkPackageAccess(Class<?> clazz) {
+        SecurityManager s = System.getSecurityManager();
+        if (s != null) {
+            String cname = clazz.getName().replace('/', '.');
+            if (cname.startsWith("[")) {
+                int b = cname.lastIndexOf('[') + 2;
+                if (b > 1 && b < cname.length()) {
+                    cname = cname.substring(b);
+                }
+            }
+            int i = cname.lastIndexOf('.');
+            if (i != -1) {
+                s.checkPackageAccess(cname.substring(0, i));
+            }
+        }
+    }
+
+    public static boolean isToStringMethod(Method method) {
+        return (method != null && method.getName().equals("toString") && method.getParameterTypes().length == 0);
+    }
+
+    public static boolean isLegal(Method method) {
+        return isEqualsMethod(method) || isHashCodeMethod(method) || isToStringMethod(method) || isObjectMethod(method);
+    }
+
+    private static boolean isEqualsMethod(Method method) {
+        if (method == null || !method.getName().equals("equals")) {
+            return false;
+        }
+        Class<?>[] paramTypes = method.getParameterTypes();
+        return (paramTypes.length == 1 && paramTypes[0] == Object.class);
+    }
+
+    private static boolean isHashCodeMethod(Method method) {
+        return (method != null && method.getName().equals("hashCode") && method.getParameterTypes().length == 0);
+    }
+
+    private static boolean isObjectMethod(Method method) {
+        if (method == null) {
+            return false;
+        }
+        try {
+            Object.class.getDeclaredMethod(method.getName(), method.getParameterTypes());
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public static List<Method> findAllPublicMethods(Class<?> clazz) {
+        List<Method> methods = Lists.newLinkedList();
+        for (Method method : clazz.getMethods()) {
+            if (isLegal(method)) {
+                continue;
+            }
+            methods.add(method);
+        }
+        return methods;
     }
 
     private ReflectUtils(){

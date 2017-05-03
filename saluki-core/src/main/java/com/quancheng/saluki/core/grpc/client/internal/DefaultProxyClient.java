@@ -14,7 +14,6 @@ import java.util.Map;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
-import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.utils.ClassHelper;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -69,7 +68,7 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
 
         @Override
         protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            boolean isLegalMethod = GrpcReflectUtil.isLegal(method);
+            boolean isLegalMethod = ReflectUtils.isLegal(method);
             if (isLegalMethod) {
                 throw new IllegalArgumentException("remote call type do not support this method " + method.getName());
             }

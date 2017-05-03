@@ -30,7 +30,7 @@ import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Attributes;
@@ -63,7 +63,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (GrpcReflectUtil.isToStringMethod(method)) {
+        if (ReflectUtils.isToStringMethod(method)) {
             return AbstractClientInvocation.this.toString();
         }
         GrpcRequest request = buildGrpcRequest(method, args);

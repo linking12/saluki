@@ -20,7 +20,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
 
 import io.grpc.Attributes.Key;
 import io.grpc.CallOptions;
@@ -107,14 +106,12 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
                 return;
             } else {
                 if (retries.get() >= retriesOptions || retriesOptions == 0) {
-                    String serverExceptionStackTrace = trailers.get(MetadataKeyUtil.GRPC_ERRORCAUSE_VALUE);
-                    completionFuture.setException(Status.UNAVAILABLE.withDescription(serverExceptionStackTrace).asRuntimeException());
+                    completionFuture.setException(status.asRuntimeException());
                     notify.resetChannel();
                     return;
                 } else {
                     log.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s", retries.get(),
-                                            String.valueOf(currentServer)),
-                              status.getCause());
+                                            String.valueOf(currentServer)));
                     notify.refreshChannel();
                     retryExecutor.execute(new RetryListenerWrap(this));
                     retries.getAndIncrement();

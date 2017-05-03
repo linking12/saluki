@@ -19,13 +19,14 @@ import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ServerCalls.UnaryMethod;
 import io.grpc.stub.StreamObserver;
+import io.netty.util.internal.ThrowableUtil;
 
 /**
  * @author shimingliu 2016年12月14日 下午10:14:18
@@ -61,7 +62,7 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         long start = System.currentTimeMillis();
         try {
             getConcurrent().getAndIncrement();
-            Class<?> requestType = GrpcReflectUtil.getTypedReq(method);
+            Class<?> requestType = ReflectUtils.getTypedOfReq(method);
             Object reqPojo = SerializerUtils.Protobuf2Pojo(reqProtoBufer, requestType);
             Object[] requestParams = new Object[] { reqPojo };
             Object respPojo = method.invoke(serviceToInvoke, requestParams);
@@ -69,10 +70,11 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
             collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            String stackTrace = ThrowableUtil.stackTraceToString(e);
             log.error(e.getMessage(), e);
             collect(reqProtoBufer, respProtoBufer, start, true);
-            StatusRuntimeException statusException = Status.UNAVAILABLE.withCause(e).asRuntimeException();
+            StatusRuntimeException statusException = Status.UNAVAILABLE.withDescription(stackTrace).asRuntimeException();
             responseObserver.onError(statusException);
         } finally {
             log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", providerUrl.getServiceInterface(),

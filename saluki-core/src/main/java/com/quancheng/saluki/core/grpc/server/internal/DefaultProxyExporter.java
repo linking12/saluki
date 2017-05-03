@@ -21,8 +21,8 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.GrpcReflectUtil;
 import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerServiceDefinition;
@@ -51,7 +51,7 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
         Object serviceRef = protocolImpl;
         String serviceName = protocol.getName();
         ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
-        List<Method> methods = GrpcReflectUtil.findAllPublicMethods(serivce);
+        List<Method> methods = ReflectUtils.findAllPublicMethods(serivce);
         if (methods.isEmpty()) {
             throw new IllegalStateException("protocolClass " + serviceName + " not have export method" + serivce);
         }

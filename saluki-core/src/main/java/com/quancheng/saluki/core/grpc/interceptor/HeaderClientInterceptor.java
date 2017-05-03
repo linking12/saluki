@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
-import com.quancheng.saluki.core.grpc.util.MetadataKeyUtil;
+import com.quancheng.saluki.core.grpc.util.MetadataUtil;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -57,10 +57,10 @@ public class HeaderClientInterceptor implements ClientInterceptor {
         Map<String, Object> values = RpcContext.getContext().get();
         try {
             if (!attachments.isEmpty()) {
-                headers.put(MetadataKeyUtil.GRPC_CONTEXT_ATTACHMENTS, SerializerUtils.toJson(attachments));
+                headers.put(MetadataUtil.GRPC_CONTEXT_ATTACHMENTS, SerializerUtils.toJson(attachments));
             }
             if (!values.isEmpty()) {
-                headers.put(MetadataKeyUtil.GRPC_CONTEXT_VALUES, SerializerUtils.toJson(values));
+                headers.put(MetadataUtil.GRPC_CONTEXT_VALUES, SerializerUtils.toJson(values));
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
