@@ -85,34 +85,31 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
     @Override
     public void onClose(Status status, Metadata trailers) {
-        SocketAddress currentServer = getCurrentServer();
+        SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         Map<String, Object> affinity = callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
-        try {
-            affinity.put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, currentServer);
-        } finally {
-            NameResolverNotify notify = new NameResolverNotify(affinity);
-            Status.Code code = status.getCode();
-            if (code == Status.Code.OK) {
-                if (response == null) {
-                    completionFuture.setException(Status.UNAVAILABLE.withDescription("No value received for unary call").asRuntimeException());
-                }
-                if (retries.get() > 0) {
-                    notify.resetChannel();
-                }
-                retries.set(0);
+        affinity.put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, currentServer);
+        NameResolverNotify notify = new NameResolverNotify(affinity);
+        Status.Code code = status.getCode();
+        if (code == Status.Code.OK) {
+            if (response == null) {
+                completionFuture.setException(Status.UNAVAILABLE.withDescription("No value received for unary call").asRuntimeException());
+            }
+            if (retries.get() > 0) {
+                notify.resetChannel();
+            }
+            retries.set(0);
+            return;
+        } else {
+            if (retries.get() >= retriesOptions || retriesOptions == 0) {
+                completionFuture.setException(status.asRuntimeException());
+                notify.resetChannel();
                 return;
             } else {
-                if (retries.get() >= retriesOptions || retriesOptions == 0) {
-                    completionFuture.setException(status.asRuntimeException());
-                    notify.resetChannel();
-                    return;
-                } else {
-                    log.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s", retries.get(),
-                                            String.valueOf(currentServer)));
-                    notify.refreshChannel();
-                    retryExecutor.execute(new RetryListenerWrap(this));
-                    retries.getAndIncrement();
-                }
+                log.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s", retries.get(),
+                                        String.valueOf(currentServer)));
+                notify.refreshChannel();
+                retryExecutor.execute(new RetryListenerWrap(this));
+                retries.getAndIncrement();
             }
         }
     }
@@ -172,11 +169,6 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
         if (clientCall != null) {
             clientCall.cancel("User requested cancelation.", null);
         }
-    }
-
-    private SocketAddress getCurrentServer() {
-        SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-        return currentServer;
     }
 
 }
