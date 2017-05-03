@@ -17,16 +17,14 @@ package com.quancheng.saluki.core.grpc.client.failover;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 
 import io.grpc.Attributes;
+import io.grpc.EquivalentAddressGroup;
 import io.grpc.NameResolver;
-import io.grpc.ResolvedServerInfo;
-import io.grpc.ResolvedServerInfoGroup;
 
 /**
  * @author liushiming 2017年5月2日 下午12:45:20
@@ -78,15 +76,10 @@ public class NameResolverNotify {
         }
     }
 
-    private void notifyChannel(List<SocketAddress> servers) {
+    private void notifyChannel(List<SocketAddress> addresses) {
         if (listener != null && registry_servers != null) {
-            List<ResolvedServerInfo> resolvedServers = new ArrayList<ResolvedServerInfo>(servers.size());
-            for (SocketAddress sock : servers) {
-                ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, affinity);
-                resolvedServers.add(serverInfo);
-            }
-            ResolvedServerInfoGroup serversGroup = ResolvedServerInfoGroup.builder().addAll(resolvedServers).build();
-            listener.onUpdate(Collections.singletonList(serversGroup), affinity);
+            EquivalentAddressGroup server = new EquivalentAddressGroup(addresses);
+            listener.onAddresses(Collections.singletonList(server), affinity);
         }
     }
 

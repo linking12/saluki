@@ -13,7 +13,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +34,10 @@ import com.quancheng.saluki.core.registry.RegistryProvider;
 import com.quancheng.saluki.core.utils.NetUtils;
 
 import io.grpc.Attributes;
+import io.grpc.EquivalentAddressGroup;
 import io.grpc.Internal;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
-import io.grpc.ResolvedServerInfo;
-import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 
 /**
@@ -176,7 +174,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
 
         private void notifyLoadBalance(List<GrpcURL> urls) {
             if (urls != null && !urls.isEmpty()) {
-                List<ResolvedServerInfo> servers = Lists.newArrayList();
+                List<EquivalentAddressGroup> servers = Lists.newArrayList();
                 List<SocketAddress> addresses = Lists.newArrayList();
                 Map<List<SocketAddress>, GrpcURL> addressUrlMapping = Maps.newHashMap();
                 for (GrpcURL url : urls) {
@@ -192,15 +190,14 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
                 }
                 this.addresses = addresses;
                 Attributes config = this.buildAttributes(addressUrlMapping);
-                ResolvedServerInfoGroup serversGroup = ResolvedServerInfoGroup.builder().addAll(servers).build();
-                GrpcNameResolver.this.listener.onUpdate(Collections.singletonList(serversGroup), config);
+                GrpcNameResolver.this.listener.onAddresses(servers, config);
             } else {
                 GrpcNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                         + subscribeUrl.toFullString()));
             }
         }
 
-        private List<SocketAddress> DnsResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+        private List<SocketAddress> DnsResolved(List<EquivalentAddressGroup> servers, List<SocketAddress> addresses,
                                                 String host, int port) {
             List<SocketAddress> hostAddressMapping = Lists.newArrayList();
             try {
@@ -218,7 +215,7 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             return hostAddressMapping;
         }
 
-        private List<SocketAddress> IpResolved(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+        private List<SocketAddress> IpResolved(List<EquivalentAddressGroup> servers, List<SocketAddress> addresses,
                                                String host, int port) {
             List<SocketAddress> hostAddressMapping = Lists.newArrayList();
             SocketAddress sock = new InetSocketAddress(InetAddresses.forString(host), port);
@@ -227,10 +224,10 @@ public class GrpcNameResolverProvider extends NameResolverProvider {
             return hostAddressMapping;
         }
 
-        private void addSocketAddress(List<ResolvedServerInfo> servers, List<SocketAddress> addresses,
+        private void addSocketAddress(List<EquivalentAddressGroup> servers, List<SocketAddress> addresses,
                                       SocketAddress sock) {
-            ResolvedServerInfo serverInfo = new ResolvedServerInfo(sock, Attributes.EMPTY);
-            servers.add(serverInfo);
+            EquivalentAddressGroup server = new EquivalentAddressGroup(sock);
+            servers.add(server);
             addresses.add(sock);
         }
 

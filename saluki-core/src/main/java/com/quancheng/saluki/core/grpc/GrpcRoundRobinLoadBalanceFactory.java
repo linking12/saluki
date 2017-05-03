@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 import io.grpc.Attributes;
 import io.grpc.ConnectivityStateInfo;
@@ -31,8 +32,6 @@ import io.grpc.EquivalentAddressGroup;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
 import io.grpc.LoadBalancer.Helper;
-import io.grpc.ResolvedServerInfo;
-import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
 
 /**
@@ -72,7 +71,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         }
 
         @Override
-        public void handleResolvedAddresses(List<ResolvedServerInfoGroup> servers, Attributes attributes) {
+        public void handleResolvedAddressGroups(List<EquivalentAddressGroup> servers, Attributes attributes) {
             this.nameResovleCache = attributes;
             Set<EquivalentAddressGroup> currentAddrs = subchannels.keySet();
             Set<EquivalentAddressGroup> latestAddrs = resolvedServerInfoGroupToEquivalentAddressGroup(servers);
@@ -141,14 +140,8 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         /**
          * Converts list of {@link ResolvedServerInfoGroup} to {@link EquivalentAddressGroup} set.
          */
-        private static Set<EquivalentAddressGroup> resolvedServerInfoGroupToEquivalentAddressGroup(List<ResolvedServerInfoGroup> groupList) {
-            Set<EquivalentAddressGroup> addrs = new HashSet<EquivalentAddressGroup>();
-            for (ResolvedServerInfoGroup group : groupList) {
-                for (ResolvedServerInfo server : group.getResolvedServerInfoList()) {
-                    addrs.add(new EquivalentAddressGroup(server.getAddress()));
-                }
-            }
-            return addrs;
+        private static Set<EquivalentAddressGroup> resolvedServerInfoGroupToEquivalentAddressGroup(List<EquivalentAddressGroup> groupList) {
+            return Sets.newHashSet(groupList);
         }
 
         /**
