@@ -9,13 +9,13 @@ package com.quancheng.saluki.core.grpc.server.internal;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
@@ -55,7 +55,7 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
         if (methods.isEmpty()) {
             throw new IllegalStateException("protocolClass " + serviceName + " not have export method" + serivce);
         }
-        final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+        final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
         for (Method method : methods) {
             MethodDescriptor<Message, Message> methodDescriptor = MethodDescriptorUtil.createMethodDescriptor(serivce,
                                                                                                               method);
