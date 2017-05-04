@@ -49,12 +49,12 @@ import io.grpc.Status;
  */
 public class GrpcRoutePicker extends SubchannelPicker {
 
-    private final Status     status;
-    private final Attributes nameResovleCache;
-    private int              index = 0;
-    private List<Subchannel> list;
-    private int              size;
-    private final Object     LOCK  = new Object();
+    private final Status           status;
+    private final Attributes       nameResovleCache;
+    private final List<Subchannel> list;
+    private final int              size;
+    private final Object           LOCK  = new Object();
+    private int                    index = 0;
 
     GrpcRoutePicker(List<Subchannel> list, Status status, Attributes nameResovleCache){
         this.list = list;
@@ -67,9 +67,8 @@ public class GrpcRoutePicker extends SubchannelPicker {
     public PickResult pickSubchannel(PickSubchannelArgs args) {
         Map<String, Object> affinity = args.getCallOptions().getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
         GrpcURL refUrl = (GrpcURL) affinity.get(GrpcClientCall.GRPC_REF_URL);
-        this.routerAddress(refUrl);
         if (size > 0) {
-            Subchannel subchannel = nextSubchannel();
+            Subchannel subchannel = nextSubchannel(refUrl);
             affinity.put(GrpcClientCall.GRPC_NAMERESOVER_ATTRIBUTES, nameResovleCache);
             return PickResult.withSubchannel(subchannel);
         }
@@ -80,7 +79,7 @@ public class GrpcRoutePicker extends SubchannelPicker {
         return PickResult.withNoResult();
     }
 
-    private Subchannel nextSubchannel() {
+    private Subchannel nextSubchannel(GrpcURL refUrl) {
         if (size == 0) {
             throw new NoSuchElementException();
         }
@@ -90,12 +89,16 @@ public class GrpcRoutePicker extends SubchannelPicker {
             if (index >= size) {
                 index = 0;
             }
+            boolean discard = discard(refUrl, val);
+            if (discard && index != 0) {
+                nextSubchannel(refUrl);
+            }
             return val;
         }
     }
 
-    private void routerAddress(GrpcURL refUrl) {
-        if (this.list.isEmpty()) return;
+    private boolean discard(GrpcURL refUrl, Subchannel subchannel) {
+        boolean discard = false;
         synchronized (LOCK) {
             String currentRouterRule = null;
             // 从线程上下文去路由规则
@@ -109,25 +112,22 @@ public class GrpcRoutePicker extends SubchannelPicker {
             }
             if (currentRouterRule != null) {
                 GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(currentRouterRule);
-                List<Subchannel> subchannels = this.list;
                 grpcRouter.setRefUrl(refUrl);
-                for (Subchannel subchannel : subchannels) {
-                    EquivalentAddressGroup addressGroup = subchannel.getAddresses();
-                    List<SocketAddress> currentAddress = addressGroup.getAddresses();
-                    List<SocketAddress> deletAddress = Lists.newArrayList();
-                    for (SocketAddress server : currentAddress) {
-                        List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-                        if (!grpcRouter.match(providerUrls)) {
-                            deletAddress.add(server);
-                        }
-                    }
-                    if (deletAddress.size() != 0 && currentAddress.size() >= deletAddress.size()) {
-                        currentAddress.removeAll(deletAddress);
+                EquivalentAddressGroup addressGroup = subchannel.getAddresses();
+                List<SocketAddress> currentAddress = addressGroup.getAddresses();
+                List<SocketAddress> deletAddress = Lists.newArrayList();
+                for (SocketAddress server : currentAddress) {
+                    List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+                    if (!grpcRouter.match(providerUrls)) {
+                        deletAddress.add(server);
                     }
                 }
-
+                if (!deletAddress.isEmpty()) {
+                    discard = true;
+                }
             }
         }
+        return discard;
     }
 
     private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {
