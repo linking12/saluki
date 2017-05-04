@@ -101,7 +101,7 @@ public class GrpcRoutePicker extends SubchannelPicker {
         boolean discard = false;
         synchronized (LOCK) {
             String currentRouterRule = null;
-            // 从线程上下文去路由规则
+            // 从线程上下文取路由规则
             if (RpcContext.getContext().containAttachment("routerRule")) {
                 currentRouterRule = RpcContext.getContext().getAttachment("routerRule");
             }
