@@ -6,7 +6,7 @@
 # 功能
 
 * 服务注册及发现，提供集群环境的服务发现及治理能力
-* 服务路由，基于javascript路由规则配置及host的路由规则配置
+* 服务路由，基于javascript路由规则配置及host的路由规则配置(<a href="http://dubbo.io/User+Guide-zh.htm#UserGuide-zh-%E8%B7%AF%E7%94%B1%E8%A7%84%E5%88%99">路由规则示例</a>)
 * 熔断机及隔离，基于hystrix来进行的熔断、隔离
 * 简化开发方式，对于Grpc原生stub方式进行封装，提供了使用interface和java Bean作为服务契约的方式
 * 与spring-boot进行集成，提供了autoconfig的方式
