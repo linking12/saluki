@@ -15,14 +15,10 @@
  */
 package com.quancheng.saluki.core.grpc;
 
-import static io.grpc.ConnectivityState.IDLE;
-
 import java.net.SocketAddress;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -32,9 +28,7 @@ import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
 import io.grpc.Attributes;
-import io.grpc.ConnectivityStateInfo;
 import io.grpc.EquivalentAddressGroup;
-import io.grpc.LoadBalancer.Helper;
 import io.grpc.LoadBalancer.PickResult;
 import io.grpc.LoadBalancer.PickSubchannelArgs;
 import io.grpc.LoadBalancer.Subchannel;
@@ -53,17 +47,16 @@ import io.grpc.Status;
  * @author liushiming 2017年4月27日 下午4:20:35
  * @version $Id: GrpcPicker.java, v 0.0.1 2017年4月27日 下午4:20:35 liushiming Exp $
  */
-public class GrpcPicker extends SubchannelPicker {
+public class GrpcRoutePicker extends SubchannelPicker {
 
-    private final Helper     helper;
     private final Status     status;
     private final Attributes nameResovleCache;
     private int              index = 0;
     private List<Subchannel> list;
     private int              size;
+    private final Object     LOCK  = new Object();
 
-    GrpcPicker(Helper helper, List<Subchannel> list, Status status, Attributes nameResovleCache){
-        this.helper = helper;
+    GrpcRoutePicker(List<Subchannel> list, Status status, Attributes nameResovleCache){
         this.list = list;
         this.size = list.size();
         this.status = status;
@@ -102,8 +95,8 @@ public class GrpcPicker extends SubchannelPicker {
     }
 
     private void routerAddress(GrpcURL refUrl) {
-        GrpcRouter grpcRouter = null;
-        try {
+        if (this.list.isEmpty()) return;
+        synchronized (LOCK) {
             String currentRouterRule = null;
             // 从线程上下文去路由规则
             if (RpcContext.getContext().containAttachment("routerRule")) {
@@ -115,43 +108,26 @@ public class GrpcPicker extends SubchannelPicker {
                 currentRouterRule = configRouterRule;
             }
             if (currentRouterRule != null) {
-                grpcRouter = GrpcRouterFactory.getInstance().createRouter(currentRouterRule);
-            }
-        } finally {
-            if (grpcRouter != null) {
+                GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(currentRouterRule);
                 List<Subchannel> subchannels = this.list;
                 grpcRouter.setRefUrl(refUrl);
-                List<Subchannel> routedSubchannes = Lists.newArrayList();
                 for (Subchannel subchannel : subchannels) {
-                    List<SocketAddress> updatedServers = Lists.newArrayList();
-                    List<SocketAddress> addresses = subchannel.getAddresses().getAddresses();
-                    for (SocketAddress server : addresses) {
+                    EquivalentAddressGroup addressGroup = subchannel.getAddresses();
+                    List<SocketAddress> currentAddress = addressGroup.getAddresses();
+                    List<SocketAddress> deletAddress = Lists.newArrayList();
+                    for (SocketAddress server : currentAddress) {
                         List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-                        if (grpcRouter.match(providerUrls)) {
-                            updatedServers.add(server);
-                        } else {
-                            subchannel.shutdown();
+                        if (!grpcRouter.match(providerUrls)) {
+                            deletAddress.add(server);
                         }
                     }
-                    if (updatedServers.isEmpty()) {
-                        throw new IllegalArgumentException("The router condition has stoped all server address");
-                    } else {
-                        Subchannel routedSubchannel = buildSubchannel(updatedServers);
-                        routedSubchannes.add(routedSubchannel);
-                        routedSubchannel.requestConnection();
+                    if (deletAddress.size() != 0 && currentAddress.size() >= deletAddress.size()) {
+                        currentAddress.removeAll(deletAddress);
                     }
                 }
-                this.list = Collections.unmodifiableList(routedSubchannes);
-                this.size = routedSubchannes.size();
+
             }
         }
-    }
-
-    private Subchannel buildSubchannel(List<SocketAddress> socks) {
-        Attributes subchannelAttrs = Attributes.newBuilder().set(Attributes.Key.of("state-info"),
-                                                                 new AtomicReference<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(IDLE))).build();
-        Subchannel subchannel = helper.createSubchannel(new EquivalentAddressGroup(socks), subchannelAttrs);
-        return subchannel;
     }
 
     private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {

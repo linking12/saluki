@@ -155,7 +155,7 @@ public final class GrpcEngine {
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {
-        return GrpcRoundRobinLoadBalanceFactory.getInstance();
+        return GrpcRouteRoundRobinLbFactory.getInstance();
     }
 
     private SslContext buildServerSslContext() {

@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 
 import io.grpc.Attributes;
 import io.grpc.ConnectivityStateInfo;
@@ -40,14 +39,14 @@ import io.grpc.Status;
  */
 
 @Internal
-public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
+public class GrpcRouteRoundRobinLbFactory extends LoadBalancer.Factory {
 
-    private static final GrpcRoundRobinLoadBalanceFactory instance = new GrpcRoundRobinLoadBalanceFactory();
+    private static final GrpcRouteRoundRobinLbFactory instance = new GrpcRouteRoundRobinLbFactory();
 
-    private GrpcRoundRobinLoadBalanceFactory(){
+    private GrpcRouteRoundRobinLbFactory(){
     }
 
-    public static GrpcRoundRobinLoadBalanceFactory getInstance() {
+    public static GrpcRouteRoundRobinLbFactory getInstance() {
         return instance;
     }
 
@@ -61,10 +60,10 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         private final Helper                                                helper;
         private final Map<EquivalentAddressGroup, Subchannel>               subchannels = new HashMap<EquivalentAddressGroup, Subchannel>();
 
-        private volatile Attributes                                         nameResovleCache;
-
         @VisibleForTesting
         static final Attributes.Key<AtomicReference<ConnectivityStateInfo>> STATE_INFO  = Attributes.Key.of("state-info");
+
+        private Attributes                                                  attributes;
 
         GrpcRoundRobinLoadBalancer(Helper helper){
             this.helper = checkNotNull(helper, "helper");
@@ -72,23 +71,39 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
 
         @Override
         public void handleResolvedAddressGroups(List<EquivalentAddressGroup> servers, Attributes attributes) {
-            this.nameResovleCache = attributes;
+            this.attributes = attributes;
             Set<EquivalentAddressGroup> currentAddrs = subchannels.keySet();
-            Set<EquivalentAddressGroup> latestAddrs = resolvedServerInfoGroupToEquivalentAddressGroup(servers);
+            Set<EquivalentAddressGroup> latestAddrs = stripAttrs(servers);
             Set<EquivalentAddressGroup> addedAddrs = setsDifference(latestAddrs, currentAddrs);
             Set<EquivalentAddressGroup> removedAddrs = setsDifference(currentAddrs, latestAddrs);
+
+            // Create new subchannels for new addresses.
             for (EquivalentAddressGroup addressGroup : addedAddrs) {
-                Attributes subchannelAttrs = Attributes.newBuilder().set(STATE_INFO,
-                                                                         new AtomicReference<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(IDLE))).build();
+                // NB(lukaszx0): we don't merge `attributes` with `subchannelAttr` because subchannel
+                // doesn't need them. They're describing the resolved server list but we're not taking
+                // any action based on this information.
+                Attributes subchannelAttrs = Attributes.newBuilder()
+                                                       // NB(lukaszx0): because attributes are immutable we can't set
+                                                       // new value for the key
+                                                       // after creation but since we can mutate the values we leverge
+                                                       // that and set
+                                                       // AtomicReference which will allow mutating state info for given
+                                                       // channel.
+                                                       .set(STATE_INFO,
+                                                            new AtomicReference<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(IDLE))).build();
+
                 Subchannel subchannel = checkNotNull(helper.createSubchannel(addressGroup, subchannelAttrs),
                                                      "subchannel");
                 subchannels.put(addressGroup, subchannel);
                 subchannel.requestConnection();
             }
+
+            // Shutdown subchannels for removed addresses.
             for (EquivalentAddressGroup addressGroup : removedAddrs) {
                 Subchannel subchannel = subchannels.remove(addressGroup);
                 subchannel.shutdown();
             }
+
             updatePicker(getAggregatedError());
         }
 
@@ -121,7 +136,7 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
          */
         private void updatePicker(@Nullable Status error) {
             List<Subchannel> activeList = filterNonFailingSubchannels(getSubchannels());
-            helper.updatePicker(new GrpcPicker(helper, activeList, error, nameResovleCache));
+            helper.updatePicker(new GrpcRoutePicker(activeList, error, attributes));
         }
 
         /**
@@ -138,10 +153,15 @@ public class GrpcRoundRobinLoadBalanceFactory extends LoadBalancer.Factory {
         }
 
         /**
-         * Converts list of {@link ResolvedServerInfoGroup} to {@link EquivalentAddressGroup} set.
+         * Converts list of {@link EquivalentAddressGroup} to {@link EquivalentAddressGroup} set and remove all
+         * attributes.
          */
-        private static Set<EquivalentAddressGroup> resolvedServerInfoGroupToEquivalentAddressGroup(List<EquivalentAddressGroup> groupList) {
-            return Sets.newHashSet(groupList);
+        private static Set<EquivalentAddressGroup> stripAttrs(List<EquivalentAddressGroup> groupList) {
+            Set<EquivalentAddressGroup> addrs = new HashSet<EquivalentAddressGroup>();
+            for (EquivalentAddressGroup group : groupList) {
+                addrs.add(new EquivalentAddressGroup(group.getAddresses()));
+            }
+            return addrs;
         }
 
         /**
