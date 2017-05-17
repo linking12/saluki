@@ -46,8 +46,9 @@
 			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.quancheng.shared</groupId>
-			<artifactId>shared.api</artifactId>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>saluki-example-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
