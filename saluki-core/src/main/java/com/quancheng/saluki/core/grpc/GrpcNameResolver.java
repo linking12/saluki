@@ -42,6 +42,7 @@ import com.quancheng.saluki.core.utils.NetUtils;
 
 import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
+import io.grpc.Internal;
 import io.grpc.NameResolver;
 import io.grpc.Status;
 import io.grpc.internal.GrpcUtil;
@@ -52,6 +53,7 @@ import io.grpc.internal.SharedResourceHolder;
  * @author liushiming 2017年5月19日 下午1:43:22
  * @version: GrpcNameResolver.java, v 0.0.1 2017年5月19日 下午1:43:22 liushiming
  */
+@Internal
 public class GrpcNameResolver extends NameResolver {
 
   private static final Logger log = LoggerFactory.getLogger(GrpcNameResolver.class);
