@@ -52,18 +52,18 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public T getGrpcClient(GrpcProtocolClient.ChannelPool channelPool, int callType, int callTimeout) {
+    public T getGrpcClient(GrpcProtocolClient.ChannelCall channelPool, int callType, int callTimeout) {
         return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { GenericService.class },
                                           new GenericProxyClientInvocation(channelPool, callType, callTimeout));
     }
 
     private class GenericProxyClientInvocation extends AbstractClientInvocation {
 
-        private final GrpcProtocolClient.ChannelPool channelPool;
+        private final GrpcProtocolClient.ChannelCall channelPool;
         private final int                            callType;
         private final int                            callTimeout;
 
-        public GenericProxyClientInvocation(GrpcProtocolClient.ChannelPool channelPool, int callType, int callTimeout){
+        public GenericProxyClientInvocation(GrpcProtocolClient.ChannelCall channelPool, int callType, int callTimeout){
             super(GenericProxyClient.this.methodRetries);
             this.channelPool = channelPool;
             this.callType = callType;

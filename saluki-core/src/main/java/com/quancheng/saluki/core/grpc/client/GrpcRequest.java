@@ -48,11 +48,11 @@ public interface GrpcRequest {
 
         private final GrpcURL                        refUrl;
 
-        private final GrpcProtocolClient.ChannelPool chanelPool;
+        private final GrpcProtocolClient.ChannelCall chanelPool;
 
         private MethodRequest                        methodRequest;
 
-        public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelPool chanelPool){
+        public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool){
             super();
             this.refUrl = refUrl;
             this.chanelPool = chanelPool;

@@ -96,7 +96,7 @@ public final class GrpcEngine {
     if (channelPool == null) {
       initChannelPool();
     }
-    GrpcProtocolClient.ChannelPool hannelPool = new GrpcProtocolClient.ChannelPool() {
+    GrpcProtocolClient.ChannelCall channelCall = new GrpcProtocolClient.ChannelCall() {
 
       @Override
       public Channel borrowChannel(final GrpcURL realRefUrl) {
@@ -130,7 +130,7 @@ public final class GrpcEngine {
       }
 
     };
-    GrpcClientStrategy strategy = new GrpcClientStrategy(refUrl, hannelPool);
+    GrpcClientStrategy strategy = new GrpcClientStrategy(refUrl, channelCall);
     return strategy.getGrpcClient();
   }
 

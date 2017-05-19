@@ -17,9 +17,9 @@ import io.grpc.Channel;
  */
 public interface GrpcProtocolClient<T> {
 
-    public T getGrpcClient(ChannelPool channelCall, int callType, int callTimeout);
+    public T getGrpcClient(ChannelCall channelCall, int callType, int callTimeout);
 
-    public interface ChannelPool {
+    public interface ChannelCall {
 
         public Channel borrowChannel(final GrpcURL refUrl);
 

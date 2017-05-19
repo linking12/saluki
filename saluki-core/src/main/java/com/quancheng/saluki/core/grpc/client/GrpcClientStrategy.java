@@ -29,13 +29,13 @@ public class GrpcClientStrategy {
 
     private final GrpcProtocolClient<Object>     grpcClient;
 
-    private final GrpcProtocolClient.ChannelPool call;
+    private final GrpcProtocolClient.ChannelCall call;
 
     private final int                            callType;
 
     private final int                            callTimeout;
 
-    public GrpcClientStrategy(GrpcURL refUrl, GrpcProtocolClient.ChannelPool call){
+    public GrpcClientStrategy(GrpcURL refUrl, GrpcProtocolClient.ChannelCall call){
         this.call = call;
         this.callType = refUrl.getParameter(Constants.ASYNC_KEY, Constants.RPCTYPE_ASYNC);
         this.callTimeout = refUrl.getParameter(Constants.TIMEOUT, Constants.RPC_ASYNC_DEFAULT_TIMEOUT);

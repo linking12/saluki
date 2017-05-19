@@ -35,7 +35,7 @@ public class GrpcStubClient<AbstractStub> implements GrpcProtocolClient<Abstract
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractStub getGrpcClient(ChannelPool channelPool, int callType, int callTimeout) {
+    public AbstractStub getGrpcClient(ChannelCall channelPool, int callType, int callTimeout) {
         String stubClassName = GrpcStubClient.this.getStubClassName();
         Channel channel = null;
         if (StringUtils.contains(stubClassName, "$")) {
