@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>saluki-example</artifactId>
 	<inceptionYear>2017</inceptionYear>
@@ -7,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
-		<version>1.5.3</version>
+		<version>1.5.4-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<licenses>
@@ -21,8 +22,8 @@
 		<module>saluki-example-client</module>
 		<module>saluki-example-server</module>
 		<module>saluki-example-spring</module>
-    <module>saluki-example-api</module>
-  </modules>
+		<module>saluki-example-api</module>
+	</modules>
 	<properties>
 		<os.detected.classifier>osx-x86_64</os.detected.classifier>
 		<spring-boot-starter-log4j.version>1.3.8.RELEASE</spring-boot-starter-log4j.version>
