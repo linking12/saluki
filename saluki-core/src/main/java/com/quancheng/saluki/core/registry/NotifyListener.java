@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.registry;
 
@@ -17,14 +16,14 @@ import com.quancheng.saluki.core.common.GrpcURL;
  */
 public interface NotifyListener {
 
-    public interface NotifyServiceListener {
+  public interface NotifyServiceListener {
 
-        void notify(List<GrpcURL> urls);
-    }
+    void notify(GrpcURL subscribeUrl, List<GrpcURL> urls);
+  }
 
-    public interface NotifyRouterListener {
+  public interface NotifyRouterListener {
 
-        void notify(String group, String routerCondition);
-    }
+    void notify(String group, String routerCondition);
+  }
 
 }

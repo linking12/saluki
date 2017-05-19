@@ -13,22 +13,20 @@ import com.quancheng.saluki.core.common.RpcContext;
 @SpringBootApplication
 public class SalukiExampleClientApp implements CommandLineRunner {
 
-    @SalukiReference
-    private HelloService helloService;
 
-    public static void main(String[] args) {
+  public static void main(String[] args) {
 
-        SpringApplication.run(SalukiExampleClientApp.class, args);
-    }
+    SpringApplication.run(SalukiExampleClientApp.class, args);
+  }
 
-    @Override
-    public void run(String... args) throws Exception {
-//        HelloRequest request = new HelloRequest();
-//        request.setName("liushiming");
-//        RpcContext.getContext().set("123", "helloworld");
-//        HelloReply reply = helloService.sayHello(request);
-//        System.out.println(reply);
+  @Override
+  public void run(String... args) throws Exception {
+    // HelloRequest request = new HelloRequest();
+    // request.setName("liushiming");
+    // RpcContext.getContext().set("123", "helloworld");
+    // HelloReply reply = helloService.sayHello(request);
+    // System.out.println(reply);
 
-    }
+  }
 
 }

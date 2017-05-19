@@ -5,6 +5,11 @@
         "version": "1.0.0"
     }, 
     {
+        "service": "com.quancheng.examples.service.HelloService2", 
+        "group": "example", 
+        "version": "1.0.0"
+    },
+    {
         "service": "com.quancheng.test.service.UserService", 
         "group": "example", 
         "version": "1.0.0"

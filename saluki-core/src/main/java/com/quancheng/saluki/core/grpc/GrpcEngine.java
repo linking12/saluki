@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +23,11 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.grpc.client.GrpcClientStrategy;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
@@ -57,147 +59,160 @@ import io.netty.handler.ssl.SslContextBuilder;
 @Internal
 public final class GrpcEngine {
 
-    private static final Logger                      log = LoggerFactory.getLogger(GrpcEngine.class);
+  private static final Logger log = LoggerFactory.getLogger(GrpcEngine.class);
 
-    private final GrpcURL                            registryUrl;
+  private final GrpcURL registryUrl;
 
-    private final Registry                           registry;
+  private final Registry registry;
 
-    private GenericKeyedObjectPool<GrpcURL, Channel> channelPool;
+  private GenericKeyedObjectPool<String, Channel> channelPool;
 
-    public GrpcEngine(GrpcURL registryUrl){
-        this.registryUrl = registryUrl;
-        this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
+  private Map<String, Set<GrpcURL>> subscribeUrlCache = Maps.newConcurrentMap();
+
+  public GrpcEngine(GrpcURL registryUrl) {
+    this.registryUrl = registryUrl;
+    this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
+  }
+
+  private void initChannelPool() {
+    GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
+    config.setMaxTotal(Integer.MAX_VALUE);
+    config.setMaxTotalPerKey(3);
+    config.setBlockWhenExhausted(true);
+    config.setMinIdlePerKey(3);
+    config.setMaxWaitMillis(10);
+    config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
+    config.setTestOnBorrow(false);
+    config.setTestOnReturn(false);
+    config.setTestWhileIdle(false);
+    config.setTimeBetweenEvictionRunsMillis(1 * 60000L);
+    config.setMinEvictableIdleTimeMillis(10 * 60000L);
+    config.setTestWhileIdle(false);
+    this.channelPool =
+        new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
+  }
+
+  public Object getClient(GrpcURL refUrl) throws Exception {
+    if (channelPool == null) {
+      initChannelPool();
     }
+    GrpcProtocolClient.ChannelPool hannelPool = new GrpcProtocolClient.ChannelPool() {
 
-    private void initChannelPool() {
-        GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
-        config.setMaxTotal(Integer.MAX_VALUE);
-        config.setMaxTotalPerKey(3);
-        config.setBlockWhenExhausted(true);
-        config.setMinIdlePerKey(3);
-        config.setMaxWaitMillis(10);
-        config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
-        config.setTestOnBorrow(false);
-        config.setTestOnReturn(false);
-        config.setTestWhileIdle(false);
-        config.setTimeBetweenEvictionRunsMillis(1 * 60000L);
-        config.setMinEvictableIdleTimeMillis(10 * 60000L);
-        config.setTestWhileIdle(false);
-        this.channelPool = new GenericKeyedObjectPool<GrpcURL, Channel>(new GrpcChannelFactory(), config);
-    }
-
-    public Object getClient(GrpcURL refUrl) throws Exception {
-        if (channelPool == null) {
-            initChannelPool();
+      @Override
+      public Channel borrowChannel(final GrpcURL realRefUrl) {
+        GrpcURL realRefUrltemp = realRefUrl;
+        if (realRefUrltemp == null) {
+          realRefUrltemp = refUrl;
         }
-        GrpcProtocolClient.ChannelPool hannelPool = new GrpcProtocolClient.ChannelPool() {
-
-            @Override
-            public Channel borrowChannel(final GrpcURL realRefUrl) {
-                GrpcURL realRefUrltemp = realRefUrl;
-                if (realRefUrltemp == null) {
-                    realRefUrltemp = refUrl;
-                }
-                try {
-                    return channelPool.borrowObject(realRefUrltemp);
-                } catch (Exception e) {
-                    throw new java.lang.IllegalArgumentException("Grpc borrow Channel failed", e);
-                }
-            }
-
-            @Override
-            public void returnChannel(final GrpcURL realRefUrl, final Channel channel) {
-                GrpcURL realRefUrltemp = realRefUrl;
-                if (realRefUrltemp == null) {
-                    realRefUrltemp = refUrl;
-                }
-                channelPool.returnObject(realRefUrltemp, channel);
-            }
-
-        };
-        GrpcClientStrategy strategy = new GrpcClientStrategy(refUrl, hannelPool);
-        return strategy.getGrpcClient();
-    }
-
-    public io.grpc.Server getServer(Map<GrpcURL, Object> providerUrls, int rpcPort) throws Exception {
-
-        final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(rpcPort)//
-                                                                  .sslContext(buildServerSslContext())//
-                                                                  .keepAliveTime(1, TimeUnit.DAYS)//
-                                                                  .bossEventLoopGroup(createBossEventLoopGroup())//
-                                                                  .workerEventLoopGroup(createWorkEventLoopGroup());
-        for (Map.Entry<GrpcURL, Object> entry : providerUrls.entrySet()) {
-            GrpcURL providerUrl = entry.getKey();
-            Object protocolImpl = entry.getValue();
-            GrpcServerStrategy strategy = new GrpcServerStrategy(providerUrl, protocolImpl);
-            ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(strategy.getServerDefintion(),
-                                                                                     new HeaderServerInterceptor());
-            remoteServer.addService(serviceDefinition);
-            int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);
-            providerUrl = providerUrl.setPort(registryRpcPort);
-            registry.register(providerUrl);
+        String group = realRefUrltemp.getGroup();
+        if (subscribeUrlCache.get(realRefUrltemp.getGroup()) == null) {
+          Set<GrpcURL> refUrls = Sets.newConcurrentHashSet();
+          refUrls.add(realRefUrltemp);
+          subscribeUrlCache.put(group, refUrls);
+        } else {
+          subscribeUrlCache.get(group).add(realRefUrltemp);
         }
-        log.info("grpc server is build complete ");
-        return remoteServer.build();
-
-    }
-
-    private SslContext buildClientSslContext() {
         try {
-            InputStream certs = SslUtil.loadInputStreamCert("server.pem");
-            return GrpcSslContexts.configure(SslContextBuilder.forClient()//
-                                                              .trustManager(certs))//
-                                  .build();
-        } catch (SSLException e) {
-            throw new RpcFrameworkException(e);
+          return channelPool.borrowObject(group);
+        } catch (Exception e) {
+          throw new java.lang.IllegalArgumentException("Grpc borrow Channel failed", e);
         }
-    }
+      }
 
-    private LoadBalancer.Factory buildLoadBalanceFactory() {
-        return GrpcRouteRoundRobinLbFactory.getInstance();
-    }
-
-    private SslContext buildServerSslContext() {
-        try {
-            InputStream certs = SslUtil.loadInputStreamCert("server.pem");
-            InputStream keys = SslUtil.loadInputStreamCert("server_pkcs8.key");
-            return GrpcSslContexts.configure(SslContextBuilder.forServer(certs, keys)).build();
-        } catch (SSLException e) {
-            throw new RpcFrameworkException(e);
+      @Override
+      public void returnChannel(final GrpcURL realRefUrl, final Channel channel) {
+        GrpcURL realRefUrltemp = realRefUrl;
+        if (realRefUrltemp == null) {
+          realRefUrltemp = refUrl;
         }
+        String group = realRefUrltemp.getGroup();
+        channelPool.returnObject(group, channel);
+      }
+
+    };
+    GrpcClientStrategy strategy = new GrpcClientStrategy(refUrl, hannelPool);
+    return strategy.getGrpcClient();
+  }
+
+  public io.grpc.Server getServer(Map<GrpcURL, Object> providerUrls, int rpcPort) throws Exception {
+
+    final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(rpcPort)//
+        .sslContext(buildServerSslContext())//
+        .keepAliveTime(1, TimeUnit.DAYS)//
+        .bossEventLoopGroup(createBossEventLoopGroup())//
+        .workerEventLoopGroup(createWorkEventLoopGroup());
+    for (Map.Entry<GrpcURL, Object> entry : providerUrls.entrySet()) {
+      GrpcURL providerUrl = entry.getKey();
+      Object protocolImpl = entry.getValue();
+      GrpcServerStrategy strategy = new GrpcServerStrategy(providerUrl, protocolImpl);
+      ServerServiceDefinition serviceDefinition = ServerInterceptors
+          .intercept(strategy.getServerDefintion(), new HeaderServerInterceptor());
+      remoteServer.addService(serviceDefinition);
+      int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);
+      providerUrl = providerUrl.setPort(registryRpcPort);
+      registry.register(providerUrl);
+    }
+    log.info("grpc server is build complete ");
+    return remoteServer.build();
+
+  }
+
+  private SslContext buildClientSslContext() {
+    try {
+      InputStream certs = SslUtil.loadInputStreamCert("server.pem");
+      return GrpcSslContexts
+          .configure(SslContextBuilder.forClient()//
+              .trustManager(certs))//
+          .build();
+    } catch (SSLException e) {
+      throw new RpcFrameworkException(e);
+    }
+  }
+
+  private LoadBalancer.Factory buildLoadBalanceFactory() {
+    return GrpcRouteRoundRobinLbFactory.getInstance();
+  }
+
+  private SslContext buildServerSslContext() {
+    try {
+      InputStream certs = SslUtil.loadInputStreamCert("server.pem");
+      InputStream keys = SslUtil.loadInputStreamCert("server_pkcs8.key");
+      return GrpcSslContexts.configure(SslContextBuilder.forServer(certs, keys)).build();
+    } catch (SSLException e) {
+      throw new RpcFrameworkException(e);
+    }
+  }
+
+  private NioEventLoopGroup createBossEventLoopGroup() {
+    ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-boss-ELG", true);
+    return new NioEventLoopGroup(1, Executors.newCachedThreadPool(threadFactory));
+  }
+
+  private NioEventLoopGroup createWorkEventLoopGroup() {
+    ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-worker-ELG", true);
+    return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
+  }
+
+  private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<String, Channel> {
+
+    @Override
+    public Channel create(String group) throws Exception {
+      Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
+          .nameResolverFactory(new GrpcNameResolverProvider(subscribeUrlCache.get(group)))//
+          .loadBalancerFactory(buildLoadBalanceFactory())//
+          .sslContext(buildClientSslContext())//
+          .usePlaintext(false)//
+          .negotiationType(NegotiationType.TLS)//
+          .eventLoopGroup(createWorkEventLoopGroup())//
+          .keepAliveTime(1, TimeUnit.DAYS)//
+          .build();//
+      return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
     }
 
-    private NioEventLoopGroup createBossEventLoopGroup() {
-        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-boss-ELG", true);
-        return new NioEventLoopGroup(1, Executors.newCachedThreadPool(threadFactory));
+    @Override
+    public PooledObject<Channel> wrap(Channel value) {
+      return new DefaultPooledObject<Channel>(value);
     }
 
-    private NioEventLoopGroup createWorkEventLoopGroup() {
-        ThreadFactory threadFactory = new NamedThreadFactory("grpc-default-worker-ELG", true);
-        return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
-    }
-
-    private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<GrpcURL, Channel> {
-
-        @Override
-        public Channel create(GrpcURL refURL) throws Exception {
-            Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-                                                 .nameResolverFactory(new GrpcNameResolverProvider(refURL))//
-                                                 .loadBalancerFactory(buildLoadBalanceFactory())//
-                                                 .sslContext(buildClientSslContext())//
-                                                 .usePlaintext(false)//
-                                                 .negotiationType(NegotiationType.TLS)//
-                                                 .eventLoopGroup(createWorkEventLoopGroup())//
-                                                 .keepAliveTime(1, TimeUnit.DAYS)//
-                                                 .build();//
-            return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
-        }
-
-        @Override
-        public PooledObject<Channel> wrap(Channel value) {
-            return new DefaultPooledObject<Channel>(value);
-        }
-
-    }
+  }
 }
