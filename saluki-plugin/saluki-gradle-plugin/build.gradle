@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 group = 'com.quancheng.saluki'
-version = '1.5.3-SNAPSHOT'
+version = '1.5.3'
 sourceSets {
     main {
         java { srcDirs = [] }
@@ -15,5 +15,5 @@ sourceSets {
 dependencies {
    compile gradleApi()
    compile localGroovy()
-   compile group: 'com.quancheng.saluki', name: 'saluki-plugin-common', version:'1.5.3-SNAPSHOT'
+   compile group: 'com.quancheng.saluki', name: 'saluki-plugin-common', version:'1.5.3'
 }

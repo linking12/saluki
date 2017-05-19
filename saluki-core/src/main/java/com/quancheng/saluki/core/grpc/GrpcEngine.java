@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
@@ -71,7 +72,7 @@ public final class GrpcEngine {
 
     private void initChannelPool() {
         GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
-        config.setMaxTotal(1000);
+        config.setMaxTotal(Integer.MAX_VALUE);
         config.setMaxTotalPerKey(3);
         config.setBlockWhenExhausted(true);
         config.setMinIdlePerKey(3);
@@ -123,6 +124,7 @@ public final class GrpcEngine {
 
         final NettyServerBuilder remoteServer = NettyServerBuilder.forPort(rpcPort)//
                                                                   .sslContext(buildServerSslContext())//
+                                                                  .keepAliveTime(1, TimeUnit.DAYS)//
                                                                   .bossEventLoopGroup(createBossEventLoopGroup())//
                                                                   .workerEventLoopGroup(createWorkEventLoopGroup());
         for (Map.Entry<GrpcURL, Object> entry : providerUrls.entrySet()) {
@@ -153,7 +155,7 @@ public final class GrpcEngine {
     }
 
     private LoadBalancer.Factory buildLoadBalanceFactory() {
-        return GrpcRoundRobinLoadBalanceFactory.getInstance();
+        return GrpcRouteRoundRobinLbFactory.getInstance();
     }
 
     private SslContext buildServerSslContext() {
@@ -187,6 +189,7 @@ public final class GrpcEngine {
                                                  .usePlaintext(false)//
                                                  .negotiationType(NegotiationType.TLS)//
                                                  .eventLoopGroup(createWorkEventLoopGroup())//
+                                                 .keepAliveTime(1, TimeUnit.DAYS)//
                                                  .build();//
             return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
         }

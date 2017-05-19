@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
+		<version>1.5.3</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<licenses>
@@ -54,11 +54,6 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-consul-config</artifactId>
-			<version>${springcloud.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

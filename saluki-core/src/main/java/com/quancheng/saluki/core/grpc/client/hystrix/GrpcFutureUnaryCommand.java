@@ -23,7 +23,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.client.GrpcAsyncCall;
+import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
@@ -35,7 +35,7 @@ import io.grpc.MethodDescriptor;
  */
 public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
 
-    private final GrpcAsyncCall                      grpcAsyncCall;
+    private final GrpcClientCall                 grpcAsyncCall;
 
     private final Message                            request;
 
@@ -43,7 +43,7 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
 
     private final int                                timeOut;
 
-    public GrpcFutureUnaryCommand(GrpcAsyncCall grpcAsyncCall, GrpcURL refUrl,
+    public GrpcFutureUnaryCommand(GrpcClientCall grpcAsyncCall, GrpcURL refUrl,
                                   MethodDescriptor<Message, Message> methodDesc, Message request, int timeOut){
         super(refUrl, methodDesc);
         this.grpcAsyncCall = grpcAsyncCall;
@@ -58,7 +58,7 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
             return grpcAsyncCall.unaryFuture(request, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS,
-                                                  String.valueOf(grpcAsyncCall.getRemoteAddress()));
+                                                  String.valueOf(grpcAsyncCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY)));
             if (e instanceof TimeoutException) {
                 RpcServiceException rpcService = new RpcServiceException(e, RpcErrorMsgConstant.SERVICE_TIMEOUT);
                 throw rpcService;

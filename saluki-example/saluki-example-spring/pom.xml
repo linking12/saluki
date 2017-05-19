@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-example</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
+		<version>1.5.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<licenses>
@@ -25,8 +25,9 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.quancheng.shared</groupId>
-			<artifactId>shared.api</artifactId>
+			<groupId>com.quancheng.saluki</groupId>
+			<artifactId>saluki-example-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

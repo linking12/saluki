@@ -15,15 +15,12 @@ import io.grpc.Metadata;
  * @author shimingliu 2016年12月15日 下午9:49:32
  * @version MetadataKeyUtil.java, v 0.0.1 2016年12月15日 下午9:49:32 shimingliu
  */
-public final class MetadataKeyUtil {
+public final class MetadataUtil {
 
     public static final Metadata.Key<String> GRPC_CONTEXT_ATTACHMENTS = Metadata.Key.of("grpc_header_attachments-bin",
                                                                                         utf8Marshaller());
 
     public static final Metadata.Key<String> GRPC_CONTEXT_VALUES      = Metadata.Key.of("grpc_header_values-bin",
-                                                                                        utf8Marshaller());
-
-    public static final Metadata.Key<String> GRPC_ERRORCAUSE_VALUE    = Metadata.Key.of("grpc_error_cause-bin",
                                                                                         utf8Marshaller());
 
     private static Metadata.BinaryMarshaller<String> utf8Marshaller() {
@@ -41,7 +38,6 @@ public final class MetadataKeyUtil {
         };
     }
 
-    private MetadataKeyUtil(){
-
+    private MetadataUtil(){
     }
 }

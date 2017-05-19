@@ -1,28 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>saluki-service</artifactId>
-	<inceptionYear>2017</inceptionYear>
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
-		<artifactId>saluki</artifactId>
+		<artifactId>saluki-example</artifactId>
 		<version>1.5.3</version>
-		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
+	<artifactId>saluki-example-api</artifactId>
+	<name>saluki-example-api</name>
+	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>saluki-core</artifactId>
-			<version>${project.version}</version>
+			<version>1.5.3</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -95,16 +88,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<distributionManagement>
-		<repository>
-			<id>nexus</id>
-			<name>Nexus Release Repository</name>
-			<url>http://repo.quancheng-ec.com/repository/maven-releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>nexus</id>
-			<name>Nexus Snapshot Repository</name>
-			<url>http://repo.quancheng-ec.com/repository/maven-snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>

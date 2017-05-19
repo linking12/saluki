@@ -10,6 +10,7 @@ package com.quancheng.saluki.core.grpc.util;
 import java.lang.reflect.Method;
 
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.ProtobufEntity;
 
 /**
@@ -19,15 +20,10 @@ import com.quancheng.saluki.serializer.ProtobufEntity;
 public final class MethodDescriptorUtil {
 
     public static io.grpc.MethodDescriptor<Message, Message> createMethodDescriptor(Class<?> clzz, Method method) {
-
         String clzzName = clzz.getName();
-        return createMethodDescriptor(clzzName, method);
-    }
-
-    public static io.grpc.MethodDescriptor<Message, Message> createMethodDescriptor(String clzzName, Method method) {
         String methodName = method.getName();
-        Class<?> requestType = GrpcReflectUtil.getTypedReq(method);
-        Class<?> responseType = GrpcReflectUtil.getTypeRep(method);
+        Class<?> requestType = ReflectUtils.getTypedOfReq(method);
+        Class<?> responseType = ReflectUtils.getTypeOfRep(method);
         Message argsReq = buildDefaultInstance(requestType);
         Message argsRep = buildDefaultInstance(responseType);
         return createMethodDescriptor(clzzName, methodName, argsReq, argsRep);
@@ -45,13 +41,12 @@ public final class MethodDescriptorUtil {
     public static Message buildDefaultInstance(Class<?> type) {
         Class<? extends Message> messageType;
         if (!Message.class.isAssignableFrom(type)) {
-            ProtobufEntity entity = (ProtobufEntity) GrpcReflectUtil.findAnnotationFromClass(type,
-                                                                                             ProtobufEntity.class);
+            ProtobufEntity entity = (ProtobufEntity) ReflectUtils.findAnnotationFromClass(type, ProtobufEntity.class);
             messageType = entity.value();
         } else {
             messageType = (Class<? extends Message>) type;
         }
-        Object obj = GrpcReflectUtil.classInstance(messageType);
+        Object obj = ReflectUtils.classInstance(messageType);
         return (Message) obj;
     }
 }

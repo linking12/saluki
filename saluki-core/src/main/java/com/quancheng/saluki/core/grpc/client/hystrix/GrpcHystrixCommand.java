@@ -31,7 +31,7 @@ import io.grpc.MethodDescriptor;
  */
 public abstract class GrpcHystrixCommand extends HystrixCommand<Message> {
 
-    private static final int DEFAULT_THREADPOOL_CORE_SIZE = 30;
+    private static final int DEFAULT_THREADPOOL_CORE_SIZE = 5;
 
     public GrpcHystrixCommand(GrpcURL refUrl, MethodDescriptor<Message, Message> methodDesc){
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(refUrl.getServiceInterface()))//
@@ -40,7 +40,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Message> {
                                                                           .withCircuitBreakerSleepWindowInMilliseconds(30000)// 熔断器中断请求30秒后会进入半打开状态,放部分流量过去重试
                                                                           .withCircuitBreakerErrorThresholdPercentage(50)// 错误率达到50开启熔断保护
                                                                           .withExecutionTimeoutEnabled(false))// 禁用这里的超时
-                    .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(getThreadPoolCoreSize(refUrl)))// 线程池为30
+                    .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(getThreadPoolCoreSize(refUrl)))// 线程池为5
         );
 
     }
