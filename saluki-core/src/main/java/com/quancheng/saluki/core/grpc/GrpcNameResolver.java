@@ -90,8 +90,8 @@ public class GrpcNameResolver extends NameResolver {
     this.subscribeUrls = subscribeUrls;
     this.currentGroup = this.subscribeUrls.iterator().next().getGroup();
     registry.subscribe(currentGroup, routeListener());
-    timerService = SharedResourceHolder.get(GrpcUtil.TIMER_SERVICE);
-    executor = SharedResourceHolder.get(GrpcUtil.SHARED_CHANNEL_EXECUTOR);
+    this.timerService = SharedResourceHolder.get(GrpcUtil.TIMER_SERVICE);
+    this.executor = SharedResourceHolder.get(GrpcUtil.SHARED_CHANNEL_EXECUTOR);
   }
 
   @Override
