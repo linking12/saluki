@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
 			<artifactId>saluki-core</artifactId>
-			<version>1.5.3</version>
+			<version>1.5.4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -59,7 +59,7 @@
 			<plugin>
 				<groupId>com.quancheng.saluki</groupId>
 				<artifactId>saluki-maven-plugin</artifactId>
-				<version>1.5.3</version>
+				<version>1.5.4-SNAPSHOT</version>
 				<configuration>
 					<protoPath>${project.basedir}/src/main/proto</protoPath>
 					<buildPath>${project.basedir}/target/generated-sources/protobuf/java</buildPath>
