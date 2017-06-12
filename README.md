@@ -23,6 +23,9 @@
    mvn install -Dmaven.test.skip=true
    
 ```
+# 关于服务调用Sample
+  详细请查看https://github.com/linking12/saluki/tree/master/saluki-example
+  
 # Quick Start
 
 * 首先在proto文件工程配置grpc提供的gradle或maven插件生成stub
