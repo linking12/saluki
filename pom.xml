@@ -16,15 +16,13 @@
 	</licenses>
 	<modules>
 		<module>saluki-core</module>
-		<module>saluki-registry/saluki-registry-consul</module>
+		<module>saluki-registry</module>
 		<module>saluki-serializer</module>
 		<module>saluki-service</module>
 		<module>spring-boot-starter-saluki</module>
 		<module>saluki-springsupport</module>
-		<module>saluki-monitor/spring-boot-starter-saluki-monitor</module>
-		<module>saluki-monitor/saluki-monitor-console</module>
-		<module>saluki-plugin/saluki-maven-plugin</module>
-		<module>saluki-plugin/saluki-plugin-common</module>
+		<module>saluki-monitor</module>
+		<module>saluki-plugin</module>
 		<module>saluki-gateway</module>
 	</modules>
 	<properties>

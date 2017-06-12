@@ -5,9 +5,8 @@
 	<packaging>maven-plugin</packaging>
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
-		<artifactId>saluki</artifactId>
+		<artifactId>saluki-plugin</artifactId>
 		<version>1.5.4-SNAPSHOT</version>
-		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<dependencies>
 		<dependency>

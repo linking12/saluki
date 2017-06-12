@@ -7,9 +7,8 @@
 	<inceptionYear>2017</inceptionYear>
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
-		<artifactId>saluki</artifactId>
+		<artifactId>saluki-registry</artifactId>
 		<version>1.5.4-SNAPSHOT</version>
-		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<licenses>
 		<license>

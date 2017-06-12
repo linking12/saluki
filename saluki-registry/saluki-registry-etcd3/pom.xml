@@ -5,13 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki-registry-etcd3</artifactId>
-	<version>1.5.3-SNAPSHOT</version>
 	<inceptionYear>2017</inceptionYear>
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
-		<artifactId>saluki</artifactId>
-		<version>1.5.3-SNAPSHOT</version>
-		<relativePath>../../pom.xml</relativePath>
+		<artifactId>saluki-registry</artifactId>
+		<version>1.5.4-SNAPSHOT</version>
 	</parent>
 	<licenses>
 		<license>

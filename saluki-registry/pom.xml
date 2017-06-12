@@ -3,8 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>saluki-serializer</artifactId>
+	<artifactId>saluki-registry</artifactId>
 	<inceptionYear>2017</inceptionYear>
+	<packaging>pom</packaging>
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki</artifactId>
@@ -17,24 +18,8 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<modules>
+		<module>saluki-registry-consul</module>
+		<module>saluki-registry-etcd3</module>
+	</modules>
 </project>
