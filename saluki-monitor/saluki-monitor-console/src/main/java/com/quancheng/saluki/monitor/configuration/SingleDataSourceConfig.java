@@ -36,13 +36,12 @@ public class SingleDataSourceConfig {
   @Autowired
   protected DataSourcePropertiesCommon commonProperties;
 
-  protected DataSource createDataSource(String url, String userName, String passWord)
-      throws SQLException {
+  protected DataSource createDataSource() throws SQLException {
     // special
     DruidDataSource datasource = new DruidDataSource();
-    datasource.setUrl(url);
-    datasource.setUsername(userName);
-    datasource.setPassword(passWord);
+    datasource.setUrl(commonProperties.getUrl());
+    datasource.setUsername(commonProperties.getUsername());
+    datasource.setPassword(commonProperties.getPassword());
     // common
     datasource.setDriverClassName(commonProperties.getDriverClassName());
     datasource.setInitialSize(commonProperties.getInitialSize());
@@ -66,6 +65,9 @@ public class SingleDataSourceConfig {
 
   @ConfigurationProperties(prefix = "spring.datasource")
   protected static class DataSourcePropertiesCommon {
+    private String url;
+    private String username;
+    private String password;
     private String driverClassName;
     private int initialSize;
     private int minIdle;
@@ -292,6 +294,48 @@ public class SingleDataSourceConfig {
      */
     public void setConnectionProperties(String connectionProperties) {
       this.connectionProperties = connectionProperties;
+    }
+
+    /**
+     * @return the url
+     */
+    public String getUrl() {
+      return url;
+    }
+
+    /**
+     * @param url the url to set
+     */
+    public void setUrl(String url) {
+      this.url = url;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+      return username;
+    }
+
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+      this.username = username;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+      return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+      this.password = password;
     }
 
 

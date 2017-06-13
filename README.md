@@ -24,7 +24,7 @@
    
 ```
 # 关于服务调用Sample
-  详细请查看https://github.com/linking12/saluki/tree/master/saluki-example
+  详细请查看 <a href="https://github.com/linking12/saluki/tree/master/saluki-example">sample</a>
   
 # Quick Start
 

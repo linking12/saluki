@@ -9,6 +9,7 @@ package com.quancheng.saluki.monitor;
 
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  * @version MybatisMapperScannerConfig.java, v 0.0.1 2016年12月21日 下午8:08:56 shimingliu
  */
 @Configuration
+@ConditionalOnExpression("${saluki.monitor.enabled:true}")
 @AutoConfigureAfter(MybatisConfiguration.class)
 public class MybatisMapperScannerConfig {
 

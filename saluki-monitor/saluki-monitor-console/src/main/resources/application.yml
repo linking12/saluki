@@ -1,8 +1,7 @@
-server:
-  port: 8080
-  tomcat:
-    maxThreads: 200
-    uriEncoding: UTF-8
+saluki:
+  monitor:
+    consulhost: daily.quancheng-ec.com:8500
+    enabled: false
 spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/salukimonitor
