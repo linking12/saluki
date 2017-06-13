@@ -25,7 +25,7 @@
 		<thymeleaf.version>2.1.3.RELEASE</thymeleaf.version>
 		<oauth2.version>2.0.12.RELEASE</oauth2.version>
 		<zuul.version>1.3.0.RELEASE</zuul.version>
-		<os.detected.classifier>osx-x86_64</os.detected.classifier>
+		<!--<os.detected.classifier>osx-x86_64</os.detected.classifier> -->
 	</properties>
 	<dependencies>
 		<dependency>
