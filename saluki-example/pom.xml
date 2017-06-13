@@ -17,7 +17,6 @@
 	<modules>
 		<module>saluki-example-client</module>
 		<module>saluki-example-server</module>
-		<module>saluki-example-spring</module>
 		<module>saluki-example-api</module>
 	</modules>
 	<properties>

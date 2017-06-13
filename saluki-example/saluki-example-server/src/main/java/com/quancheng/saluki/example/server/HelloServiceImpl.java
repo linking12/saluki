@@ -8,13 +8,11 @@ import com.quancheng.saluki.boot.SalukiService;
 @SalukiService
 public class HelloServiceImpl implements HelloService {
 
-    @Override
-    public HelloReply sayHello(HelloRequest request) {
-        HelloReply reply = new HelloReply();
-        int registryPort = 0;
-        //Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
-        reply.setMessage(request.getName());
-        return reply;
-    }
+  @Override
+  public HelloReply sayHello(HelloRequest request) {
+    HelloReply reply = new HelloReply();
+    reply.setMessage(request.getName());
+    return reply;
+  }
 
 }
