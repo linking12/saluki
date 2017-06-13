@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
@@ -21,51 +22,57 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http//
-            .exceptionHandling()//
-            .accessDeniedPage("/login.html?authorization_error=true")//
-            .and()//
-            .logout()//
-            .permitAll()//
-            .and()//
-            .formLogin()//
-            .loginPage("/login.html")//
-            .permitAll()//
-            .and()//
-            .authorizeRequests()//
-            .anyRequest().authenticated();//
-    }
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http//
+        .exceptionHandling()//
+        .accessDeniedPage("/login.html?authorization_error=true")//
+        .and()//
+        .logout()//
+        .permitAll()//
+        .and()//
+        .formLogin()//
+        .loginPage("/login.html")//
+        .permitAll()//
+        .and()//
+        .authorizeRequests()//
+        .anyRequest().authenticated();//
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Override
+  public void configure(WebSecurity security) {
+    security.ignoring().antMatchers("/resources/**");
+  }
 
-    @Bean
-    @Autowired
-    public AuditorAware<String> auditorAwareBean(AuthenticationTrustResolver authenticationTrustResolver) {
-        return () -> {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || authenticationTrustResolver.isAnonymous(authentication)) {
-                return "@SYSTEM";
-            }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof String) {
-                return (String) principal;
-            } else if (principal instanceof UserDetails) {
-                return ((UserDetails) principal).getUsername();
-            } else {
-                return String.valueOf(principal);
-            }
-        };
-    }
+  @Bean
+  @Autowired
+  public AuditorAware<String> auditorAwareBean(
+      AuthenticationTrustResolver authenticationTrustResolver) {
+    return () -> {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      if (authentication == null || authenticationTrustResolver.isAnonymous(authentication)) {
+        return "@SYSTEM";
+      }
 
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
+      Object principal = authentication.getPrincipal();
+      if (principal instanceof String) {
+        return (String) principal;
+      } else if (principal instanceof UserDetails) {
+        return ((UserDetails) principal).getUsername();
+      } else {
+        return String.valueOf(principal);
+      }
+    };
+  }
+
+  @Bean
+  @Override
+  public AuthenticationManager authenticationManagerBean() throws Exception {
+    return super.authenticationManagerBean();
+  }
 }

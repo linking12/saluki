@@ -24,7 +24,7 @@
 			<extension>
 				<groupId>kr.motd.maven</groupId>
 				<artifactId>os-maven-plugin</artifactId>
-				<version>1.4.1.Final</version>
+				<version>${os.maven.version}</version>
 			</extension>
 		</extensions>
 		<plugins>

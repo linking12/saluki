@@ -13,68 +13,25 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.alibaba.druid.pool.DruidDataSource;
-
 /**
  * @author shimingliu 2016年12月20日 下午3:07:34
  * @version MonitorConfiguration.java, v 0.0.1 2016年12月20日 下午3:07:34 shimingliu
  */
 @Configuration
-public class MybatisConfiguration {
+public class MybatisConfiguration extends SingleDataSourceConfig {
 
-  private static final Logger log = LoggerFactory.getLogger(MybatisConfiguration.class);
-
-  @Autowired
-  private MybatisDataSourceProperties config;
-
-  /**
-   * 创建 druid数据源
-   */
-  @Bean(initMethod = "init")
-  public DataSource druidDataSource() {
-    System.setProperty("druid.logType", "log4j2");
-    // 不初始化数据源连接
-    if (config == null || config.getUrl() == null) {
-      return null;
-    }
-    DruidDataSource druidDataSource = new DruidDataSource();
-    druidDataSource.setName(config.getName());
-    druidDataSource.setUrl(config.getUrl());
-    druidDataSource.setUsername(config.getUsername());
-    druidDataSource.setPassword(config.getPassword());
-    druidDataSource.setPoolPreparedStatements(config.isPoolPreparedStatements());
-    druidDataSource.setInitialSize(config.getInitialSize());
-    druidDataSource.setMinIdle(config.getMinIdle());
-    druidDataSource.setMaxActive(config.getMaxActive());
-    druidDataSource.setMaxWait(config.getMaxWait());
-    druidDataSource.setTimeBetweenEvictionRunsMillis(config.getTimeBetweenEvictionRunsMillis());
-    druidDataSource.setMinEvictableIdleTimeMillis(config.getMinEvictableIdleTimeMillis());
-    druidDataSource.setValidationQuery(config.getValidationQuery());
-    druidDataSource.setTestWhileIdle(config.isTestWhileIdle());
-    druidDataSource.setTestOnBorrow(config.isTestOnBorrow());
-    druidDataSource.setTestOnReturn(config.isTestOnReturn());
-    druidDataSource.setPoolPreparedStatements(config.isPoolPreparedStatements());
-    druidDataSource.setMaxPoolPreparedStatementPerConnectionSize(
-        config.getMaxPoolPreparedStatementPerConnectionSize());
-    // 定期输出统计信息到日志中,先关闭
-    // druidDataSource.setTimeBetweenLogStatsMillis();
-    druidDataSource.setConnectionProperties(config.getConnectionProperties());
-    druidDataSource.setUseGlobalDataSourceStat(true);
-    try {
-      druidDataSource.setFilters(config.getFilters());
-    } catch (SQLException e) {
-      log.error(e.getMessage(), e);
-    }
-    return druidDataSource;
+  @Bean
+  public DataSource datasource(@Value("${spring.datasource.url}") String url,
+      @Value("${spring.datasource.username}") String userName,
+      @Value("${spring.datasource.password}") String passWord) throws SQLException {
+    return createDataSource(url, userName, passWord);
   }
 
   @Bean

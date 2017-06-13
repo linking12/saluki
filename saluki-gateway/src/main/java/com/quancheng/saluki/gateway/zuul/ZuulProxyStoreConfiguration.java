@@ -33,12 +33,7 @@ import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
 
 import redis.clients.jedis.JedisPool;
 
-/***
- * Registers a{
- * 
- * @link org.springframework.cloud.netflix.zuul.filters.RouteLocator} that is being populated through external store.
- * @author Jakub Narloch
- */
+ 
 @Configuration
 public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
 
@@ -63,7 +58,7 @@ public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
     @Bean
     @Override
     @ConditionalOnMissingBean(RouteLocator.class)
-    public DiscoveryClientRouteLocator routeLocator() {
+    public DiscoveryClientRouteLocator discoveryRouteLocator() {
         return new StoreProxyRouteLocator(server.getServletPath(), discovery, zuulProperties, zuulRouteStore);
     }
 

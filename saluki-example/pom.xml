@@ -21,8 +21,8 @@
 		<module>saluki-example-api</module>
 	</modules>
 	<properties>
-		<springboot.version>1.4.2.RELEASE</springboot.version>
-		<netty-tcnative.version>1.1.33.Fork26</netty-tcnative.version>
+		<springboot.version>1.5.4.RELEASE</springboot.version>
+		<netty-tcnative.version>2.0.3.Final</netty-tcnative.version>
 		<spring-boot-starter-log4j.version>1.3.8.RELEASE</spring-boot-starter-log4j.version>
 	</properties>
 	<dependencyManagement>
