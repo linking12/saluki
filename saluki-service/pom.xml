@@ -30,7 +30,7 @@
 			<extension>
 				<groupId>kr.motd.maven</groupId>
 				<artifactId>os-maven-plugin</artifactId>
-				<version>1.4.1.Final</version>
+				<version>${os.maven.version}</version>
 			</extension>
 		</extensions>
 		<plugins>
@@ -65,7 +65,7 @@
 			<plugin>
 				<groupId>com.quancheng.saluki</groupId>
 				<artifactId>saluki-maven-plugin</artifactId>
-				<version>1.5.4-SNAPSHOT</version>
+				<version>${project.version}</version>
 				<configuration>
 					<protoPath>${project.basedir}/src/main/proto</protoPath>
 					<buildPath>${project.basedir}/target/generated-sources/protobuf/java</buildPath>

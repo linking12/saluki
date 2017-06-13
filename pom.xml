@@ -39,7 +39,7 @@
 		<log4j.version>2.2</log4j.version>
 		<netty-tcnative.version>2.0.3.Final</netty-tcnative.version>
 		<hystrix.version>1.5.11</hystrix.version>
-		<os.maven.version>1.4.0.Final</os.maven.version>
+		<os.maven.version>1.4.1.Final</os.maven.version>
 	</properties>
 	<scm>
 		<url>https://github.com/linking12/saluki</url>
@@ -134,6 +134,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
 				<executions>
 					<execution>
 						<id>copy-resources</id>
@@ -156,26 +157,8 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadoc</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<show>public</show>
-					<charset>UTF-8</charset>
-					<encoding>UTF-8</encoding>
-					<docencoding>UTF-8</docencoding>
-					<additionalparam>-Xdoclint:none</additionalparam>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.6.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
