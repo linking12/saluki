@@ -8,5 +8,4 @@ saluki:
     registryAddress: localhost:8500
     group: example
     version: 1.0.0
-    host: 127.0.0.1
     realityRpcPort: 12201
