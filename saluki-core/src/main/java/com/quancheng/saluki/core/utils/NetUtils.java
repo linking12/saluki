@@ -1,6 +1,7 @@
 package com.quancheng.saluki.core.utils;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -175,36 +176,41 @@ public class NetUtils {
   }
 
   private static InetAddress getLocalAddress0() {
-    InetAddress localAddress = null;
+    InetAddress result = null;
     try {
-      Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-      if (interfaces != null) {
-        while (interfaces.hasMoreElements()) {
-          try {
-            NetworkInterface network = interfaces.nextElement();
-            Enumeration<InetAddress> addresses = network.getInetAddresses();
-            if (addresses != null) {
-              while (addresses.hasMoreElements()) {
-                try {
-                  InetAddress address = addresses.nextElement();
-                  if (isValidAddress(address)) {
-                    return address;
-                  }
-                } catch (Throwable e) {
-                  logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
-                }
-              }
-            }
-          } catch (Throwable e) {
-            logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+      int lowest = Integer.MAX_VALUE;
+      for (Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces(); nics
+          .hasMoreElements();) {
+        NetworkInterface ifc = nics.nextElement();
+        if (ifc.isUp()) {
+          logger.trace("Testing interface: " + ifc.getDisplayName());
+          if (ifc.getIndex() < lowest || result == null) {
+            lowest = ifc.getIndex();
+          } else if (result != null) {
+            continue;
           }
+          for (Enumeration<InetAddress> addrs = ifc.getInetAddresses(); addrs.hasMoreElements();) {
+            InetAddress address = addrs.nextElement();
+            if (address instanceof Inet4Address && !address.isLoopbackAddress()) {
+              logger.trace("Found non-loopback interface: " + ifc.getDisplayName());
+              result = address;
+            }
+          }
+
         }
       }
-    } catch (Throwable e) {
-      logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+    } catch (IOException ex) {
+      logger.error("Cannot get first non-loopback address", ex);
     }
-    logger.error("Could not get local host ip address, will use 127.0.0.1 instead.");
-    return localAddress;
+    if (result != null && isValidAddress(result)) {
+      return result;
+    }
+    try {
+      return InetAddress.getLocalHost();
+    } catch (UnknownHostException e) {
+      logger.warn("Unable to retrieve localhost");
+    }
+    return null;
   }
 
   public static String getIpByHost(String hostName) {
