@@ -1,8 +1,8 @@
 # 概述
 
-saluki-example-api: 类似dubbo的api，作为服务端和客户端的调用契约
-saluki-example-client: 客户端
-saluki-example-server: 服务端
+* saluki-example-api: 类似dubbo的api，作为服务端和客户端的调用契约
+* saluki-example-client: 客户端
+* saluki-example-server: 服务端
 
 # Quick Start
 
