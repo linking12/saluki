@@ -17,9 +17,14 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<!-- <properties>
-		<os.detected.classifier>osx-x86_64</os.detected.classifier>
-	</properties> -->
+	<properties>
+		<!-- 如果是mac -->
+		<!-- <os.detected.classifier>osx-x86_64</os.detected.classifier> -->
+		<!-- 如果是windows -->
+		<!-- <os.detected.classifier>windows-x86_64</os.detected.classifier> -->
+		<!-- 如果是linux -->
+		<!-- <os.detected.classifier>linux-x86_64</os.detected.classifier> -->
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.quancheng.saluki</groupId>
