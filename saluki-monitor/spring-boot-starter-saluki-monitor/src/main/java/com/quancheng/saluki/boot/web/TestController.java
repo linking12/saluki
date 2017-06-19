@@ -27,7 +27,7 @@ import com.google.gson.Gson;
 import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.boot.SalukiService;
 import com.quancheng.saluki.boot.autoconfigure.GrpcProperties;
-import com.quancheng.saluki.boot.common.GrpcAopUtils;
+import com.quancheng.saluki.boot.common.GrpcAop;
 import com.quancheng.saluki.boot.jaket.Jaket;
 import com.quancheng.saluki.boot.jaket.model.GenericInvokeMetadata;
 import com.quancheng.saluki.boot.jaket.model.MetadataType;
@@ -73,7 +73,7 @@ public class TestController {
     try {
       Collection<Object> instances = getTypedBeansWithAnnotation(SalukiService.class);
       for (Object instance : instances) {
-        Object target = GrpcAopUtils.getTarget(instance);
+        Object target = GrpcAop.getTarget(instance);
         Class<?>[] interfaces = ClassUtils.getAllInterfacesForClass(target.getClass());
         Class<?> clzz = interfaces[0];
         Map<String, Object> serviceMap = Maps.newHashMap();

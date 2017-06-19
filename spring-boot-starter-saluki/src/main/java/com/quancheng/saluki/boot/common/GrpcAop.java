@@ -21,7 +21,7 @@ import org.springframework.util.ClassUtils;
  * @author shimingliu 2017年2月17日 上午11:05:29
  * @version AopTargetUtils.java, v 0.0.1 2017年2月17日 上午11:05:29 shimingliu
  */
-public class GrpcAopUtils {
+public class GrpcAop {
 
     public static Object getTarget(Object proxy) throws Exception {
         if (!isAopProxy(proxy)) {
