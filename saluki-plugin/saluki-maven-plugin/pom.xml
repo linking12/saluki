@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-plugin</artifactId>
-		<version>1.5.4-SNAPSHOT</version>
+		<version>1.5.4</version>
 	</parent>
 	<dependencies>
 		<dependency>

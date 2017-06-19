@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-monitor</artifactId>
-		<version>1.5.4-SNAPSHOT</version>
+		<version>1.5.4</version>
 	</parent>
 	<licenses>
 		<license>
