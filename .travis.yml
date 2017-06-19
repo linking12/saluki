@@ -1,0 +1,14 @@
+notifications:
+  email:
+    recipients:
+      - 297442500@qq.com
+  on_success: change
+  on_failure: always
+
+language: java
+
+
+script:
+  - mvn clean install -U -Dmaven.test.skip=true
+
+ 
