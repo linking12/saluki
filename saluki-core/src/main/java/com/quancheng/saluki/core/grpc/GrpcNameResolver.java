@@ -67,7 +67,21 @@ public class GrpcNameResolver extends NameResolver {
 
   private final Set<GrpcURL> submitedSubscribeUrls = Sets.newConcurrentHashSet();
 
-  private final NotifyListener.NotifyServiceListener serviceListener = serviceListener();
+  private final NotifyListener.NotifyServiceListener serviceListener =
+      new NotifyListener.NotifyServiceListener() {
+
+        @Override
+        public void notify(GrpcURL subscribeUrl, List<GrpcURL> urls) {
+          if (log.isInfoEnabled()) {
+            log.info(
+                "Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
+                    + Arrays.toString(urls.toArray()));
+          }
+          GrpcNameResolver.this.urls.put(subscribeUrl, urls);
+          notifyLoadBalance(subscribeUrl, urls);
+        }
+
+      };
 
   private ScheduledExecutorService timerService;
 
@@ -177,25 +191,6 @@ public class GrpcNameResolver extends NameResolver {
     }
   }
 
-
-
-  /**** help method *****/
-
-  private final NotifyListener.NotifyServiceListener serviceListener() {
-    return new NotifyListener.NotifyServiceListener() {
-
-      @Override
-      public void notify(GrpcURL subscribeUrl, List<GrpcURL> urls) {
-        if (log.isInfoEnabled()) {
-          log.info("Grpc nameresolve started listener,Receive notify from registry, prividerUrl is"
-              + Arrays.toString(urls.toArray()));
-        }
-        GrpcNameResolver.this.urls.put(subscribeUrl, urls);
-        notifyLoadBalance(subscribeUrl, urls);
-      }
-
-    };
-  }
 
 
   /**** help method *****/
