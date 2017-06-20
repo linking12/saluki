@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
@@ -34,14 +33,6 @@ import io.grpc.LoadBalancer.SubchannelPicker;
 import io.grpc.Status;
 
 /**
- * <strong>描述：</strong>TODO 描述 <br>
- * <strong>功能：</strong><br>
- * <strong>使用场景：</strong><br>
- * <strong>注意事项：</strong>
- * <ul>
- * <li></li>
- * </ul>
- * 
  * @author liushiming 2017年4月27日 下午4:20:35
  * @version $Id: GrpcPicker.java, v 0.0.1 2017年4月27日 下午4:20:35 liushiming Exp $
  */
@@ -74,7 +65,6 @@ public class GrpcRoutePicker extends SubchannelPicker {
     if (status != null) {
       return PickResult.withError(status);
     }
-
     return PickResult.withNoResult();
   }
 
@@ -84,35 +74,26 @@ public class GrpcRoutePicker extends SubchannelPicker {
     }
     synchronized (this) {
       Subchannel val = list.get(index);
+      boolean discard = discard(refUrl, val);
       index++;
       if (index >= size) {
         index = 0;
       }
-      boolean discard = discard(refUrl, val);
-      if (discard && index != 0) {
-        nextSubchannel(refUrl);
+      if (discard) {
+        return nextSubchannel(refUrl);
+      } else {
+        return val;
       }
-      return val;
     }
   }
+
 
   private boolean discard(GrpcURL refUrl, Subchannel subchannel) {
     boolean discard = false;
     if (refUrl != null) {
       synchronized (LOCK) {
-        String currentRouterRule = null;
-        // 从线程上下文取路由规则
-        if (RpcContext.getContext().containAttachment("routerRule")) {
-          currentRouterRule = RpcContext.getContext().getAttachment("routerRule");
-        }
-        // 从配置中心获取路由规则并覆盖线程上下文的路由规则
-        String configRouterRule =
-            nameResovleCache.get(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE);
-        if (configRouterRule != null) {
-          currentRouterRule = configRouterRule;
-        }
-        if (currentRouterRule != null) {
-          GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().createRouter(currentRouterRule);
+        GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().getGrpcRouter(refUrl.getGroup());
+        if (grpcRouter != null) {
           grpcRouter.setRefUrl(refUrl);
           EquivalentAddressGroup addressGroup = subchannel.getAddresses();
           List<SocketAddress> currentAddress = addressGroup.getAddresses();

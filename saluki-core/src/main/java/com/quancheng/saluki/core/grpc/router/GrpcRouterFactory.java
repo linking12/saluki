@@ -8,6 +8,10 @@ package com.quancheng.saluki.core.grpc.router;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.router.internal.ConditionRouter;
 import com.quancheng.saluki.core.grpc.router.internal.ScriptRouter;
 
@@ -17,6 +21,19 @@ import com.quancheng.saluki.core.grpc.router.internal.ScriptRouter;
  */
 public final class GrpcRouterFactory {
 
+  private static final LoadingCache<String, String> ROUTE_CACHE = CacheBuilder.newBuilder() //
+      .concurrencyLevel(8) //
+      .initialCapacity(10) //
+      .maximumSize(100) //
+      .recordStats() //
+      .build(new CacheLoader<String, String>() {
+
+        @Override
+        public String load(String key) throws Exception {
+          return null;
+        }
+
+      });
   private static final GrpcRouterFactory instance = new GrpcRouterFactory();
 
   private GrpcRouterFactory() {}
@@ -25,7 +42,33 @@ public final class GrpcRouterFactory {
     return instance;
   }
 
-  public GrpcRouter createRouter(String routerMessage) {
+  public void cacheRoute(String group, String routerCondition) {
+    if (!StringUtils.isEmpty(routerCondition)) {
+      ROUTE_CACHE.put(group, routerCondition);
+    } else {
+      ROUTE_CACHE.invalidate(group);
+    }
+  }
+
+  public GrpcRouter getGrpcRouter(String group) {
+    String currentRouterRule = null;
+    // 从线程上下文取路由规则
+    if (RpcContext.getContext().containAttachment("routerRule")) {
+      currentRouterRule = RpcContext.getContext().getAttachment("routerRule");
+    }
+    // 从配置中心获取路由规则并覆盖线程上下文的路由规则
+    String configRouterRule = ROUTE_CACHE.getIfPresent(group);
+    if (configRouterRule != null) {
+      currentRouterRule = configRouterRule;
+    }
+    if (currentRouterRule != null) {
+      return this.createRouter(currentRouterRule);
+    } else {
+      return null;
+    }
+  }
+
+  private GrpcRouter createRouter(String routerMessage) {
     if (routerMessage.startsWith("condition://") || routerMessage.indexOf("//") == -1) {
       routerMessage = routerMessage.replaceAll("condition://", "");
       return new ConditionRouter(routerMessage);

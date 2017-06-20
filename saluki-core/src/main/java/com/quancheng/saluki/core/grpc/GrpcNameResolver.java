@@ -35,6 +35,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.net.InetAddresses;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
@@ -66,8 +67,6 @@ public class GrpcNameResolver extends NameResolver {
 
   private final Set<GrpcURL> submitedSubscribeUrls = Sets.newConcurrentHashSet();
 
-  private final Map<String, String> routerMessages = Maps.newConcurrentMap();
-
   private final NotifyListener.NotifyServiceListener serviceListener = serviceListener();
 
   private ScheduledExecutorService timerService;
@@ -89,7 +88,13 @@ public class GrpcNameResolver extends NameResolver {
     this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
     this.subscribeUrls = subscribeUrls;
     this.currentGroup = this.subscribeUrls.iterator().next().getGroup();
-    registry.subscribe(currentGroup, routeListener());
+    registry.subscribe(currentGroup, new NotifyListener.NotifyRouterListener() {
+
+      @Override
+      public void notify(String group, String routerCondition) {
+        GrpcRouterFactory.getInstance().cacheRoute(group, routerCondition);
+      }
+    });
     this.timerService = SharedResourceHolder.get(GrpcUtil.TIMER_SERVICE);
     this.executor = SharedResourceHolder.get(GrpcUtil.SHARED_CHANNEL_EXECUTOR);
   }
@@ -192,25 +197,6 @@ public class GrpcNameResolver extends NameResolver {
     };
   }
 
-  private final NotifyListener.NotifyRouterListener routeListener() {
-    return new NotifyListener.NotifyRouterListener() {
-
-      @Override
-      public void notify(String group, String routerCondition) {
-        if (routerCondition == null) {
-          routerMessages.remove(group);
-        } else {
-          routerMessages.put(group, routerCondition);
-        }
-        if (GrpcNameResolver.this.urls != null) {
-          for (Map.Entry<GrpcURL, List<GrpcURL>> entry : urls.entrySet()) {
-            notifyLoadBalance(entry.getKey(), entry.getValue());
-          }
-        }
-      }
-
-    };
-  }
 
   /**** help method *****/
   private void notifyLoadBalance(GrpcURL subscribeUrl, List<GrpcURL> urls) {
@@ -280,10 +266,6 @@ public class GrpcNameResolver extends NameResolver {
     }
     if (addresses.get(subscribeUrl) != null) {
       builder.set(GrpcNameResolverProvider.REMOTE_ADDR_KEYS, addresses.get(subscribeUrl));
-    }
-    String routeMessage = this.routerMessages.get(currentGroup);
-    if (routeMessage != null) {
-      builder.set(GrpcNameResolverProvider.GRPC_ROUTER_MESSAGE, routeMessage);
     }
     if (!addressUrlMapping.isEmpty()) {
       builder.set(GrpcNameResolverProvider.GRPC_ADDRESS_GRPCURL_MAPPING, addressUrlMapping);

@@ -26,7 +26,6 @@ import io.grpc.NameResolverProvider;
 @Internal
 public class GrpcNameResolverProvider extends NameResolverProvider {
 
-  public static final Attributes.Key<String> GRPC_ROUTER_MESSAGE = Attributes.Key.of("grpc-router");
 
   public static final Attributes.Key<Map<List<SocketAddress>, GrpcURL>> GRPC_ADDRESS_GRPCURL_MAPPING =
       Attributes.Key.of("grpc-address-mapping");

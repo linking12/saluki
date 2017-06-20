@@ -13,7 +13,7 @@ import com.quancheng.saluki.core.common.RpcContext;
 @RequestMapping("/proxy")
 public class ProxyServiceController {
 
-  @SalukiReference(retries = 3)
+  @SalukiReference
   private HelloService helloService;
 
 
