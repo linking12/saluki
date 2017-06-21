@@ -3,8 +3,8 @@ syntax = "proto3";
 option java_package = "com.quancheng.saluki.serializer.proto";
 option java_outer_classname = "Message";
 
-message Address
-{
+
+message Address{
       string street = 1;
       string city = 2;
       string stateOrProvince = 3;
@@ -12,17 +12,17 @@ message Address
       string postalCode = 5;
       bool isCanada = 6;
       map<string, string> mapTest= 7;
-      map<string, Person> mapObject = 8;
-	  PhoneType phoneType = 9;
+	  PhoneType phoneType = 8;
 }
 enum PhoneType {
 	    MOBILE = 0;
 	    HOME = 1;
 	    WORK = 2;
 }
-message Person
-{
+
+message Person{
       string name = 1;
       int32 age = 2;
       Address address = 3; 
+      map<string, Address> mapObject = 4;
 }
