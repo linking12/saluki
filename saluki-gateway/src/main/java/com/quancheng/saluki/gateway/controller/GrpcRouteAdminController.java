@@ -16,6 +16,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
+import org.springframework.cloud.netflix.zuul.RoutesRefreshedEvent;
+import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.env.Environment;
@@ -51,6 +53,9 @@ public class GrpcRouteAdminController implements ApplicationEventPublisherAware 
 
     @Autowired
     private Environment               environment;
+    
+    @Autowired
+    private DiscoveryClientRouteLocator  routeLocator;
 
     private ApplicationEventPublisher publisher;
 
@@ -130,7 +135,7 @@ public class GrpcRouteAdminController implements ApplicationEventPublisherAware 
 
         entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
         zuulRouteRepository.save(entityGrpc);
-        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
+        publisher.publishEvent(new RoutesRefreshedEvent(routeLocator));
         return "redirect:/grpcRoute.html";
     }
 
@@ -174,7 +179,7 @@ public class GrpcRouteAdminController implements ApplicationEventPublisherAware 
 
         entityGrpc.setFieldMapping(zuulGrpcFieldMappingEntitys);
         zuulRouteRepository.save(entityGrpc);
-        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
+        publisher.publishEvent(new RoutesRefreshedEvent(routeLocator));
         return "redirect:/grpcRoute.html";
     }
 
