@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_package = "com.quancheng.saluki.service";
+option java_outer_classname = "ServiceParam";
+
+package com.quancheng.saluki.service;
+import "validator.proto";
+
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message HealthCheckRequest {
+  string service = 1  [(validator.validate) = '@Null(message="Name cannot be null"),@NotNull(message="Name cannot be null")'];
+  string important_string = 2 [(validator.validate) = '@Email(message="email地址无效！")'];
+}
+
+message HealthCheckResponse {
+  ServingStatus status = 1;
+}
+
+enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+}

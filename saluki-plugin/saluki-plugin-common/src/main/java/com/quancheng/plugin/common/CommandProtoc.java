@@ -43,6 +43,7 @@ public class CommandProtoc {
         try {
             descriptorPath = Files.createTempFile("descriptor", ".pb.bin");
             ImmutableList<String> protocArgs = ImmutableList.<String> builder()//
+                                                            .add("--include_std_types")//
                                                             .add("-I" + discoveryRoot)//
                                                             .add("--descriptor_set_out="
                                                                  + descriptorPath.toAbsolutePath().toString())//
