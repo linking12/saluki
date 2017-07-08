@@ -79,7 +79,7 @@ public final class GrpcRouterFactory {
         String routerScript = router[1];
         return new ScriptRouter(type, routerScript);
       }
-      throw new IllegalStateException(new IllegalStateException("No router type for script"));
+      throw new IllegalStateException("No router type for script");
     }
   }
 }
