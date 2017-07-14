@@ -2,10 +2,10 @@ spring:
   application:
     name: example-client
 server:
-  port: 8083
+  port: 8082
 saluki:
   grpc:
     registryAddress: localhost:8500
     group: example
     version: 1.0.0
-    realityRpcPort: 12201
+    realityRpcPort: 12202
