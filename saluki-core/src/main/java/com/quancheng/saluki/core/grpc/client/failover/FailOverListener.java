@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import io.grpc.CallOptions;
@@ -35,11 +34,11 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
   private final static Logger logger = LoggerFactory.getLogger(FailOverListener.class);
 
-  private final ExecutorService retryExecutor = Executors.newSingleThreadScheduledExecutor();
+  private final ExecutorService retryExecutor;
 
-  private final CompletionFuture<Response> completionFuture = new CompletionFuture<Response>();
+  private final CompletionFuture<Response> completionFuture;
 
-  private final AtomicInteger retries = new AtomicInteger(0);
+  private final AtomicInteger retries;
 
   private final Integer retriesOptions;
 
@@ -55,19 +54,6 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
   private volatile ClientCall<Request, Response> clientCall;
 
-  private static final class CompletionFuture<Response> extends AbstractFuture<Response> {
-
-    @Override
-    protected boolean set(Response resp) {
-      return super.set(resp);
-    }
-
-    @Override
-    protected boolean setException(Throwable throwable) {
-      return super.setException(throwable);
-    }
-
-  }
 
   public FailOverListener(final Integer retriesOptions, final Request request,
       final Channel channel, final MethodDescriptor<Request, Response> method,
@@ -78,6 +64,9 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
     this.method = method;
     this.callOptions = callOptions;
     this.nameResolverNotify = new NameResolverNotify();
+    this.completionFuture = new CompletionFuture<Response>();
+    this.retryExecutor = Executors.newSingleThreadScheduledExecutor();
+    this.retries = new AtomicInteger(0);
   }
 
   @Override
