@@ -130,6 +130,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
       String version = this.getVersion(reference, serviceName, referenceClass);
       rpcReferenceConfig.setVersion(version);
       this.addHaRetries(reference, rpcReferenceConfig);
+      this.addFallback(reference, rpcReferenceConfig);
       this.addRegistyAddress(rpcReferenceConfig);
       this.addAsyncAndTimeOut(reference, rpcReferenceConfig);
       this.addMonitorInterval(rpcReferenceConfig);
@@ -202,6 +203,18 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         rpcReferenceConfig
             .setRetryMethods(new HashSet<String>(Arrays.asList(reference.retryMethods())));
         rpcReferenceConfig.setReties(reference.retries());
+      }
+    }
+  }
+
+  private void addFallback(SalukiReference reference, RpcReferenceConfig rpcReferenceConfig) {
+    Boolean isEnableFallback = reference.fallback();
+    if (isEnableFallback) {
+      rpcReferenceConfig.setEnabledFallBack(isEnableFallback);
+      if (CollectionUtils.isEmpty(reference.fallBackMethods())) {
+        logger.warn("Have set fallback,but not have set method,will set all method to fallback");
+        rpcReferenceConfig
+            .setFallbackMethods(new HashSet<String>(Arrays.asList(reference.retryMethods())));
       }
     }
   }
