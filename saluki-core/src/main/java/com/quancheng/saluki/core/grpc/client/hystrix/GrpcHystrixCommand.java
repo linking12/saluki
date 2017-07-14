@@ -139,7 +139,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   private void collect(String serviceName, String methodName, Message request, Message response,
       boolean error) {
     try {
-      Object provider = clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+      InetSocketAddress provider =
+          (InetSocketAddress) clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
       if (request == null || response == null || provider == null) {
         return;
       }
@@ -156,7 +157,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
           MonitorService.APPLICATION, refUrl.getParameter(Constants.APPLICATION_NAME), //
           MonitorService.INTERFACE, service, //
           MonitorService.METHOD, method, //
-          MonitorService.PROVIDER, ((InetSocketAddress) provider).getHostName(), //
+          MonitorService.PROVIDER, provider.getHostName(), //
           error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", //
           MonitorService.ELAPSED, String.valueOf(elapsed), //
           MonitorService.CONCURRENT, String.valueOf(concurrent), //
