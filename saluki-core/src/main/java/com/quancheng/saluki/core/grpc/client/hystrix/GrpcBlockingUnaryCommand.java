@@ -13,8 +13,6 @@
  */
 package com.quancheng.saluki.core.grpc.client.hystrix;
 
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,7 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
       Integer timeOut, GrpcClientCall clientCall) {
     try {
       return clientCall.unaryFuture(req, methodDesc).get();
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (Throwable e) {
       logger.error(e.getMessage(), e);
       super.cacheCurrentServer();
       RpcServiceException rpcService =

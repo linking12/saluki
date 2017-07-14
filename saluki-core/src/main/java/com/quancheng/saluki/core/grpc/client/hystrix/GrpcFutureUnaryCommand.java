@@ -13,7 +13,6 @@
  */
 package com.quancheng.saluki.core.grpc.client.hystrix;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -49,7 +48,7 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
       Integer timeOut, GrpcClientCall clientCall) {
     try {
       return clientCall.unaryFuture(req, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
-    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+    } catch (Throwable e) {
       logger.error(e.getMessage(), e);
       super.cacheCurrentServer();
       if (e instanceof TimeoutException) {
