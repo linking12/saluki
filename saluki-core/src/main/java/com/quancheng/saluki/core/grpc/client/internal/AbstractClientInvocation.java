@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
@@ -59,8 +60,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     String serviceName = request.getServiceName();
     String methodName = request.getMethodRequest().getMethodName();
     Channel channel = request.getChannel();
+    GrpcURL refUrl = request.getRefUrl();
     Integer retryOption = this.buildRetryOption(methodName);
-    GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, request.getRefUrl());
+    GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
     try {
       this.calculateConcurrent(serviceName, methodName).incrementAndGet();
       AtomicInteger concurrent = this.calculateConcurrent(serviceName, methodName);
