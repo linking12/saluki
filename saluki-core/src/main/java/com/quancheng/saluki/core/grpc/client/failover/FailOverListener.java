@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.quancheng.saluki.core.common.RpcContext;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -118,7 +117,6 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
   @Override
   public void run() {
     clientCall = channel.newCall(method, callOptions);
-    RpcContext.getContext().removeAttachment("routerRule");
     clientCall.start(this, new Metadata());
     clientCall.sendMessage(request);
     clientCall.halfClose();

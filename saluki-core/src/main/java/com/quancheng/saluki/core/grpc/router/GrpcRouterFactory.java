@@ -62,7 +62,11 @@ public final class GrpcRouterFactory {
       currentRouterRule = configRouterRule;
     }
     if (currentRouterRule != null) {
-      return this.createRouter(currentRouterRule);
+      try {
+        return this.createRouter(currentRouterRule);
+      } finally {
+        RpcContext.getContext().removeAttachment("routerRule");
+      }
     } else {
       return null;
     }
