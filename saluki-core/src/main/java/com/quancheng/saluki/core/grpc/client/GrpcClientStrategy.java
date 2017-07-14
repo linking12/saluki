@@ -6,11 +6,6 @@
  */
 package com.quancheng.saluki.core.grpc.client;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.internal.DefaultProxyClient;
@@ -41,19 +36,16 @@ public class GrpcClientStrategy {
     this.grpcClient = buildProtoClient(refUrl);
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private GrpcProtocolClient<Object> buildProtoClient(GrpcURL refUrl) {
     boolean isGeneric = refUrl.getParameter(Constants.GENERIC_KEY, Boolean.FALSE);
     boolean isGrpcStub = refUrl.getParameter(Constants.GRPC_STUB_KEY, Boolean.FALSE);
     if (isGeneric) {
-      String[] methodNames = StringUtils.split(refUrl.getParameter(Constants.METHODS_KEY), ",");
-      int retries = refUrl.getParameter((Constants.METHOD_RETRY_KEY), 0);
-      Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
-      return new GenericProxyClient<Object>(methodRetries, refUrl);
+      return new GenericProxyClient<Object>(refUrl);
     } else {
       if (isGrpcStub) {
         String stubClassName = refUrl.getParameter(Constants.INTERFACECLASS_KEY);
         try {
-          @SuppressWarnings({"rawtypes", "unchecked"})
           Class<? extends AbstractStub> stubClass =
               (Class<? extends AbstractStub>) ReflectUtils.name2class(stubClassName);
           return new GrpcStubClient<Object>(stubClass, refUrl);
@@ -62,27 +54,9 @@ public class GrpcClientStrategy {
               e);
         }
       } else {
-        String[] methodNames = StringUtils.split(refUrl.getParameter(Constants.METHODS_KEY), ",");
-        int retries = refUrl.getParameter((Constants.METHOD_RETRY_KEY), 0);
-        String interfaceName = refUrl.getServiceInterface();
-        Map<String, Integer> methodRetries = cacheRetries(methodNames, retries);
-        return new DefaultProxyClient<Object>(interfaceName, methodRetries, refUrl);
+        return new DefaultProxyClient<Object>(refUrl);
       }
     }
-  }
-
-  private Map<String, Integer> cacheRetries(String[] methodNames, int reties) {
-    Map<String, Integer> methodRetries = Maps.newConcurrentMap();
-    if (reties > 0) {
-      if (methodNames != null && methodNames.length > 1) {
-        for (String methodName : methodNames) {
-          methodRetries.putIfAbsent(methodName, Integer.valueOf(reties));
-        }
-      } else {
-        methodRetries.putIfAbsent("*", Integer.valueOf(reties));
-      }
-    }
-    return methodRetries;
   }
 
   public Object getGrpcClient() {

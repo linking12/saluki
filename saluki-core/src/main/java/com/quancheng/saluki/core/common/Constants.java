@@ -9,6 +9,7 @@ public class Constants {
   public static final String INTERFACE_KEY = "interface";
   public static final String INTERFACECLASS_KEY = "interfaceClass";
   public static final String GRPC_STUB_KEY = "grpcstub";
+  public static final String GRPC_FALLBACK_KEY = "grpcfallback";
   public static final String GENERIC_KEY = "generic";
   public static final String GROUP_KEY = "group";
   public static final String VERSION_KEY = "version";
@@ -21,7 +22,8 @@ public class Constants {
   public static final String DEFAULT_VERSION = "1.0.0";
   public static final String LOCALHOST_KEY = "localhost";
   public static final String ANYHOST_KEY = "anyhost";
-  public static final String METHODS_KEY = "methods";
+  public static final String RETRY_METHODS_KEY = "retrymethods";
+  public static final String FALLBACK_METHODS_KEY = "fallbackmethods";
   public static final String METHOD_KEY = "method";
   public static final String ARG_KEY = "arg";
   public static final String METHOD_RETRY_KEY = "retries";

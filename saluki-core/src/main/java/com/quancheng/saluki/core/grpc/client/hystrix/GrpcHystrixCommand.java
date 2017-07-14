@@ -63,14 +63,15 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private AtomicInteger concurrent;
 
-  public GrpcHystrixCommand(String serviceName, String methodName) {
+  public GrpcHystrixCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
     super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))//
         .andCommandKey(HystrixCommandKey.Factory.asKey(serviceName + ":" + methodName))//
         .andCommandPropertiesDefaults(
             HystrixCommandProperties.Setter().withCircuitBreakerRequestVolumeThreshold(20)// 10秒钟内至少19此请求失败，熔断器才发挥起作用
                 .withCircuitBreakerSleepWindowInMilliseconds(30000)// 熔断器中断请求30秒后会进入半打开状态,放部分流量过去重试
                 .withCircuitBreakerErrorThresholdPercentage(50)// 错误率达到50开启熔断保护
-                .withExecutionTimeoutEnabled(false))// 禁用这里的超时
+                .withExecutionTimeoutEnabled(false)// 禁用这里的超时
+                .withFallbackEnabled(isEnabledFallBack))//
         .andThreadPoolPropertiesDefaults(
             HystrixThreadPoolProperties.Setter().withCoreSize(DEFAULT_THREADPOOL_CORE_SIZE))// 线程池为5
     );

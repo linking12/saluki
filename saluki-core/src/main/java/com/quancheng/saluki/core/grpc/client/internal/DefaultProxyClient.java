@@ -1,15 +1,13 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc.client.internal;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Map;
 
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
@@ -23,68 +21,60 @@ import com.quancheng.saluki.core.utils.ReflectUtils;
  */
 public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
 
-    private final Map<String, Integer> methodRetries;
+  private final Class<?> interfaceClass;
 
-    private final String               interfaceName;
+  private final GrpcURL refUrl;
 
-    private final Class<?>             interfaceClass;
+  public DefaultProxyClient(GrpcURL refUrl) {
+    this.refUrl = refUrl;
+    String serviceName = refUrl.getServiceInterface();
+    try {
+      this.interfaceClass = ReflectUtils.name2class(serviceName);
+    } catch (ClassNotFoundException e) {
+      throw new IllegalArgumentException(e.getMessage(), e);
+    }
+  }
 
-    private final GrpcURL              refUrl;
+  @SuppressWarnings("unchecked")
+  @Override
+  public T getGrpcClient(GrpcProtocolClient.ChannelCall channelPoll, int callType,
+      int callTimeout) {
+    return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] {interfaceClass},
+        new DefaultProxyClientInvocation(channelPoll, callType, callTimeout));
+  }
 
-    public DefaultProxyClient(String interfaceName, Map<String, Integer> methodRetries, GrpcURL refUrl){
-        this.interfaceName = interfaceName;
-        try {
-            this.interfaceClass = ReflectUtils.name2class(interfaceName);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-        this.methodRetries = methodRetries;
-        this.refUrl = refUrl;
+  private class DefaultProxyClientInvocation extends AbstractClientInvocation {
+
+    private final GrpcProtocolClient.ChannelCall channelPool;
+    private final int callType;
+    private final int callTimeout;
+
+    public DefaultProxyClientInvocation(GrpcProtocolClient.ChannelCall call, int callType,
+        int callTimeout) {
+      this.channelPool = call;
+      this.callType = callType;
+      this.callTimeout = callTimeout;
     }
 
-    public String getFullServiceName() {
-        return this.interfaceName;
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
-    public T getGrpcClient(GrpcProtocolClient.ChannelCall channelPoll, int callType, int callTimeout) {
-        return (T) Proxy.newProxyInstance(ClassHelper.getClassLoader(), new Class[] { interfaceClass },
-                                          new DefaultProxyClientInvocation(channelPoll, callType, callTimeout));
+    protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
+      boolean isLegalMethod = ReflectUtils.isLegal(method);
+      if (isLegalMethod) {
+        throw new IllegalArgumentException(
+            "remote call type do not support this method " + method.getName());
+      }
+      if (args.length != 1) {
+        throw new IllegalArgumentException(
+            "grpc not support multiple args,args is " + args + " length is " + args.length);
+      }
+      Object arg = args[0];
+      GrpcRequest request = new GrpcRequest.Default(DefaultProxyClient.this.refUrl, channelPool);
+      GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(method.getName(),
+          arg.getClass(), method.getReturnType(), arg, callType, callTimeout);
+      request.setMethodRequest(methodRequest);
+      return request;
     }
 
-    private class DefaultProxyClientInvocation extends AbstractClientInvocation {
-
-        private final GrpcProtocolClient.ChannelCall channelPool;
-        private final int                            callType;
-        private final int                            callTimeout;
-
-        public DefaultProxyClientInvocation(GrpcProtocolClient.ChannelCall call, int callType, int callTimeout){
-            super(DefaultProxyClient.this.methodRetries);
-            this.channelPool = call;
-            this.callType = callType;
-            this.callTimeout = callTimeout;
-        }
-
-        @Override
-        protected GrpcRequest buildGrpcRequest(Method method, Object[] args) {
-            boolean isLegalMethod = ReflectUtils.isLegal(method);
-            if (isLegalMethod) {
-                throw new IllegalArgumentException("remote call type do not support this method " + method.getName());
-            }
-            if (args.length != 1) {
-                throw new IllegalArgumentException("grpc not support multiple args,args is " + args + " length is "
-                                                   + args.length);
-            }
-            Object arg = args[0];
-            GrpcRequest request = new GrpcRequest.Default(DefaultProxyClient.this.refUrl, channelPool);
-            GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(method.getName(), arg.getClass(),
-                                                                                    method.getReturnType(), arg,
-                                                                                    callType, callTimeout);
-            request.setMethodRequest(methodRequest);
-            return request;
-        }
-
-    }
+  }
 
 }

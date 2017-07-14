@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.boot;
 
@@ -23,21 +22,25 @@ import com.quancheng.saluki.core.common.Constants;
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD})
 public @interface SalukiReference {
 
-    String service() default "";
+  String service() default "";
 
-    String group() default "";
+  String group() default "";
 
-    String version() default "";
+  String version() default "";
 
-    int retries() default 0;
+  int retries() default 0;
 
-    String[] retryMethods() default {};
+  String[] retryMethods() default {};
 
-    boolean async() default true;
+  boolean async() default true;
 
-    int timeOut() default Constants.RPC_ASYNC_DEFAULT_TIMEOUT;
+  boolean fallback() default false;
+
+  String[] fallBackMethods() default {};
+
+  int timeOut() default Constants.RPC_ASYNC_DEFAULT_TIMEOUT;
 
 }

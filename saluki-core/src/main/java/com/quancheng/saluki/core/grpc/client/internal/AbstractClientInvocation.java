@@ -8,10 +8,11 @@ package com.quancheng.saluki.core.grpc.client.internal;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +37,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
   private static final Logger log = LoggerFactory.getLogger(AbstractClientInvocation.class);
 
-  private final Map<String, Integer> methodRetries;
-
   private final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
   private volatile ClientServerMonitor clientServerMonitor;
-
-  public AbstractClientInvocation(Map<String, Integer> methodRetries) {
-    this.methodRetries = methodRetries;
-  }
 
   protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
 
@@ -61,7 +56,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     String methodName = request.getMethodRequest().getMethodName();
     Channel channel = request.getChannel();
     GrpcURL refUrl = request.getRefUrl();
-    Integer retryOption = this.buildRetryOption(methodName);
+    Integer retryOption = this.buildRetryOption(methodName, refUrl);
+    Boolean isEnableFallback = this.buildFallbackOption(methodName, refUrl);
     GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
     try {
       this.calculateConcurrent(serviceName, methodName).incrementAndGet();
@@ -69,13 +65,13 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       GrpcHystrixCommand hystrixCommand = null;
       switch (request.getMethodRequest().getCallType()) {
         case Constants.RPCTYPE_ASYNC:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName);
+          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
           break;
         case Constants.RPCTYPE_BLOCKING:
-          hystrixCommand = new GrpcBlockingUnaryCommand(serviceName, methodName);
+          hystrixCommand = new GrpcBlockingUnaryCommand(serviceName, methodName, isEnableFallback);
           break;
         default:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName);
+          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
           break;
       }
       hystrixCommand.setClientCall(clientCall);
@@ -92,21 +88,28 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     }
   }
 
-  private Integer buildRetryOption(String methodName) {
-    if (methodRetries.size() == 1 && methodRetries.containsKey("*")) {
-      Integer retries = methodRetries.get("*");
-      if (retries != null) {
+  private Boolean buildFallbackOption(String methodName, GrpcURL refUrl) {
+    Boolean isEnableFallback = refUrl.getParameter(Constants.GRPC_FALLBACK_KEY, Boolean.FALSE);
+    String[] methodNames =
+        StringUtils.split(refUrl.getParameter(Constants.FALLBACK_METHODS_KEY), ",");
+    if (methodNames != null && methodNames.length > 0) {
+      return isEnableFallback && Arrays.asList(methodNames).contains(methodName);
+    } else {
+      return isEnableFallback;
+    }
+  }
+
+  private Integer buildRetryOption(String methodName, GrpcURL refUrl) {
+    Integer retries = refUrl.getParameter((Constants.METHOD_RETRY_KEY), 0);
+    String[] methodNames = StringUtils.split(refUrl.getParameter(Constants.RETRY_METHODS_KEY), ",");
+    if (methodNames != null && methodNames.length > 0) {
+      if (Arrays.asList(methodNames).contains(methodName)) {
         return retries;
       } else {
-        return 0;
+        return Integer.valueOf(0);
       }
     } else {
-      Integer retries = methodRetries.get(methodName);
-      if (retries != null) {
-        return retries;
-      } else {
-        return 0;
-      }
+      return Integer.valueOf(0);
     }
   }
 

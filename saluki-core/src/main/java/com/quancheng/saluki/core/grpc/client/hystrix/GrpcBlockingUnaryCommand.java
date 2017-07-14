@@ -31,8 +31,9 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  public GrpcBlockingUnaryCommand(String serviceName, String methodName) {
-    super(serviceName, methodName);
+  public GrpcBlockingUnaryCommand(String serviceName, String methodName,
+      Boolean isEnabledFallBack) {
+    super(serviceName, methodName, isEnabledFallBack);
   }
 
   /**
