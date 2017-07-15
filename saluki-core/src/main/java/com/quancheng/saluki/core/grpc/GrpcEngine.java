@@ -67,7 +67,7 @@ public final class GrpcEngine {
 
   private GenericKeyedObjectPool<String, Channel> channelPool;
 
-  private Map<String, Set<GrpcURL>> subscribeUrlCache = Maps.newConcurrentMap();
+  private Map<String, Set<GrpcURL>> subscribeGroupCache = Maps.newConcurrentMap();
 
   public GrpcEngine(GrpcURL registryUrl) {
     this.registryUrl = registryUrl;
@@ -100,23 +100,28 @@ public final class GrpcEngine {
 
       @Override
       public Channel borrowChannel(final GrpcURL realRefUrl) {
-        GrpcURL realRefUrltemp = realRefUrl;
-        if (realRefUrltemp == null) {
-          realRefUrltemp = refUrl;
+        GrpcURL subscribeUrl = realRefUrl;
+        if (subscribeUrl == null) {
+          subscribeUrl = refUrl;
         }
-        String group = realRefUrltemp.getGroup();
-        if (subscribeUrlCache.get(realRefUrltemp.getGroup()) == null) {
-          Set<GrpcURL> refUrls = Sets.newConcurrentHashSet();
-          refUrls.add(realRefUrltemp);
-          subscribeUrlCache.put(group, refUrls);
-        } else {
-          subscribeUrlCache.get(group).add(realRefUrltemp);
-        }
+        String group = cacheSubscribeUrl(subscribeUrl);
         try {
           return channelPool.borrowObject(group);
         } catch (Exception e) {
           throw new java.lang.IllegalArgumentException("Grpc borrow Channel failed", e);
         }
+      }
+
+      private String cacheSubscribeUrl(GrpcURL subscribeUrl) {
+        String group = subscribeUrl.getGroup();
+        if (subscribeGroupCache.get(group) == null) {
+          Set<GrpcURL> refUrls = Sets.newConcurrentHashSet();
+          refUrls.add(subscribeUrl);
+          subscribeGroupCache.put(group, refUrls);
+        } else {
+          subscribeGroupCache.get(group).add(subscribeUrl);
+        }
+        return group;
       }
 
       @Override
@@ -197,8 +202,9 @@ public final class GrpcEngine {
 
     @Override
     public Channel create(String group) throws Exception {
+      Set<GrpcURL> subscribeUrls = subscribeGroupCache.get(group);
       Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-          .nameResolverFactory(new GrpcNameResolverProvider(subscribeUrlCache.get(group)))//
+          .nameResolverFactory(new GrpcNameResolverProvider(subscribeUrls))//
           .loadBalancerFactory(buildLoadBalanceFactory())//
           .sslContext(buildClientSslContext())//
           .usePlaintext(false)//
