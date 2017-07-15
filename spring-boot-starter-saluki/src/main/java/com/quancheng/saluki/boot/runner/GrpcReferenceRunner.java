@@ -120,7 +120,8 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
   private Object refer(SalukiReference reference, Class<?> referenceClass) {
     RpcReferenceConfig rpcReferenceConfig = new RpcReferenceConfig();
     String serviceName = this.getServiceName(reference, referenceClass);
-    if (serviceBean.containsKey(serviceName)) {
+    if (serviceBean.containsKey(serviceName) && !isGrpcStubClient(referenceClass)
+        && !isGenericClient(referenceClass)) {
       return serviceBean.get(serviceName);
     } else {
       rpcReferenceConfig.setServiceName(serviceName);
