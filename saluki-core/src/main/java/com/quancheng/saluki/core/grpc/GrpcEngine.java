@@ -65,9 +65,9 @@ public final class GrpcEngine {
 
   private final Registry registry;
 
-  private GenericKeyedObjectPool<String, Channel> channelPool;
+  private final Map<String, Set<GrpcURL>> subscribeGroupCache = Maps.newConcurrentMap();
 
-  private Map<String, Set<GrpcURL>> subscribeGroupCache = Maps.newConcurrentMap();
+  private GenericKeyedObjectPool<String, Channel> channelPool;
 
   public GrpcEngine(GrpcURL registryUrl) {
     this.registryUrl = registryUrl;
