@@ -51,6 +51,7 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
 
     public DefaultProxyClientInvocation(GrpcProtocolClient.ChannelCall call, int callType,
         int callTimeout) {
+      super(DefaultProxyClient.this.refUrl);
       this.channelPool = call;
       this.callType = callType;
       this.callTimeout = callTimeout;
