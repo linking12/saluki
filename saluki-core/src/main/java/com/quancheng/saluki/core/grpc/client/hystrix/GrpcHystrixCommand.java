@@ -47,7 +47,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 5;
+  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 30;
 
   private final String serviceName;
 
