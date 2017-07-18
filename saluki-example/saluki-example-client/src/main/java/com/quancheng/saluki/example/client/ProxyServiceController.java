@@ -1,5 +1,8 @@
 package com.quancheng.saluki.example.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +29,13 @@ public class ProxyServiceController {
   private HelloReply call() {
     HelloRequest request = new HelloRequest();
     request.setName("liushiming");
+    com.quancheng.examples.model.hello.Project project =
+        new com.quancheng.examples.model.hello.Project();
+    project.setId("123");
+    Map<String, com.quancheng.examples.model.hello.Project> projects =
+        new HashMap<String, com.quancheng.examples.model.hello.Project>();
+    projects.put("test", project);
+    request.setProjects(projects);
     RpcContext.getContext().set("123", "helloworld");
     HelloReply reply = helloService.sayHello(request);
     return reply;

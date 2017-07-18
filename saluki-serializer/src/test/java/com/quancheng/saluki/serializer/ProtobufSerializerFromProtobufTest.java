@@ -1,6 +1,5 @@
 package com.quancheng.saluki.serializer;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
