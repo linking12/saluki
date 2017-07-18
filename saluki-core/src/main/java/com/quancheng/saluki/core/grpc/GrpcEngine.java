@@ -77,12 +77,13 @@ public final class GrpcEngine {
   private void initChannelPool() {
     GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
     config.setMaxTotal(Integer.MAX_VALUE);
-    config.setMaxTotalPerKey(3);
+    config.setMaxTotalPerKey(10);
     config.setBlockWhenExhausted(true);
     config.setMinIdlePerKey(3);
-    config.setMaxWaitMillis(10);
+    config.setMaxIdlePerKey(10);
+    config.setMaxWaitMillis(3000L);
     config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
-    config.setTestOnBorrow(false);
+    config.setTestOnBorrow(true);
     config.setTestOnReturn(false);
     config.setTestWhileIdle(false);
     config.setTimeBetweenEvictionRunsMillis(1 * 60000L);
@@ -90,6 +91,7 @@ public final class GrpcEngine {
     config.setTestWhileIdle(false);
     this.channelPool =
         new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
+
   }
 
   public Object getClient(GrpcURL refUrl) throws Exception {

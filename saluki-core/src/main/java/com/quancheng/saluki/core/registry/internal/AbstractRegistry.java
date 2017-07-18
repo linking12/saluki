@@ -42,19 +42,14 @@ public abstract class AbstractRegistry implements Registry {
   private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notified =
       Maps.newConcurrentMap();
   private final ExecutorService notifyExecutor;
-  private final int cpus = Runtime.getRuntime().availableProcessors();
 
   public AbstractRegistry(GrpcURL registryUrl) {
     if (registryUrl == null) {
       throw new IllegalArgumentException("registry url == null");
     }
     this.registryUrl = registryUrl;
-    this.notifyExecutor = Executors.newFixedThreadPool(cpus * 3,
+    this.notifyExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
         new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener", true));
-  }
-
-  public int getCpus() {
-    return cpus;
   }
 
   public GrpcURL getRegistryUrl() {

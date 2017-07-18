@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc.server.internal;
 
@@ -34,37 +33,39 @@ import io.grpc.stub.ServerCalls;
  */
 public class DefaultProxyExporter implements GrpcProtocolExporter {
 
-    private static final Logger  log = LoggerFactory.getLogger(DefaultProxyExporter.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultProxyExporter.class);
 
-    private final GrpcURL        providerUrl;
+  private final GrpcURL providerUrl;
 
-    private final MonitorService clientServerMonitor;
+  private final MonitorService clientServerMonitor;
 
-    public DefaultProxyExporter(GrpcURL providerUrl){
-        this.clientServerMonitor = new ClientServerMonitor(providerUrl);
-        this.providerUrl = providerUrl;
+  public DefaultProxyExporter(GrpcURL providerUrl) {
+    Long monitorinterval = providerUrl.getParameter("monitorinterval", 60L);
+    this.clientServerMonitor = ClientServerMonitor.newClientServerMonitor(monitorinterval);
+    this.providerUrl = providerUrl;
+  }
+
+  @Override
+  public ServerServiceDefinition export(Class<?> protocol, Object protocolImpl) {
+    Class<?> serivce = protocol;
+    Object serviceRef = protocolImpl;
+    String serviceName = protocol.getName();
+    ServerServiceDefinition.Builder serviceDefBuilder =
+        ServerServiceDefinition.builder(serviceName);
+    List<Method> methods = ReflectUtils.findAllPublicMethods(serivce);
+    if (methods.isEmpty()) {
+      throw new IllegalStateException(
+          "protocolClass " + serviceName + " not have export method" + serivce);
     }
-
-    @Override
-    public ServerServiceDefinition export(Class<?> protocol, Object protocolImpl) {
-        Class<?> serivce = protocol;
-        Object serviceRef = protocolImpl;
-        String serviceName = protocol.getName();
-        ServerServiceDefinition.Builder serviceDefBuilder = ServerServiceDefinition.builder(serviceName);
-        List<Method> methods = ReflectUtils.findAllPublicMethods(serivce);
-        if (methods.isEmpty()) {
-            throw new IllegalStateException("protocolClass " + serviceName + " not have export method" + serivce);
-        }
-        final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
-        for (Method method : methods) {
-            MethodDescriptor<Message, Message> methodDescriptor = MethodDescriptorUtil.createMethodDescriptor(serivce,
-                                                                                                              method);
-            serviceDefBuilder.addMethod(methodDescriptor,
-                                        ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method, providerUrl,
-                                                                                        concurrents, clientServerMonitor)));
-        }
-        log.info("'{}' service has been registered.", serviceName);
-        return serviceDefBuilder.build();
+    final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
+    for (Method method : methods) {
+      MethodDescriptor<Message, Message> methodDescriptor =
+          MethodDescriptorUtil.createMethodDescriptor(serivce, method);
+      serviceDefBuilder.addMethod(methodDescriptor, ServerCalls.asyncUnaryCall(
+          new ServerInvocation(serviceRef, method, providerUrl, concurrents, clientServerMonitor)));
     }
+    log.info("'{}' service has been registered.", serviceName);
+    return serviceDefBuilder.build();
+  }
 
 }
