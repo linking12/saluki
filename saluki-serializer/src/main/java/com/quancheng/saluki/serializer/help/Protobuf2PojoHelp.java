@@ -51,6 +51,7 @@ public class Protobuf2PojoHelp {
     return new ProtobufSerializer().fromProtobuf(protoBuf, pojoClazz);
   }
 
+  @SuppressWarnings("rawtypes")
   public static final Object getProtobufFieldValue(Message protoBuf,
       ProtobufAttribute protobufAttribute, Field field)
       throws JException, InstantiationException, IllegalAccessException {

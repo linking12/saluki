@@ -41,7 +41,7 @@ public class ProtobufSerializer implements IProtobufSerializer {
    * @see com.quancheng.saluki.serializer.IProtobufSerializer#toProtobuf(java.lang.Object)
    */
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes", "unused"})
   public Message toProtobuf(Object pojo) throws ProtobufException {
     try {
       final Class<?> fromClazz = (Class<?>) pojo.getClass();
