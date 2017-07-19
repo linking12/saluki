@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 public class ClientServerMonitor implements MonitorService {

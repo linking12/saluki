@@ -10,8 +10,8 @@ package com.quancheng.saluki.core.grpc.client;
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 /**
  * @author shimingliu 2016年12月14日 下午5:51:13

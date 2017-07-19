@@ -7,6 +7,8 @@
 package com.quancheng.saluki.core.grpc;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -39,15 +41,18 @@ import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
 import io.grpc.Channel;
+import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
+import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
+import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -148,12 +153,16 @@ public final class GrpcEngine {
         .keepAliveTime(1, TimeUnit.DAYS)//
         .bossEventLoopGroup(createBossEventLoopGroup())//
         .workerEventLoopGroup(createWorkEventLoopGroup());
+
+    final List<ServerInterceptor> interceptors = Arrays.asList(HeaderServerInterceptor.instance(),
+        TransmitStatusRuntimeExceptionInterceptor.instance());
+
     for (Map.Entry<GrpcURL, Object> entry : providerUrls.entrySet()) {
       GrpcURL providerUrl = entry.getKey();
       Object protocolImpl = entry.getValue();
       GrpcServerStrategy strategy = new GrpcServerStrategy(providerUrl, protocolImpl);
-      ServerServiceDefinition serviceDefinition = ServerInterceptors
-          .intercept(strategy.getServerDefintion(), new HeaderServerInterceptor());
+      ServerServiceDefinition serviceDefinition =
+          ServerInterceptors.intercept(strategy.getServerDefintion(), interceptors);
       remoteServer.addService(serviceDefinition);
       int registryRpcPort = providerUrl.getParameter(Constants.REGISTRY_RPC_PORT_KEY, rpcPort);
       providerUrl = providerUrl.setPort(registryRpcPort);
@@ -202,6 +211,9 @@ public final class GrpcEngine {
 
   private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<String, Channel> {
 
+    private final List<ClientInterceptor> interceptors =
+        Arrays.asList(HeaderClientInterceptor.instance());
+
     @Override
     public Channel create(String group) throws Exception {
       Set<GrpcURL> subscribeUrls = subscribeGroupCache.get(group);
@@ -214,7 +226,7 @@ public final class GrpcEngine {
           .eventLoopGroup(createWorkEventLoopGroup())//
           .keepAliveTime(1, TimeUnit.DAYS)//
           .build();//
-      return ClientInterceptors.intercept(channel, new HeaderClientInterceptor());
+      return ClientInterceptors.intercept(channel, interceptors);
     }
 
     @Override
