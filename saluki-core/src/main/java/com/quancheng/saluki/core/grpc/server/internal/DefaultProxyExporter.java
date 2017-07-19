@@ -20,7 +20,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
+import com.quancheng.saluki.core.grpc.util.GrpcUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.MethodDescriptor;
@@ -60,7 +60,7 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
     final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
     for (Method method : methods) {
       MethodDescriptor<Message, Message> methodDescriptor =
-          MethodDescriptorUtil.createMethodDescriptor(serivce, method);
+          GrpcUtil.createMethodDescriptor(serivce, method);
       serviceDefBuilder.addMethod(methodDescriptor, ServerCalls.asyncUnaryCall(
           new ServerInvocation(serviceRef, method, providerUrl, concurrents, clientServerMonitor)));
     }

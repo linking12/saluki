@@ -19,7 +19,7 @@ import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.Status;
@@ -63,10 +63,10 @@ public class ServerInvocation implements UnaryMethod<Message, Message> {
         try {
             getConcurrent().getAndIncrement();
             Class<?> requestType = ReflectUtils.getTypedOfReq(method);
-            Object reqPojo = SerializerUtils.Protobuf2Pojo(reqProtoBufer, requestType);
+            Object reqPojo = SerializerUtil.protobuf2Pojo(reqProtoBufer, requestType);
             Object[] requestParams = new Object[] { reqPojo };
             Object respPojo = method.invoke(serviceToInvoke, requestParams);
-            respProtoBufer = SerializerUtils.Pojo2Protobuf(respPojo);
+            respProtoBufer = SerializerUtil.pojo2Protobuf(respPojo);
             collect(reqProtoBufer, respProtoBufer, start, false);
             responseObserver.onNext(respProtoBufer);
             responseObserver.onCompleted();

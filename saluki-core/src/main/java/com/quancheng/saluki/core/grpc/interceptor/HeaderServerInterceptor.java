@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.reflect.TypeToken;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.util.MetadataUtil;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.core.grpc.util.GrpcUtil;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 
 import io.grpc.ForwardingServerCall.SimpleForwardingServerCall;
 import io.grpc.Grpc;
@@ -62,17 +62,17 @@ public class HeaderServerInterceptor implements ServerInterceptor {
   }
 
   private void copyMetadataToThreadLocal(Metadata headers) {
-    String attachments = headers.get(MetadataUtil.GRPC_CONTEXT_ATTACHMENTS);
-    String values = headers.get(MetadataUtil.GRPC_CONTEXT_VALUES);
+    String attachments = headers.get(GrpcUtil.GRPC_CONTEXT_ATTACHMENTS);
+    String values = headers.get(GrpcUtil.GRPC_CONTEXT_VALUES);
     try {
       if (attachments != null) {
-        Map<String, String> attachmentsMap = SerializerUtils.fromJson(attachments,
+        Map<String, String> attachmentsMap = SerializerUtil.fromJson(attachments,
             new TypeToken<Map<String, String>>() {}.getType());
         RpcContext.getContext().setAttachments(attachmentsMap);
       }
       if (values != null) {
         Map<String, Object> valuesMap =
-            SerializerUtils.fromJson(values, new TypeToken<Map<String, Object>>() {}.getType());
+            SerializerUtil.fromJson(values, new TypeToken<Map<String, Object>>() {}.getType());
         for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
           RpcContext.getContext().set(entry.getKey(), entry.getValue());
         }

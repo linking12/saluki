@@ -34,7 +34,7 @@ import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.util.MethodDescriptorUtil;
+import com.quancheng.saluki.core.grpc.util.GrpcUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.MethodDescriptor;
@@ -110,7 +110,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   @Override
   protected Object getFallback() {
     Class<?> responseType = this.request.getMethodRequest().getResponseType();
-    Message response = MethodDescriptorUtil.buildDefaultInstance(responseType);
+    Message response = GrpcUtil.createDefaultInstance(responseType);
     Object obj = this.transformMessage(response);
     collect(serviceName, methodName, getRequestMessage(), response, true);
     return obj;
