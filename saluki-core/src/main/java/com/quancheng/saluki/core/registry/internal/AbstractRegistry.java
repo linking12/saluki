@@ -23,10 +23,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
+import com.quancheng.saluki.core.utils.GrpcURLUtils;
 
 /**
  * @author shimingliu 2016年12月14日 下午1:55:28

@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.quancheng.saluki.core.utils.CollectionUtils;
+import com.quancheng.saluki.core.utils.GrpcURLUtils;
 import com.quancheng.saluki.core.utils.NetUtils;
 
 public class GrpcURL implements Serializable {
