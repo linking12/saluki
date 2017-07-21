@@ -6,12 +6,6 @@
  */
 package com.quancheng.saluki.core.grpc.client.internal;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +18,15 @@ import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand;
+import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidator;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtils;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.grpc.Channel;
 
@@ -52,6 +53,9 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     if (clientServerMonitor == null) {
       clientServerMonitor = new ClientServerMonitor(request.getRefUrl());
     }
+
+    GrpcRequestValidator.getInstance().doValidate(request);
+
     String serviceName = request.getServiceName();
     String methodName = request.getMethodRequest().getMethodName();
     Channel channel = request.getChannel();

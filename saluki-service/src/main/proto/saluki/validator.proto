@@ -1,0 +1,9 @@
+syntax = "proto2";
+package saluki;
+option java_package = "com.quancheng.saluki.proto";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FieldOptions {
+  repeated string validates = 65020;
+}

@@ -7,10 +7,6 @@
  */
 package com.quancheng.plugin.common;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -18,9 +14,17 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
+import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.UnknownFieldSet;
+
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Consumer;
 
 /**
  * @author shimingliu 2016年12月21日 下午3:42:47
@@ -57,11 +61,15 @@ public final class PrintMessageFile extends AbstractPrint {
         String sourePackageName = super.getSourcePackageName();
         String className = super.getClassName();
         String packageName = sourePackageName.toLowerCase();
+        List<String> packageData = Lists.newArrayList();
+        packageData.add("package " + packageName + ";");
+        packageData.add(System.getProperty("line.separator"));
+
+        List<String> importData = Lists.newArrayList();
+        importData.add("import com.quancheng.saluki.serializer.ProtobufAttribute;");
+        importData.add("import com.quancheng.saluki.serializer.ProtobufEntity;");
+
         List<String> fileData = Lists.newArrayList();
-        fileData.add("package " + packageName + ";");
-        fileData.add(System.getProperty("line.separator"));
-        fileData.add("import com.quancheng.saluki.serializer.ProtobufAttribute;");
-        fileData.add("import com.quancheng.saluki.serializer.ProtobufEntity;");
         fileData.add(System.getProperty("line.separator"));
         fileData.add("@ProtobufEntity(" + sourePackageName + "." + className + ".class)");
         fileData.add("public class " + className + "{");
@@ -73,8 +81,18 @@ public final class PrintMessageFile extends AbstractPrint {
                     javaType = "java.util.ArrayList<" + javaType + ">";
                 }
             }
-            String fieldName = messageField.getName();
             fileData.add(System.getProperty("line.separator"));
+            String fieldName = messageField.getName();
+            UnknownFieldSet unknownFields = messageField.getOptions().getUnknownFields();
+            if (unknownFields != null) {
+                for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry :  unknownFields.asMap().entrySet()) {
+                    for (ByteString byteString : integerFieldEntry.getValue().getLengthDelimitedList()) {
+                        String validateMsg = byteString.toStringUtf8();
+                        fileData.add("    "  + validateMsg);
+                    }
+                }
+            }
+
             fileData.add("    @ProtobufAttribute");
             fileData.add("    private " + javaType + " " + fieldName + ";");
             fileData.add(System.getProperty("line.separator"));
@@ -88,7 +106,9 @@ public final class PrintMessageFile extends AbstractPrint {
             fileData.add(System.getProperty("line.separator"));
         }
         fileData.add("}");
-        return fileData;
+        packageData.addAll(importData);
+        packageData.addAll(fileData);
+        return packageData;
     }
 
     private String findJavaType(String packageName, DescriptorProto sourceMessageDesc, FieldDescriptorProto field) {
