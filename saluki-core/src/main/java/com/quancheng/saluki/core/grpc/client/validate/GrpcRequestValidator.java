@@ -7,6 +7,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,10 +36,15 @@ public class GrpcRequestValidator {
    * @param request
    */
   public void doValidate(final GrpcRequest request) {
-    Set<ConstraintViolation<Object>> validate = validator.validate(request.getMethodRequest().getArg());
+    List<Class> validatorGroups = new ArrayList<>();
+    if (GrpcRequestValidatorGroupHolden.getHoldenGroups().isPresent()) {
+      validatorGroups = GrpcRequestValidatorGroupHolden.getHoldenGroups().get();
+    }
+    Set<ConstraintViolation<Object>> validate = validator.validate(request.getMethodRequest().getArg(),
+        (Class[]) validatorGroups.toArray(new Class[0]));
     StringBuffer validateMsg = new StringBuffer();
     for (ConstraintViolation<Object> constraintViolation : validate) {
-      validateMsg.append(constraintViolation.getPropertyPath() + ":"  + constraintViolation.getMessage());
+      validateMsg.append(String.format("parameter[%s] message[%s] ", constraintViolation.getPropertyPath(), constraintViolation.getMessage()));
     }
 
     if (validateMsg.length() > 0) {

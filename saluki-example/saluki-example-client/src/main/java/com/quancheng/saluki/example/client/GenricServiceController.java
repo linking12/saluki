@@ -20,7 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.saluki.boot.SalukiReference;
+import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidatorGroupHolden;
 import com.quancheng.saluki.core.grpc.service.GenericService;
+import com.saluki.example.model.First;
+import com.saluki.example.model.Second;
+
+import java.util.Arrays;
 
 /**
  * @author liushiming
@@ -43,6 +48,7 @@ public class GenricServiceController {
     HelloRequest request = new HelloRequest();
     request.setName(name);
     Object[] args = new Object[] {request};
+    GrpcRequestValidatorGroupHolden.setHoldenGroups(Arrays.asList(Second.class));
     HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
         parameterTypes, args);
     return reply;

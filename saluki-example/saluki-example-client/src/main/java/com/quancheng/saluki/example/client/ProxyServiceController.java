@@ -1,5 +1,6 @@
 package com.quancheng.saluki.example.client;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,8 @@ import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
 import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.common.RpcContext;
+import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidatorGroupHolden;
+import com.saluki.example.model.First;
 
 @RestController
 @RequestMapping("/proxy")
@@ -38,6 +41,7 @@ public class ProxyServiceController {
     projects.put("test", project);
     request.setProjects(projects);
     RpcContext.getContext().set("123", "helloworld");
+    GrpcRequestValidatorGroupHolden.setHoldenGroups(Arrays.asList(First.class));
     HelloReply reply = helloService.sayHello(request);
     return reply;
   }
