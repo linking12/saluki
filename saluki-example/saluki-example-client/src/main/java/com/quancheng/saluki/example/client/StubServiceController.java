@@ -23,7 +23,7 @@ import com.quancheng.examples.model.Hello;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.service.HelloServiceGrpc;
 import com.quancheng.saluki.boot.SalukiReference;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 /**
@@ -45,7 +45,7 @@ public class StubServiceController {
     final Hello.HelloRequest helloRequest = Hello.HelloRequest.newBuilder().setName(name).build();
     final com.quancheng.examples.model.Hello.HelloReply reply =
         helloServiceStub.sayHello(helloRequest).get();
-    return (HelloReply) SerializerUtils.Protobuf2Pojo(reply,
+    return (HelloReply) SerializerUtil.protobuf2Pojo(reply,
         com.quancheng.examples.model.hello.HelloReply.class);
   }
 

@@ -6,6 +6,12 @@
  */
 package com.quancheng.saluki.core.grpc.client.internal;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +28,6 @@ import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidator;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.grpc.Channel;
 
@@ -40,9 +41,15 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
   private final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
-  private volatile ClientServerMonitor clientServerMonitor;
+  private final ClientServerMonitor monitor;
 
   protected abstract GrpcRequest buildGrpcRequest(Method method, Object[] args);
+
+
+  public AbstractClientInvocation(GrpcURL refUrl) {
+    Long monitorinterval = refUrl.getParameter("monitorinterval", 60L);
+    monitor = ClientServerMonitor.newClientServerMonitor(monitorinterval);
+  }
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -50,10 +57,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       return AbstractClientInvocation.this.toString();
     }
     GrpcRequest request = this.buildGrpcRequest(method, args);
-    if (clientServerMonitor == null) {
-      clientServerMonitor = new ClientServerMonitor(request.getRefUrl());
-    }
-
     GrpcRequestValidator.getInstance().doValidate(request);
 
     String serviceName = request.getServiceName();
@@ -63,6 +66,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     Integer retryOption = this.buildRetryOption(methodName, refUrl);
     Boolean isEnableFallback = this.buildFallbackOption(methodName, refUrl);
     GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
+
     try {
       this.calculateConcurrent(serviceName, methodName).incrementAndGet();
       AtomicInteger concurrent = this.calculateConcurrent(serviceName, methodName);
@@ -81,7 +85,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       hystrixCommand.setClientCall(clientCall);
       hystrixCommand.setRequest(request);
       hystrixCommand.setConcurrent(concurrent);
-      hystrixCommand.setClientServerMonitor(clientServerMonitor);
+      hystrixCommand.setClientServerMonitor(monitor);
       return hystrixCommand.execute();
     } finally {
       Object remote = clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
@@ -91,6 +95,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       this.calculateConcurrent(serviceName, methodName).decrementAndGet();
     }
   }
+
 
   private Boolean buildFallbackOption(String methodName, GrpcURL refUrl) {
     Boolean isEnableFallback = refUrl.getParameter(Constants.GRPC_FALLBACK_KEY, Boolean.FALSE);

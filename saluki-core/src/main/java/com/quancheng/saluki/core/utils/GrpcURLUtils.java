@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.common;
+package com.quancheng.saluki.core.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.quancheng.saluki.core.common.Constants;
+import com.quancheng.saluki.core.common.GrpcURL;
 
 public class GrpcURLUtils {
 

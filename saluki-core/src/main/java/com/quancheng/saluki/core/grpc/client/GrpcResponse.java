@@ -10,8 +10,8 @@ package com.quancheng.saluki.core.grpc.client;
 import java.io.Serializable;
 
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
 
 /**
  * @author shimingliu 2016年12月14日 下午5:51:13
@@ -25,7 +25,7 @@ public interface GrpcResponse {
 
         @Override
         public Object getResponseArg() throws ProtobufException {
-            return SerializerUtils.Protobuf2Pojo(this.getMessage(), this.getReturnType());
+            return SerializerUtil.protobuf2Pojo(this.getMessage(), this.getReturnType());
         }
 
         private static final long serialVersionUID = 1L;

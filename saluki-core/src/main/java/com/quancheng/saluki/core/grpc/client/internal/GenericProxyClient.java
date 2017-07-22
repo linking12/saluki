@@ -63,6 +63,7 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
 
     public GenericProxyClientInvocation(GrpcProtocolClient.ChannelCall channelPool, int callType,
         int callTimeout) {
+      super(GenericProxyClient.this.refUrl);
       this.channelPool = channelPool;
       this.callType = callType;
       this.callTimeout = callTimeout;

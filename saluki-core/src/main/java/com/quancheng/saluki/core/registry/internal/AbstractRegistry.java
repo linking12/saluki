@@ -23,10 +23,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.registry.NotifyListener;
 import com.quancheng.saluki.core.registry.Registry;
+import com.quancheng.saluki.core.utils.GrpcURLUtils;
 
 /**
  * @author shimingliu 2016年12月14日 下午1:55:28
@@ -42,19 +42,14 @@ public abstract class AbstractRegistry implements Registry {
   private final ConcurrentMap<GrpcURL, Map<NotifyListener.NotifyServiceListener, List<GrpcURL>>> notified =
       Maps.newConcurrentMap();
   private final ExecutorService notifyExecutor;
-  private final int cpus = Runtime.getRuntime().availableProcessors();
 
   public AbstractRegistry(GrpcURL registryUrl) {
     if (registryUrl == null) {
       throw new IllegalArgumentException("registry url == null");
     }
     this.registryUrl = registryUrl;
-    this.notifyExecutor = Executors.newFixedThreadPool(cpus * 3,
+    this.notifyExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
         new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener", true));
-  }
-
-  public int getCpus() {
-    return cpus;
   }
 
   public GrpcURL getRegistryUrl() {

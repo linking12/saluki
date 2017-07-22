@@ -15,13 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.utils.ClassHelper;
 
 public class ClientServerMonitor implements MonitorService {
 
   private static final Logger logger = LoggerFactory.getLogger(ClientServerMonitor.class);
+
+  private static final Object LOCK = new Object();
 
   private static final int LENGTH = 10;
 
@@ -29,17 +31,16 @@ public class ClientServerMonitor implements MonitorService {
 
   private final List<MonitorService> monitorServices;
 
-  private final long monitorInterval;
-
   private final ScheduledExecutorService scheduledExecutorService =
       Executors.newScheduledThreadPool(1, new NamedThreadFactory("SalukiMonitorSendTimer", true));
 
   private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap =
       new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
-  public ClientServerMonitor(GrpcURL url) {
+  private static ClientServerMonitor monitor;
+
+  private ClientServerMonitor(long monitorInterval) {
     this.monitorServices = loadMonitor();
-    this.monitorInterval = url.getParameter("monitorinterval", 60);
     // 启动统计信息收集定时器
     sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
@@ -52,6 +53,16 @@ public class ClientServerMonitor implements MonitorService {
         }
       }
     }, monitorInterval, monitorInterval, TimeUnit.MINUTES);
+  }
+
+  public static ClientServerMonitor newClientServerMonitor(long monitorInterval) {
+    synchronized (LOCK) {
+      if (monitor != null) {
+        return monitor;
+      } else {
+        return new ClientServerMonitor(monitorInterval);
+      }
+    }
   }
 
   public void send() {

@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.GrpcURLUtils;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
+import com.quancheng.saluki.core.utils.GrpcURLUtils;
 
 /**
  * @author shimingliu 2017年1月9日 下午2:22:04

@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc.interceptor;
 
@@ -13,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.util.SerializerUtils;
-import com.quancheng.saluki.core.grpc.util.MetadataUtil;
+import com.quancheng.saluki.core.grpc.util.GrpcUtil;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -31,39 +30,48 @@ import io.grpc.MethodDescriptor;
  */
 public class HeaderClientInterceptor implements ClientInterceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(HeaderClientInterceptor.class);
+  private static final Logger log = LoggerFactory.getLogger(HeaderClientInterceptor.class);
 
-    @Override
-    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
-                                                               CallOptions callOptions, Channel next) {
-        return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
 
-            @Override
-            public void start(Listener<RespT> responseListener, Metadata headers) {
-                copyThreadLocalToMetadata(headers);
-                super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
+  public static ClientInterceptor instance() {
+    return new HeaderClientInterceptor();
+  }
 
-                    @Override
-                    public void onHeaders(Metadata headers) {
-                        super.onHeaders(headers);
-                    }
-                }, headers);
-            }
-        };
+  private HeaderClientInterceptor() {
+
+  }
+
+  @Override
+  public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
+      CallOptions callOptions, Channel next) {
+    return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+
+      @Override
+      public void start(Listener<RespT> responseListener, Metadata headers) {
+        copyThreadLocalToMetadata(headers);
+        super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
+
+          @Override
+          public void onHeaders(Metadata headers) {
+            super.onHeaders(headers);
+          }
+        }, headers);
+      }
+    };
+  }
+
+  private void copyThreadLocalToMetadata(Metadata headers) {
+    Map<String, String> attachments = RpcContext.getContext().getAttachments();
+    Map<String, Object> values = RpcContext.getContext().get();
+    try {
+      if (!attachments.isEmpty()) {
+        headers.put(GrpcUtil.GRPC_CONTEXT_ATTACHMENTS, SerializerUtil.toJson(attachments));
+      }
+      if (!values.isEmpty()) {
+        headers.put(GrpcUtil.GRPC_CONTEXT_VALUES, SerializerUtil.toJson(values));
+      }
+    } catch (Throwable e) {
+      log.error(e.getMessage(), e);
     }
-
-    private void copyThreadLocalToMetadata(Metadata headers) {
-        Map<String, String> attachments = RpcContext.getContext().getAttachments();
-        Map<String, Object> values = RpcContext.getContext().get();
-        try {
-            if (!attachments.isEmpty()) {
-                headers.put(MetadataUtil.GRPC_CONTEXT_ATTACHMENTS, SerializerUtils.toJson(attachments));
-            }
-            if (!values.isEmpty()) {
-                headers.put(MetadataUtil.GRPC_CONTEXT_VALUES, SerializerUtils.toJson(values));
-            }
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        }
-    }
+  }
 }

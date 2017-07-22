@@ -19,7 +19,7 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
  * @author shimingliu 2016年12月15日 上午12:40:53
  * @version ThrallCommonUtil.java, v 0.0.1 2016年12月15日 上午12:40:53 shimingliu
  */
-public final class SerializerUtils {
+public final class SerializerUtil {
 
     private static final Gson                gson;
 
@@ -30,10 +30,10 @@ public final class SerializerUtils {
         gson = new Gson();
     }
 
-    private SerializerUtils(){
+    private SerializerUtil(){
     }
 
-    public static Message Pojo2Protobuf(Object arg) throws ProtobufException {
+    public static Message pojo2Protobuf(Object arg) throws ProtobufException {
         if (!(arg instanceof Message)) {
             Message message = (Message) serializer.toProtobuf(arg);
             arg = null;
@@ -42,7 +42,7 @@ public final class SerializerUtils {
         return (Message) arg;
     }
 
-    public static Object Protobuf2Pojo(Message arg, Class<? extends Object> returnType) throws ProtobufException {
+  public static Object protobuf2Pojo(Message arg, Class<? extends Object> returnType) throws ProtobufException {
         if (!Message.class.isAssignableFrom(returnType)) {
             return serializer.fromProtobuf(arg, returnType);
         } else {
