@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.examples.model.hello.HelloReply;
@@ -21,14 +22,14 @@ public class ProxyServiceController {
 
 
   @RequestMapping("/hello")
-  public HelloReply hello() {
-    return call();
+  public HelloReply hello(@RequestParam(value="name", required=false) String name) {
+    return call(name);
   }
 
 
-  private HelloReply call() {
+  private HelloReply call(final String name) {
     HelloRequest request = new HelloRequest();
-    request.setName("liushiming");
+    request.setName(name);
     com.quancheng.examples.model.hello.Project project =
         new com.quancheng.examples.model.hello.Project();
     project.setId("123");

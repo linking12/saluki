@@ -14,6 +14,7 @@
 package com.quancheng.saluki.example.client;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.examples.model.hello.HelloReply;
@@ -34,13 +35,13 @@ public class GenricServiceController {
   private GenericService genricService;
 
   @RequestMapping("/hello")
-  public HelloReply view() {
+  public HelloReply view(@RequestParam(value="name", required=false) String name) {
     String serviceName = "com.quancheng.examples.service.HelloService";
     String method = "sayHello";
     String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
         "com.quancheng.examples.model.hello.HelloReply"};
     HelloRequest request = new HelloRequest();
-    request.setName("liushiming");
+    request.setName(name);
     Object[] args = new Object[] {request};
     HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
         parameterTypes, args);
