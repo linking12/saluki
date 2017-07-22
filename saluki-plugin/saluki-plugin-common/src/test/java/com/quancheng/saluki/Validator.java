@@ -13,8 +13,13 @@
  */
 package com.quancheng.saluki;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos.FileDescriptorSet;
+import com.google.protobuf.UnknownFieldSet;
 import com.quancheng.plugin.common.CommandProtoc;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * @author liushiming
@@ -31,10 +36,19 @@ public class Validator {
    */
   public static void main(String[] args) {
     CommandProtoc commondProtoc = CommandProtoc.configProtoPath(
-        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki");
+        "/Users/guoyubo/workspace/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki",
+        new File("/Users/guoyubo/workspace/saluki/saluki-example/saluki-example-api/target/protoc-dependencies"));
 
     FileDescriptorSet fileDescriptorSet = commondProtoc.invoke(
-        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/saluki_service.proto");
+        "/Users/guoyubo/workspace/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/hello.proto");
+    Map<Integer, UnknownFieldSet.Field> lengthDelimitedList =
+        fileDescriptorSet.getFile(0).getMessageType(0).getField(0).getOptions().getUnknownFields().asMap();
+    for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry : lengthDelimitedList.entrySet()) {
+      for (ByteString byteString : integerFieldEntry.getValue().getLengthDelimitedList()) {
+        System.out.println(integerFieldEntry.getKey() + "--" + byteString.toStringUtf8());
+
+      }
+    }
     System.out.println(fileDescriptorSet);
   }
 

@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Maven: com.quancheng.saluki:saluki-core:1.5.5-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/quancheng/saluki/saluki-core/1.5.5-SNAPSHOT/saluki-core-1.5.5-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/quancheng/saluki/saluki-core/1.5.5-SNAPSHOT/saluki-core-1.5.5-SNAPSHOT-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/quancheng/saluki/saluki-core/1.5.5-SNAPSHOT/saluki-core-1.5.5-SNAPSHOT-sources.jar!/" />
+      <root url="file://$MAVEN_REPOSITORY$/com/quancheng/saluki/saluki-core" />
+    </SOURCES>
+  </library>
+</component>

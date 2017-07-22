@@ -3,9 +3,11 @@ syntax = "proto3";
 option java_package = "com.quancheng.examples.model";
 option java_outer_classname = "Hello";
 package com.quancheng.examples.model;
+import "saluki/validator.proto";
+
 // The request message containing the user's name.
 message HelloRequest {
-    string name = 1;
+    string name = 1  [(saluki.validates) = '@javax.validation.constraints.NotNull(message="Name cannot be null")', (saluki.validates) = '@javax.validation.constraints.Size(min = 10, max = 20, message="The size must be between 10 to 20")'];
     map<string, Project> projects = 3;
     map<string, string> mapTest= 7;
     PhoneType phoneType = 8;
