@@ -61,7 +61,7 @@ public class CommonProto2Java {
             }
         } finally {
             if (!new File(protoPath).exists()) {
-                logger.warn("protoPath:" + protoPath + " not exist, so it can't be generate");
+                logger.warn("protoPath:" + protoPath + " not exist, it may be in the third party jars, so it can't be generate");
                 return;
             }
             FileDescriptorSet fileDescriptorSet = commondProtoc.invoke(protoPath);

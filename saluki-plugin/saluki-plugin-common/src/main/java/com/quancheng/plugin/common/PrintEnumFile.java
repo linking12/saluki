@@ -34,38 +34,55 @@ public final class PrintEnumFile extends AbstractPrint {
         String packageName = super.getSourcePackageName().toLowerCase();
         List<String> fileData = Lists.newArrayList();
         fileData.add("package " + packageName + ";");
+        fileData.add("");
+
         fileData.add("public enum " + className + "{");
+        fileData.add("");
+
         for (int i = 0; i < enumFields.size(); i++) {
             EnumValueDescriptorProto enumField = enumFields.get(i);
             if (i == enumFields.size() - 1) {
-                fileData.add(enumField.getName() + "(" + enumField.getNumber() + ");");
+                fileData.add("  " + enumField.getName() + "(" + enumField.getNumber() + ");");
             } else {
-                fileData.add(enumField.getName() + "(" + enumField.getNumber() + "),");
+                fileData.add("  " + enumField.getName() + "(" + enumField.getNumber() + "),");
             }
         }
-        fileData.add("private final int value;");
-        fileData.add("private " + className + "(int value){");
-        fileData.add("this.value = value;");
-        fileData.add("}");
-        fileData.add("public final int getNumber() {");
-        fileData.add("return value;");
-        fileData.add("}");
-        fileData.add("public static " + className + " forNumber(Integer value){");
-        fileData.add("switch (value) {");
+
+        fileData.add("");
+
+        fileData.add("  private final int value;");
+        fileData.add("");
+
+        fileData.add("  private " + className + "(int value) {");
+        fileData.add("      this.value = value;");
+        fileData.add("  }");
+        fileData.add("");
+
+        fileData.add("  public final int getNumber() {");
+        fileData.add("      return value;");
+        fileData.add("  }");
+        fileData.add("");
+
+        fileData.add("  public static " + className + " forNumber(Integer value) {");
+        fileData.add("      switch (value) {");
         for (int i = 0; i < enumFields.size(); i++) {
             EnumValueDescriptorProto enumField = enumFields.get(i);
             if (i == enumFields.size() - 1) {
-                fileData.add("case " + enumField.getNumber() + ":");
-                fileData.add(" return " + enumField.getName() + ";");
-                fileData.add("default:");
-                fileData.add("return null;");
+                fileData.add("      case " + enumField.getNumber() + ":");
+                fileData.add("          return " + enumField.getName() + ";");
+                fileData.add("      default:");
+                fileData.add("          return null;");
             } else {
-                fileData.add("case " + enumField.getNumber() + ":");
-                fileData.add(" return " + enumField.getName() + ";");
+                fileData.add("      case " + enumField.getNumber() + ":");
+                fileData.add("          return " + enumField.getName() + ";");
             }
         }
-        fileData.add("}");
-        fileData.add("}");
+        fileData.add("      }");
+        fileData.add("");
+
+        fileData.add("  }");
+        fileData.add("");
+
         fileData.add("}");
         return fileData;
     }

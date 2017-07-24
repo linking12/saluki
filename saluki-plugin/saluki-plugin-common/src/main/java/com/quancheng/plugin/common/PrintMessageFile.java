@@ -63,15 +63,18 @@ public final class PrintMessageFile extends AbstractPrint {
         String packageName = sourePackageName.toLowerCase();
         List<String> packageData = Lists.newArrayList();
         packageData.add("package " + packageName + ";");
-        packageData.add(System.getProperty("line.separator"));
+        packageData.add("");
 
         List<String> importData = Lists.newArrayList();
         importData.add("import com.quancheng.saluki.serializer.ProtobufAttribute;");
         importData.add("import com.quancheng.saluki.serializer.ProtobufEntity;");
 
+        List<String> classAnnotationData = Lists.newArrayList();
+        classAnnotationData.add("");
+        classAnnotationData.add("@ProtobufEntity(" + sourePackageName + "." + className + ".class)");
+
+        boolean validator = false;
         List<String> fileData = Lists.newArrayList();
-        fileData.add(System.getProperty("line.separator"));
-        fileData.add("@ProtobufEntity(" + sourePackageName + "." + className + ".class)");
         fileData.add("public class " + className + "{");
         for (int i = 0; i < messageFields.size(); i++) {
             FieldDescriptorProto messageField = messageFields.get(i);
@@ -81,12 +84,13 @@ public final class PrintMessageFile extends AbstractPrint {
                     javaType = "java.util.ArrayList<" + javaType + ">";
                 }
             }
-            fileData.add(System.getProperty("line.separator"));
+            fileData.add("");
             String fieldName = messageField.getName();
             UnknownFieldSet unknownFields = messageField.getOptions().getUnknownFields();
             if (unknownFields != null) {
                 for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry :  unknownFields.asMap().entrySet()) {
                     for (ByteString byteString : integerFieldEntry.getValue().getLengthDelimitedList()) {
+                        validator = true;
                         String validateMsg = byteString.toStringUtf8();
                         fileData.add("    "  + validateMsg);
                     }
@@ -95,18 +99,23 @@ public final class PrintMessageFile extends AbstractPrint {
 
             fileData.add("    @ProtobufAttribute");
             fileData.add("    private " + javaType + " " + fieldName + ";");
-            fileData.add(System.getProperty("line.separator"));
-            fileData.add("    public " + javaType + " get" + captureName(fieldName) + "(){");
+            fileData.add("");
+            fileData.add("    public " + javaType + " get" + captureName(fieldName) + "() {");
             fileData.add("        return this." + fieldName + ";");
-            fileData.add("}");
-            fileData.add(System.getProperty("line.separator"));
-            fileData.add("    public void set" + captureName(fieldName) + "(" + javaType + " " + fieldName + "){");
+            fileData.add("    }");
+            fileData.add("");
+            fileData.add("    public void set" + captureName(fieldName) + "(" + javaType + " " + fieldName + ") {");
             fileData.add("        this." + fieldName + "=" + fieldName + ";");
-            fileData.add("}");
-            fileData.add(System.getProperty("line.separator"));
+            fileData.add("    }");
+            fileData.add("");
         }
         fileData.add("}");
+        if (validator) {
+            importData.add("import com.quancheng.saluki.serializer.ProtobufValidator;");
+            classAnnotationData.add("@ProtobufValidator");
+        }
         packageData.addAll(importData);
+        packageData.addAll(classAnnotationData);
         packageData.addAll(fileData);
         return packageData;
     }

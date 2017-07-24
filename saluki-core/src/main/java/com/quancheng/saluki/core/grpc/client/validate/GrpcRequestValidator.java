@@ -2,6 +2,7 @@ package com.quancheng.saluki.core.grpc.client.validate;
 
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.exception.RpcValidatorException;
+import com.quancheng.saluki.serializer.ProtobufValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -36,6 +37,9 @@ public class GrpcRequestValidator {
    * @param request
    */
   public void doValidate(final GrpcRequest request) {
+    if (!request.getMethodRequest().getArg().getClass().isAnnotationPresent(ProtobufValidator.class)) {
+      return;
+    }
     List<Class> validatorGroups = new ArrayList<>();
     if (GrpcRequestValidatorGroupHolden.getHoldenGroups().isPresent()) {
       validatorGroups = GrpcRequestValidatorGroupHolden.getHoldenGroups().get();

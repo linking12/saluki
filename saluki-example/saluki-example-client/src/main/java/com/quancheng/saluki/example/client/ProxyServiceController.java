@@ -41,7 +41,7 @@ public class ProxyServiceController {
     projects.put("test", project);
     request.setProjects(projects);
     RpcContext.getContext().set("123", "helloworld");
-    GrpcRequestValidatorGroupHolden.setHoldenGroups(Arrays.asList(First.class));
+//    GrpcRequestValidatorGroupHolden.setHoldenGroups(Arrays.asList(First.class));
     HelloReply reply = helloService.sayHello(request);
     return reply;
   }

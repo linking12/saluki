@@ -22,6 +22,6 @@
 
 * 启动saluki-example-client客户端,SalukiExampleClientApp 直接main启动
 
-* 访问http://localhost:8081/proxy/hello查看服务调用是否成功
+* 访问http://localhost:8081/proxy/hello?name=test查看服务调用是否成功
 
 

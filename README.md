@@ -12,6 +12,7 @@
 * 与spring-boot进行集成，提供了autoconfig的方式
 * ha重试功能，针对幂等服务可以开启ha功能，当前服务实例存在问题，会剔除当前实例，选择另外实例进行负载均衡
 * 可以自由选择三种模式，genric、Stub、proxy，其中泛化在框架集成上，原生Stub模式针对原生已有的Grpc服务、普通代理模式推荐使用
+* 通过在proto文件中配置options，使用hibernate validator进行参数的检查
 
 # 详细说明
 
