@@ -20,12 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.saluki.boot.SalukiReference;
-import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidatorGroupHolden;
+import com.quancheng.saluki.core.grpc.client.validate.RequestArgValidatorGroupHolden;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.saluki.example.model.First;
 import com.saluki.example.model.Second;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * @author liushiming
@@ -48,7 +49,37 @@ public class GenricServiceController {
     HelloRequest request = new HelloRequest();
     request.setName(name);
     Object[] args = new Object[] {request};
-    GrpcRequestValidatorGroupHolden.setHoldenGroups(Arrays.asList(Second.class));
+    HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
+        parameterTypes, args);
+    return reply;
+  }
+
+
+  @RequestMapping("/hello_1")
+  public HelloReply view1(@RequestParam(value="name", required=false) String name) {
+    String serviceName = "com.quancheng.examples.service.HelloService";
+    String method = "sayHello";
+    String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
+        "com.quancheng.examples.model.hello.HelloReply"};
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    Object[] args = new Object[] {request};
+    RequestArgValidatorGroupHolden.setHoldenGroups(new HashSet<>(Arrays.asList(First.class)));
+    HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
+        parameterTypes, args);
+    return reply;
+  }
+
+  @RequestMapping("/hello_2")
+  public HelloReply view2(@RequestParam(value="name", required=false) String name) {
+    String serviceName = "com.quancheng.examples.service.HelloService";
+    String method = "sayHello";
+    String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
+        "com.quancheng.examples.model.hello.HelloReply"};
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    Object[] args = new Object[] {request};
+    RequestArgValidatorGroupHolden.setHoldenGroups(new HashSet<>(Arrays.asList(Second.class)));
     HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
         parameterTypes, args);
     return reply;

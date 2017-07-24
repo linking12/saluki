@@ -24,7 +24,7 @@ import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand;
-import com.quancheng.saluki.core.grpc.client.validate.GrpcRequestValidator;
+import com.quancheng.saluki.core.grpc.client.validate.RequestArgValidator;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -57,7 +57,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       return AbstractClientInvocation.this.toString();
     }
     GrpcRequest request = this.buildGrpcRequest(method, args);
-    GrpcRequestValidator.getInstance().doValidate(request);
+    RequestArgValidator.getInstance().doValidate(request);
 
     String serviceName = request.getServiceName();
     String methodName = request.getMethodRequest().getMethodName();
