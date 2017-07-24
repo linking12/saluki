@@ -23,6 +23,7 @@ import com.quancheng.saluki.core.utils.ReflectUtils;
  * @author shimingliu 2016年12月14日 下午2:10:17
  * @version RpcReferenceConfig.java, v 0.0.1 2016年12月14日 下午2:10:17 shimingliu
  */
+@SuppressWarnings("rawtypes")
 public class RpcReferenceConfig extends RpcBaseConfig {
 
   private static final long serialVersionUID = 837201897877342163L;

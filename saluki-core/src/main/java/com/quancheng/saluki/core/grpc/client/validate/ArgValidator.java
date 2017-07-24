@@ -1,4 +1,4 @@
-package com.quancheng.saluki.serializer;
+package com.quancheng.saluki.core.grpc.client.validate;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ProtobufValidator {
+public @interface ArgValidator {
 
     boolean value() default true;
 }

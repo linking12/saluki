@@ -9,34 +9,24 @@ package com.quancheng.saluki.core.grpc.client.internal;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand;
-import com.quancheng.saluki.core.grpc.exception.RpcValidatorException;
+import com.quancheng.saluki.core.grpc.client.validate.RequestValidator;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
-import com.quancheng.saluki.core.utils.CollectionUtils;
 import com.quancheng.saluki.core.utils.ReflectUtils;
-import com.quancheng.saluki.serializer.ProtobufValidator;
 
 import io.grpc.Channel;
 
@@ -143,59 +133,4 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     return concurrent;
   }
 
-  @SuppressWarnings("rawtypes")
-  private final static class RequestValidator {
-
-    private Validator validator;
-
-    private static final Object LOCK = new Object();
-
-    private static RequestValidator requestValidator;
-
-    private RequestValidator() {
-      validator = Validation.buildDefaultValidatorFactory().getValidator();
-    }
-
-    private static RequestValidator newRequestValidator() {
-      synchronized (LOCK) {
-        if (requestValidator != null) {
-          return requestValidator;
-        } else {
-          return new RequestValidator();
-        }
-      }
-    }
-
-    private void doValidate(final GrpcRequest request) throws ClassNotFoundException {
-      if (!request.getMethodRequest().getArg().getClass()
-          .isAnnotationPresent(ProtobufValidator.class)) {
-        return;
-      }
-      Set<Class> validatorGroups = new HashSet<>();
-      String validatorGroupStr = request.getRefUrl().getParameter(Constants.VALIDATOR_GROUPS);
-      if (StringUtils.isNotEmpty(validatorGroupStr)) {
-        String[] splitGroups = validatorGroupStr.split(";");
-        for (String splitGroup : splitGroups) {
-          validatorGroups.add(Class.forName(splitGroup));
-        }
-      }
-      Optional<Set<Class>> optional = RpcContext.getContext().getHoldenGroups();
-      if (optional.isPresent()) {
-        validatorGroups = optional.get();
-      }
-      Set<ConstraintViolation<Object>> violations = validator.validate(
-          request.getMethodRequest().getArg(), (Class[]) validatorGroups.toArray(new Class[0]));
-      if (CollectionUtils.isNotEmpty(violations)) {
-        StringBuffer validateMsg = new StringBuffer();
-        for (ConstraintViolation<Object> constraintViolation : violations) {
-          validateMsg.append(String.format("parameter[%s] message[%s] ",
-              constraintViolation.getPropertyPath(), constraintViolation.getMessage()));
-        }
-
-        if (validateMsg.length() > 0) {
-          throw new RpcValidatorException(validateMsg.toString());
-        }
-      }
-    }
-  }
 }

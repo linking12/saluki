@@ -109,8 +109,8 @@ public final class PrintMessageFile extends AbstractPrint {
         }
         fileData.add("}");
         if (validator) {
-            importData.add("import com.quancheng.saluki.serializer.ProtobufValidator;");
-            classAnnotationData.add("@ProtobufValidator");
+            importData.add("import com.quancheng.saluki.core.grpc.client.validate.ArgValidator;");
+            classAnnotationData.add("@ArgValidator");
         }
         packageData.addAll(importData);
         packageData.addAll(classAnnotationData);
