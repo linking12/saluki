@@ -8,6 +8,7 @@
 package com.quancheng.plugin.common;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -30,25 +31,35 @@ public class CommandProtoc {
 
     private final String        discoveryRoot;
 
-    private CommandProtoc(String discoveryRoot){
+    private final File protocDependenciesPath;
+
+    private CommandProtoc(String discoveryRoot, final File protocDependenciesPath){
         this.discoveryRoot = discoveryRoot;
+        this.protocDependenciesPath = protocDependenciesPath;
     }
 
-    public static CommandProtoc configProtoPath(String discoveryRoot) {
-        return new CommandProtoc(discoveryRoot);
+    public static CommandProtoc configProtoPath(String discoveryRoot, final File protocDependenciesPath) {
+        return new CommandProtoc(discoveryRoot, protocDependenciesPath);
     }
 
     public FileDescriptorSet invoke(String protoPath) {
-        Path descriptorPath;
         try {
-            descriptorPath = Files.createTempFile("descriptor", ".pb.bin");
-            ImmutableList<String> protocArgs = ImmutableList.<String> builder()//
-                                                            .add("--include_std_types")//
-                                                            .add("-I" + discoveryRoot)//
-                                                            .add("--descriptor_set_out="
-                                                                 + descriptorPath.toAbsolutePath().toString())//
-                                                            .add(protoPath)//
-                                                            .build();
+            Path descriptorPath = Files.createTempFile("descriptor", ".pb.bin");
+            ImmutableList.Builder<String> builder = ImmutableList.<String>builder()//
+                                                                               .add("--include_std_types")//
+                                                                               .add("-I" + discoveryRoot)
+                                                                               .add("--descriptor_set_out="  + descriptorPath.toAbsolutePath().toString())//
+                                                                               ;
+            if (protocDependenciesPath.exists()) {
+                File[] files = protocDependenciesPath.listFiles();
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        builder.add("-I" + file.getAbsolutePath());
+                    }
+                }
+            }
+
+            ImmutableList<String> protocArgs = builder.add(protoPath).build();
 
             int status;
             String[] protocLogLines;

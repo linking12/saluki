@@ -50,4 +50,6 @@ public class Constants {
 
   public static final String REMOTE_ADDRESS = "remote";
 
+  public static final String VALIDATOR_GROUPS = "validator.groups";
+
 }

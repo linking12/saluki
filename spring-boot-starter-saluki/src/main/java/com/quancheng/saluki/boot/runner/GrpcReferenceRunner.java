@@ -136,6 +136,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
       this.addAsyncAndTimeOut(reference, rpcReferenceConfig);
       this.addMonitorInterval(rpcReferenceConfig);
       this.addHostAndPort(rpcReferenceConfig);
+      this.addValidatorGroups(reference, rpcReferenceConfig);
       if (this.isGenericClient(referenceClass)) {
         rpcReferenceConfig.setGeneric(true);
       }
@@ -146,6 +147,13 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
       Object bean = rpcReferenceConfig.getProxyObj();
       serviceBean.putIfAbsent(serviceName, bean);
       return bean;
+    }
+  }
+
+  private void addValidatorGroups(final SalukiReference reference, final RpcReferenceConfig rpcReferenceConfig) {
+    if (reference.validatorGroups() != null && reference.validatorGroups().length > 0) {
+      logger.info("Have validator groups: " + reference.validatorGroups());
+      rpcReferenceConfig.setValidatorGroups(new HashSet(Arrays.asList(reference.validatorGroups())));
     }
   }
 

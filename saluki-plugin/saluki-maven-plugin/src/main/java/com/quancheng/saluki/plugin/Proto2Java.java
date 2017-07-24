@@ -34,13 +34,22 @@ public class Proto2Java extends AbstractMojo {
     @Parameter(defaultValue = "src/main/java")
     private String     buildPath;
 
+    /**
+     * This is the directory into which the {@code .java} will be created.
+     */
+    @Parameter(
+        required = true,
+        defaultValue = "${project.build.directory}/protoc-dependencies"
+    )
+    private File protocDependenciesPath;
+
     private List<File> allProtoFile = Lists.newArrayList();
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File deirectory = new File(protoPath);
         listAllProtoFile(deirectory);
-        CommonProto2Java protp2ServicePojo = CommonProto2Java.forConfig(protoPath, buildPath);
+        CommonProto2Java protp2ServicePojo = CommonProto2Java.forConfig(protoPath, buildPath, protocDependenciesPath);
         for (File file : allProtoFile) {
             if (file.exists()) {
                 String protoFilePath = file.getPath();

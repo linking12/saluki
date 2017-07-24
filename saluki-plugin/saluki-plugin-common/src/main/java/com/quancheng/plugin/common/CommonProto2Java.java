@@ -7,12 +7,15 @@
  */
 package com.quancheng.plugin.common;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -30,6 +33,8 @@ import com.google.protobuf.ProtocolStringList;
  */
 public class CommonProto2Java {
 
+    private static final Logger logger = LoggerFactory.getLogger(CommonProto2Java.class);
+
     private final String        discoveryRoot;
 
     private final String        generatePath;
@@ -38,14 +43,15 @@ public class CommonProto2Java {
 
     private Map<String, String> pojoTypes;
 
-    private CommonProto2Java(String discoveryRoot, String generatePath){
+    private CommonProto2Java(String discoveryRoot, String generatePath, final File protocDependenciesPath){
         this.discoveryRoot = discoveryRoot;
         this.generatePath = generatePath;
-        this.commondProtoc = CommandProtoc.configProtoPath(discoveryRoot);
+        this.commondProtoc = CommandProtoc.configProtoPath(discoveryRoot, protocDependenciesPath);
     }
 
-    public static CommonProto2Java forConfig(String discoveryRoot, String generatePath) {
-        return new CommonProto2Java(discoveryRoot, generatePath);
+    public static CommonProto2Java forConfig(String discoveryRoot, String generatePath,
+        final File protocDependenciesPath) {
+        return new CommonProto2Java(discoveryRoot, generatePath, protocDependenciesPath);
     }
 
     public void generateFile(String protoPath) {
@@ -54,6 +60,10 @@ public class CommonProto2Java {
                 pojoTypes = Maps.newHashMap();
             }
         } finally {
+            if (!new File(protoPath).exists()) {
+                logger.warn("protoPath:" + protoPath + " not exist, it may be in the third party jars, so it can't be generate");
+                return;
+            }
             FileDescriptorSet fileDescriptorSet = commondProtoc.invoke(protoPath);
             for (FileDescriptorProto fdp : fileDescriptorSet.getFileList()) {
                 Pair<String, String> packageClassName = this.packageClassName(fdp.getOptions());

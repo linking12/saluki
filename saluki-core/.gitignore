@@ -5,3 +5,5 @@
 /.project
 /build/
 /target/
+/saluki-core.iml
+/src/main/.DS_Store

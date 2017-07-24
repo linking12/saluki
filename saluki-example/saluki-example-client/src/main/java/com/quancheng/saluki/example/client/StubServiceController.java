@@ -16,6 +16,7 @@ package com.quancheng.saluki.example.client;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.quancheng.examples.model.Hello;
@@ -40,8 +41,7 @@ public class StubServiceController {
 
 
   @RequestMapping("/hello")
-  public HelloReply hello() throws InterruptedException, ExecutionException, ProtobufException {
-    String name = "John";
+  public HelloReply hello(@RequestParam("name") String name) throws InterruptedException, ExecutionException, ProtobufException {
     final Hello.HelloRequest helloRequest = Hello.HelloRequest.newBuilder().setName(name).build();
     final com.quancheng.examples.model.Hello.HelloReply reply =
         helloServiceStub.sayHello(helloRequest).get();

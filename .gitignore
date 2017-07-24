@@ -3,3 +3,7 @@
 .DS_Store
 .project
 .settings/
+/.idea/
+.idea/
+/saluki-example/saluki-example.iml
+/saluki-example/.idea/

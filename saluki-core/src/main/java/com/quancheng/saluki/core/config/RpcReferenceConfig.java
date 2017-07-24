@@ -9,6 +9,7 @@ package com.quancheng.saluki.core.config;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,6 +50,8 @@ public class RpcReferenceConfig extends RpcBaseConfig {
   private Set<String> fallbackMethods;
 
   private Integer reties;
+
+  private Set<Class> validatorGroups;
 
 
   private transient Object ref;
@@ -153,6 +156,14 @@ public class RpcReferenceConfig extends RpcBaseConfig {
     this.fallbackMethods = fallbackMethods;
   }
 
+  public Set<Class> getValidatorGroups() {
+    return validatorGroups;
+  }
+
+  public void setValidatorGroups(final Set<Class> validatorGroups) {
+    this.validatorGroups = validatorGroups;
+  }
+
   public synchronized Object getProxyObj() {
     if (ref == null) {
       try {
@@ -179,6 +190,7 @@ public class RpcReferenceConfig extends RpcBaseConfig {
         this.addAsync(params);
         this.addMonitorInterval(params);
         this.addHttpPort(params);
+        this.addValidatorGroups(params);
         GrpcURL refUrl = new GrpcURL(Constants.REMOTE_PROTOCOL, super.getHost(),
             super.getHttpPort(), serviceName, params);
         ref = super.getGrpcEngine().getClient(refUrl);
@@ -187,6 +199,20 @@ public class RpcReferenceConfig extends RpcBaseConfig {
       }
     }
     return ref;
+  }
+
+  private void addValidatorGroups(final Map<String, String> params) {
+    if (this.getValidatorGroups() != null && this.getValidatorGroups().size() > 0) {
+      StringBuffer sb = new StringBuffer();
+      this.getValidatorGroups().stream().forEach(new Consumer<Class>() {
+        @Override
+        public void accept(final Class aClass) {
+          sb.append(aClass.getName()).append(";");
+        }
+      });
+
+      params.put(Constants.VALIDATOR_GROUPS, sb.substring(0, sb.length() - 1));
+    }
   }
 
   private void addAsync(Map<String, String> params) {

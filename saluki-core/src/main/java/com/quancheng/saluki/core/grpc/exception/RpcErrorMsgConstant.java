@@ -22,6 +22,7 @@ public class RpcErrorMsgConstant {
     public static final int         FRAMEWORK_REGISTER_ERROR_CODE                  = 20008;
     // biz exception
     public static final int         BIZ_DEFAULT_ERROR_CODE                         = 30001;
+    public static final int         BIZ_VALIDATE_ERROR_CODE                        = 30002;
     /**
      * service error start
      **/
@@ -72,7 +73,12 @@ public class RpcErrorMsgConstant {
      **/
     public static final RpcErrorMsg BIZ_DEFAULT_EXCEPTION                          = new RpcErrorMsg(503,
                                                                                                      BIZ_DEFAULT_ERROR_CODE,
-                                                                                                     "provider error");
+                                                                                                     "provider error");/**
+     * validate error
+     **/
+    public static final RpcErrorMsg REQUEST_ARG_VALIDATE_EXCEPTION                          = new RpcErrorMsg(503,
+                                                                                                    BIZ_VALIDATE_ERROR_CODE,
+                                                                                                     "request arg validate error");
 
     /** framework error end **/
 
