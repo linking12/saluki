@@ -166,7 +166,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       }
     }
 
-    public void doValidate(final GrpcRequest request) throws ClassNotFoundException {
+    private void doValidate(final GrpcRequest request) throws ClassNotFoundException {
       if (!request.getMethodRequest().getArg().getClass()
           .isAnnotationPresent(ProtobufValidator.class)) {
         return;
