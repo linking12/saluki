@@ -7,6 +7,10 @@
  */
 package com.quancheng.plugin.common;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -18,13 +22,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label;
-import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.UnknownFieldSet;
-
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.function.Consumer;
 
 /**
  * @author shimingliu 2016年12月21日 下午3:42:47

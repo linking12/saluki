@@ -7,9 +7,9 @@ import "saluki/validator.proto";
 
 // The request message containing the user's name.
 message HelloRequest {
-    string name = 1  [(saluki.validates) = '@javax.validation.constraints.NotNull(message="Name cannot be null", groups = {com.saluki.example.model.First.class})',
-                     (saluki.validates) = '@javax.validation.constraints.Pattern(regexp="[a-z]*", message="Name must be charactors", groups = {com.saluki.example.model.Second.class})',
-                     (saluki.validates) = '@javax.validation.constraints.Size(min = 5, max = 20, message="The size must be between 5 to 20", groups = {com.saluki.example.model.First.class})'];
+    string name = 1  [(saluki.validate) = '@javax.validation.constraints.NotNull(message="Name cannot be null", groups = {com.saluki.example.model.First.class})',
+                     (saluki.validate) = '@javax.validation.constraints.Pattern(regexp="[a-z]*", message="Name must be charactors", groups = {com.saluki.example.model.Second.class})',
+                     (saluki.validate) = '@javax.validation.constraints.Size(min = 5, max = 20, message="The size must be between 5 to 20", groups = {com.saluki.example.model.First.class})'];
     map<string, Project> projects = 3;
     map<string, string> mapTest= 7;
     PhoneType phoneType = 8;
