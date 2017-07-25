@@ -17,7 +17,7 @@ README: [English](https://github.com/linking12/saluki/blob/master/README.md) | [
 
 # Detail
 
-* saluki-plugin provide maven or gradle plugin to generate interface及java bean
+* saluki-plugin provide maven or gradle plugin to generate interface and pojo
 * saluki-serializer provide transform pojo to protobuf model and  protobuf model to pojo
 * saluki-registry provide consul registered and discover
 
