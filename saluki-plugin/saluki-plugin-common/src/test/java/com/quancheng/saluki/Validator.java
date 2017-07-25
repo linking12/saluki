@@ -36,14 +36,15 @@ public class Validator {
    */
   public static void main(String[] args) {
     CommandProtoc commondProtoc = CommandProtoc.configProtoPath(
-        "/Users/guoyubo/workspace/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki",
-        new File("/Users/guoyubo/workspace/saluki/saluki-example/saluki-example-api/target/protoc-dependencies"));
-
+        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki",
+        new File(
+            "/Users/liushiming/project/java/saluki/saluki-example/saluki-example-api/target/protoc-dependencies"));
     FileDescriptorSet fileDescriptorSet = commondProtoc.invoke(
-        "/Users/guoyubo/workspace/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/hello.proto");
-    Map<Integer, UnknownFieldSet.Field> lengthDelimitedList =
-        fileDescriptorSet.getFile(0).getMessageType(0).getField(0).getOptions().getUnknownFields().asMap();
-    for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry : lengthDelimitedList.entrySet()) {
+        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/hello.proto");
+    Map<Integer, UnknownFieldSet.Field> lengthDelimitedList = fileDescriptorSet.getFile(0)
+        .getMessageType(0).getField(0).getOptions().getUnknownFields().asMap();
+    for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry : lengthDelimitedList
+        .entrySet()) {
       for (ByteString byteString : integerFieldEntry.getValue().getLengthDelimitedList()) {
         System.out.println(integerFieldEntry.getKey() + "--" + byteString.toStringUtf8());
 
