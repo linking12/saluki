@@ -31,6 +31,7 @@ README: [English](https://github.com/linking12/saluki/blob/master/README.md) | [
   
 # Quick Start
 
+* dependency
 
 ```
 <dependency>
