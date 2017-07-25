@@ -41,6 +41,7 @@ public @interface SalukiReference {
 
   String[] fallBackMethods() default {};
 
+  @SuppressWarnings("rawtypes")
   Class[] validatorGroups() default {};
 
   int timeOut() default Constants.RPC_ASYNC_DEFAULT_TIMEOUT;

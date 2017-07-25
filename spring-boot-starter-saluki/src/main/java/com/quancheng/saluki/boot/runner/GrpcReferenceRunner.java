@@ -55,7 +55,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
   private final List<Map<String, String>> servcieReferenceDefintions = Lists.newArrayList();
 
-  private final GrpcProperties thrallProperties;
+  private final GrpcProperties grpcProperties;
 
   @Value("${spring.application.name}")
   private String applicationName;
@@ -71,7 +71,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
 
   public GrpcReferenceRunner(GrpcProperties thrallProperties) {
-    this.thrallProperties = thrallProperties;
+    this.grpcProperties = thrallProperties;
     String referenceDefinPath = thrallProperties.getReferenceDefinition();
     if (StringUtils.isNoneBlank(referenceDefinPath)) {
       InputStream in =
@@ -150,23 +150,26 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
     }
   }
 
-  private void addValidatorGroups(final SalukiReference reference, final RpcReferenceConfig rpcReferenceConfig) {
+  @SuppressWarnings({"rawtypes"})
+  private void addValidatorGroups(final SalukiReference reference,
+      final RpcReferenceConfig rpcReferenceConfig) {
     if (reference.validatorGroups() != null && reference.validatorGroups().length > 0) {
       logger.info("Have validator groups: " + reference.validatorGroups());
-      rpcReferenceConfig.setValidatorGroups(new HashSet(Arrays.asList(reference.validatorGroups())));
+      rpcReferenceConfig
+          .setValidatorGroups(new HashSet<Class>(Arrays.asList(reference.validatorGroups())));
     }
   }
 
   private void addHostAndPort(RpcReferenceConfig rpcReferenceConfig) {
-    String host = thrallProperties.getHost();
-    int registryHttpPort = thrallProperties.getRegistryHttpPort();
+    String host = grpcProperties.getHost();
+    int registryHttpPort = grpcProperties.getRegistryHttpPort();
     if (StringUtils.isNoneBlank(host)) {
       rpcReferenceConfig.setHost(host);
     }
     if (registryHttpPort == 0) {
       if (this.httpPort != 0) {
         rpcReferenceConfig.setHttpPort(this.httpPort);
-        thrallProperties.setRegistryHttpPort(this.httpPort);
+        grpcProperties.setRegistryHttpPort(this.httpPort);
       } else {
         throw new java.lang.IllegalArgumentException("http port must be set in properties");
       }
@@ -177,8 +180,8 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
   }
 
   private void addMonitorInterval(RpcReferenceConfig rpcReferenceConfig) {
-    if (thrallProperties.getMonitorinterval() != 0) {
-      rpcReferenceConfig.setMonitorinterval(thrallProperties.getMonitorinterval());
+    if (grpcProperties.getMonitorinterval() != 0) {
+      rpcReferenceConfig.setMonitorinterval(grpcProperties.getMonitorinterval());
     }
   }
 
@@ -191,7 +194,7 @@ public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
   }
 
   private void addRegistyAddress(RpcReferenceConfig rpcReferenceConfig) {
-    String registryAddress = thrallProperties.getRegistryAddress();
+    String registryAddress = grpcProperties.getRegistryAddress();
     if (StringUtils.isBlank(registryAddress)) {
       throw new java.lang.IllegalArgumentException("registry address can not be null or empty");
     } else {
