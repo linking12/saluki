@@ -38,7 +38,7 @@ import com.quancheng.saluki.service.Health;
  */
 public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 
-  private final GrpcProperties thrallProperties;
+  private final GrpcProperties grpcProperties;
 
   @Value("${spring.application.name}")
   private String applicationName;
@@ -52,7 +52,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
   private RpcServiceConfig rpcService;
 
   public GrpcServiceRunner(GrpcProperties thrallProperties) {
-    this.thrallProperties = thrallProperties;
+    this.grpcProperties = thrallProperties;
   }
 
   @Override
@@ -72,7 +72,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
     this.addRegistyAddress(rpcSerivceConfig);
     rpcSerivceConfig.setApplication(applicationName);
     this.addHostAndPort(rpcSerivceConfig);
-    rpcSerivceConfig.setMonitorinterval(thrallProperties.getMonitorinterval());
+    rpcSerivceConfig.setMonitorinterval(grpcProperties.getMonitorinterval());
     Collection<Object> instances = getTypedBeansWithAnnotation(SalukiService.class);
     if (instances.size() > 0) {
       try {
@@ -113,29 +113,30 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
             beanDefinitionBuilder.getRawBeanDefinition());
         applicationContext.getBeanFactory().registerSingleton(Health.class.getName(),
             healthInstance);
-        String group =
-            thrallProperties.getGroup() != null ? thrallProperties.getGroup() : "default";
+        String group = grpcProperties.getGroup() != null ? grpcProperties.getGroup() : "default";
         String version =
-            thrallProperties.getVersion() != null ? thrallProperties.getVersion() : "1.0.0";
+            grpcProperties.getVersion() != null ? grpcProperties.getVersion() : "1.0.0";
         rpcSerivceConfig.addServiceDefinition(Health.class.getName(), group, version,
             healthInstance);
       }
     }
     this.rpcService = rpcSerivceConfig;
     rpcSerivceConfig.export();
-    System.out.println(String.format("GRPC server has started!You can do test by %s \n %s",
-        "http://localhost:" + httpPort + "/doc", "http://saluki.dev.quancheng-ec.com"));
+    System.out.println("****************");
+    System.out.println(String.format("GRPC server has started!You can do test by %s \n",
+        "http://localhost:" + httpPort + "/doc"));
+    System.out.println("****************");
   }
 
   private void addHostAndPort(RpcServiceConfig rpcSerivceConfig) {
     rpcSerivceConfig.setRealityRpcPort(getRealityRpcPort());
-    rpcSerivceConfig.setRegistryRpcPort(thrallProperties.getRegistryRpcPort());
-    rpcSerivceConfig.setHost(thrallProperties.getHost());
-    rpcSerivceConfig.setHttpPort(thrallProperties.getRegistryHttpPort());
+    rpcSerivceConfig.setRegistryRpcPort(grpcProperties.getRegistryRpcPort());
+    rpcSerivceConfig.setHost(grpcProperties.getHost());
+    rpcSerivceConfig.setHttpPort(grpcProperties.getRegistryHttpPort());
   }
 
   private void addRegistyAddress(RpcServiceConfig rpcSerivceConfig) {
-    String registryAddress = thrallProperties.getRegistryAddress();
+    String registryAddress = grpcProperties.getRegistryAddress();
     if (StringUtils.isBlank(registryAddress)) {
       throw new java.lang.IllegalArgumentException("registry address can not be null or empty");
     } else {
@@ -150,7 +151,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
   }
 
   private int getRealityRpcPort() {
-    int rpcPort = thrallProperties.getRealityRpcPort();
+    int rpcPort = grpcProperties.getRealityRpcPort();
     if (rpcPort == 0) {
       throw new java.lang.IllegalArgumentException("rpcPort can not be null or empty");
     }
@@ -161,7 +162,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
     if (StringUtils.isNoneBlank(service.group())) {
       return service.group();
     } else {
-      String group = thrallProperties.getGroup();
+      String group = grpcProperties.getGroup();
       if (StringUtils.isBlank(group)) {
         throw new java.lang.IllegalArgumentException("group can not be null or empty");
       }
@@ -173,7 +174,7 @@ public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
     if (StringUtils.isNoneBlank(service.version())) {
       return service.version();
     } else {
-      String version = thrallProperties.getVersion();
+      String version = grpcProperties.getVersion();
       if (StringUtils.isBlank(version)) {
         throw new java.lang.IllegalArgumentException("version can not be null or empty");
       }
