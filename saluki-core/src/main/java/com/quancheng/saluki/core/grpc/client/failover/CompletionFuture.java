@@ -21,6 +21,8 @@ import com.google.common.util.concurrent.AbstractFuture;
  * @since JDK 1.8
  */
 public class CompletionFuture<T> extends AbstractFuture<T> {
+
+
   @Override
   protected boolean set(T resp) {
     return super.set(resp);

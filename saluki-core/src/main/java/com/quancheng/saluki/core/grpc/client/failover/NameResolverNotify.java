@@ -32,6 +32,22 @@ import io.grpc.NameResolver;
  */
 public class NameResolverNotify {
 
+  private static final Object LOCK = new Object();
+
+  private static NameResolverNotify notify;
+
+  private NameResolverNotify() {}
+
+  public static NameResolverNotify newNameResolverNotify() {
+    synchronized (LOCK) {
+      if (notify != null) {
+        return notify;
+      } else {
+        return new NameResolverNotify();
+      }
+    }
+  }
+
   private List<SocketAddress> registry_servers;
 
   private SocketAddress current_server;

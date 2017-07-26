@@ -8,12 +8,8 @@ package com.quancheng.saluki.core.grpc.client.failover;
 
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -24,6 +20,7 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.internal.GrpcUtil;
 
 /**
  * @author liushiming 2017年5月2日 下午5:42:42
@@ -32,15 +29,13 @@ import io.grpc.Status;
 public class FailOverListener<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
 
-  private final static Logger logger = LoggerFactory.getLogger(FailOverListener.class);
+  private final ScheduledExecutorService scheduleRetryService = GrpcUtil.TIMER_SERVICE.create();
 
-  private final ExecutorService retryExecutor;
+  private final AtomicInteger currentRetries = new AtomicInteger(0);
 
-  private final CompletionFuture<Response> completionFuture;
+  private final CompletionFuture<Response> completionFuture = new CompletionFuture<Response>();
 
-  private final AtomicInteger retries;
-
-  private final Integer retriesOptions;
+  private final Integer maxRetries;
 
   private final Channel channel;
 
@@ -50,66 +45,99 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
   private final CallOptions callOptions;
 
-  private final NameResolverNotify nameResolverNotify;
+  private ClientCall<Request, Response> clientCall;
 
-  private volatile ClientCall<Request, Response> clientCall;
+  private Response value;
 
+  private final boolean enabledRetry;
 
   public FailOverListener(final Integer retriesOptions, final Request request,
       final Channel channel, final MethodDescriptor<Request, Response> method,
       final CallOptions callOptions) {
-    this.retriesOptions = retriesOptions;
+    this.maxRetries = retriesOptions;
     this.request = request;
     this.channel = channel;
     this.method = method;
     this.callOptions = callOptions;
-    this.nameResolverNotify = new NameResolverNotify();
-    this.completionFuture = new CompletionFuture<Response>();
-    this.retryExecutor = Executors.newSingleThreadScheduledExecutor();
-    this.retries = new AtomicInteger(0);
+    this.enabledRetry = maxRetries > 0 ? true : false;
   }
 
   @Override
   public void onMessage(Response message) {
-    completionFuture.set(message);
+    if (this.value != null && !enabledRetry) {
+      throw Status.INTERNAL.withDescription("More than one value received for unary call")
+          .asRuntimeException();
+    }
+    this.value = message;
   }
 
 
   @Override
   public void onClose(Status status, Metadata trailers) {
-    Map<String, Object> affinity = callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
-    SocketAddress currentServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-    affinity.put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, currentServer);
-    nameResolverNotify.refreshAffinity(affinity);
-    Status.Code code = status.getCode();
-    if (code == Status.Code.OK) {
-      if (retries.get() > 0) {
-        nameResolverNotify.resetChannel();
-      }
-      retries.set(0);
-      return;
-    } else {
-      if (retries.get() >= retriesOptions || retriesOptions == 0) {
-        completionFuture.setException(status.asRuntimeException());
-        nameResolverNotify.resetChannel();
-        return;
+    try {
+      SocketAddress remoteServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+      callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY)
+          .put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, remoteServer);
+    } finally {
+      if (status.isOk()) {
+        statusOk(trailers);
       } else {
-        logger.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s",
-            retries.get(), String.valueOf(currentServer)));
-        nameResolverNotify.refreshChannel();
-        retryExecutor.execute(this);
-        retries.getAndIncrement();
+        statusError(status, trailers);
       }
     }
   }
 
+  private void statusOk(Metadata trailers) {
+    try {
+      if (enabledRetry) {
+        final NameResolverNotify nameResolverNotify = this.createNameResolverNotify();
+        nameResolverNotify.resetChannel();
+      }
+    } finally {
+      if (value == null) {
+        completionFuture.setException(Status.INTERNAL
+            .withDescription("No value received for unary call").asRuntimeException(trailers));
+      }
+      completionFuture.set(value);
+    }
+  }
+
+
+  private void statusError(Status status, Metadata trailers) {
+    if (enabledRetry) {
+      final NameResolverNotify nameResolverNotify = this.createNameResolverNotify();
+      boolean retryHaveDone = this.retryHaveDone();
+      if (retryHaveDone) {
+        completionFuture.setException(status.asRuntimeException());
+      } else {
+        nameResolverNotify.refreshChannel();
+        scheduleRetryService.execute(this);
+        currentRetries.getAndIncrement();
+      }
+    } else {
+      completionFuture.setException(status.asRuntimeException());
+    }
+
+  }
+
+  private NameResolverNotify createNameResolverNotify() {
+    Map<String, Object> affinity = callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
+    NameResolverNotify nameResolverNotify = NameResolverNotify.newNameResolverNotify();
+    nameResolverNotify.refreshAffinity(affinity);
+    return nameResolverNotify;
+  }
+
+  private boolean retryHaveDone() {
+    return currentRetries.get() >= maxRetries;
+  }
+
   @Override
   public void run() {
-    clientCall = channel.newCall(method, callOptions);
-    clientCall.start(this, new Metadata());
-    clientCall.sendMessage(request);
-    clientCall.halfClose();
-    clientCall.request(1);
+    this.clientCall = channel.newCall(method, callOptions);
+    this.clientCall.start(this, new Metadata());
+    this.clientCall.sendMessage(request);
+    this.clientCall.halfClose();
+    this.clientCall.request(1);
   }
 
 
