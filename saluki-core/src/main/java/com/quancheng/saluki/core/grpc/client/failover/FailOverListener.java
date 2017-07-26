@@ -113,7 +113,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
       final NameResolverNotify nameResolverNotify = this.createNameResolverNotify();
       boolean retryHaveDone = this.retryHaveDone();
       if (retryHaveDone) {
-        completionFuture.setException(status.asRuntimeException());
+        completionFuture.setException(status.asRuntimeException(trailers));
       } else {
         nameResolverNotify.refreshChannel();
         scheduleRetryService.execute(this);
