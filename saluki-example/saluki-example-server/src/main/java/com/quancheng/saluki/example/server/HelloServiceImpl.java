@@ -13,8 +13,8 @@ public class HelloServiceImpl implements HelloService {
   public HelloReply sayHello(HelloRequest request) {
     HelloReply reply = new HelloReply();
     reply.setMessage(request.getName());
-    int registryPort = 0;
-    Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
+    //int registryPort = 0;
+    //Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
     return reply;
   }
 
