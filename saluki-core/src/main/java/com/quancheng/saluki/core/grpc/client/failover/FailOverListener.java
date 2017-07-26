@@ -125,7 +125,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
         currentRetries.getAndIncrement();
       }
     } else {
-      completionFuture.setException(status.asRuntimeException());
+      completionFuture.setException(status.asRuntimeException(trailers));
     }
 
   }
