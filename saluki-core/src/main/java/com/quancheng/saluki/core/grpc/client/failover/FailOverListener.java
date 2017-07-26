@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.util.concurrent.ListenableFuture;
 
 import io.grpc.CallOptions;
@@ -28,6 +31,8 @@ import io.grpc.internal.GrpcUtil;
  */
 public class FailOverListener<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
+
+  private final static Logger logger = LoggerFactory.getLogger(FailOverListener.class);
 
   private final ScheduledExecutorService scheduleRetryService = GrpcUtil.TIMER_SERVICE.create();
 
@@ -112,6 +117,11 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
       } else {
         nameResolverNotify.refreshChannel();
         scheduleRetryService.execute(this);
+        SocketAddress remoteAddress =
+            (SocketAddress) callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY)
+                .get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+        logger.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s",
+            currentRetries.get(), String.valueOf(remoteAddress)));
         currentRetries.getAndIncrement();
       }
     } else {

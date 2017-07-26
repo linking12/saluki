@@ -119,7 +119,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
         return Integer.valueOf(0);
       }
     } else {
-      return Integer.valueOf(0);
+      return retries;
     }
   }
 
