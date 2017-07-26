@@ -48,7 +48,7 @@ public abstract class AbstractRegistry implements Registry {
       throw new IllegalArgumentException("registry url == null");
     }
     this.registryUrl = registryUrl;
-    this.notifyExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+    this.notifyExecutor = Executors.newCachedThreadPool(
         new NamedThreadFactory("SalukiNotifyListener.NotifyServiceListener", true));
   }
 
