@@ -69,7 +69,7 @@ public class ApiJarService {
           logger.error(e.getMessage(), e);
         }
       }
-    }, 0, 10, TimeUnit.MINUTES);
+    }, 0, 30, TimeUnit.DAYS);
   }
 
   private void refresh() throws IOException {
@@ -91,7 +91,7 @@ public class ApiJarService {
     apiJar.setJarVersion(jarVersion);
     apiJar.setCreateTime(new Date());
     try {
-      downloadApiJar(jarUrl);
+      this.downloadApiJar(jarUrl);
       ApiClassCache.getInstance().invalidate();
       jarRespository.save(apiJar);
       return true;
