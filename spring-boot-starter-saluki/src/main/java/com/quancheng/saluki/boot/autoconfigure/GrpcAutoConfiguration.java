@@ -31,17 +31,17 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
 public class GrpcAutoConfiguration {
 
     @Autowired
-    private GrpcProperties thrallProperties;
+    private GrpcProperties grpcProperties;
 
     @Bean
     @ConditionalOnBean(value = GrpcProperties.class, annotation = SalukiService.class)
     public GrpcServiceRunner thrallServiceRunner() {
-        return new GrpcServiceRunner(thrallProperties);
+        return new GrpcServiceRunner(grpcProperties);
     }
 
     @Bean
     public BeanPostProcessor thrallReferenceRunner() {
-        return new GrpcReferenceRunner(thrallProperties);
+        return new GrpcReferenceRunner(grpcProperties);
     }
 
 }

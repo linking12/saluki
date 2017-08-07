@@ -21,18 +21,18 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnBean(value = GrpcProperties.class)
 public class WebAppAutoConfiguration implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
-    private final GrpcProperties thrallProperties;
+    private final GrpcProperties grpcProperties;
 
     public WebAppAutoConfiguration(GrpcProperties thrallProperties){
-        this.thrallProperties = thrallProperties;
+        this.grpcProperties = thrallProperties;
     }
 
     @Override
     public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
         int httpPort = event.getEmbeddedServletContainer().getPort();
-        if (thrallProperties.getRegistryHttpPort() == 0) {
+        if (grpcProperties.getRegistryHttpPort() == 0) {
             if (httpPort != 0) {
-                thrallProperties.setRegistryHttpPort(httpPort);
+                grpcProperties.setRegistryHttpPort(httpPort);
             }
         }
     }
