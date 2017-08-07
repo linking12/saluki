@@ -27,7 +27,7 @@ import io.grpc.internal.GrpcUtil;
 
 /**
  * @author liushiming 2017年5月2日 下午5:42:42
- * @version $Id: RetryCallListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
+ * @version FailOverListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
  */
 public class FailOverListener<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
