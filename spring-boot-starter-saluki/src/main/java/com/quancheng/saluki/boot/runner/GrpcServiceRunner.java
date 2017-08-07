@@ -34,7 +34,7 @@ import com.quancheng.saluki.service.Health;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:16
- * @version ThrallServiceRunner.java, v 0.0.1 2016年12月16日 下午5:07:16 shimingliu
+ * @version GrpcServiceRunner.java, v 0.0.1 2016年12月16日 下午5:07:16 shimingliu
  */
 public class GrpcServiceRunner implements DisposableBean, CommandLineRunner {
 

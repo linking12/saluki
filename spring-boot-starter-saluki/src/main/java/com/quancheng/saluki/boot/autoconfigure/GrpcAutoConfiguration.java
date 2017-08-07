@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.boot.autoconfigure;
 
@@ -22,7 +21,7 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
 
 /**
  * @author shimingliu 2016年12月16日 下午2:12:42
- * @version ThrallAutoConfiguration.java, v 0.0.1 2016年12月16日 下午2:12:42 shimingliu
+ * @version GrpcAutoConfiguration.java, v 0.0.1 2016年12月16日 下午2:12:42 shimingliu
  */
 @Configuration
 @ConditionalOnProperty(prefix = "saluki.grpc", name = "registryAddress")
@@ -30,18 +29,18 @@ import com.quancheng.saluki.boot.runner.GrpcServiceRunner;
 @EnableConfigurationProperties(GrpcProperties.class)
 public class GrpcAutoConfiguration {
 
-    @Autowired
-    private GrpcProperties grpcProperties;
+  @Autowired
+  private GrpcProperties grpcProperties;
 
-    @Bean
-    @ConditionalOnBean(value = GrpcProperties.class, annotation = SalukiService.class)
-    public GrpcServiceRunner thrallServiceRunner() {
-        return new GrpcServiceRunner(grpcProperties);
-    }
+  @Bean
+  @ConditionalOnBean(value = GrpcProperties.class, annotation = SalukiService.class)
+  public GrpcServiceRunner thrallServiceRunner() {
+    return new GrpcServiceRunner(grpcProperties);
+  }
 
-    @Bean
-    public BeanPostProcessor thrallReferenceRunner() {
-        return new GrpcReferenceRunner(grpcProperties);
-    }
+  @Bean
+  public BeanPostProcessor thrallReferenceRunner() {
+    return new GrpcReferenceRunner(grpcProperties);
+  }
 
 }

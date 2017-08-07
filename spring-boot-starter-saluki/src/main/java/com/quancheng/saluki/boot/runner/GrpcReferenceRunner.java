@@ -43,7 +43,7 @@ import io.grpc.stub.AbstractStub;
 
 /**
  * @author shimingliu 2016年12月16日 下午5:07:02
- * @version ThrallReferenceRunner.java, v 0.0.1 2016年12月16日 下午5:07:02 shimingliu
+ * @version GrpcReferenceRunner.java, v 0.0.1 2016年12月16日 下午5:07:02 shimingliu
  */
 public class GrpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 

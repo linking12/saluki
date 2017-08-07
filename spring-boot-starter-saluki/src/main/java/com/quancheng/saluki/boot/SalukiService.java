@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.boot;
 
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author shimingliu 2016年12月16日 下午2:00:10
- * @version ThrallService.java, v 0.0.1 2016年12月16日 下午2:00:10 shimingliu
+ * @version SalukiService.java, v 0.0.1 2016年12月16日 下午2:00:10 shimingliu
  */
 @Inherited
 @Target(ElementType.TYPE)
@@ -27,9 +26,9 @@ import org.springframework.stereotype.Service;
 @Service
 public @interface SalukiService {
 
-    String service() default "";
+  String service() default "";
 
-    String group() default "";
+  String group() default "";
 
-    String version() default "";
+  String version() default "";
 }

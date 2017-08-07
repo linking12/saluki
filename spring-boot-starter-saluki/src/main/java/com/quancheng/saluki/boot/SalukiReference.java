@@ -17,7 +17,7 @@ import com.quancheng.saluki.core.common.Constants;
 
 /**
  * @author shimingliu 2016年12月16日 下午1:59:58
- * @version ThrallReference.java, v 0.0.1 2016年12月16日 下午1:59:58 shimingliu
+ * @version SalukiReference.java, v 0.0.1 2016年12月16日 下午1:59:58 shimingliu
  */
 @Inherited
 @Documented
