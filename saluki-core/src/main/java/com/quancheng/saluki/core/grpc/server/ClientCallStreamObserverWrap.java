@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.server.internal;
+package com.quancheng.saluki.core.grpc.server;
 
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.grpc.util.SerializerUtil;
