@@ -66,13 +66,11 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
   @Override
   public StreamObserver<Message> invoke(StreamObserver<Message> responseObserver) {
     try {
-      ServerCallStreamObserver<Message> serverResponseObserver =
-          (ServerCallStreamObserver<Message>) responseObserver;
-      Object result =
-          method.invoke(serviceToInvoke, new ServerCallStreamObserverWrap(serverResponseObserver));
-      ClientCallStreamObserver<Object> clientRequestObserver =
-          (ClientCallStreamObserver<Object>) result;
-      return new ClientCallStreamObserverWrap(clientRequestObserver);
+      ServerCallStreamObserverWrap servserResponseObserver = ServerCallStreamObserverWrap
+          .newObserverWrap((ServerCallStreamObserver<Message>) responseObserver);
+      Object result = method.invoke(serviceToInvoke, servserResponseObserver);
+      return ClientCallStreamObserverWrap
+          .newObserverWrap((ClientCallStreamObserver<Object>) result);
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);

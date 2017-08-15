@@ -31,8 +31,13 @@ public class ServerCallStreamObserverWrap extends ServerCallStreamObserver<Objec
 
   private final ServerCallStreamObserver<Message> streamObserver;
 
-  public ServerCallStreamObserverWrap(ServerCallStreamObserver<Message> streamObserver) {
+  private ServerCallStreamObserverWrap(ServerCallStreamObserver<Message> streamObserver) {
     this.streamObserver = streamObserver;
+  }
+
+  public static ServerCallStreamObserverWrap newObserverWrap(
+      ServerCallStreamObserver<Message> streamObserver) {
+    return new ServerCallStreamObserverWrap(streamObserver);
   }
 
   @Override

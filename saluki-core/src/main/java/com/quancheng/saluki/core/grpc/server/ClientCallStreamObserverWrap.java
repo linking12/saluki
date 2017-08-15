@@ -32,8 +32,13 @@ public class ClientCallStreamObserverWrap extends ClientCallStreamObserver<Messa
 
   private final ClientCallStreamObserver<Object> streamObserver;
 
-  public ClientCallStreamObserverWrap(ClientCallStreamObserver<Object> streamObserver) {
+  private ClientCallStreamObserverWrap(ClientCallStreamObserver<Object> streamObserver) {
     this.streamObserver = streamObserver;
+  }
+
+  public static ClientCallStreamObserverWrap newObserverWrap(
+      ClientCallStreamObserver<Object> streamObserver) {
+    return new ClientCallStreamObserverWrap(streamObserver);
   }
 
   @Override
