@@ -119,7 +119,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private Message getRequestMessage() {
     try {
-      return this.request.getRequestArg();
+      return (Message) this.request.getRequestArg();
     } catch (ProtobufException e) {
       RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
       throw rpcFramwork;

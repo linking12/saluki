@@ -7,13 +7,17 @@
 package com.quancheng.saluki.core.grpc.client;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
+import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.util.GrpcUtil;
 import com.quancheng.saluki.core.grpc.util.SerializerUtil;
+import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
@@ -25,7 +29,7 @@ import io.grpc.MethodDescriptor;
  */
 public interface GrpcRequest {
 
-  public Message getRequestArg() throws ProtobufException;
+  public Object getRequestArg() throws ProtobufException;
 
   public Class<?> getResponseType();
 
@@ -47,6 +51,8 @@ public interface GrpcRequest {
 
   public int getCallTimeout();
 
+  public boolean isClientStream();
+
   public static class Default implements GrpcRequest, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -63,6 +69,8 @@ public interface GrpcRequest {
 
     private final int callTimeout;
 
+    private final GrpcMethodType grpcMethodType;
+
     public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool, String methodName,
         Object arg, int callType, int callTimeout) {
       super();
@@ -72,16 +80,41 @@ public interface GrpcRequest {
       this.arg = arg;
       this.callType = callType;
       this.callTimeout = callTimeout;
+      try {
+        Class<?> service = ReflectUtils.forName(this.getServiceName());
+        Method method = ReflectUtils.findMethodByMethodName(service, this.getMethodName());
+        grpcMethodType = method.getAnnotation(GrpcMethodType.class);
+      } catch (Exception e) {
+        RpcFrameworkException framworkException = new RpcFrameworkException(e);
+        throw framworkException;
+      }
     }
 
+
     @Override
-    public Message getRequestArg() throws ProtobufException {
-      return SerializerUtil.pojo2Protobuf(arg);
+    public Object getRequestArg() throws ProtobufException {
+      if (this.isClientStream()) {
+        return arg;
+      } else {
+        return SerializerUtil.pojo2Protobuf(arg);
+      }
     }
 
     @Override
     public MethodDescriptor<Message, Message> getMethodDescriptor() {
-      return GrpcUtil.createMethodDescriptor(this.getServiceName(), methodName);
+      return GrpcUtil.createMethodDescriptor(this.getServiceName(), methodName, grpcMethodType);
+    }
+
+    @Override
+    public boolean isClientStream() {
+      return grpcMethodType.methodType()
+          .equals(io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING)
+          || grpcMethodType.methodType().equals(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING);
+    }
+
+    @Override
+    public Class<?> getResponseType() {
+      return grpcMethodType.responseType();
     }
 
     @Override
@@ -124,11 +157,6 @@ public interface GrpcRequest {
     @Override
     public int getCallTimeout() {
       return this.callTimeout;
-    }
-
-    @Override
-    public Class<?> getResponseType() {
-      return GrpcUtil.getResponseType(this.getServiceName(), methodName);
     }
 
   }

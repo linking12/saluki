@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
+import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
@@ -25,10 +26,14 @@ import com.quancheng.saluki.core.grpc.client.hystrix.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand;
 import com.quancheng.saluki.core.grpc.client.validate.RequestValidator;
+import com.quancheng.saluki.core.grpc.server.ClientCallStreamObserverWrap;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.Channel;
+import io.grpc.stub.ClientCallStreamObserver;
+import io.grpc.stub.ClientCalls;
+import io.grpc.stub.StreamObserver;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:38:34
@@ -53,6 +58,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     requstValidator = RequestValidator.newRequestValidator();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (ReflectUtils.isToStringMethod(method)) {
@@ -71,23 +77,33 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     try {
       this.calculateConcurrent(serviceName, methodName).incrementAndGet();
       AtomicInteger concurrent = this.calculateConcurrent(serviceName, methodName);
-      GrpcHystrixCommand hystrixCommand = null;
-      switch (request.getCallType()) {
-        case Constants.RPCTYPE_ASYNC:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
-        case Constants.RPCTYPE_BLOCKING:
-          hystrixCommand = new GrpcBlockingUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
-        default:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
+      if (request.isClientStream()) {
+        // TODO
+        // StreamObserver<Message> observer =
+        // ClientCalls.asyncBidiStreamingCall(call, ClientCallStreamObserverWrap
+        // .newObserverWrap((ClientCallStreamObserver<Object>) request.getArg()));
+
+
+      } else {
+        GrpcHystrixCommand hystrixCommand = null;
+        switch (request.getCallType()) {
+          case Constants.RPCTYPE_ASYNC:
+            hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
+            break;
+          case Constants.RPCTYPE_BLOCKING:
+            hystrixCommand =
+                new GrpcBlockingUnaryCommand(serviceName, methodName, isEnableFallback);
+            break;
+          default:
+            hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
+            break;
+        }
+        hystrixCommand.setClientCall(clientCall);
+        hystrixCommand.setRequest(request);
+        hystrixCommand.setConcurrent(concurrent);
+        hystrixCommand.setClientServerMonitor(monitor);
+        return hystrixCommand.execute();
       }
-      hystrixCommand.setClientCall(clientCall);
-      hystrixCommand.setRequest(request);
-      hystrixCommand.setConcurrent(concurrent);
-      hystrixCommand.setClientServerMonitor(monitor);
-      return hystrixCommand.execute();
     } finally {
       Object remote = clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
       log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,

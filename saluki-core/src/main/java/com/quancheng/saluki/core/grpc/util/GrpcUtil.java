@@ -71,26 +71,19 @@ public class GrpcUtil {
         .build();
   }
 
-  public static Class<?> getResponseType(String clzzName, String methodName) {
-    try {
-      Class<?> clazz = ReflectUtils.forName(clzzName);
-      Method method = ReflectUtils.findMethodByMethodName(clazz, methodName);
-      GrpcMethodType grpcMethodType = method.getAnnotation(GrpcMethodType.class);
-      return grpcMethodType.responseType();
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
   public static io.grpc.MethodDescriptor<Message, Message> createMethodDescriptor(String clzzName,
-      String methodName) {
-    try {
-      Class<?> clazz = ReflectUtils.forName(clzzName);
-      Method method = ReflectUtils.findMethodByMethodName(clazz, methodName);
-      return createMethodDescriptor(clazz, method);
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
+      String methodName, GrpcMethodType grpcMethodType) {
+    Message argsReq = createDefaultInstance(grpcMethodType.requestType());
+    Message argsRep = createDefaultInstance(grpcMethodType.responseType());
+    return io.grpc.MethodDescriptor.<Message, Message>newBuilder()
+        .setType(grpcMethodType.methodType())//
+        .setFullMethodName(io.grpc.MethodDescriptor.generateFullMethodName(clzzName, methodName))//
+        .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(argsReq))//
+        .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(argsRep))//
+        .setSafe(false)//
+        .setIdempotent(false)//
+        .build();
+
   }
 
 
