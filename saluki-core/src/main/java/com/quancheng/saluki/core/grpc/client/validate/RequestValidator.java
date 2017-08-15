@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.base.Optional;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.RpcContext;
+import com.quancheng.saluki.core.grpc.annotation.ArgValidator;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.exception.RpcValidatorException;
 import com.quancheng.saluki.core.utils.CollectionUtils;
@@ -57,7 +58,7 @@ public class RequestValidator {
 
   @SuppressWarnings("rawtypes")
   public void doValidate(final GrpcRequest request) throws ClassNotFoundException {
-    if (!request.getMethodRequest().getArg().getClass().isAnnotationPresent(ArgValidator.class)) {
+    if (!request.getArg().getClass().isAnnotationPresent(ArgValidator.class)) {
       return;
     }
     Set<Class> validatorGroups = new HashSet<>();
@@ -72,8 +73,8 @@ public class RequestValidator {
     if (optional.isPresent()) {
       validatorGroups = optional.get();
     }
-    Set<ConstraintViolation<Object>> violations = validator.validate(
-        request.getMethodRequest().getArg(), (Class[]) validatorGroups.toArray(new Class[0]));
+    Set<ConstraintViolation<Object>> violations =
+        validator.validate(request.getArg(), (Class[]) validatorGroups.toArray(new Class[0]));
     if (CollectionUtils.isNotEmpty(violations)) {
       StringBuffer validateMsg = new StringBuffer();
       for (ConstraintViolation<Object> constraintViolation : violations) {

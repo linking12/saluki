@@ -27,6 +27,8 @@ public interface GrpcRequest {
 
   public Message getRequestArg() throws ProtobufException;
 
+  public Class<?> getResponseType();
+
   public MethodDescriptor<Message, Message> getMethodDescriptor();
 
   public Channel getChannel();
@@ -35,11 +37,15 @@ public interface GrpcRequest {
 
   public String getServiceName();
 
+  public String getMethodName();
+
   public GrpcURL getRefUrl();
 
-  public MethodRequest getMethodRequest();
+  public Object getArg();
 
-  public void setMethodRequest(MethodRequest methodRequest);
+  public int getCallType();
+
+  public int getCallTimeout();
 
   public static class Default implements GrpcRequest, Serializable {
 
@@ -49,26 +55,33 @@ public interface GrpcRequest {
 
     private final GrpcProtocolClient.ChannelCall chanelPool;
 
-    private MethodRequest methodRequest;
+    private final String methodName;
 
-    public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool) {
+    private final Object arg;
+
+    private final int callType;
+
+    private final int callTimeout;
+
+    public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool, String methodName,
+        Object arg, int callType, int callTimeout) {
       super();
       this.refUrl = refUrl;
       this.chanelPool = chanelPool;
+      this.methodName = methodName;
+      this.arg = arg;
+      this.callType = callType;
+      this.callTimeout = callTimeout;
     }
 
     @Override
     public Message getRequestArg() throws ProtobufException {
-      Object arg = this.getMethodRequest().getArg();
       return SerializerUtil.pojo2Protobuf(arg);
     }
 
     @Override
     public MethodDescriptor<Message, Message> getMethodDescriptor() {
-      Message argsReq = GrpcUtil.createDefaultInstance(this.getMethodRequest().getRequestType());
-      Message argsRep = GrpcUtil.createDefaultInstance(this.getMethodRequest().getResponseType());
-      return GrpcUtil.createMethodDescriptor(this.getServiceName(),
-          this.getMethodRequest().getMethodName(), argsReq, argsRep);
+      return GrpcUtil.createMethodDescriptor(this.getServiceName(), methodName);
     }
 
     @Override
@@ -87,74 +100,37 @@ public interface GrpcRequest {
     }
 
     @Override
-    public MethodRequest getMethodRequest() {
-      return methodRequest;
-    }
-
-    @Override
-    public void setMethodRequest(MethodRequest methodRequest) {
-      this.methodRequest = methodRequest;
-    }
-
-    @Override
     public GrpcURL getRefUrl() {
-      Object arg = this.methodRequest.getArg();
-      return this.refUrl.addParameter(Constants.METHOD_KEY, this.methodRequest.getMethodName())//
+      return this.refUrl.addParameter(Constants.METHOD_KEY, methodName)//
           .addParameterAndEncoded(Constants.ARG_KEY, new Gson().toJson(arg));
     }
 
-  }
 
-  public static class MethodRequest implements Serializable {
-
-    private static final long serialVersionUID = 5280935790994972153L;
-
-    private final String methodName;
-
-    private final Class<?> requestType;
-
-    private final Class<?> responseType;
-
-    private final Object arg;
-
-    private final int callType;
-
-    private final int callTimeout;
-
-    public MethodRequest(String methodName, Class<?> requestType, Class<?> responseType, Object arg,
-        int callType, int callTimeout) {
-      super();
-      this.methodName = methodName;
-      this.requestType = requestType;
-      this.responseType = responseType;
-      this.arg = arg;
-      this.callType = callType;
-      this.callTimeout = callTimeout;
-    }
-
+    @Override
     public String getMethodName() {
-      return methodName;
+      return this.methodName;
     }
 
-    public Class<?> getRequestType() {
-      return requestType;
-    }
-
-    public Class<?> getResponseType() {
-      return responseType;
-    }
-
+    @Override
     public Object getArg() {
-      return arg;
+      return this.arg;
     }
 
+    @Override
     public int getCallType() {
-      return callType;
+      return this.callType;
     }
 
+    @Override
     public int getCallTimeout() {
-      return callTimeout;
+      return this.callTimeout;
+    }
+
+    @Override
+    public Class<?> getResponseType() {
+      return GrpcUtil.getResponseType(this.getServiceName(), methodName);
     }
 
   }
+
 }

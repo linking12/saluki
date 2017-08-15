@@ -61,7 +61,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     GrpcRequest request = this.buildGrpcRequest(method, args);
     requstValidator.doValidate(request);
     String serviceName = request.getServiceName();
-    String methodName = request.getMethodRequest().getMethodName();
+    String methodName = request.getMethodName();
     Channel channel = request.getChannel();
     GrpcURL refUrl = request.getRefUrl();
     Integer retryOption = this.buildRetryOption(methodName, refUrl);
@@ -72,7 +72,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       this.calculateConcurrent(serviceName, methodName).incrementAndGet();
       AtomicInteger concurrent = this.calculateConcurrent(serviceName, methodName);
       GrpcHystrixCommand hystrixCommand = null;
-      switch (request.getMethodRequest().getCallType()) {
+      switch (request.getCallType()) {
         case Constants.RPCTYPE_ASYNC:
           hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
           break;

@@ -69,10 +69,8 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
             "grpc not support multiple args,args is " + args + " length is " + args.length);
       }
       Object arg = args[0];
-      GrpcRequest request = new GrpcRequest.Default(DefaultProxyClient.this.refUrl, channelPool);
-      GrpcRequest.MethodRequest methodRequest = new GrpcRequest.MethodRequest(method.getName(),
-          arg.getClass(), method.getReturnType(), arg, callType, callTimeout);
-      request.setMethodRequest(methodRequest);
+      GrpcRequest request = new GrpcRequest.Default(DefaultProxyClient.this.refUrl, channelPool,
+          method.getName(), arg, callType, callTimeout);
       return request;
     }
 

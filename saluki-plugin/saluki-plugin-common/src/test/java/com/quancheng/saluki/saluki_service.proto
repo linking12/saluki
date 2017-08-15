@@ -4,15 +4,15 @@ option java_package = "com.quancheng.saluki.service";
 option java_outer_classname = "ServiceParam";
 
 package com.quancheng.saluki.service;
-import "validator.proto";
+import "saluki/validator.proto";
 
 service Health {
-  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Check(stream HealthCheckRequest) returns (stream HealthCheckResponse);
 }
 
 message HealthCheckRequest {
-  string service = 1  [(validator.validate) = '@Null(message="Name cannot be null"),@NotNull(message="Name cannot be null")'];
-  string important_string = 2 [(validator.validate) = '@Email(message="email地址无效！")'];
+  string service = 1;
+  string important_string = 2;
 }
 
 message HealthCheckResponse {

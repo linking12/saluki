@@ -40,7 +40,7 @@ public class Validator {
         new File(
             "/Users/liushiming/project/java/saluki/saluki-example/saluki-example-api/target/protoc-dependencies"));
     FileDescriptorSet fileDescriptorSet = commondProtoc.invoke(
-        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/hello.proto");
+        "/Users/liushiming/project/java/saluki/saluki-plugin/saluki-plugin-common/src/test/java/com/quancheng/saluki/saluki_service.proto");
     Map<Integer, UnknownFieldSet.Field> lengthDelimitedList = fileDescriptorSet.getFile(0)
         .getMessageType(0).getField(0).getOptions().getUnknownFields().asMap();
     for (Map.Entry<Integer, UnknownFieldSet.Field> integerFieldEntry : lengthDelimitedList

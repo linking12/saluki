@@ -8,17 +8,13 @@ package com.quancheng.saluki.core.grpc.client.internal;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.List;
 
-import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.GrpcClassLoader;
 import com.quancheng.saluki.core.grpc.client.GrpcProtocolClient;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.quancheng.saluki.core.utils.ClassHelper;
-import com.quancheng.saluki.core.utils.ReflectUtils;
 
 /**
  * @author shimingliu 2016年12月14日 下午9:50:27
@@ -33,18 +29,6 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
     this.refUrl = refUrl;
   }
 
-  @SuppressWarnings("resource")
-  private Class<?> doLoadClass(String className) {
-    try {
-      GrpcClassLoader classLoader = new GrpcClassLoader();
-      classLoader.setSystemClassLoader(Thread.currentThread().getContextClassLoader());
-      return classLoader.loadClass(className);
-    } catch (Exception e) {
-      throw new IllegalArgumentException(
-          "grpc  responseType must instanceof com.google.protobuf.GeneratedMessageV3", e);
-    }
-
-  }
 
   @SuppressWarnings("unchecked")
   @Override
@@ -75,11 +59,8 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
       resetRefUrl = resetRefUrl.setPath(getServiceName(args));
       resetRefUrl = resetRefUrl.addParameter(Constants.GROUP_KEY, getGroup(args));
       resetRefUrl = resetRefUrl.addParameter(Constants.VERSION_KEY, getVersion(args));
-      GrpcRequest request = new GrpcRequest.Default(resetRefUrl, channelPool);
-      GrpcRequest.MethodRequest methodRequest =
-          new GrpcRequest.MethodRequest(this.getMethod(args), this.getReqAndRepType(args).get(0),
-              this.getReqAndRepType(args).get(1), this.getArg(args), callType, callTimeout);
-      request.setMethodRequest(methodRequest);
+      GrpcRequest request = new GrpcRequest.Default(resetRefUrl, channelPool, this.getMethod(args),
+          this.getArg(args), callType, callTimeout);
       return request;
     }
 
@@ -99,37 +80,8 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
       return (String) args[3];
     }
 
-    private List<Class<?>> getReqAndRepType(Object[] args) {
-      String[] paramType = (String[]) args[4];
-      int length = paramType.length;
-      if (length != 2) {
-        throw new IllegalArgumentException(
-            "generic call request type and response type must transmit" + " but length is  "
-                + length);
-      }
-      List<Class<?>> requestAndResponse = Lists.newArrayList();
-      String requestType_ = paramType[0];
-      String responseType_ = paramType[1];
-      Class<?> requestType;
-      Class<?> responseType;
-      try {
-        requestType = ReflectUtils.name2class(requestType_);
-      } catch (ClassNotFoundException e) {
-        requestType = GenericProxyClient.this.doLoadClass(requestType_);
-      }
-      try {
-        responseType = ReflectUtils.name2class(responseType_);
-      } catch (ClassNotFoundException e) {
-        responseType = GenericProxyClient.this.doLoadClass(responseType_);
-      }
-      requestAndResponse.add(requestType);
-      requestAndResponse.add(responseType);
-      return requestAndResponse;
-
-    }
-
     private Object getArg(Object[] args) {
-      Object[] param = (Object[]) args[5];
+      Object[] param = (Object[]) args[4];
       if (param.length != 1) {
         throw new IllegalArgumentException(
             "grpc not support multiple args,args is " + args + " length is " + args.length);

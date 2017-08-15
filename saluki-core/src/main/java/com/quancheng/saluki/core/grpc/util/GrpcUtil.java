@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 
 import com.google.common.base.Charsets;
 import com.google.protobuf.Message;
+import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.ProtobufEntity;
 
@@ -57,26 +58,41 @@ public class GrpcUtil {
       Method method) {
     String clzzName = clzz.getName();
     String methodName = method.getName();
-    Class<?> requestType = ReflectUtils.getTypedOfReq(method);
-    Class<?> responseType = ReflectUtils.getTypeOfRep(method);
-    Message argsReq = createDefaultInstance(requestType);
-    Message argsRep = createDefaultInstance(responseType);
-    return createMethodDescriptor(clzzName, methodName, argsReq, argsRep);
-  }
-
-  public static io.grpc.MethodDescriptor<Message, Message> createMethodDescriptor(String clzzName,
-      String methodName, Message argsReq, Message argsRep) {
-    final String fullMethodName =
-        io.grpc.MethodDescriptor.generateFullMethodName(clzzName, methodName);
+    GrpcMethodType grpcMethodType = method.getAnnotation(GrpcMethodType.class);
+    Message argsReq = createDefaultInstance(grpcMethodType.requestType());
+    Message argsRep = createDefaultInstance(grpcMethodType.responseType());
     return io.grpc.MethodDescriptor.<Message, Message>newBuilder()
-        .setType(io.grpc.MethodDescriptor.MethodType.UNARY)//
-        .setFullMethodName(fullMethodName)//
+        .setType(grpcMethodType.methodType())//
+        .setFullMethodName(io.grpc.MethodDescriptor.generateFullMethodName(clzzName, methodName))//
         .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(argsReq))//
         .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(argsRep))//
         .setSafe(false)//
         .setIdempotent(false)//
         .build();
   }
+
+  public static Class<?> getResponseType(String clzzName, String methodName) {
+    try {
+      Class<?> clazz = ReflectUtils.forName(clzzName);
+      Method method = ReflectUtils.findMethodByMethodName(clazz, methodName);
+      GrpcMethodType grpcMethodType = method.getAnnotation(GrpcMethodType.class);
+      return grpcMethodType.responseType();
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static io.grpc.MethodDescriptor<Message, Message> createMethodDescriptor(String clzzName,
+      String methodName) {
+    try {
+      Class<?> clazz = ReflectUtils.forName(clzzName);
+      Method method = ReflectUtils.findMethodByMethodName(clazz, methodName);
+      return createMethodDescriptor(clazz, method);
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
 
   public static Message createDefaultInstance(Class<?> type) {
     Class<? extends Message> messageType;

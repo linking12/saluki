@@ -46,34 +46,36 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
   private final MethodDescriptor<Request, Response> method;
 
-  private final Request request;
-
   private final CallOptions callOptions;
-
-  private ClientCall<Request, Response> clientCall;
-
-  private Response value;
 
   private final boolean enabledRetry;
 
-  public FailOverListener(final Integer retriesOptions, final Request request,
-      final Channel channel, final MethodDescriptor<Request, Response> method,
-      final CallOptions callOptions) {
+  private ClientCall<Request, Response> clientCall;
+
+  private Request request;
+
+  private Response response;
+
+  public FailOverListener(final Integer retriesOptions, final Channel channel,
+      final MethodDescriptor<Request, Response> method, final CallOptions callOptions) {
     this.maxRetries = retriesOptions;
-    this.request = request;
     this.channel = channel;
     this.method = method;
     this.callOptions = callOptions;
     this.enabledRetry = maxRetries > 0 ? true : false;
   }
 
+  public void setRequest(Request request) {
+    this.request = request;
+  }
+
   @Override
   public void onMessage(Response message) {
-    if (this.value != null && !enabledRetry) {
+    if (this.response != null && !enabledRetry) {
       throw Status.INTERNAL.withDescription("More than one value received for unary call")
           .asRuntimeException();
     }
-    this.value = message;
+    this.response = message;
   }
 
 
@@ -99,11 +101,11 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
         nameResolverNotify.resetChannel();
       }
     } finally {
-      if (value == null) {
+      if (response == null) {
         completionFuture.setException(Status.INTERNAL
             .withDescription("No value received for unary call").asRuntimeException(trailers));
       }
-      completionFuture.set(value);
+      completionFuture.set(response);
     }
   }
 

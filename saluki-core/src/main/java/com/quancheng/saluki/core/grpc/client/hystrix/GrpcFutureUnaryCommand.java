@@ -47,7 +47,7 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
   protected Message run0(Message req, MethodDescriptor<Message, Message> methodDesc,
       Integer timeOut, GrpcClientCall clientCall) {
     try {
-      return clientCall.unaryFuture(req, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
+      return clientCall.futureResult(req, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
     } catch (Throwable e) {
       logger.error(e.getMessage(), e);
       super.cacheCurrentServer();

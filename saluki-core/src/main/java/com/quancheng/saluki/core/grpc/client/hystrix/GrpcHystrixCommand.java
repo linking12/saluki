@@ -99,7 +99,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   @Override
   protected Object run() throws Exception {
     MethodDescriptor<Message, Message> methodDesc = this.request.getMethodDescriptor();
-    Integer timeOut = this.request.getMethodRequest().getCallTimeout();
+    Integer timeOut = this.request.getCallTimeout();
     Message request = getRequestMessage();
     Message response = this.run0(request, methodDesc, timeOut, clientCall);
     Object obj = this.transformMessage(response);
@@ -109,7 +109,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   @Override
   protected Object getFallback() {
-    Class<?> responseType = this.request.getMethodRequest().getResponseType();
+    Class<?> responseType = this.request.getResponseType();
     Message response = GrpcUtil.createDefaultInstance(responseType);
     Object obj = this.transformMessage(response);
     collect(serviceName, methodName, getRequestMessage(), response, true);
@@ -127,7 +127,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   }
 
   private Object transformMessage(Message message) {
-    Class<?> respPojoType = request.getMethodRequest().getResponseType();
+    Class<?> respPojoType = request.getResponseType();
     GrpcResponse response = new GrpcResponse.Default(message, respPojoType);
     try {
       return response.getResponseArg();

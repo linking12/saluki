@@ -1,4 +1,4 @@
-package com.quancheng.saluki.core.grpc.client.validate;
+package com.quancheng.saluki.core.grpc.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

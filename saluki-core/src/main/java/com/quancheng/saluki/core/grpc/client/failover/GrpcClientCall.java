@@ -34,10 +34,10 @@ public interface GrpcClientCall {
 
   public static final String GRPC_NAMERESOVER_ATTRIBUTES = "nameresolver-attributes";
 
-  public ListenableFuture<Message> unaryFuture(Message request,
+  public ListenableFuture<Message> futureResult(Message request,
       MethodDescriptor<Message, Message> method);
 
-  public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
+  public Message blockingResult(Message request, MethodDescriptor<Message, Message> method);
 
   public Map<String, Object> getAffinity();
 
@@ -55,21 +55,21 @@ public interface GrpcClientCall {
       }
 
       @Override
-      public ListenableFuture<Message> unaryFuture(Message request,
+      public ListenableFuture<Message> futureResult(Message request,
           MethodDescriptor<Message, Message> method) {
         FailOverListener<Message, Message> retryCallListener =
-            new FailOverListener<Message, Message>(retryOptions, request, channel, method,
-                callOptions);
+            new FailOverListener<Message, Message>(retryOptions, channel, method, callOptions);
+        retryCallListener.setRequest(request);
         retryCallListener.run();
         return retryCallListener.getCompletionFuture();
       }
 
       @Override
-      public Message blockingUnaryResult(Message request,
+      public Message blockingResult(Message request,
           MethodDescriptor<Message, Message> method) {
         FailOverListener<Message, Message> retryCallListener =
-            new FailOverListener<Message, Message>(retryOptions, request, channel, method,
-                callOptions);
+            new FailOverListener<Message, Message>(retryOptions, channel, method, callOptions);
+        retryCallListener.setRequest(request);
         try {
           retryCallListener.run();
           return retryCallListener.getCompletionFuture().get();
