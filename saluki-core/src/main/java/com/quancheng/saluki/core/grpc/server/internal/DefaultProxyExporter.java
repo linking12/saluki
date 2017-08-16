@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
+import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
+import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 import com.quancheng.saluki.core.grpc.server.GrpcProtocolExporter;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -61,8 +64,29 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
     for (Method method : methods) {
       MethodDescriptor<Message, Message> methodDescriptor =
           GrpcUtil.createMethodDescriptor(serivce, method);
-      serviceDefBuilder.addMethod(methodDescriptor, ServerCalls.asyncUnaryCall(
-          new ServerInvocation(serviceRef, method, providerUrl, concurrents, clientServerMonitor)));
+      GrpcMethodType grpcMethodType = method.getAnnotation(GrpcMethodType.class);
+      switch (grpcMethodType.methodType()) {
+        case UNARY:
+          serviceDefBuilder.addMethod(methodDescriptor,
+              ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method, providerUrl,
+                  concurrents, clientServerMonitor)));
+        case CLIENT_STREAMING:
+          serviceDefBuilder.addMethod(methodDescriptor,
+              ServerCalls.asyncClientStreamingCall(new ServerInvocation(serviceRef, method,
+                  providerUrl, concurrents, clientServerMonitor)));
+        case SERVER_STREAMING:
+          serviceDefBuilder.addMethod(methodDescriptor,
+              ServerCalls.asyncServerStreamingCall(new ServerInvocation(serviceRef, method,
+                  providerUrl, concurrents, clientServerMonitor)));
+        case BIDI_STREAMING:
+          serviceDefBuilder.addMethod(methodDescriptor,
+              ServerCalls.asyncBidiStreamingCall(new ServerInvocation(serviceRef, method,
+                  providerUrl, concurrents, clientServerMonitor)));
+        default:
+          RpcServiceException rpcFramwork =
+              new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
+          throw rpcFramwork;
+      }
     }
     log.info("'{}' service has been registered.", serviceName);
     return serviceDefBuilder.build();
