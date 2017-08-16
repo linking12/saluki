@@ -6,6 +6,8 @@ import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
 import com.quancheng.saluki.boot.SalukiService;
 
+import io.grpc.stub.StreamObserver;
+
 @SalukiService
 public class HelloServiceImpl implements HelloService {
 
@@ -13,9 +15,17 @@ public class HelloServiceImpl implements HelloService {
   public HelloReply sayHello(HelloRequest request) {
     HelloReply reply = new HelloReply();
     reply.setMessage(request.getName());
-    //int registryPort = 0;
-    //Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
+    // int registryPort = 0;
+    // Preconditions.checkState(registryPort != 0, "RegistryPort can not be null", registryPort);
     return reply;
+  }
+
+
+  @Override
+  public void sayHelloStream(HelloRequest hellorequest,
+      StreamObserver<HelloReply> responseObserver) {
+    // TODO Auto-generated method stub
+
   }
 
 }

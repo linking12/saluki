@@ -44,13 +44,11 @@ public class GenricServiceController {
   public HelloReply view(@RequestParam(value = "name", required = false) String name) {
     String serviceName = "com.quancheng.examples.service.HelloService";
     String method = "sayHello";
-    String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
-        "com.quancheng.examples.model.hello.HelloReply"};
     HelloRequest request = new HelloRequest();
     request.setName(name);
     Object[] args = new Object[] {request};
-    HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
-        parameterTypes, args);
+    HelloReply reply =
+        (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method, args);
     return reply;
   }
 
@@ -59,14 +57,12 @@ public class GenricServiceController {
   public HelloReply view1(@RequestParam(value = "name", required = false) String name) {
     String serviceName = "com.quancheng.examples.service.HelloService";
     String method = "sayHello";
-    String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
-        "com.quancheng.examples.model.hello.HelloReply"};
     HelloRequest request = new HelloRequest();
     request.setName(name);
     Object[] args = new Object[] {request};
     RpcContext.getContext().setHoldenGroups(new HashSet<>(Arrays.asList(First.class)));
-    HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
-        parameterTypes, args);
+    HelloReply reply =
+        (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method, args);
     return reply;
   }
 
@@ -74,14 +70,12 @@ public class GenricServiceController {
   public HelloReply view2(@RequestParam(value = "name", required = false) String name) {
     String serviceName = "com.quancheng.examples.service.HelloService";
     String method = "sayHello";
-    String[] parameterTypes = new String[] {"com.quancheng.examples.model.hello.HelloRequest",
-        "com.quancheng.examples.model.hello.HelloReply"};
     HelloRequest request = new HelloRequest();
     request.setName(name);
     Object[] args = new Object[] {request};
     RpcContext.getContext().setHoldenGroups(new HashSet<>(Arrays.asList(Second.class)));
-    HelloReply reply = (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method,
-        parameterTypes, args);
+    HelloReply reply =
+        (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method, args);
     return reply;
   }
 }
