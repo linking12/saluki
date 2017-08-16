@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.server;
+package com.quancheng.saluki.core.grpc.stream;
 
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.grpc.util.SerializerUtil;
@@ -19,7 +19,7 @@ import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.ClientCallStreamObserver;
+import io.grpc.stub.StreamObserver;
 import io.netty.util.internal.ThrowableUtil;
 
 /**
@@ -27,18 +27,18 @@ import io.netty.util.internal.ThrowableUtil;
  * @version ClientCallStreamObserverWrap.java, v 0.0.1 2017年8月15日 下午12:58:08 liushiming
  * @since JDK 1.8
  */
-public class ClientCallStreamObserverWrap extends ClientCallStreamObserver<Message> {
+public class Proto2PoJoStreamObserver implements StreamObserver<Message> {
 
 
-  private final ClientCallStreamObserver<Object> streamObserver;
+  private final StreamObserver<Object> streamObserver;
 
-  private ClientCallStreamObserverWrap(ClientCallStreamObserver<Object> streamObserver) {
+  private Proto2PoJoStreamObserver(StreamObserver<Object> streamObserver) {
     this.streamObserver = streamObserver;
   }
 
-  public static ClientCallStreamObserverWrap newObserverWrap(
-      ClientCallStreamObserver<Object> streamObserver) {
-    return new ClientCallStreamObserverWrap(streamObserver);
+  public static Proto2PoJoStreamObserver newObserverWrap(
+      StreamObserver<Object> streamObserver) {
+    return new Proto2PoJoStreamObserver(streamObserver);
   }
 
   @Override
@@ -65,34 +65,6 @@ public class ClientCallStreamObserverWrap extends ClientCallStreamObserver<Messa
   @Override
   public void onCompleted() {
     streamObserver.onCompleted();
-  }
-
-  @Override
-  public boolean isReady() {
-    return streamObserver.isReady();
-  }
-
-
-  @Override
-  public void setOnReadyHandler(Runnable onReadyHandler) {
-    streamObserver.setOnReadyHandler(onReadyHandler);
-  }
-
-
-  @Override
-  public void disableAutoInboundFlowControl() {
-    streamObserver.disableAutoInboundFlowControl();
-  }
-
-
-  @Override
-  public void request(int count) {
-    streamObserver.request(count);
-  }
-
-  @Override
-  public void setMessageCompression(boolean enable) {
-    streamObserver.setMessageCompression(enable);
   }
 
 }

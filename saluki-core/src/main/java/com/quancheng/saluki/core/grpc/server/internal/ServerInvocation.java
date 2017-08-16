@@ -17,9 +17,9 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
-import com.quancheng.saluki.core.grpc.server.ClientCallStreamObserverWrap;
-import com.quancheng.saluki.core.grpc.server.ServerCallStreamObserverWrap;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
+import com.quancheng.saluki.core.grpc.stream.Proto2PoJoStreamObserver;
+import com.quancheng.saluki.core.grpc.stream.PoJo2ProtoStreamObserver;
 import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -66,10 +66,10 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
   @Override
   public StreamObserver<Message> invoke(StreamObserver<Message> responseObserver) {
     try {
-      ServerCallStreamObserverWrap servserResponseObserver = ServerCallStreamObserverWrap
+      PoJo2ProtoStreamObserver servserResponseObserver = PoJo2ProtoStreamObserver
           .newObserverWrap((ServerCallStreamObserver<Message>) responseObserver);
       Object result = method.invoke(serviceToInvoke, servserResponseObserver);
-      return ClientCallStreamObserverWrap
+      return Proto2PoJoStreamObserver
           .newObserverWrap((ClientCallStreamObserver<Object>) result);
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);

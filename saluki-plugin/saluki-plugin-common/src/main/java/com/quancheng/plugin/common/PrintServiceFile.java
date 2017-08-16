@@ -55,10 +55,9 @@ public final class PrintServiceFile extends AbstractPrint {
       if (method.getClientStreaming()) {
         inPutType = "io.grpc.stub.StreamObserver<" + inPutType + ">";
       }
-      String methodStr =
-          "public " + outPutType + " " + methodName + "(" + inPutType + " " + inputValue + ");";
       if (stream != null)
         fileData.add(stream);
+      String methodStr = generateMethod(method, inPutType, outPutType, methodName, inputValue);
       fileData.add(methodStr);
     }
     fileData.add("}");
@@ -76,19 +75,36 @@ public final class PrintServiceFile extends AbstractPrint {
     } else {
       if (!method.getServerStreaming() && method.getClientStreaming()) {
         String stream =
-            String.format(format, "io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING",
+            String.format(format, "io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING",
                 inPutType + ".class", outPutType + ".class");
         return stream;
       } else if (method.getServerStreaming() && !method.getClientStreaming()) {
         String stream =
-            String.format(format, "io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING",
+            String.format(format, "io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING",
                 inPutType + ".class", outPutType + ".class");
         return stream;
       }
       return String.format(format, "io.grpc.MethodDescriptor.MethodType.UNARY",
           inPutType + ".class", outPutType + ".class");
     }
-
   }
+
+  private String generateMethod(MethodDescriptorProto method, String inPutType, String outPutType,
+      String methodName, String inputValue) {
+    String methodStr =
+        "public " + outPutType + " " + methodName + "(" + inPutType + " " + inputValue + ");";
+    boolean isClientStream = !method.getServerStreaming() && method.getClientStreaming();
+    boolean isBidiStream = method.getServerStreaming() && method.getClientStreaming();
+    boolean isServerStream = method.getServerStreaming() && !method.getClientStreaming();
+    if (isClientStream || isBidiStream) {
+      methodStr =
+          "public " + inPutType + " " + methodName + "(" + outPutType + " responseObserver);";
+    } else if (isServerStream) {
+      methodStr = "public void " + methodName + "(" + inPutType + " " + inputValue + ","
+          + outPutType + " responseObserver);";
+    }
+    return methodStr;
+  }
+
 
 }
