@@ -39,7 +39,7 @@
 		<log4j.version>2.2</log4j.version>
 		<netty-tcnative.version>2.0.3.Final</netty-tcnative.version>
 		<hystrix.version>1.5.11</hystrix.version>
-		<os.maven.version>1.4.1.Final</os.maven.version>
+		<os.maven.version>1.5.0.Final</os.maven.version>
 	</properties>
 	<scm>
 		<url>https://github.com/linking12/saluki</url>
