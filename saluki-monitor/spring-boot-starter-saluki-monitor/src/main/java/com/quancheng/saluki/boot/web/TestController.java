@@ -125,7 +125,6 @@ public class TestController {
     try {
       Class<?> requestClass = ReflectUtils.name2class(model.getParameterType());
       Object request = gson.fromJson(model.getParameter(), requestClass);
-      String[] paramTypes = new String[] {model.getParameterType(), model.getReturnType()};
       Object[] args = new Object[] {request};
       if (StringUtils.isNotBlank(routerRule)) {
         RpcContext.getContext().setAttachment("routerRule", routerRule);
@@ -134,7 +133,7 @@ public class TestController {
       }
       Object reply =
           genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
-              getAnnotation(model.getService()).getRight(), model.getMethod(), paramTypes, args);
+              getAnnotation(model.getService()).getRight(), model.getMethod(), args);
       return reply;
     } catch (ClassNotFoundException e) {
       throw e;
@@ -146,11 +145,10 @@ public class TestController {
     try {
       Class<?> requestClass = ReflectUtils.name2class(model.getParameterType());
       Object request = gson.fromJson(model.getParameter(), requestClass);
-      String[] paramTypes = new String[] {model.getParameterType(), model.getReturnType()};
       Object[] args = new Object[] {request};
       Object reply =
           genricService.$invoke(model.getService(), getAnnotation(model.getService()).getLeft(),
-              getAnnotation(model.getService()).getRight(), model.getMethod(), paramTypes, args);
+              getAnnotation(model.getService()).getRight(), model.getMethod(), args);
       return reply;
     } catch (ClassNotFoundException e) {
       throw e;
