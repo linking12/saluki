@@ -16,9 +16,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.util.GrpcUtil;
-import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
-import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
@@ -29,7 +27,6 @@ import io.grpc.MethodDescriptor;
  */
 public interface GrpcRequest {
 
-  public Object getRequestArg() throws ProtobufException;
 
   public Class<?> getResponseType();
 
@@ -43,15 +40,16 @@ public interface GrpcRequest {
 
   public String getMethodName();
 
-  public GrpcURL getRefUrl();
+  public Object getRequestParam();
 
-  public Object getArg();
+  public GrpcURL getRefUrl();
 
   public int getCallType();
 
   public int getCallTimeout();
 
-  public boolean isClientStream();
+  public io.grpc.MethodDescriptor.MethodType getMethodType();
+
 
   public static class Default implements GrpcRequest, Serializable {
 
@@ -90,26 +88,14 @@ public interface GrpcRequest {
       }
     }
 
-
     @Override
-    public Object getRequestArg() throws ProtobufException {
-      if (this.isClientStream()) {
-        return arg;
-      } else {
-        return SerializerUtil.pojo2Protobuf(arg);
-      }
+    public Object getRequestParam() {
+      return arg;
     }
 
     @Override
     public MethodDescriptor<Message, Message> getMethodDescriptor() {
       return GrpcUtil.createMethodDescriptor(this.getServiceName(), methodName, grpcMethodType);
-    }
-
-    @Override
-    public boolean isClientStream() {
-      return grpcMethodType.methodType()
-          .equals(io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING)
-          || grpcMethodType.methodType().equals(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING);
     }
 
     @Override
@@ -145,11 +131,6 @@ public interface GrpcRequest {
     }
 
     @Override
-    public Object getArg() {
-      return this.arg;
-    }
-
-    @Override
     public int getCallType() {
       return this.callType;
     }
@@ -157,6 +138,11 @@ public interface GrpcRequest {
     @Override
     public int getCallTimeout() {
       return this.callTimeout;
+    }
+
+    @Override
+    public io.grpc.MethodDescriptor.MethodType getMethodType() {
+      return this.grpcMethodType.methodType();
     }
 
   }

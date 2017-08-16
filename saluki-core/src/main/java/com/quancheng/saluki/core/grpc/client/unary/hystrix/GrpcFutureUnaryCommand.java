@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.hystrix;
+package com.quancheng.saluki.core.grpc.client.unary.hystrix;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
+import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
@@ -34,14 +34,15 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
+
   public GrpcFutureUnaryCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
     super(serviceName, methodName, isEnabledFallBack);
   }
 
   /**
-   * @see com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand#run0(com.google.protobuf.Message,
+   * @see com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcHystrixCommand#run0(com.google.protobuf.Message,
    *      io.grpc.MethodDescriptor, java.lang.Integer,
-   *      com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall)
+   *      com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall)
    */
   @Override
   protected Message run0(Message req, MethodDescriptor<Message, Message> methodDesc,
@@ -62,5 +63,6 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
       }
     }
   }
+
 
 }

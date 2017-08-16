@@ -11,13 +11,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.hystrix;
+package com.quancheng.saluki.core.grpc.client.unary.hystrix;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
+import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
@@ -37,9 +37,9 @@ public class GrpcBlockingUnaryCommand extends GrpcHystrixCommand {
   }
 
   /**
-   * @see com.quancheng.saluki.core.grpc.client.hystrix.GrpcHystrixCommand#run0(com.google.protobuf.Message,
+   * @see com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcHystrixCommand#run0(com.google.protobuf.Message,
    *      io.grpc.MethodDescriptor, java.lang.Integer,
-   *      com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall)
+   *      com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall)
    */
   @Override
   protected Message run0(Message req, MethodDescriptor<Message, Message> methodDesc,

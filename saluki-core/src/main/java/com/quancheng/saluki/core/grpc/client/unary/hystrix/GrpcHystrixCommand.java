@@ -11,14 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.hystrix;
+package com.quancheng.saluki.core.grpc.client.unary.hystrix;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.protobuf.Message;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
@@ -30,11 +32,12 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
-import com.quancheng.saluki.core.grpc.client.failover.GrpcClientCall;
+import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.util.GrpcUtil;
+import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
 import io.grpc.MethodDescriptor;
@@ -49,6 +52,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final int DEFAULT_THREADPOOL_CORE_SIZE = 30;
 
+  private static final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
+
   private final String serviceName;
 
   private final String methodName;
@@ -61,7 +66,6 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private ClientServerMonitor clientServerMonitor;
 
-  private AtomicInteger concurrent;
 
   public GrpcHystrixCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
     super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))//
@@ -92,8 +96,14 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
     this.clientServerMonitor = clientServerMonitor;
   }
 
-  public void setConcurrent(AtomicInteger concurrent) {
-    this.concurrent = concurrent;
+  @Override
+  public Object execute() {
+    try {
+      currentConcurrent(this.serviceName, this.methodName).incrementAndGet();
+      return super.execute();
+    } finally {
+      currentConcurrent(this.serviceName, this.methodName).decrementAndGet();
+    }
   }
 
   @Override
@@ -116,10 +126,20 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
     return obj;
   }
 
+  protected AtomicInteger currentConcurrent(String serviceName, String methodName) {
+    String key = serviceName + ":" + methodName;
+    AtomicInteger concurrent = concurrents.get(key);
+    if (concurrent == null) {
+      concurrents.putIfAbsent(key, new AtomicInteger());
+      concurrent = concurrents.get(key);
+    }
+    return concurrent;
+  }
 
   private Message getRequestMessage() {
     try {
-      return (Message) this.request.getRequestArg();
+      Object param = this.request.getRequestParam();
+      return SerializerUtil.pojo2Protobuf(param);
     } catch (ProtobufException e) {
       RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
       throw rpcFramwork;
@@ -146,7 +166,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
         return;
       }
       long elapsed = System.currentTimeMillis() - this.start; // 计算调用耗时
-      int concurrent = this.concurrent.get(); // 当前并发数
+      int concurrent = this.currentConcurrent(serviceName, methodName).get(); // 当前并发数
       String service = serviceName; // 获取服务名称
       String method = methodName; // 获取方法名
       GrpcURL refUrl = this.request.getRefUrl();
