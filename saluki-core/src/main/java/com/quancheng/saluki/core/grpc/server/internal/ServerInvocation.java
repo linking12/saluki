@@ -18,15 +18,13 @@ import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
-import com.quancheng.saluki.core.grpc.stream.Proto2PoJoStreamObserver;
 import com.quancheng.saluki.core.grpc.stream.PoJo2ProtoStreamObserver;
+import com.quancheng.saluki.core.grpc.stream.Proto2PoJoStreamObserver;
 import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.ClientCallStreamObserver;
-import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.ServerCalls.BidiStreamingMethod;
 import io.grpc.stub.ServerCalls.ClientStreamingMethod;
 import io.grpc.stub.ServerCalls.ServerStreamingMethod;
@@ -66,11 +64,10 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
   @Override
   public StreamObserver<Message> invoke(StreamObserver<Message> responseObserver) {
     try {
-      PoJo2ProtoStreamObserver servserResponseObserver = PoJo2ProtoStreamObserver
-          .newObserverWrap((ServerCallStreamObserver<Message>) responseObserver);
+      PoJo2ProtoStreamObserver servserResponseObserver =
+          PoJo2ProtoStreamObserver.newObserverWrap(responseObserver);
       Object result = method.invoke(serviceToInvoke, servserResponseObserver);
-      return Proto2PoJoStreamObserver
-          .newObserverWrap((ClientCallStreamObserver<Object>) result);
+      return Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) result);
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);
