@@ -50,12 +50,9 @@ public class GrpcRemoteComponent {
       }
       Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);
       Class<?> requestType = method.getParameterTypes()[0];
-      Class<?> returnType = method.getReturnType();
       Object request = GSON.fromJson(requestParam, requestType);
-      String[] paramTypes = new String[] {requestType.getName(), returnType.getName()};
       Object[] args = new Object[] {request};
-      Object reply =
-          genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
+      Object reply = genricService.$invoke(serviceName, group, version, methodName, args);
       return GSON.toJson(reply);
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       logger.error(e.getMessage(), e);
@@ -80,7 +77,6 @@ public class GrpcRemoteComponent {
       }
       Method method = ReflectUtils.findMethodByMethodName(serviceClass, methodName);
       Class<?> requestType = method.getParameterTypes()[0];
-      Class<?> returnType = method.getReturnType();
       Object request = ReflectUtils.getEmptyObject(requestType);
       for (Map.Entry<String, String> entry : requestParam.entrySet()) {
         String fieldName = entry.getKey();
@@ -93,10 +89,8 @@ public class GrpcRemoteComponent {
           throw new IllegalArgumentException("only support String");
         }
       }
-      String[] paramTypes = new String[] {requestType.getName(), returnType.getName()};
       Object[] args = new Object[] {request};
-      Object reply =
-          genricService.$invoke(serviceName, group, version, methodName, paramTypes, args);
+      Object reply = genricService.$invoke(serviceName, group, version, methodName, args);
       return GSON.toJson(reply);
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       logger.error(e.getMessage(), e);
