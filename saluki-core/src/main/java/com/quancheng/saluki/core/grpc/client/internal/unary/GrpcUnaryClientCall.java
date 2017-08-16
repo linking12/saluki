@@ -4,7 +4,7 @@
  * such Confidential Information and shall use it only in accordance with the terms of the license
  * agreement you entered into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.core.grpc.client.unary.failover;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +23,7 @@ import io.grpc.Status;
  * @author shimingliu 2016年12月14日 下午9:54:44
  * @version GrpcAsyncCall.java, v 0.0.1 2016年12月14日 下午9:54:44 shimingliu
  */
-public interface GrpcClientCall {
+public interface GrpcUnaryClientCall {
 
   public static final CallOptions.Key<ConcurrentHashMap<String, Object>> CALLOPTIONS_CUSTOME_KEY =
       CallOptions.Key.of("custom_options", new ConcurrentHashMap<String, Object>());
@@ -34,20 +34,20 @@ public interface GrpcClientCall {
 
   public static final String GRPC_NAMERESOVER_ATTRIBUTES = "nameresolver-attributes";
 
-  public ListenableFuture<Message> futureResult(Message request,
+  public ListenableFuture<Message> unaryFuture(Message request,
       MethodDescriptor<Message, Message> method);
 
-  public Message blockingResult(Message request, MethodDescriptor<Message, Message> method);
+  public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
   public Map<String, Object> getAffinity();
 
-  public static GrpcClientCall create(final Channel channel, final Integer retryOptions,
+  public static GrpcUnaryClientCall create(final Channel channel, final Integer retryOptions,
       final GrpcURL refUrl) {
     ConcurrentHashMap<String, Object> customOptions = new ConcurrentHashMap<String, Object>();
     customOptions.put(GRPC_REF_URL, refUrl);
     CallOptions callOptions =
         CallOptions.DEFAULT.withOption(CALLOPTIONS_CUSTOME_KEY, customOptions);
-    return new GrpcClientCall() {
+    return new GrpcUnaryClientCall() {
 
       @Override
       public Map<String, Object> getAffinity() {
@@ -55,20 +55,20 @@ public interface GrpcClientCall {
       }
 
       @Override
-      public ListenableFuture<Message> futureResult(Message request,
+      public ListenableFuture<Message> unaryFuture(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverListener<Message, Message> retryCallListener =
-            new FailOverListener<Message, Message>(retryOptions, channel, method, callOptions);
+        FailOverUnaryListener<Message, Message> retryCallListener =
+            new FailOverUnaryListener<Message, Message>(retryOptions, channel, method, callOptions);
         retryCallListener.setRequest(request);
         retryCallListener.run();
         return retryCallListener.getCompletionFuture();
       }
 
       @Override
-      public Message blockingResult(Message request,
+      public Message blockingUnaryResult(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverListener<Message, Message> retryCallListener =
-            new FailOverListener<Message, Message>(retryOptions, channel, method, callOptions);
+        FailOverUnaryListener<Message, Message> retryCallListener =
+            new FailOverUnaryListener<Message, Message>(retryOptions, channel, method, callOptions);
         retryCallListener.setRequest(request);
         try {
           retryCallListener.run();

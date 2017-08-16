@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.common.GrpcURL;
-import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
+import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcUnaryClientCall;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.grpc.router.GrpcRouterFactory;
 
@@ -55,11 +55,11 @@ public class GrpcRoutePicker extends SubchannelPicker {
   @Override
   public PickResult pickSubchannel(PickSubchannelArgs args) {
     Map<String, Object> affinity =
-        args.getCallOptions().getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
-    GrpcURL refUrl = (GrpcURL) affinity.get(GrpcClientCall.GRPC_REF_URL);
+        args.getCallOptions().getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY);
+    GrpcURL refUrl = (GrpcURL) affinity.get(GrpcUnaryClientCall.GRPC_REF_URL);
     if (size > 0) {
       Subchannel subchannel = nextSubchannel(refUrl);
-      affinity.put(GrpcClientCall.GRPC_NAMERESOVER_ATTRIBUTES, nameResovleCache);
+      affinity.put(GrpcUnaryClientCall.GRPC_NAMERESOVER_ATTRIBUTES, nameResovleCache);
       return PickResult.withSubchannel(subchannel);
     }
     if (status != null) {

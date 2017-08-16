@@ -4,7 +4,7 @@
  * such Confidential Information and shall use it only in accordance with the terms of the license
  * agreement you entered into with Quancheng-ec.com.
  */
-package com.quancheng.saluki.core.grpc.client.unary.failover;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.net.SocketAddress;
 import java.util.Map;
@@ -29,10 +29,10 @@ import io.grpc.internal.GrpcUtil;
  * @author liushiming 2017年5月2日 下午5:42:42
  * @version FailOverListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
  */
-public class FailOverListener<Request, Response> extends ClientCall.Listener<Response>
+public class FailOverUnaryListener<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
 
-  private final static Logger logger = LoggerFactory.getLogger(FailOverListener.class);
+  private final static Logger logger = LoggerFactory.getLogger(FailOverUnaryListener.class);
 
   private final ScheduledExecutorService scheduleRetryService = GrpcUtil.TIMER_SERVICE.create();
 
@@ -56,7 +56,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
 
   private Response response;
 
-  public FailOverListener(final Integer retriesOptions, final Channel channel,
+  public FailOverUnaryListener(final Integer retriesOptions, final Channel channel,
       final MethodDescriptor<Request, Response> method, final CallOptions callOptions) {
     this.maxRetries = retriesOptions;
     this.channel = channel;
@@ -83,8 +83,8 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
   public void onClose(Status status, Metadata trailers) {
     try {
       SocketAddress remoteServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-      callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY)
-          .put(GrpcClientCall.GRPC_CURRENT_ADDR_KEY, remoteServer);
+      callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY)
+          .put(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY, remoteServer);
     } finally {
       if (status.isOk()) {
         statusOk(trailers);
@@ -120,8 +120,8 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
         nameResolverNotify.refreshChannel();
         scheduleRetryService.execute(this);
         SocketAddress remoteAddress =
-            (SocketAddress) callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY)
-                .get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+            (SocketAddress) callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY)
+                .get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
         logger.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s",
             currentRetries.get(), String.valueOf(remoteAddress)));
         currentRetries.getAndIncrement();
@@ -133,7 +133,7 @@ public class FailOverListener<Request, Response> extends ClientCall.Listener<Res
   }
 
   private NameResolverNotify createNameResolverNotify() {
-    Map<String, Object> affinity = callOptions.getOption(GrpcClientCall.CALLOPTIONS_CUSTOME_KEY);
+    Map<String, Object> affinity = callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY);
     NameResolverNotify nameResolverNotify = NameResolverNotify.newNameResolverNotify();
     nameResolverNotify.refreshAffinity(affinity);
     return nameResolverNotify;

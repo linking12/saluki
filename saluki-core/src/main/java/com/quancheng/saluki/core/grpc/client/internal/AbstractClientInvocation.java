@@ -17,11 +17,11 @@ import org.slf4j.LoggerFactory;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
-import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
-import com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcBlockingUnaryCommand;
-import com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcFutureUnaryCommand;
-import com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcHystrixCommand;
-import com.quancheng.saluki.core.grpc.client.validate.RequestValidator;
+import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcBlockingUnaryCommand;
+import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcFutureUnaryCommand;
+import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcHystrixCommand;
+import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcUnaryClientCall;
+import com.quancheng.saluki.core.grpc.client.internal.validate.RequestValidator;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 
@@ -62,6 +62,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
           return doUnaryCall(request);
         }
         case CLIENT_STREAMING:
+
           return null;
         case SERVER_STREAMING:
           return null;
@@ -82,7 +83,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     Channel channel = request.getChannel();
     GrpcURL refUrl = request.getRefUrl();
     Integer retryOption = this.buildRetryOption(methodName, refUrl);
-    GrpcClientCall clientCall = GrpcClientCall.create(channel, retryOption, refUrl);
+    GrpcUnaryClientCall clientCall = GrpcUnaryClientCall.create(channel, retryOption, refUrl);
     try {
       GrpcHystrixCommand hystrixCommand = null;
       Boolean isEnableFallback = this.buildFallbackOption(methodName, refUrl);
@@ -102,7 +103,7 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       hystrixCommand.setClientServerMonitor(monitor);
       return hystrixCommand.execute();
     } finally {
-      Object remote = clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+      Object remote = clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
       log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
           String.valueOf(remote)));
       request.returnChannel(channel);

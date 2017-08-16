@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.unary.failover;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -58,8 +58,8 @@ public class NameResolverNotify {
 
   public void refreshAffinity(Map<String, Object> affinity) {
     Attributes nameresoveCache =
-        (Attributes) affinity.get(GrpcClientCall.GRPC_NAMERESOVER_ATTRIBUTES);
-    this.current_server = (SocketAddress) affinity.get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+        (Attributes) affinity.get(GrpcUnaryClientCall.GRPC_NAMERESOVER_ATTRIBUTES);
+    this.current_server = (SocketAddress) affinity.get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
     this.registry_servers = nameresoveCache.get(GrpcNameResolverProvider.REMOTE_ADDR_KEYS);
     this.listener = nameresoveCache.get(GrpcNameResolverProvider.NAMERESOVER_LISTENER);
     this.affinity = nameresoveCache;

@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.unary.hystrix;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Message;
-import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcErrorMsgConstant;
 import com.quancheng.saluki.core.grpc.exception.RpcServiceException;
 
@@ -40,15 +39,15 @@ public class GrpcFutureUnaryCommand extends GrpcHystrixCommand {
   }
 
   /**
-   * @see com.quancheng.saluki.core.grpc.client.unary.hystrix.GrpcHystrixCommand#run0(com.google.protobuf.Message,
+   * @see com.quancheng.saluki.core.grpc.client.internal.unary.GrpcHystrixCommand#run0(com.google.protobuf.Message,
    *      io.grpc.MethodDescriptor, java.lang.Integer,
-   *      com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall)
+   *      com.quancheng.saluki.core.grpc.client.internal.unary.GrpcUnaryClientCall)
    */
   @Override
   protected Message run0(Message req, MethodDescriptor<Message, Message> methodDesc,
-      Integer timeOut, GrpcClientCall clientCall) {
+      Integer timeOut, GrpcUnaryClientCall clientCall) {
     try {
-      return clientCall.futureResult(req, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
+      return clientCall.unaryFuture(req, methodDesc).get(timeOut, TimeUnit.MILLISECONDS);
     } catch (Throwable e) {
       logger.error(e.getMessage(), e);
       super.cacheCurrentServer();

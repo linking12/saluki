@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.unary.hystrix;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentMap;
@@ -32,7 +32,6 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
-import com.quancheng.saluki.core.grpc.client.unary.failover.GrpcClientCall;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -62,7 +61,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private GrpcRequest request;
 
-  private GrpcClientCall clientCall;
+  private GrpcUnaryClientCall clientCall;
 
   private ClientServerMonitor clientServerMonitor;
 
@@ -88,7 +87,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
     this.request = request;
   }
 
-  public void setClientCall(GrpcClientCall clientCall) {
+  public void setClientCall(GrpcUnaryClientCall clientCall) {
     this.clientCall = clientCall;
   }
 
@@ -161,7 +160,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
       boolean error) {
     try {
       InetSocketAddress provider =
-          (InetSocketAddress) clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+          (InetSocketAddress) clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
       if (request == null || response == null || provider == null) {
         return;
       }
@@ -190,10 +189,10 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   }
 
   protected abstract Message run0(Message req, MethodDescriptor<Message, Message> methodDesc,
-      Integer timeOut, GrpcClientCall clientCall);
+      Integer timeOut, GrpcUnaryClientCall clientCall);
 
   protected void cacheCurrentServer() {
-    Object obj = clientCall.getAffinity().get(GrpcClientCall.GRPC_CURRENT_ADDR_KEY);
+    Object obj = clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
     if (obj != null) {
       InetSocketAddress currentServer = (InetSocketAddress) obj;
       RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, currentServer.getHostName());

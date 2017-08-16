@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.quancheng.saluki.core.grpc.client.unary.failover;
+package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import com.google.common.util.concurrent.AbstractFuture;
 
