@@ -15,6 +15,8 @@ package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import com.google.common.util.concurrent.AbstractFuture;
 
+import io.grpc.ClientCall;
+
 /**
  * @author liushiming
  * @version CompletionFuture.java, v 0.0.1 2017年7月14日 下午9:42:42 liushiming
@@ -22,6 +24,16 @@ import com.google.common.util.concurrent.AbstractFuture;
  */
 public class CompletionFuture<T> extends AbstractFuture<T> {
 
+  private final ClientCall<?, T> call;
+
+  CompletionFuture(ClientCall<?, T> call) {
+    this.call = call;
+  }
+
+  @Override
+  protected void interruptTask() {
+    call.cancel("CompletionFuture was cancelled", null);
+  }
 
   @Override
   protected boolean set(T resp) {

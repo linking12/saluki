@@ -64,13 +64,8 @@ public class DefaultProxyClient<T> implements GrpcProtocolClient<T> {
         throw new IllegalArgumentException(
             "remote call type do not support this method " + method.getName());
       }
-      if (args.length != 1) {
-        throw new IllegalArgumentException(
-            "grpc not support multiple args,args is " + args + " length is " + args.length);
-      }
-      Object arg = args[0];
       GrpcRequest request = new GrpcRequest.Default(DefaultProxyClient.this.refUrl, channelPool,
-          method.getName(), arg, callType, callTimeout);
+          method.getName(), args, callType, callTimeout);
       return request;
     }
 

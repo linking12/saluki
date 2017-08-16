@@ -80,13 +80,13 @@ public class GenericProxyClient<T> implements GrpcProtocolClient<T> {
       return (String) args[3];
     }
 
-    private Object getArg(Object[] args) {
+    private Object[] getArg(Object[] args) {
       Object[] param = (Object[]) args[4];
       if (param.length != 1) {
         throw new IllegalArgumentException(
             "grpc not support multiple args,args is " + args + " length is " + args.length);
       }
-      return param[0];
+      return new Object[] {param[0]};
 
     }
 

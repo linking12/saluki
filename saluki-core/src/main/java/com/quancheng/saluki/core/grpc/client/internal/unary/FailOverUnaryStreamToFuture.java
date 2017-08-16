@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.quancheng.saluki.core.grpc.client.internal.GrpcCallOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -29,16 +30,14 @@ import io.grpc.internal.GrpcUtil;
  * @author liushiming 2017年5月2日 下午5:42:42
  * @version FailOverListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
  */
-public class FailOverUnaryListener<Request, Response> extends ClientCall.Listener<Response>
+public class FailOverUnaryStreamToFuture<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
 
-  private final static Logger logger = LoggerFactory.getLogger(FailOverUnaryListener.class);
+  private final static Logger logger = LoggerFactory.getLogger(FailOverUnaryStreamToFuture.class);
 
   private final ScheduledExecutorService scheduleRetryService = GrpcUtil.TIMER_SERVICE.create();
 
   private final AtomicInteger currentRetries = new AtomicInteger(0);
-
-  private final CompletionFuture<Response> completionFuture = new CompletionFuture<Response>();
 
   private final Integer maxRetries;
 
@@ -50,13 +49,15 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
 
   private final boolean enabledRetry;
 
+  private CompletionFuture<Response> completionFuture;
+
   private ClientCall<Request, Response> clientCall;
 
   private Request request;
 
   private Response response;
 
-  public FailOverUnaryListener(final Integer retriesOptions, final Channel channel,
+  public FailOverUnaryStreamToFuture(final Integer retriesOptions, final Channel channel,
       final MethodDescriptor<Request, Response> method, final CallOptions callOptions) {
     this.maxRetries = retriesOptions;
     this.channel = channel;
@@ -83,8 +84,8 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
   public void onClose(Status status, Metadata trailers) {
     try {
       SocketAddress remoteServer = clientCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-      callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY)
-          .put(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY, remoteServer);
+      callOptions.getOption(GrpcCallOptions.CALLOPTIONS_CUSTOME_KEY)
+          .put(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY, remoteServer);
     } finally {
       if (status.isOk()) {
         statusOk(trailers);
@@ -120,8 +121,8 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
         nameResolverNotify.refreshChannel();
         scheduleRetryService.execute(this);
         SocketAddress remoteAddress =
-            (SocketAddress) callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY)
-                .get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
+            (SocketAddress) callOptions.getOption(GrpcCallOptions.CALLOPTIONS_CUSTOME_KEY)
+                .get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
         logger.error(String.format("Retrying failed call. Failure #%d，Failure Server: %s",
             currentRetries.get(), String.valueOf(remoteAddress)));
         currentRetries.getAndIncrement();
@@ -133,7 +134,7 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
   }
 
   private NameResolverNotify createNameResolverNotify() {
-    Map<String, Object> affinity = callOptions.getOption(GrpcUnaryClientCall.CALLOPTIONS_CUSTOME_KEY);
+    Map<String, Object> affinity = callOptions.getOption(GrpcCallOptions.CALLOPTIONS_CUSTOME_KEY);
     NameResolverNotify nameResolverNotify = NameResolverNotify.newNameResolverNotify();
     nameResolverNotify.refreshAffinity(affinity);
     return nameResolverNotify;
@@ -146,6 +147,7 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
   @Override
   public void run() {
     this.clientCall = channel.newCall(method, callOptions);
+    this.completionFuture = new CompletionFuture<Response>(this.clientCall);
     this.clientCall.start(this, new Metadata());
     this.clientCall.sendMessage(request);
     this.clientCall.halfClose();
@@ -153,7 +155,7 @@ public class FailOverUnaryListener<Request, Response> extends ClientCall.Listene
   }
 
 
-  public ListenableFuture<Response> getCompletionFuture() {
+  public ListenableFuture<Response> getFuture() {
     return completionFuture;
   }
 

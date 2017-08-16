@@ -27,7 +27,6 @@ import io.grpc.MethodDescriptor;
  */
 public interface GrpcRequest {
 
-
   public Class<?> getResponseType();
 
   public MethodDescriptor<Message, Message> getMethodDescriptor();
@@ -41,6 +40,8 @@ public interface GrpcRequest {
   public String getMethodName();
 
   public Object getRequestParam();
+
+  public Object getResponseOberver();
 
   public GrpcURL getRefUrl();
 
@@ -61,7 +62,7 @@ public interface GrpcRequest {
 
     private final String methodName;
 
-    private final Object arg;
+    private final Object[] args;
 
     private final int callType;
 
@@ -70,12 +71,12 @@ public interface GrpcRequest {
     private final GrpcMethodType grpcMethodType;
 
     public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool, String methodName,
-        Object arg, int callType, int callTimeout) {
+        Object[] args, int callType, int callTimeout) {
       super();
       this.refUrl = refUrl;
       this.chanelPool = chanelPool;
       this.methodName = methodName;
-      this.arg = arg;
+      this.args = args;
       this.callType = callType;
       this.callTimeout = callTimeout;
       try {
@@ -90,7 +91,7 @@ public interface GrpcRequest {
 
     @Override
     public Object getRequestParam() {
-      return arg;
+      return args[0];
     }
 
     @Override
@@ -121,7 +122,7 @@ public interface GrpcRequest {
     @Override
     public GrpcURL getRefUrl() {
       return this.refUrl.addParameter(Constants.METHOD_KEY, methodName)//
-          .addParameterAndEncoded(Constants.ARG_KEY, new Gson().toJson(arg));
+          .addParameterAndEncoded(Constants.ARG_KEY, new Gson().toJson(getRequestParam()));
     }
 
 
@@ -143,6 +144,12 @@ public interface GrpcRequest {
     @Override
     public io.grpc.MethodDescriptor.MethodType getMethodType() {
       return this.grpcMethodType.methodType();
+    }
+
+
+    @Override
+    public Object getResponseOberver() {
+      return args[1];
     }
 
   }

@@ -6,13 +6,12 @@
  */
 package com.quancheng.saluki.core.grpc.client.internal.unary;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.grpc.client.internal.GrpcCallOptions;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -25,54 +24,37 @@ import io.grpc.Status;
  */
 public interface GrpcUnaryClientCall {
 
-  public static final CallOptions.Key<ConcurrentHashMap<String, Object>> CALLOPTIONS_CUSTOME_KEY =
-      CallOptions.Key.of("custom_options", new ConcurrentHashMap<String, Object>());
-
-  public static final String GRPC_REF_URL = "grpc-refurl";
-
-  public static final String GRPC_CURRENT_ADDR_KEY = "current-address";
-
-  public static final String GRPC_NAMERESOVER_ATTRIBUTES = "nameresolver-attributes";
-
   public ListenableFuture<Message> unaryFuture(Message request,
       MethodDescriptor<Message, Message> method);
 
   public Message blockingUnaryResult(Message request, MethodDescriptor<Message, Message> method);
 
-  public Map<String, Object> getAffinity();
-
   public static GrpcUnaryClientCall create(final Channel channel, final Integer retryOptions,
       final GrpcURL refUrl) {
-    ConcurrentHashMap<String, Object> customOptions = new ConcurrentHashMap<String, Object>();
-    customOptions.put(GRPC_REF_URL, refUrl);
-    CallOptions callOptions =
-        CallOptions.DEFAULT.withOption(CALLOPTIONS_CUSTOME_KEY, customOptions);
+    CallOptions callOptions = GrpcCallOptions.createCallOptions(refUrl);
     return new GrpcUnaryClientCall() {
-
-      @Override
-      public Map<String, Object> getAffinity() {
-        return callOptions.getOption(CALLOPTIONS_CUSTOME_KEY);
-      }
 
       @Override
       public ListenableFuture<Message> unaryFuture(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverUnaryListener<Message, Message> retryCallListener =
-            new FailOverUnaryListener<Message, Message>(retryOptions, channel, method, callOptions);
+        FailOverUnaryStreamToFuture<Message, Message> retryCallListener =
+            new FailOverUnaryStreamToFuture<Message, Message>(retryOptions, channel, method,
+                callOptions);
         retryCallListener.setRequest(request);
         retryCallListener.run();
-        return retryCallListener.getCompletionFuture();
+        return retryCallListener.getFuture();
       }
 
       @Override
       public Message blockingUnaryResult(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverUnaryListener<Message, Message> retryCallListener =
-            new FailOverUnaryListener<Message, Message>(retryOptions, channel, method, callOptions);
+        FailOverUnaryStreamToFuture<Message, Message> retryCallListener =
+            new FailOverUnaryStreamToFuture<Message, Message>(retryOptions, channel, method,
+                callOptions);
         retryCallListener.setRequest(request);
         try {
           retryCallListener.run();
-          return retryCallListener.getCompletionFuture().get();
+          return retryCallListener.getFuture().get();
         } catch (InterruptedException e) {
           retryCallListener.cancel();
           throw Status.CANCELLED.withCause(e).asRuntimeException();
@@ -81,7 +63,6 @@ public interface GrpcUnaryClientCall {
           throw Status.fromThrowable(e).asRuntimeException();
         }
       }
-
     };
   }
 

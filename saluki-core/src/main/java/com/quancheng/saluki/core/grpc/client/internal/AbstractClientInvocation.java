@@ -18,6 +18,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
+import com.quancheng.saluki.core.grpc.client.internal.stream.GrpcStreamClientCall;
 import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcBlockingUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcFutureUnaryCommand;
 import com.quancheng.saluki.core.grpc.client.internal.unary.GrpcHystrixCommand;
@@ -33,12 +34,9 @@ import com.quancheng.saluki.core.grpc.util.SerializerUtil;
 import com.quancheng.saluki.core.utils.ReflectUtils;
 import com.quancheng.saluki.serializer.exception.ProtobufException;
 
-import io.grpc.CallOptions;
 import io.grpc.Channel;
-import io.grpc.ClientCall;
 import io.grpc.MethodDescriptor;
 import io.grpc.MethodDescriptor.MethodType;
-import io.grpc.stub.ClientCalls;
 import io.grpc.stub.StreamObserver;
 
 /**
@@ -63,7 +61,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (ReflectUtils.isToStringMethod(method)) {
       return AbstractClientInvocation.this.toString();
@@ -72,37 +69,15 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       requstValidator.doValidate(request);
       MethodType methodType = request.getMethodType();
       Channel channel = request.getChannel();
-      MethodDescriptor<Message, Message> methodDesc = request.getMethodDescriptor();
-      ClientCall<Message, Message> clientCall = channel.newCall(methodDesc, CallOptions.DEFAULT);
-      Object param = request.getRequestParam();
       switch (methodType) {
         case UNARY:
           return doUnaryCall(request, channel);
         case CLIENT_STREAMING:
-          if (param instanceof StreamObserver) {
-            StreamObserver<Message> requestObserver =
-                ClientCalls.asyncClientStreamingCall(clientCall,
-                    Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) param));
-            return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
-          }
+          return doStreamCall(request, channel);
         case SERVER_STREAMING:
-          Object responseObserver = args[1];
-          if (responseObserver instanceof StreamObserver) {
-            try {
-              Message messageParam = SerializerUtil.pojo2Protobuf(param);
-              ClientCalls.asyncServerStreamingCall(clientCall, messageParam,
-                  Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) param));
-            } catch (ProtobufException e) {
-              RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
-              throw rpcFramwork;
-            }
-          }
+          return doStreamCall(request, channel);
         case BIDI_STREAMING:
-          if (param instanceof StreamObserver) {
-            StreamObserver<Message> requestObserver = ClientCalls.asyncBidiStreamingCall(clientCall,
-                Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) param));
-            return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
-          }
+          return doStreamCall(request, channel);
         default:
           RpcServiceException rpcFramwork =
               new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
@@ -110,6 +85,42 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       }
     }
   }
+
+  @SuppressWarnings("unchecked")
+  private Object doStreamCall(GrpcRequest request, Channel channel) {
+    GrpcURL refUrl = request.getRefUrl();
+    GrpcStreamClientCall clientCall = GrpcStreamClientCall.create(channel, refUrl);
+    MethodType methodType = request.getMethodType();
+    MethodDescriptor<Message, Message> methodDesc = request.getMethodDescriptor();
+    Object requestParam = request.getRequestParam();
+    StreamObserver<Message> requestObserver;
+    switch (methodType) {
+      case CLIENT_STREAMING:
+        requestObserver = clientCall.asyncClientStream(methodDesc,
+            Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) requestParam));
+        return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
+      case SERVER_STREAMING:
+        Object responseObserver = request.getResponseOberver();
+        try {
+          Message messageParam = SerializerUtil.pojo2Protobuf(requestParam);
+          clientCall.asyncServerStream(methodDesc,
+              Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) responseObserver),
+              messageParam);
+        } catch (ProtobufException e) {
+          RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
+          throw rpcFramwork;
+        }
+      case BIDI_STREAMING:
+        requestObserver = clientCall.asyncBidiStream(methodDesc,
+            Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) requestParam));
+        return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
+      default:
+        RpcServiceException rpcFramwork =
+            new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
+        throw rpcFramwork;
+    }
+  }
+
 
 
   private Object doUnaryCall(GrpcRequest request, Channel channel) {
@@ -137,7 +148,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       hystrixCommand.setClientServerMonitor(monitor);
       return hystrixCommand.execute();
     } finally {
-      Object remote = clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
+      Object remote =
+          GrpcCallOptions.getAffinity(refUrl).get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
       log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
           String.valueOf(remote)));
       request.returnChannel(channel);

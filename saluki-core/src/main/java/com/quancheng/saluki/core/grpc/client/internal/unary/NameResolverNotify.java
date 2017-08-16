@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.quancheng.saluki.core.grpc.GrpcNameResolverProvider;
+import com.quancheng.saluki.core.grpc.client.internal.GrpcCallOptions;
 
 import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
@@ -58,8 +59,8 @@ public class NameResolverNotify {
 
   public void refreshAffinity(Map<String, Object> affinity) {
     Attributes nameresoveCache =
-        (Attributes) affinity.get(GrpcUnaryClientCall.GRPC_NAMERESOVER_ATTRIBUTES);
-    this.current_server = (SocketAddress) affinity.get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
+        (Attributes) affinity.get(GrpcCallOptions.GRPC_NAMERESOVER_ATTRIBUTES);
+    this.current_server = (SocketAddress) affinity.get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
     this.registry_servers = nameresoveCache.get(GrpcNameResolverProvider.REMOTE_ADDR_KEYS);
     this.listener = nameresoveCache.get(GrpcNameResolverProvider.NAMERESOVER_LISTENER);
     this.affinity = nameresoveCache;

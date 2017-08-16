@@ -32,6 +32,7 @@ import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
+import com.quancheng.saluki.core.grpc.client.internal.GrpcCallOptions;
 import com.quancheng.saluki.core.grpc.exception.RpcFrameworkException;
 import com.quancheng.saluki.core.grpc.service.ClientServerMonitor;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -159,8 +160,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
   private void collect(String serviceName, String methodName, Message request, Message response,
       boolean error) {
     try {
-      InetSocketAddress provider =
-          (InetSocketAddress) clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
+      InetSocketAddress provider = (InetSocketAddress) GrpcCallOptions
+          .getAffinity(this.request.getRefUrl()).get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
       if (request == null || response == null || provider == null) {
         return;
       }
@@ -192,7 +193,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
       Integer timeOut, GrpcUnaryClientCall clientCall);
 
   protected void cacheCurrentServer() {
-    Object obj = clientCall.getAffinity().get(GrpcUnaryClientCall.GRPC_CURRENT_ADDR_KEY);
+    Object obj = GrpcCallOptions.getAffinity(this.request.getRefUrl())
+        .get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
     if (obj != null) {
       InetSocketAddress currentServer = (InetSocketAddress) obj;
       RpcContext.getContext().setAttachment(Constants.REMOTE_ADDRESS, currentServer.getHostName());
