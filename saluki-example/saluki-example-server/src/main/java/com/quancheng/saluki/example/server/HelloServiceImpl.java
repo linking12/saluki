@@ -28,7 +28,6 @@ public class HelloServiceImpl implements HelloService {
         HelloReply reply = new HelloReply();
         reply.setMessage(hellorequest.getName());
         responseObserver.onNext(reply);
-        Thread.sleep(10000);
       }
     } catch (Exception e) {
       responseObserver.onError(e);

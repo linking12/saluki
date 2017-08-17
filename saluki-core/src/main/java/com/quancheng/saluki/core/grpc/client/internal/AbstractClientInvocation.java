@@ -56,8 +56,8 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
 
   public AbstractClientInvocation(GrpcURL refUrl) {
     Long monitorinterval = refUrl.getParameter("monitorinterval", 60L);
-    monitor = ClientServerMonitor.newClientServerMonitor(monitorinterval);
-    requstValidator = RequestValidator.newRequestValidator();
+    this.monitor = ClientServerMonitor.newClientServerMonitor(monitorinterval);
+    this.requstValidator = RequestValidator.newRequestValidator();
   }
 
   @Override
@@ -69,25 +69,33 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
       requstValidator.doValidate(request);
       MethodType methodType = request.getMethodType();
       Channel channel = request.getChannel();
-      switch (methodType) {
-        case UNARY:
-          return doUnaryCall(request, channel);
-        case CLIENT_STREAMING:
-          return doStreamCall(request, channel);
-        case SERVER_STREAMING:
-          return doStreamCall(request, channel);
-        case BIDI_STREAMING:
-          return doStreamCall(request, channel);
-        default:
-          RpcServiceException rpcFramwork =
-              new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
-          throw rpcFramwork;
+      try {
+        switch (methodType) {
+          case UNARY:
+            return unaryCall(request, channel);
+          case CLIENT_STREAMING:
+            return streamCall(request, channel);
+          case SERVER_STREAMING:
+            return streamCall(request, channel);
+          case BIDI_STREAMING:
+            return streamCall(request, channel);
+          default:
+            RpcServiceException rpcFramwork =
+                new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
+            throw rpcFramwork;
+        }
+      } finally {
+        Object remote = GrpcCallOptions.getAffinity(request.getRefUrl())
+            .get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
+        log.debug(String.format("Service: %s  Method: %s  RemoteAddress: %s",
+            request.getServiceName(), request.getMethodName(), String.valueOf(remote)));
+        request.returnChannel(channel);
       }
     }
   }
 
   @SuppressWarnings("unchecked")
-  private Object doStreamCall(GrpcRequest request, Channel channel) {
+  private Object streamCall(GrpcRequest request, Channel channel) {
     GrpcURL refUrl = request.getRefUrl();
     GrpcStreamClientCall clientCall = GrpcStreamClientCall.create(channel, refUrl);
     MethodType methodType = request.getMethodType();
@@ -120,41 +128,35 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);
         throw rpcFramwork;
     }
+
   }
 
 
 
-  private Object doUnaryCall(GrpcRequest request, Channel channel) {
+  private Object unaryCall(GrpcRequest request, Channel channel) {
     String serviceName = request.getServiceName();
     String methodName = request.getMethodName();
     GrpcURL refUrl = request.getRefUrl();
     Integer retryOption = this.buildRetryOption(methodName, refUrl);
     GrpcUnaryClientCall clientCall = GrpcUnaryClientCall.create(channel, retryOption, refUrl);
-    try {
-      GrpcHystrixCommand hystrixCommand = null;
-      Boolean isEnableFallback = this.buildFallbackOption(methodName, refUrl);
-      switch (request.getCallType()) {
-        case Constants.RPCTYPE_ASYNC:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
-        case Constants.RPCTYPE_BLOCKING:
-          hystrixCommand = new GrpcBlockingUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
-        default:
-          hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
-          break;
-      }
-      hystrixCommand.setClientCall(clientCall);
-      hystrixCommand.setRequest(request);
-      hystrixCommand.setClientServerMonitor(monitor);
-      return hystrixCommand.execute();
-    } finally {
-      Object remote =
-          GrpcCallOptions.getAffinity(refUrl).get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
-      log.info(String.format("Service: %s  Method: %s  RemoteAddress: %s", serviceName, methodName,
-          String.valueOf(remote)));
-      request.returnChannel(channel);
+    GrpcHystrixCommand hystrixCommand = null;
+    Boolean isEnableFallback = this.buildFallbackOption(methodName, refUrl);
+    switch (request.getCallType()) {
+      case Constants.RPCTYPE_ASYNC:
+        hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
+        break;
+      case Constants.RPCTYPE_BLOCKING:
+        hystrixCommand = new GrpcBlockingUnaryCommand(serviceName, methodName, isEnableFallback);
+        break;
+      default:
+        hystrixCommand = new GrpcFutureUnaryCommand(serviceName, methodName, isEnableFallback);
+        break;
     }
+    hystrixCommand.setClientCall(clientCall);
+    hystrixCommand.setRequest(request);
+    hystrixCommand.setClientServerMonitor(monitor);
+    return hystrixCommand.execute();
+
   }
 
 
