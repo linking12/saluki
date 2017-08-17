@@ -48,7 +48,7 @@ public final class PrintServiceFile extends AbstractPrint {
       inPutType = CommonUtils.findPojoTypeFromCache(inPutType, pojoTypeCache);
       outPutType = CommonUtils.findPojoTypeFromCache(outPutType, pojoTypeCache);
       String stream = generateGrpcStream(method, inPutType, outPutType);
-      if (method.getServerStreaming()) {
+      if (method.getServerStreaming() || method.getClientStreaming()) {
         outPutType = "io.grpc.stub.StreamObserver<" + outPutType + ">";
       }
       String inputValue = CommonUtils.findNotIncludePackageType(inPutType).toLowerCase();

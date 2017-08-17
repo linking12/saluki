@@ -32,8 +32,8 @@ public class ProxyServiceController {
   }
 
 
-  @RequestMapping("/hellostream")
-  public HelloReply hellostream(@RequestParam(value = "name", required = false) String name) {
+  @RequestMapping("/serverstream")
+  public HelloReply serverstream(@RequestParam(value = "name", required = false) String name) {
     HelloRequest request = new HelloRequest();
     request.setName(name);
     com.quancheng.examples.model.hello.Project project =
@@ -43,28 +43,77 @@ public class ProxyServiceController {
         new HashMap<String, com.quancheng.examples.model.hello.Project>();
     projects.put("test", project);
     request.setProjects(projects);
-    helloService.sayHelloStream(request, observer());
+    helloService.sayHelloServerStream(request, responseObserver());
+    return null;
+  }
+
+  @RequestMapping("/clientstream")
+  public HelloReply clientstream(@RequestParam(value = "name", required = false) String name) {
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    com.quancheng.examples.model.hello.Project project =
+        new com.quancheng.examples.model.hello.Project();
+    project.setId("123");
+    Map<String, com.quancheng.examples.model.hello.Project> projects =
+        new HashMap<String, com.quancheng.examples.model.hello.Project>();
+    projects.put("test", project);
+    request.setProjects(projects);
+    StreamObserver<com.quancheng.examples.model.hello.HelloRequest> requestObserver =
+        helloService.sayHelloClientStream(responseObserver());
+    try {
+      for (int i = 0; i < 10; i++) {
+        requestObserver.onNext(request);
+      }
+    } catch (Exception e) {
+      requestObserver.onError(e);
+    }
+    requestObserver.onCompleted();
+    return null;
+  }
+
+  @RequestMapping("/bodistream")
+  public HelloReply bodistream(@RequestParam(value = "name", required = false) String name) {
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    com.quancheng.examples.model.hello.Project project =
+        new com.quancheng.examples.model.hello.Project();
+    project.setId("123");
+    Map<String, com.quancheng.examples.model.hello.Project> projects =
+        new HashMap<String, com.quancheng.examples.model.hello.Project>();
+    projects.put("test", project);
+    request.setProjects(projects);
+    StreamObserver<com.quancheng.examples.model.hello.HelloRequest> requestObserver =
+        helloService.sayHelloBidiStream(responseObserver());
+    try {
+      for (int i = 0; i < 10; i++) {
+        requestObserver.onNext(request);
+      }
+    } catch (Exception e) {
+      requestObserver.onError(e);
+    }
+    requestObserver.onCompleted();
     return null;
   }
 
 
-  private StreamObserver<HelloReply> observer() {
-    StreamObserver<HelloReply> responseObserver = new StreamObserver<HelloReply>() {
-      @Override
-      public void onNext(HelloReply summary) {
-        System.out.println(summary);
-      }
+  private StreamObserver<com.quancheng.examples.model.hello.HelloReply> responseObserver() {
+    StreamObserver<com.quancheng.examples.model.hello.HelloReply> responseObserver =
+        new StreamObserver<com.quancheng.examples.model.hello.HelloReply>() {
+          @Override
+          public void onNext(com.quancheng.examples.model.hello.HelloReply summary) {
+            System.out.println(summary.getMessage());
+          }
 
-      @Override
-      public void onError(Throwable t) {
-        t.printStackTrace();
-      }
+          @Override
+          public void onError(Throwable t) {
+            t.printStackTrace();
+          }
 
-      @Override
-      public void onCompleted() {
+          @Override
+          public void onCompleted() {
 
-      }
-    };
+        }
+        };
     return responseObserver;
   }
 

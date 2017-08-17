@@ -21,7 +21,7 @@ public class HelloServiceImpl implements HelloService {
 
 
   @Override
-  public void sayHelloStream(HelloRequest hellorequest,
+  public void sayHelloServerStream(HelloRequest hellorequest,
       StreamObserver<HelloReply> responseObserver) {
     try {
       for (int i = 0; i < 10; i++) {
@@ -34,6 +34,70 @@ public class HelloServiceImpl implements HelloService {
       responseObserver.onError(e);
     }
     responseObserver.onCompleted();
+  }
+
+
+
+  @Override
+  public StreamObserver<HelloRequest> sayHelloClientStream(
+      StreamObserver<HelloReply> responseObserver) {
+    return new StreamObserver<HelloRequest>() {
+
+
+      private StringBuilder sb = new StringBuilder();
+
+      @Override
+      public void onNext(HelloRequest value) {
+        sb.append(value.getName() + ", ");
+      }
+
+      @Override
+      public void onError(Throwable t) {
+        t.printStackTrace();
+      }
+
+      @Override
+      public void onCompleted() {
+        HelloReply reply = new HelloReply();
+        reply.setMessage(sb.toString());
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+      }
+
+    };
+
+
+  }
+
+
+
+  @Override
+  public StreamObserver<HelloRequest> sayHelloBidiStream(
+      StreamObserver<HelloReply> responseObserver) {
+    return new StreamObserver<HelloRequest>() {
+
+      private int requestCount;
+
+      @Override
+      public void onNext(HelloRequest value) {
+        requestCount++;
+        HelloReply reply = new HelloReply();
+        reply.setMessage(value.getName());
+        responseObserver.onNext(reply);
+      }
+
+      @Override
+      public void onError(Throwable t) {
+        t.printStackTrace();
+      }
+
+      @Override
+      public void onCompleted() {
+        System.out.println(requestCount);
+        responseObserver.onCompleted();
+      }
+
+    };
   }
 
 }

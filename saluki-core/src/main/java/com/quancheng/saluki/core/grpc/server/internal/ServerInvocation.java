@@ -73,7 +73,7 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
           PoJo2ProtoStreamObserver.newObserverWrap(responseObserver);
       Object result = method.invoke(serviceToInvoke, servserResponseObserver);
       return Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) result,
-          grpcMethodType.responseType());
+          grpcMethodType.requestType());
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);

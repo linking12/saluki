@@ -32,11 +32,11 @@ public class Proto2PoJoStreamObserver implements StreamObserver<Message> {
 
   private final StreamObserver<Object> streamObserver;
 
-  private final Class<?> returnType;
+  private final Class<?> poJoType;
 
-  private Proto2PoJoStreamObserver(StreamObserver<Object> streamObserver, Class<?> returnType) {
+  private Proto2PoJoStreamObserver(StreamObserver<Object> streamObserver, Class<?> poJoType) {
     this.streamObserver = streamObserver;
-    this.returnType = returnType;
+    this.poJoType = poJoType;
   }
 
   public static Proto2PoJoStreamObserver newObserverWrap(StreamObserver<Object> streamObserver,
@@ -47,7 +47,7 @@ public class Proto2PoJoStreamObserver implements StreamObserver<Message> {
   @Override
   public void onNext(Message value) {
     try {
-      Object respPoJo = SerializerUtil.protobuf2Pojo(value, returnType);
+      Object respPoJo = SerializerUtil.protobuf2Pojo(value, poJoType);
       streamObserver.onNext(respPoJo);
     } catch (ProtobufException e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);

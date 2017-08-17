@@ -6,5 +6,9 @@ import "example/hello.proto";
 service HelloService {
     rpc sayHello (com.quancheng.examples.model.HelloRequest) returns (com.quancheng.examples.model.HelloReply) {}
     
-    rpc sayHelloStream (com.quancheng.examples.model.HelloRequest) returns (stream com.quancheng.examples.model.HelloReply) {}
+    rpc sayHelloServerStream (com.quancheng.examples.model.HelloRequest) returns (stream com.quancheng.examples.model.HelloReply) {}
+    
+    rpc sayHelloClientStream (stream com.quancheng.examples.model.HelloRequest) returns (com.quancheng.examples.model.HelloReply) {}
+    
+    rpc sayHelloBidiStream (stream com.quancheng.examples.model.HelloRequest) returns (stream com.quancheng.examples.model.HelloReply) {}
 }
