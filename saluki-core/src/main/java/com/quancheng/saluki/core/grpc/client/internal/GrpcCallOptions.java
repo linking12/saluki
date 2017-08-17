@@ -36,12 +36,12 @@ public abstract class GrpcCallOptions {
 
   public static final String GRPC_NAMERESOVER_ATTRIBUTES = "nameresolver-attributes";
 
-  public static final Map<String, CallOptions> CACHEOPTIONS_CACHE = Maps.newConcurrentMap();
+  private static final Map<String, CallOptions> CACHEOPTIONS_CACHE = Maps.newConcurrentMap();
 
   public static CallOptions createCallOptions(final GrpcURL refUrl) {
     String serviceName = refUrl.getServiceInterface();
     CallOptions options = CACHEOPTIONS_CACHE.get(serviceName);
-    if (options != null) {
+    if (options == null) {
       ConcurrentHashMap<String, Object> customOptions = new ConcurrentHashMap<String, Object>();
       customOptions.put(GRPC_REF_URL, refUrl);
       options = CallOptions.DEFAULT.withOption(CALLOPTIONS_CUSTOME_KEY, customOptions);

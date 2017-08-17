@@ -17,6 +17,7 @@ import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.common.RpcContext;
+import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
 import com.quancheng.saluki.core.grpc.stream.PoJo2ProtoStreamObserver;
 import com.quancheng.saluki.core.grpc.stream.Proto2PoJoStreamObserver;
@@ -49,12 +50,16 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
 
   private final GrpcURL providerUrl;
 
+  private final GrpcMethodType grpcMethodType;
+
   private final ConcurrentMap<String, AtomicInteger> concurrents;
 
-  public ServerInvocation(Object serviceToInvoke, Method method, GrpcURL providerUrl,
-      ConcurrentMap<String, AtomicInteger> concurrents, MonitorService salukiMonitor) {
+  public ServerInvocation(Object serviceToInvoke, Method method, GrpcMethodType grpcMethodType,
+      GrpcURL providerUrl, ConcurrentMap<String, AtomicInteger> concurrents,
+      MonitorService salukiMonitor) {
     this.serviceToInvoke = serviceToInvoke;
     this.method = method;
+    this.grpcMethodType = grpcMethodType;
     this.salukiMonitor = salukiMonitor;
     this.providerUrl = providerUrl;
     this.concurrents = concurrents;
@@ -67,7 +72,8 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
       PoJo2ProtoStreamObserver servserResponseObserver =
           PoJo2ProtoStreamObserver.newObserverWrap(responseObserver);
       Object result = method.invoke(serviceToInvoke, servserResponseObserver);
-      return Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) result);
+      return Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) result,
+          grpcMethodType.responseType());
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);
@@ -88,12 +94,23 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
       getConcurrent().getAndIncrement();
       Class<?> requestType = ReflectUtils.getTypedOfReq(method);
       Object reqPojo = SerializerUtil.protobuf2Pojo(reqProtoBufer, requestType);
-      Object[] requestParams = new Object[] {reqPojo};
-      Object respPojo = method.invoke(serviceToInvoke, requestParams);
-      respProtoBufer = SerializerUtil.pojo2Protobuf(respPojo);
-      collect(reqProtoBufer, respProtoBufer, start, false);
-      responseObserver.onNext(respProtoBufer);
-      responseObserver.onCompleted();
+      Object[] requestParams = null;
+      switch (grpcMethodType.methodType()) {
+        case UNARY:
+          requestParams = new Object[] {reqPojo};
+          Object respPojo = method.invoke(serviceToInvoke, requestParams);
+          respProtoBufer = SerializerUtil.pojo2Protobuf(respPojo);
+          collect(reqProtoBufer, respProtoBufer, start, false);
+          responseObserver.onNext(respProtoBufer);
+          responseObserver.onCompleted();
+        case SERVER_STREAMING:
+          requestParams =
+              new Object[] {reqPojo, PoJo2ProtoStreamObserver.newObserverWrap(responseObserver)};
+          method.invoke(serviceToInvoke, requestParams);
+          break;
+        default:
+          break;
+      }
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);

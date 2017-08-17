@@ -91,28 +91,29 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
     GrpcURL refUrl = request.getRefUrl();
     GrpcStreamClientCall clientCall = GrpcStreamClientCall.create(channel, refUrl);
     MethodType methodType = request.getMethodType();
+    Class<?> returnType = request.getResponseType();
     MethodDescriptor<Message, Message> methodDesc = request.getMethodDescriptor();
     Object requestParam = request.getRequestParam();
     StreamObserver<Message> requestObserver;
     switch (methodType) {
       case CLIENT_STREAMING:
-        requestObserver = clientCall.asyncClientStream(methodDesc,
-            Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) requestParam));
+        requestObserver = clientCall.asyncClientStream(methodDesc, Proto2PoJoStreamObserver
+            .newObserverWrap((StreamObserver<Object>) requestParam, returnType));
         return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
       case SERVER_STREAMING:
         Object responseObserver = request.getResponseOberver();
         try {
           Message messageParam = SerializerUtil.pojo2Protobuf(requestParam);
-          clientCall.asyncServerStream(methodDesc,
-              Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) responseObserver),
-              messageParam);
+          clientCall.asyncServerStream(methodDesc, Proto2PoJoStreamObserver.newObserverWrap(
+              (StreamObserver<Object>) responseObserver, returnType), messageParam);
         } catch (ProtobufException e) {
           RpcFrameworkException rpcFramwork = new RpcFrameworkException(e);
           throw rpcFramwork;
         }
+        return null;
       case BIDI_STREAMING:
-        requestObserver = clientCall.asyncBidiStream(methodDesc,
-            Proto2PoJoStreamObserver.newObserverWrap((StreamObserver<Object>) requestParam));
+        requestObserver = clientCall.asyncBidiStream(methodDesc, Proto2PoJoStreamObserver
+            .newObserverWrap((StreamObserver<Object>) requestParam, returnType));
         return PoJo2ProtoStreamObserver.newObserverWrap(requestObserver);
       default:
         RpcServiceException rpcFramwork =

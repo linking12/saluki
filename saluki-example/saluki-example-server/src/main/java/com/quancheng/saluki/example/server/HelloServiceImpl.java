@@ -1,6 +1,5 @@
 package com.quancheng.saluki.example.server;
 
-import com.google.common.base.Preconditions;
 import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
@@ -24,8 +23,17 @@ public class HelloServiceImpl implements HelloService {
   @Override
   public void sayHelloStream(HelloRequest hellorequest,
       StreamObserver<HelloReply> responseObserver) {
-    // TODO Auto-generated method stub
-
+    try {
+      for (int i = 0; i < 10; i++) {
+        HelloReply reply = new HelloReply();
+        reply.setMessage(hellorequest.getName());
+        responseObserver.onNext(reply);
+        Thread.sleep(10000);
+      }
+    } catch (Exception e) {
+      responseObserver.onError(e);
+    }
+    responseObserver.onCompleted();
   }
 
 }

@@ -68,20 +68,24 @@ public class DefaultProxyExporter implements GrpcProtocolExporter {
       switch (grpcMethodType.methodType()) {
         case UNARY:
           serviceDefBuilder.addMethod(methodDescriptor,
-              ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method, providerUrl,
-                  concurrents, clientServerMonitor)));
+              ServerCalls.asyncUnaryCall(new ServerInvocation(serviceRef, method, grpcMethodType,
+                  providerUrl, concurrents, clientServerMonitor)));
+          break;
         case CLIENT_STREAMING:
           serviceDefBuilder.addMethod(methodDescriptor,
               ServerCalls.asyncClientStreamingCall(new ServerInvocation(serviceRef, method,
-                  providerUrl, concurrents, clientServerMonitor)));
+                  grpcMethodType, providerUrl, concurrents, clientServerMonitor)));
+          break;
         case SERVER_STREAMING:
           serviceDefBuilder.addMethod(methodDescriptor,
               ServerCalls.asyncServerStreamingCall(new ServerInvocation(serviceRef, method,
-                  providerUrl, concurrents, clientServerMonitor)));
+                  grpcMethodType, providerUrl, concurrents, clientServerMonitor)));
+          break;
         case BIDI_STREAMING:
           serviceDefBuilder.addMethod(methodDescriptor,
               ServerCalls.asyncBidiStreamingCall(new ServerInvocation(serviceRef, method,
-                  providerUrl, concurrents, clientServerMonitor)));
+                  grpcMethodType, providerUrl, concurrents, clientServerMonitor)));
+          break;
         default:
           RpcServiceException rpcFramwork =
               new RpcServiceException(RpcErrorMsgConstant.SERVICE_UNFOUND);

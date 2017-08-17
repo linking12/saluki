@@ -1,8 +1,6 @@
 package com.quancheng.saluki.example.client;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +14,8 @@ import com.quancheng.saluki.boot.SalukiReference;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.saluki.example.model.First;
 import com.saluki.example.model.Second;
+
+import io.grpc.stub.StreamObserver;
 
 @RestController
 @RequestMapping("/proxy")
@@ -31,16 +31,41 @@ public class ProxyServiceController {
     return call(name);
   }
 
-  @RequestMapping("/hello_1")
-  public HelloReply hello1(@RequestParam(value = "name", required = false) String name) {
-    RpcContext.getContext().setHoldenGroups(new HashSet<>(Arrays.asList(First.class)));
-    return call(name);
+
+  @RequestMapping("/hellostream")
+  public HelloReply hellostream(@RequestParam(value = "name", required = false) String name) {
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    com.quancheng.examples.model.hello.Project project =
+        new com.quancheng.examples.model.hello.Project();
+    project.setId("123");
+    Map<String, com.quancheng.examples.model.hello.Project> projects =
+        new HashMap<String, com.quancheng.examples.model.hello.Project>();
+    projects.put("test", project);
+    request.setProjects(projects);
+    helloService.sayHelloStream(request, observer());
+    return null;
   }
 
-  @RequestMapping("/hello_2")
-  public HelloReply hello2(@RequestParam(value = "name", required = false) String name) {
-    RpcContext.getContext().setHoldenGroups(new HashSet<>(Arrays.asList(Second.class)));
-    return call(name);
+
+  private StreamObserver<HelloReply> observer() {
+    StreamObserver<HelloReply> responseObserver = new StreamObserver<HelloReply>() {
+      @Override
+      public void onNext(HelloReply summary) {
+        System.out.println(summary);
+      }
+
+      @Override
+      public void onError(Throwable t) {
+        t.printStackTrace();
+      }
+
+      @Override
+      public void onCompleted() {
+
+      }
+    };
+    return responseObserver;
   }
 
 
