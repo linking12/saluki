@@ -9,13 +9,11 @@ package com.quancheng.saluki.gateway.oauth2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 
 import com.quancheng.saluki.gateway.oauth2.security.CustomAuthenticationEntryPoint;
-import com.quancheng.saluki.gateway.oauth2.security.CustomLogoutSuccessHandler;
 
 /**
  * @author shimingliu 2017年3月31日 下午2:57:03
@@ -28,33 +26,21 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
   @Autowired
   private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-  @Autowired
-  private CustomLogoutSuccessHandler customLogoutSuccessHandler;
-
 
   @Override
   public void configure(HttpSecurity http) throws Exception {
-
-    http//
-        .exceptionHandling()//
-        .authenticationEntryPoint(customAuthenticationEntryPoint)//
-        .and()//
-        .logout()//
-        .logoutUrl("/oauth/logout")//
-        .logoutSuccessHandler(customLogoutSuccessHandler)//
-        .and()//
-        .csrf()//
-        .requireCsrfProtectionMatcher(new AntPathRequestMatcher("/oauth/authorize"))//
+    http.anonymous()//
         .disable()//
-        .headers()//
-        .frameOptions()//
-        .disable()//
-        .and()//
-        .sessionManagement()//
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//
+        .requestMatchers()//
+        .antMatchers("/api/**")//
         .and()//
         .authorizeRequests()//
-        .antMatchers("/api/**").authenticated();//
+        .antMatchers("/api/**")//
+        .fullyAuthenticated()//
+        .and()//
+        .exceptionHandling()//
+        .authenticationEntryPoint(customAuthenticationEntryPoint)
+        .accessDeniedHandler(new OAuth2AccessDeniedHandler());
 
   }
 
