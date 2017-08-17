@@ -28,6 +28,8 @@ import com.quancheng.saluki.core.grpc.service.GenericService;
 import com.saluki.example.model.First;
 import com.saluki.example.model.Second;
 
+import io.grpc.stub.StreamObserver;
+
 /**
  * @author liushiming
  * @version GenricServiceController.java, v 0.0.1 2017年7月15日 上午11:09:11 liushiming
@@ -52,6 +54,38 @@ public class GenricServiceController {
     return reply;
   }
 
+  @RequestMapping("/hellostream")
+  public HelloReply hellostream(@RequestParam(value = "name", required = false) String name) {
+    String serviceName = "com.quancheng.examples.service.HelloService";
+    String method = "sayHelloServerStream";
+    HelloRequest request = new HelloRequest();
+    request.setName(name);
+    Object[] args = new Object[] {request, responseObserver()};
+    HelloReply reply =
+        (HelloReply) genricService.$invoke(serviceName, "example", "1.0.0", method, args);
+    return reply;
+  }
+
+  private StreamObserver<com.quancheng.examples.model.hello.HelloReply> responseObserver() {
+    StreamObserver<com.quancheng.examples.model.hello.HelloReply> responseObserver =
+        new StreamObserver<com.quancheng.examples.model.hello.HelloReply>() {
+          @Override
+          public void onNext(com.quancheng.examples.model.hello.HelloReply summary) {
+            System.out.println(summary.getMessage());
+          }
+
+          @Override
+          public void onError(Throwable t) {
+            t.printStackTrace();
+          }
+
+          @Override
+          public void onCompleted() {
+
+        }
+        };
+    return responseObserver;
+  }
 
   @RequestMapping("/hello_1")
   public HelloReply view1(@RequestParam(value = "name", required = false) String name) {
