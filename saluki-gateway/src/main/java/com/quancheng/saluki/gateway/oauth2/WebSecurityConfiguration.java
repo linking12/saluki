@@ -7,7 +7,6 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -22,22 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http//
-        .exceptionHandling()//
-        .accessDeniedPage("/login.html?authorization_error=true")//
-        .and()//
-        .logout()//
-        .permitAll()//
-        .and()//
-        .formLogin()//
-        .loginPage("/login.html")//
-        .permitAll()//
-        .and()//
-        .authorizeRequests()//
-        .anyRequest().authenticated();//
-  }
 
   @Override
   public void configure(WebSecurity security) {
@@ -48,6 +31,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
 
   @Bean
   @Autowired

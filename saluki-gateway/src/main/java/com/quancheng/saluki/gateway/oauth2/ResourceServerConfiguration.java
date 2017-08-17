@@ -1,18 +1,21 @@
 /*
- * Copyright (c) 2017, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2017, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.gateway.oauth2;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import com.quancheng.saluki.gateway.oauth2.security.CustomAuthenticationEntryPoint;
+import com.quancheng.saluki.gateway.oauth2.security.CustomLogoutSuccessHandler;
 
 /**
  * @author shimingliu 2017年3月31日 下午2:57:03
@@ -22,27 +25,37 @@ import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHand
 @EnableResourceServer
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
-    private static final String RESOURCE_ID = "REST_API";
+  @Autowired
+  private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    @Override
-    public void configure(ResourceServerSecurityConfigurer resources) {
-        resources.resourceId(RESOURCE_ID).stateless(false);
-    }
+  @Autowired
+  private CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-        /**
-         * @Waing 这里不要随便改动，会导致api调用失败
-         */
-        http.anonymous()//
-            .disable()//
-            .requestMatchers()//
-            .antMatchers("/api/**")//
-            .and().authorizeRequests()//
-            .antMatchers("/api/**")//
-            .fullyAuthenticated()//
-            .and().exceptionHandling()//
-            .accessDeniedHandler(new OAuth2AccessDeniedHandler());
-    }
+
+  @Override
+  public void configure(HttpSecurity http) throws Exception {
+
+    http//
+        .exceptionHandling()//
+        .authenticationEntryPoint(customAuthenticationEntryPoint)//
+        .and()//
+        .logout()//
+        .logoutUrl("/oauth/logout")//
+        .logoutSuccessHandler(customLogoutSuccessHandler)//
+        .and()//
+        .csrf()//
+        .requireCsrfProtectionMatcher(new AntPathRequestMatcher("/oauth/authorize"))//
+        .disable()//
+        .headers()//
+        .frameOptions()//
+        .disable()//
+        .and()//
+        .sessionManagement()//
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//
+        .and()//
+        .authorizeRequests()//
+        .antMatchers("/api/**").authenticated();//
+
+  }
 
 }
