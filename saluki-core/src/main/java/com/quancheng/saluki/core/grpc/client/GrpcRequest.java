@@ -76,7 +76,12 @@ public interface GrpcRequest {
       this.refUrl = refUrl;
       this.chanelPool = chanelPool;
       this.methodName = methodName;
-      this.args = args;
+      if (args.length > 2) {
+        throw new IllegalArgumentException(
+            "grpc not support multiple args,args is " + args + " length is " + args.length);
+      } else {
+        this.args = args;
+      }
       this.callType = callType;
       this.callTimeout = callTimeout;
       try {
