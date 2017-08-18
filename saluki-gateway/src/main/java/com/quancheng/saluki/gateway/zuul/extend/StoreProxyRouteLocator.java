@@ -20,6 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -30,8 +33,11 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.gateway.zuul.dto.ZuulRouteDto;
 import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
@@ -39,10 +45,16 @@ import com.quancheng.saluki.gateway.zuul.service.ZuulRouteService;
  * @version StoreProxyRouteLocator.java, v 0.0.1 2017年8月14日 下午4:52:01 liushiming
  * @since JDK 1.8
  */
+@Slf4j
 public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
 
 
   private final ZuulRouteService store;
+
+  private volatile Boolean hasLoaded = false;
+
+  private final ScheduledExecutorService refreshExecutor =
+      Executors.newScheduledThreadPool(1, new NamedThreadFactory("refreshZuulRoute", true));;
 
 
   /**
@@ -57,6 +69,17 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
       ZuulProperties properties, ZuulRouteService store) {
     super(servletPath, discovery, properties);
     this.store = store;
+    refreshExecutor.scheduleAtFixedRate(new Runnable() {
+
+      @Override
+      public void run() {
+        try {
+          refresh();
+        } catch (Throwable e) {
+          log.error(e.getMessage(), e);
+        }
+      }
+    }, 0, 1, TimeUnit.MINUTES);
   }
 
   @Override
@@ -76,19 +99,27 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
     return routesMap;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  private Set<ZuulRouteDto> routesCache;
+
   @Override
   protected void addConfiguredRoutes(Map<String, ZuulProperties.ZuulRoute> routes) {
     super.addConfiguredRoutes(routes);
   }
 
+  public Set<ZuulRouteDto> loadRoutes() {
+    return routesCache;
+  }
+
   private List<ZuulProperties.ZuulRoute> findAll() {
     Set<ZuulRouteDto> routers = Sets.newHashSet();
-    routers.addAll(store.loadAllRoute());
-    RouterLocalCache.getInstance().putAllRouters(routers);
-    return Lists.transform(Lists.newArrayList(routers),
+    if (!hasLoaded) {
+      routers.addAll(store.loadAllRoute());
+      hasLoaded = true;
+    } else {
+      routers.addAll(store.loadTop10Route());
+    }
+    routesCache.addAll(routers);
+    return Lists.transform(Lists.newArrayList(routesCache),
         new Function<ZuulRouteDto, ZuulProperties.ZuulRoute>() {
 
           @Override
