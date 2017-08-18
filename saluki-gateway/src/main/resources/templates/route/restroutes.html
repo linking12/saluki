@@ -37,6 +37,7 @@
                         <th>路由Id</th>
                         <th>路由Path</th>
                         <th>路由Url</th>
+                        <th>服务Id</th>
                         <th>是否忽略前缀<br/>stripPrefix</th>
                         <th>是否重试<br/>retryAble</th>
                         <th>覆盖全局Header<br/>sensitiveHeaders</th>
@@ -49,6 +50,7 @@
                             <td th:text="${route.zuul_route_id}"/>
                             <td th:text="${route.path}"/>
                             <td th:text="${route.url}"/>
+                            <td th:text="${route.service_id}"/>
                             <td th:text="${route.strip_prefix}"/>
                             <td th:text="${route.retryable}"/>
                             <td th:text="${route.sensitiveHeaders}"/>

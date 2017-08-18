@@ -24,7 +24,7 @@
 		<spring.data.version>1.13.1.RELEASE</spring.data.version>
 		<thymeleaf.version>2.1.3.RELEASE</thymeleaf.version>
 		<oauth2.version>2.0.12.RELEASE</oauth2.version>
-		<zuul.version>1.3.0.RELEASE</zuul.version>
+		<springcloud.version>1.3.0.RELEASE</springcloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -149,7 +149,17 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-zuul</artifactId>
-			<version>${zuul.version}</version>
+			<version>${springcloud.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+			<version>${springcloud.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-ribbon</artifactId>
+			<version>${springcloud.version}</version>
 		</dependency>
 	</dependencies>
 

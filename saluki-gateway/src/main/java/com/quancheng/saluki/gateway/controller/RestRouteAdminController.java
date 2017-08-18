@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2017, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2017, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.gateway.controller;
 
@@ -40,122 +39,133 @@ import com.quancheng.saluki.gateway.zuul.repository.ZuulRouteRepository;
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class RestRouteAdminController implements ApplicationEventPublisherAware {
 
-    @Autowired
-    private ZuulRouteRepository       zuulRouteRepository;
+  @Autowired
+  private ZuulRouteRepository zuulRouteRepository;
 
-    @Autowired
-    private Environment               environment;
+  @Autowired
+  private Environment environment;
 
-    private ApplicationEventPublisher publisher;
+  private ApplicationEventPublisher publisher;
 
-    @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
-                                                             MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String listAll(@RequestParam(name = "type", required = false) String editType,
-                          @RequestParam(name = "edit", required = false) String editRestRoute, Model model,
-                          Pageable pageable) {
+  @RequestMapping(method = RequestMethod.GET,
+      produces = {MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_XHTML_XML_VALUE})
+  public String listAll(@RequestParam(name = "type", required = false) String editType,
+      @RequestParam(name = "edit", required = false) String editRestRoute, Model model,
+      Pageable pageable) {
 
-        if (!StringUtils.isEmpty(editType)) {
-            if (!StringUtils.isEmpty(editRestRoute)) {
-                zuulRouteRepository.findOneByRouteId(editRestRoute).map(zuulRouteEntity -> {
+    if (!StringUtils.isEmpty(editType)) {
+      if (!StringUtils.isEmpty(editRestRoute)) {
+        zuulRouteRepository.findOneByRouteId(editRestRoute).map(zuulRouteEntity -> {
 
-                    model.addAttribute("routeId", zuulRouteEntity.getZuul_route_id());
-                    model.addAttribute("routePath", zuulRouteEntity.getPath());
-                    model.addAttribute("routeUrl", zuulRouteEntity.getUrl());
-                    model.addAttribute("stripPrefix", zuulRouteEntity.getStrip_prefix());
-                    model.addAttribute("retryAble", zuulRouteEntity.getRetryable());
-                    model.addAttribute("sensitiveHeaders", zuulRouteEntity.getSensitiveHeaders());
-                    return null;
-                });
-            }
-            return "route/restroute";
-        }
-        model.addAttribute("routeList", zuulRouteRepository.findAllRest(pageable));
-        return "route/restroutes";
-    }
-
-    @RequestMapping(path = "/_create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
-                                                                                                                                         MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String create(@RequestParam(name = "routeId", required = true) String routeId,
-                         @RequestParam(name = "routePath", required = true) String routePath,
-                         @RequestParam(name = "routeUrl", required = true) String routeUrl,
-                         @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
-                         @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
-                         @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
-                         RedirectAttributes attributes) {
-        if (zuulRouteRepository.findOneByRouteId(routeId).isPresent()) {
-            addErrorMessage(attributes, routeId + "已经存在 ");
-            resetRequestParams(routeId, routePath, routeUrl, stripPrefix, retryAble, sensitiveHeaders, attributes);
-            return "redirect:/restRoute.html?type=add";
-        }
-        ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
-                                                    .zuul_route_id(routeId)//
-                                                    .path(routePath)//
-                                                    .strip_prefix(stripPrefix)//
-                                                    .retryable(retryAble)//
-                                                    .url(routeUrl)//
-                                                    .sensitiveHeaders(sensitiveHeaders)//
-                                                    .build();
-        zuulRouteRepository.save(entityRest);
-        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
-        return "redirect:/restRoute.html";
-    }
-
-    @RequestMapping(path = "/_update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = { MediaType.TEXT_HTML_VALUE,
-                                                                                                                                         MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String update(@RequestParam(name = "routeId", required = true) String routeId,
-                         @RequestParam(name = "routePath", required = true) String routePath,
-                         @RequestParam(name = "routeUrl", required = true) String routeUrl,
-                         @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
-                         @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
-                         @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
-                         RedirectAttributes attributes) {
-
-        zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
-            zuulRouteEntity.setZuul_route_id(routeId);
-            zuulRouteEntity.setPath(routePath);
-            zuulRouteEntity.setUrl(routeUrl);
-            zuulRouteEntity.setStrip_prefix(stripPrefix);
-            zuulRouteEntity.setRetryable(retryAble);
-            zuulRouteEntity.setSensitiveHeaders(sensitiveHeaders);
-            return zuulRouteRepository.save(zuulRouteEntity);
-        }).orElseGet(() -> {
-            addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
-            return null;
+          model.addAttribute("routeId", zuulRouteEntity.getZuul_route_id());
+          model.addAttribute("routePath", zuulRouteEntity.getPath());
+          model.addAttribute("serviceId", zuulRouteEntity.getService_id());
+          model.addAttribute("routeUrl", zuulRouteEntity.getUrl());
+          model.addAttribute("stripPrefix", zuulRouteEntity.getStrip_prefix());
+          model.addAttribute("retryAble", zuulRouteEntity.getRetryable());
+          model.addAttribute("sensitiveHeaders", zuulRouteEntity.getSensitiveHeaders());
+          return null;
         });
-        publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
-        return "redirect:/restRoute.html";
+      }
+      return "route/restroute";
     }
+    model.addAttribute("routeList", zuulRouteRepository.findAllRest(pageable));
+    return "route/restroutes";
+  }
 
-    @RequestMapping(path = "/_remove/{routeId}", method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE,
-                                                                                          MediaType.APPLICATION_XHTML_XML_VALUE })
-    public String deleteRoute(@PathVariable("routeId") String routeId, RedirectAttributes attributes) {
-
-        zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
-            zuulRouteRepository.delete(zuulRouteEntity);
-            addSuccessMessage(attributes, "路由 " + routeId + " 已删除。");
-            publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
-            return zuulRouteEntity;
-        }).orElseGet(() -> {
-            addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
-            return null;
-        });
-        return "redirect:/restRoute.html";
+  @RequestMapping(path = "/_create", method = RequestMethod.POST,
+      consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+      produces = {MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_XHTML_XML_VALUE})
+  public String create(@RequestParam(name = "routeId", required = true) String routeId,
+      @RequestParam(name = "routePath", required = true) String routePath,
+      @RequestParam(name = "routeUrl", required = true) String routeUrl,
+      @RequestParam(name = "serviceId", required = true) String serviceId,
+      @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
+      @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
+      @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
+      RedirectAttributes attributes) {
+    if (zuulRouteRepository.findOneByRouteId(routeId).isPresent()) {
+      addErrorMessage(attributes, routeId + "已经存在 ");
+      resetRequestParams(routeId, routePath, routeUrl, serviceId, stripPrefix, retryAble,
+          sensitiveHeaders, attributes);
+      return "redirect:/restRoute.html?type=add";
     }
+    ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
+        .zuul_route_id(routeId)//
+        .path(routePath)//
+        .strip_prefix(stripPrefix)//
+        .retryable(retryAble)//
+        .url(routeUrl)//
+        .service_id(serviceId)//
+        .sensitiveHeaders(sensitiveHeaders)//
+        .build();
+    zuulRouteRepository.save(entityRest);
+    publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
+    return "redirect:/restRoute.html";
+  }
 
-    private void resetRequestParams(String routeId, String routePath, String routeUrl, Boolean stripPrefix,
-                                    Boolean retryAble, String sensitiveHeaders, RedirectAttributes attributes) {
+  @RequestMapping(path = "/_update", method = RequestMethod.POST,
+      consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+      produces = {MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_XHTML_XML_VALUE})
+  public String update(@RequestParam(name = "routeId", required = true) String routeId,
+      @RequestParam(name = "routePath", required = true) String routePath,
+      @RequestParam(name = "routeUrl", required = true) String routeUrl,
+      @RequestParam(name = "serviceId", required = true) String serviceId,
+      @RequestParam(name = "stripPrefix", defaultValue = "false") Boolean stripPrefix,
+      @RequestParam(name = "retryAble", defaultValue = "false") Boolean retryAble,
+      @RequestParam(name = "sensitiveHeaders", defaultValue = "") String sensitiveHeaders,
+      RedirectAttributes attributes) {
 
-        attributes.addFlashAttribute("routeId", routeId);
-        attributes.addFlashAttribute("routePath", routePath);
-        attributes.addFlashAttribute("routeUrl", routeUrl);
-        attributes.addFlashAttribute("stripPrefix", stripPrefix);
-        attributes.addFlashAttribute("retryAble", retryAble);
-        attributes.addFlashAttribute("sensitiveHeaders", sensitiveHeaders);
+    zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
+      zuulRouteEntity.setZuul_route_id(routeId);
+      zuulRouteEntity.setPath(routePath);
+      zuulRouteEntity.setUrl(routeUrl);
+      zuulRouteEntity.setService_id(serviceId);
+      zuulRouteEntity.setStrip_prefix(stripPrefix);
+      zuulRouteEntity.setRetryable(retryAble);
+      zuulRouteEntity.setSensitiveHeaders(sensitiveHeaders);
+      return zuulRouteRepository.save(zuulRouteEntity);
+    }).orElseGet(() -> {
+      addErrorMessage(attributes, "routeId" + routeId + " 不存在。");
+      return null;
+    });
+    publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
+    return "redirect:/restRoute.html";
+  }
 
-    }
+  @RequestMapping(path = "/_remove/{routeId}", method = RequestMethod.GET,
+      produces = {MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_XHTML_XML_VALUE})
+  public String deleteRoute(@PathVariable("routeId") String routeId,
+      RedirectAttributes attributes) {
 
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.publisher = applicationEventPublisher;
-    }
+    zuulRouteRepository.findOneByRouteId(routeId).map(zuulRouteEntity -> {
+      zuulRouteRepository.delete(zuulRouteEntity);
+      addSuccessMessage(attributes, "路由 " + routeId + " 已删除。");
+      publisher.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
+      return zuulRouteEntity;
+    }).orElseGet(() -> {
+      addWarningMessage(attributes, "没有找到 " + routeId + " 路由。");
+      return null;
+    });
+    return "redirect:/restRoute.html";
+  }
+
+  private void resetRequestParams(String routeId, String routePath, String routeUrl,
+      String serviceId, Boolean stripPrefix, Boolean retryAble, String sensitiveHeaders,
+      RedirectAttributes attributes) {
+
+    attributes.addFlashAttribute("routeId", routeId);
+    attributes.addFlashAttribute("routePath", routePath);
+    attributes.addFlashAttribute("routeUrl", routeUrl);
+    attributes.addFlashAttribute("serviceId", serviceId);
+    attributes.addFlashAttribute("stripPrefix", stripPrefix);
+    attributes.addFlashAttribute("retryAble", retryAble);
+    attributes.addFlashAttribute("sensitiveHeaders", sensitiveHeaders);
+
+  }
+
+  @Override
+  public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+    this.publisher = applicationEventPublisher;
+  }
 }

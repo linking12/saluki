@@ -51,3 +51,7 @@ spring:
     password: null
   thymeleaf:
     cache: false
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761

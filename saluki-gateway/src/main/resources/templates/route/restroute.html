@@ -61,6 +61,14 @@
 				                </div>
 				                <div class="row">
 				                  <div class="col-md-12">
+				                    <div class="form-group">
+				                      <label class="control-label">服务Id</label>
+				                      <input type="text" class="form-control" id="serviceId" name="serviceId" placeholder="serviceId" required="required" th:value="${serviceId}" />
+				                     </div>
+				                  </div>
+				                </div>
+				                <div class="row">
+				                  <div class="col-md-12">
 				                     <div class="form-group">
 			                           <label class="control-label">是否忽略前缀stripPrefix</label>
 				                       <input type="checkbox" name="stripPrefix" value="false" th:checked="${stripPrefix}" />
