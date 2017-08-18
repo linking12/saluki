@@ -99,7 +99,7 @@ public class StoreProxyRouteLocator extends DiscoveryClientRouteLocator {
     return routesMap;
   }
 
-  private Set<ZuulRouteDto> routesCache;
+  private Set<ZuulRouteDto> routesCache = Sets.newConcurrentHashSet();
 
   @Override
   protected void addConfiguredRoutes(Map<String, ZuulProperties.ZuulRoute> routes) {
