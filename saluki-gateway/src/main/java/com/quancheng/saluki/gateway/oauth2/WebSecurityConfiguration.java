@@ -1,11 +1,15 @@
 package com.quancheng.saluki.gateway.oauth2;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,44 +19,50 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 
 @Configuration
 @EnableWebSecurity
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-
-//  @Override
-//  public void configure(HttpSecurity http) throws Exception {
-//    // @formatter:off
-//    http
-//        .exceptionHandling()
-//            .accessDeniedPage("/login.html?authorization_error=true")
-//            .and()
-//        .logout()
-//            .permitAll()
-//            .and()
-//        .formLogin()
-//            .loginPage("/login.html")
-//            .permitAll()
-//            .and()
-//        .authorizeRequests()
-//        .anyRequest().authenticated();
-//   // @formatter:on
-//
-//
-//  }
-
-  @Override
-  public void configure(WebSecurity security) {
-    security.ignoring().antMatchers("/resources/**");
-  }
+  @Autowired
+  private UserDetailsService userDetailsService;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+
+  @Override
+  public void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+  }
+
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http//
+        .exceptionHandling()//
+        .accessDeniedPage("/login.html?authorization_error=true")//
+        .and()//
+        .logout()//
+        .permitAll()//
+        .and()//
+        .formLogin()//
+        .loginPage("/login.html")//
+        .permitAll()//
+        .and()//
+        .authorizeRequests()//
+        .anyRequest().authenticated();//
+  }
+
+  @Override
+  public void configure(WebSecurity security) {
+    security.ignoring().antMatchers("/resources/**");
   }
 
   @Bean

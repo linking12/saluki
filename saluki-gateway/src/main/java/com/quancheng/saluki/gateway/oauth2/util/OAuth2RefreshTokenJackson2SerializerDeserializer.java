@@ -28,7 +28,9 @@ public final class OAuth2RefreshTokenJackson2SerializerDeserializer {
     private static final String TOKEN_VALUE = "value";
     private static final String EXPIRATION = "expiration";
 
-    public static class OAuth2RefreshTokenJackson2Serializer extends StdSerializer<OAuth2RefreshToken> {
+  public static class OAuth2RefreshTokenJackson2Serializer extends StdSerializer<OAuth2RefreshToken> {
+
+        private static final long serialVersionUID = -2831986033329295931L;
 
         public OAuth2RefreshTokenJackson2Serializer() {
             super(OAuth2RefreshToken.class);
@@ -49,6 +51,8 @@ public final class OAuth2RefreshTokenJackson2SerializerDeserializer {
     }
 
     public static class OAuth2RefreshTokenJackson2Deserializer extends StdDeserializer<OAuth2RefreshToken> {
+
+    private static final long serialVersionUID = 1L;
 
         protected OAuth2RefreshTokenJackson2Deserializer() {
             super(OAuth2RefreshToken.class);
