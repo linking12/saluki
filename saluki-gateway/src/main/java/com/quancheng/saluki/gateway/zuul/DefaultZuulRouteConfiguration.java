@@ -42,9 +42,9 @@ public class DefaultZuulRouteConfiguration implements InitializingBean {
 
       ZuulRouteEntity entityRest = ZuulRouteEntity.builder()//
           .zuul_route_id("helloRest")//
-          .path("/api/helloRest")//
+          .path("/api/hello")//
           .strip_prefix(false)//
-          .url("http://localhost:9191/gateway/secure")//
+          .url("http://localhost:8080")//
           .build();
 
       ZuulGrpcFieldMappingEntity fieldMapping = ZuulGrpcFieldMappingEntity.builder()//
