@@ -1,9 +1,27 @@
 /.gradle/
-/.settings/
 .DS_Store
+
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
 .project
-.settings/
-/.idea/
-.idea/
-/saluki-example/saluki-example.iml
-/saluki-example/.idea/
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
