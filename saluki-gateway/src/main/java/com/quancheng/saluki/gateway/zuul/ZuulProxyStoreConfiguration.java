@@ -68,8 +68,8 @@ public class ZuulProxyStoreConfiguration extends ZuulProxyConfiguration {
   }
 
   @Bean
-  public GrpcRemoteRouteFilter grpcRemoteApiFilter(StoreProxyRouteLocator routeLocator) {
-    return new GrpcRemoteRouteFilter(grpcRemoteComponent, routeLocator);
+  public GrpcRemoteRouteFilter grpcRemoteApiFilter(DiscoveryClientRouteLocator routeLocator) {
+    return new GrpcRemoteRouteFilter(grpcRemoteComponent, (StoreProxyRouteLocator) routeLocator);
   }
 
   @Bean
