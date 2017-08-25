@@ -93,6 +93,7 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
     switch (grpcMethodType.methodType()) {
       case UNARY:
         unaryCall(request, responseObserver);
+        break;
       case SERVER_STREAMING:
         streamCall(request, responseObserver);
         break;
