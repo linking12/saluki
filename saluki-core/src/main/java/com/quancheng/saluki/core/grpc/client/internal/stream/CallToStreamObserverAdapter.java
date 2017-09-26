@@ -13,8 +13,6 @@
  */
 package com.quancheng.saluki.core.grpc.client.internal.stream;
 
-import javax.annotation.Nullable;
-
 import io.grpc.ClientCall;
 import io.grpc.stub.ClientCallStreamObserver;
 
@@ -92,11 +90,5 @@ public class CallToStreamObserverAdapter<Request, Response>
   public void setMessageCompression(boolean enable) {
     call.setMessageCompression(enable);
   }
-
-  @Override
-  public void cancel(@Nullable String message, @Nullable Throwable cause) {
-    call.cancel(message, cause);
-  }
-
 
 }
