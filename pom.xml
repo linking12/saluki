@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki</artifactId>
-	<version>1.5.5-SNAPSHOT</version>
+	<version>1.5.6.RLEASE</version>
 	<inceptionYear>2017</inceptionYear>
 	<packaging>pom</packaging>
 	<licenses>
