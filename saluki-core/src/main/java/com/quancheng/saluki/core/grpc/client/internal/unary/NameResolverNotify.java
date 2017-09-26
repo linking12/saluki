@@ -35,7 +35,7 @@ public class NameResolverNotify {
 
   private static final Object LOCK = new Object();
 
-  private static NameResolverNotify notify;
+  private static final NameResolverNotify notify = new NameResolverNotify();
 
   private NameResolverNotify() {}
 
