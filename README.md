@@ -1,5 +1,8 @@
 README: [English](https://github.com/linking12/saluki/blob/master/README.md) | [中文](https://github.com/linking12/saluki/blob/master/README-zh.md)
 
+[![Build Status](https://travis-ci.org/linking12/saluki.svg?branch=master)](https://travis-ci.org/linking12/saluki)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+
 # Overview
 
 * saluki is a microservice framework rely on grpc-java
@@ -37,12 +40,12 @@ README: [English](https://github.com/linking12/saluki/blob/master/README.md) | [
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki</artifactId>
-	<version>1.5.5-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 </dependency>
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki-monitor</artifactId>
-	<version>1.5.5-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 </dependency>
 ```
 

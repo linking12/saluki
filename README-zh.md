@@ -72,14 +72,14 @@
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki-core</artifactId>
-	<version>1.5.3-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 	<scope>provided</scope>
 </dependency>
 
 <plugin>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki-maven-plugin</artifactId>
-	<version>1.5.3-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 	<configuration>
 		<protoPath>src/main/proto</protoPath>
 		<buildPath>target/generated-sources/protobuf/java</buildPath>
@@ -105,12 +105,12 @@
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki</artifactId>
-	<version>1.5.3-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 </dependency>
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki-monitor</artifactId>
-	<version>1.5.3-SNAPSHOT</version>
+	<version>1.5.6.RELEASE</version>
 </dependency>
 ```
 
