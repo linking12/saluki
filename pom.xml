@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>saluki</artifactId>
-	<version>1.5.6.RELEASE</version>
+	<version>1.5.7-SNAPSHOT</version>
 	<inceptionYear>2017</inceptionYear>
 	<packaging>pom</packaging>
 	<licenses>
@@ -26,14 +26,14 @@
 		<module>saluki-gateway</module>
 	</modules>
 	<properties>
-		<grpc-all.version>1.6.1</grpc-all.version>
+		<grpc-all.version>1.7.0</grpc-all.version>
 		<guava.version>20.0</guava.version>
 		<slf4j-api.version>1.7.21</slf4j-api.version>
 		<commons-lang3.version>3.4</commons-lang3.version>
 		<consul-api.version>1.2.1</consul-api.version>
 		<commons-pool.version>2.4.2</commons-pool.version>
 		<javassist.version>3.22.0-CR1</javassist.version>
-		<protobuf-java.version>3.0.0</protobuf-java.version>
+		<protobuf-java.version>3.4.0</protobuf-java.version>
 		<httpclient.version>4.5.1</httpclient.version>
 		<springboot.version>1.5.4.RELEASE</springboot.version>
 		<log4j.version>2.2</log4j.version>
