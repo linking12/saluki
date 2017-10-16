@@ -85,7 +85,7 @@ public class Protobuf2PojoHelp {
   }
 
   public static final void setPojoFieldValue(Object pojo, String setter, Object protobufValue,
-      ProtobufAttribute protobufAttribute)
+      ProtobufAttribute protobufAttribute, Field field)
       throws InstantiationException, IllegalAccessException, JException {
     Class<? extends Object> argClazz = null;
     if (protobufValue instanceof List) {
@@ -98,6 +98,11 @@ public class Protobuf2PojoHelp {
       newMapValues.putAll((Map<?, ?>) protobufValue);
       protobufValue = newMapValues;
       argClazz = Map.class;
+    } else if (protobufValue instanceof ProtocolMessageEnum) {
+      Class<?> fieldType = field.getType();
+      protobufValue = JReflectionUtils.runStaticMethod(fieldType, "forNumber",
+          ((ProtocolMessageEnum) protobufValue).getNumber());
+      argClazz = field.getType();
     } else {
       protobufValue.getClass();
     }

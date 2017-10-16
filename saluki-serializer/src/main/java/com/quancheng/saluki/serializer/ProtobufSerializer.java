@@ -126,7 +126,7 @@ public class ProtobufSerializer implements IProtobufSerializer {
         if (protobufValue == null) {
           continue;
         }
-        Protobuf2PojoHelp.setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute);
+        Protobuf2PojoHelp.setPojoFieldValue(pojo, setter, protobufValue, protobufAttribute, field);
       }
       return pojo;
     } catch (Exception e) {
