@@ -152,7 +152,11 @@ public final class GrpcEngine {
         .sslContext(buildServerSslContext())//
         .keepAliveTime(1, TimeUnit.DAYS)//
         .bossEventLoopGroup(createBossEventLoopGroup())//
-        .workerEventLoopGroup(createWorkEventLoopGroup());
+        .workerEventLoopGroup(createWorkEventLoopGroup())//
+        // This is a performance optimization that avoids the synchronization and queuing overhead
+        // that comes with SerializingExecutor.
+        // 性能优化，用户线程与Io线程的切换需要耗费时间的，而同步和入队需要耗费时间的
+        .directExecutor();
 
     final List<ServerInterceptor> interceptors = Arrays.asList(HeaderServerInterceptor.instance(),
         TransmitStatusRuntimeExceptionInterceptor.instance());
