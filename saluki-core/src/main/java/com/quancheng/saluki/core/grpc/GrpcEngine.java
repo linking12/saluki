@@ -40,6 +40,7 @@ import com.quancheng.saluki.core.grpc.util.SslUtil;
 import com.quancheng.saluki.core.registry.Registry;
 import com.quancheng.saluki.core.registry.RegistryProvider;
 
+import io.grpc.Attributes;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
@@ -48,6 +49,7 @@ import io.grpc.LoadBalancer;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
+import io.grpc.ServerTransportFilter;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
@@ -156,7 +158,18 @@ public final class GrpcEngine {
         // This is a performance optimization that avoids the synchronization and queuing overhead
         // that comes with SerializingExecutor.
         // 性能优化，用户线程与Io线程的切换需要耗费时间的，而同步和入队需要耗费时间的
-        .directExecutor();
+        .addTransportFilter(new ServerTransportFilter() {
+          @Override
+          public Attributes transportReady(Attributes transportAttrs) {
+            log.debug("network transport is ready!");
+            return transportAttrs;
+          }
+
+          @Override
+          public void transportTerminated(Attributes transportAttrs) {
+            log.debug("network transport is terminated!");
+          }
+        }).directExecutor();
 
     final List<ServerInterceptor> interceptors = Arrays.asList(HeaderServerInterceptor.instance(),
         TransmitStatusRuntimeExceptionInterceptor.instance());
@@ -229,6 +242,7 @@ public final class GrpcEngine {
           .negotiationType(NegotiationType.TLS)//
           .eventLoopGroup(createWorkEventLoopGroup())//
           .keepAliveTime(1, TimeUnit.DAYS)//
+          .directExecutor()//
           .build();//
       return ClientInterceptors.intercept(channel, interceptors);
     }
