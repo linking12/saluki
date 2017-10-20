@@ -40,12 +40,12 @@ README: [English](https://github.com/linking12/saluki/blob/master/README.md) | [
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki</artifactId>
-	<version>1.5.6.RELEASE</version>
+	<version>1.5.7.RELEASE</version>
 </dependency>
 <dependency>
 	<groupId>com.quancheng.saluki</groupId>
 	<artifactId>spring-boot-starter-saluki-monitor</artifactId>
-	<version>1.5.6.RELEASE</version>
+	<version>1.5.7.RELEASE</version>
 </dependency>
 ```
 
