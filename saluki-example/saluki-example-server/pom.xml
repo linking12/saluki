@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.quancheng.saluki</groupId>
 		<artifactId>saluki-example</artifactId>
-		<version>1.5.5-SNAPSHOT</version>
+		<version>1.5.7-SNAPSHOT</version>
 	</parent>
 	<licenses>
 		<license>
@@ -19,7 +19,7 @@
 	</licenses>
 	<properties>
 		<!-- 如果是mac -->
-		<!-- <os.detected.classifier>osx-x86_64</os.detected.classifier> -->
+		<os.detected.classifier>osx-x86_64</os.detected.classifier>
 		<!-- 如果是windows -->
 		<!-- <os.detected.classifier>windows-x86_64</os.detected.classifier> -->
 		<!-- 如果是linux -->
@@ -58,6 +58,12 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-tcnative-boringssl-static</artifactId>
+			<version>${netty-tcnative.version}</version>
+			<classifier>${os.detected.classifier}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-tcnative</artifactId>
 			<version>${netty-tcnative.version}</version>
 			<classifier>${os.detected.classifier}</classifier>
 		</dependency>

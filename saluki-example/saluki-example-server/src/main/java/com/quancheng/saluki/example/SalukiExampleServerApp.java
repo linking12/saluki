@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SalukiExampleServerApp {
 
-    public static void main(String[] args) {
+  public static void main(String[] args) {
 
-        SpringApplication.run(SalukiExampleServerApp.class, args);
-    }
+    SpringApplication.run(SalukiExampleServerApp.class, args);
+  }
 
 }

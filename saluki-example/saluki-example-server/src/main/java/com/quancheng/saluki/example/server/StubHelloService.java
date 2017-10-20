@@ -1,3 +1,4 @@
+package com.quancheng.saluki.example.server;
 ///*
 // * Copyright 2014-2017 the original author or authors.
 // *
