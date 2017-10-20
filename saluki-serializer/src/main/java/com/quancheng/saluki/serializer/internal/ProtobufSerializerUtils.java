@@ -5,9 +5,12 @@ import java.lang.reflect.Field;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.quancheng.saluki.serializer.ProtobufAttribute;
@@ -16,6 +19,19 @@ import com.quancheng.saluki.serializer.utils.JReflectionUtils;
 import com.quancheng.saluki.serializer.utils.JStringUtils;
 
 public final class ProtobufSerializerUtils {
+
+
+  private static final Map<String, Map<Field, ProtobufAttribute>> CLASS_TO_FIELD_MAP_CACHE =
+      Collections.synchronizedMap(new WeakHashMap<String, Map<Field, ProtobufAttribute>>());
+
+  // Internal cache to hold onto Class -> fieldName -> setter
+  private static final Map<String, Map<String, String>> CLASS_TO_FIELD_SETTERS_MAP_CACHE =
+      Collections.synchronizedMap(new WeakHashMap<String, Map<String, String>>());
+
+  // Internal cache to hold onto Class -> fieldName -> getter
+  private static final Map<String, Map<String, String>> CLASS_TO_FIELD_GETTERS_MAP_CACHE =
+      Collections.synchronizedMap(new WeakHashMap<String, Map<String, String>>());
+
 
   public static final Class<? extends Object> getProtobufClass(Object value,
       Class<? extends Object> protobufClass) {
@@ -73,7 +89,13 @@ public final class ProtobufSerializerUtils {
 
   public static final Map<Field, ProtobufAttribute> getAllProtbufFields(
       Class<? extends Object> fromClazz) {
-    Map<Field, ProtobufAttribute> protoBufFields = new HashMap<>();
+    Map<Field, ProtobufAttribute> protoBufFields =
+        CLASS_TO_FIELD_MAP_CACHE.get(fromClazz.getCanonicalName());
+    if (protoBufFields != null) {
+      return protoBufFields;
+    } else {
+      protoBufFields = new HashMap<>();
+    }
     final List<Field> fields = JReflectionUtils.getAllFields(new ArrayList<Field>(), fromClazz);
     for (Field field : fields) {
       final Annotation annotation = field.getAnnotation(ProtobufAttribute.class);
@@ -83,12 +105,23 @@ public final class ProtobufSerializerUtils {
       final ProtobufAttribute gpbAnnotation = (ProtobufAttribute) annotation;
       protoBufFields.put(field, gpbAnnotation);
     }
+    CLASS_TO_FIELD_MAP_CACHE.put(fromClazz.getCanonicalName(), protoBufFields);
     return protoBufFields;
   }
 
   public static final String getProtobufSetter(ProtobufAttribute protobufAttribute, Field field,
       Object fieldValue) {
     final String fieldName = field.getName();
+    final String upperClassName = field.getDeclaringClass().getCanonicalName();
+    // Look at the cache first
+    Map<String, String> map = CLASS_TO_FIELD_SETTERS_MAP_CACHE.get(upperClassName);
+    if (map != null) {
+      if (!map.isEmpty() && map.containsKey(fieldName)) {
+        return map.get(fieldName);
+      }
+    } else {
+      map = new ConcurrentHashMap<>();
+    }
     String setter = "set" + JStringUtils.upperCaseFirst(fieldName);
     if (fieldValue instanceof Collection) {
       setter = "addAll" + JStringUtils.upperCaseFirst(fieldName);
@@ -100,28 +133,52 @@ public final class ProtobufSerializerUtils {
     if (!configedSetter.equals(JStringUtils.EMPTY)) {
       setter = configedSetter;
     }
+    CLASS_TO_FIELD_SETTERS_MAP_CACHE.put(upperClassName, map);
     return setter;
   }
 
   public static final String getProtobufGetter(ProtobufAttribute protobufAttribute, Field field) {
+    final String fieldName = field.getName();
+    final String upperClassName = field.getDeclaringClass().getCanonicalName();
+    // Look at the cache first
+    Map<String, String> map = CLASS_TO_FIELD_GETTERS_MAP_CACHE.get(upperClassName);
+    if (map != null) {
+      if (!map.isEmpty() && map.containsKey(fieldName)) {
+        return map.get(fieldName);
+      }
+    } else {
+      map = new ConcurrentHashMap<>();
+    }
     final String upperCaseFirstFieldName = JStringUtils.upperCaseFirst(field.getName());
     String getter = "get" + upperCaseFirstFieldName;
-
     if (Collection.class.isAssignableFrom(field.getType())) {
       getter += "List";
     }
     if (!protobufAttribute.protobufGetter().isEmpty()) {
       return protobufAttribute.protobufGetter();
     }
+    CLASS_TO_FIELD_GETTERS_MAP_CACHE.put(upperClassName, map);
     return getter;
   }
 
   public static final String getPojoSetter(ProtobufAttribute protobufAttribute, Field field) {
+    final String fieldName = field.getName();
+    final String upperClassName = field.getDeclaringClass().getCanonicalName();
+    // Look at the cache first
+    Map<String, String> map = CLASS_TO_FIELD_SETTERS_MAP_CACHE.get(upperClassName);
+    if (map != null) {
+      if (!map.isEmpty() && map.containsKey(fieldName)) {
+        return map.get(fieldName);
+      }
+    } else {
+      map = new ConcurrentHashMap<>();
+    }
     final String upperCaseFirstFieldName = JStringUtils.upperCaseFirst(field.getName());
     String setter = "set" + upperCaseFirstFieldName;
     if (!protobufAttribute.pojoSetter().isEmpty()) {
       return protobufAttribute.pojoSetter();
     }
+    CLASS_TO_FIELD_SETTERS_MAP_CACHE.put(upperClassName, map);
     return setter;
   }
 }

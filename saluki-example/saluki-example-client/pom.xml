@@ -63,6 +63,11 @@
 			<version>${netty-tcnative.version}</version>
 			<classifier>${os.detected.classifier}</classifier>
 		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.9.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<extensions>
