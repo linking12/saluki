@@ -33,8 +33,8 @@ public class TpsWorkbeanch {
   /** 线程数量 */
   public static final int N_THRESHOLDS = 100;
 
-  /** 30 秒总时间 */
-  public static final int TIME_THRESHOLDS = 30 * 60;
+  /** 60 秒总时间 */
+  public static final int TIME_THRESHOLDS = 60 * 2;
 
   /** 用原子变量来统计执行时间，便于作原子递减 */
   private static AtomicInteger totalTime = new AtomicInteger(TIME_THRESHOLDS);
