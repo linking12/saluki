@@ -26,6 +26,7 @@ public class SalukiExampleClientApp implements CommandLineRunner {
 
   @Override
   public void run(String... arg0) throws Exception {
+    Thread.sleep(1000 * 10);
     long start = System.currentTimeMillis();
     Thread[] ts = new Thread[threads];
     for (int i = 0; i < threads; i++) {
