@@ -90,11 +90,11 @@ public final class GrpcEngine {
     config.setMaxIdlePerKey(10);
     config.setMaxWaitMillis(3000L);
     config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
-    config.setTestOnBorrow(true);
+    config.setTestOnBorrow(false);
     config.setTestOnReturn(false);
     config.setTestWhileIdle(false);
-    config.setTimeBetweenEvictionRunsMillis(1 * 60000L);
-    config.setMinEvictableIdleTimeMillis(10 * 60000L);
+    config.setTimeBetweenEvictionRunsMillis(60000L);
+    config.setMinEvictableIdleTimeMillis(30000);
     config.setTestWhileIdle(false);
     this.channelPool =
         new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
