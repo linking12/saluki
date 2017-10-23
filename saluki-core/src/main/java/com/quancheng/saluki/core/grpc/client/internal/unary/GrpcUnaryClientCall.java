@@ -8,10 +8,11 @@ package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -40,8 +41,8 @@ public interface GrpcUnaryClientCall {
 
       private FailOverUnaryFuture<Message, Message> newFailOverUnaryFuture(
           final MethodDescriptor<Message, Message> method) {
-        if (cacheFuture.containsKey(method)) {
-          return cacheFuture.get(method);
+        if (FAILOVER_UNARAY_FUTRURES.containsKey(method)) {
+          return FAILOVER_UNARAY_FUTRURES.get(method);
         } else {
           return new FailOverUnaryFuture<Message, Message>(method);
         }
@@ -82,7 +83,8 @@ public interface GrpcUnaryClientCall {
     };
   }
 
-  static Map<MethodDescriptor<Message, Message>, FailOverUnaryFuture<Message, Message>> cacheFuture =
-      Maps.newConcurrentMap();
+  static final Map<MethodDescriptor<Message, Message>, FailOverUnaryFuture<Message, Message>> FAILOVER_UNARAY_FUTRURES =
+      Collections.synchronizedMap(
+          new WeakHashMap<MethodDescriptor<Message, Message>, FailOverUnaryFuture<Message, Message>>());
 
 }

@@ -72,7 +72,7 @@ public interface GrpcRequest {
     public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool, String methodName,
         Object[] args, int callType, int callTimeout) {
       super();
-      this.refUrl = refUrl;
+      this.refUrl = refUrl.addParameter(Constants.METHOD_KEY, methodName);;
       this.chanelPool = chanelPool;
       this.methodName = methodName;
       if (args.length > 2) {
@@ -125,7 +125,7 @@ public interface GrpcRequest {
 
     @Override
     public GrpcURL getRefUrl() {
-      return this.refUrl.addParameter(Constants.METHOD_KEY, methodName);
+      return this.refUrl;
     }
 
 

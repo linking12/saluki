@@ -53,7 +53,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 50;
+  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 100;
 
   private static final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
