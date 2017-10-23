@@ -15,6 +15,8 @@ package com.quancheng.saluki.core.grpc.client.internal.unary;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.client.GrpcRequest;
 import com.quancheng.saluki.core.grpc.client.GrpcResponse;
@@ -66,6 +69,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private ClientServerMonitor clientServerMonitor;
 
+  private ExecutorService collectLogExecutor =
+      Executors.newSingleThreadExecutor(new NamedThreadFactory("salukiCollectTask", true));
 
   public GrpcHystrixCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
     super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))//
@@ -112,7 +117,13 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
     Message request = getRequestMessage();
     Message response = this.run0(request, methodDesc, timeOut, clientCall);
     Object obj = this.transformMessage(response);
-    collect(serviceName, methodName, request, response, false);
+    collectLogExecutor.execute(new Runnable() {
+
+      @Override
+      public void run() {
+        collect(serviceName, methodName, request, response, false);
+      }
+    });
     return obj;
   }
 
