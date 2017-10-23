@@ -1,8 +1,5 @@
 package com.quancheng.saluki.example;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -37,13 +34,6 @@ public class SalukiExampleClientApp implements CommandLineRunner {
           for (int i = 0; i < rounds; i++) {
             HelloRequest request = new HelloRequest();
             request.setName("liushiming");
-            com.quancheng.examples.model.hello.Project project =
-                new com.quancheng.examples.model.hello.Project();
-            project.setId("123");
-            Map<String, com.quancheng.examples.model.hello.Project> projects =
-                new HashMap<String, com.quancheng.examples.model.hello.Project>();
-            projects.put("test", project);
-            request.setProjects(projects);
             helloService.sayHello(request);
           }
         }

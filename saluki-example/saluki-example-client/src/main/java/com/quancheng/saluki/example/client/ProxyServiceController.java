@@ -1,8 +1,5 @@
 package com.quancheng.saluki.example.client;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,7 +8,6 @@ import com.quancheng.examples.model.hello.HelloReply;
 import com.quancheng.examples.model.hello.HelloRequest;
 import com.quancheng.examples.service.HelloService;
 import com.quancheng.saluki.boot.SalukiReference;
-import com.quancheng.saluki.core.common.RpcContext;
 import com.saluki.example.model.First;
 import com.saluki.example.model.Second;
 
@@ -36,13 +32,6 @@ public class ProxyServiceController {
   public HelloReply serverstream(@RequestParam(value = "name", required = false) String name) {
     HelloRequest request = new HelloRequest();
     request.setName(name);
-    com.quancheng.examples.model.hello.Project project =
-        new com.quancheng.examples.model.hello.Project();
-    project.setId("123");
-    Map<String, com.quancheng.examples.model.hello.Project> projects =
-        new HashMap<String, com.quancheng.examples.model.hello.Project>();
-    projects.put("test", project);
-    request.setProjects(projects);
     helloService.sayHelloServerStream(request, responseObserver());
     return null;
   }
@@ -51,13 +40,6 @@ public class ProxyServiceController {
   public HelloReply clientstream(@RequestParam(value = "name", required = false) String name) {
     HelloRequest request = new HelloRequest();
     request.setName(name);
-    com.quancheng.examples.model.hello.Project project =
-        new com.quancheng.examples.model.hello.Project();
-    project.setId("123");
-    Map<String, com.quancheng.examples.model.hello.Project> projects =
-        new HashMap<String, com.quancheng.examples.model.hello.Project>();
-    projects.put("test", project);
-    request.setProjects(projects);
     StreamObserver<com.quancheng.examples.model.hello.HelloRequest> requestObserver =
         helloService.sayHelloClientStream(responseObserver());
     try {
@@ -75,13 +57,6 @@ public class ProxyServiceController {
   public HelloReply bodistream(@RequestParam(value = "name", required = false) String name) {
     HelloRequest request = new HelloRequest();
     request.setName(name);
-    com.quancheng.examples.model.hello.Project project =
-        new com.quancheng.examples.model.hello.Project();
-    project.setId("123");
-    Map<String, com.quancheng.examples.model.hello.Project> projects =
-        new HashMap<String, com.quancheng.examples.model.hello.Project>();
-    projects.put("test", project);
-    request.setProjects(projects);
     StreamObserver<com.quancheng.examples.model.hello.HelloRequest> requestObserver =
         helloService.sayHelloBidiStream(responseObserver());
     try {
@@ -122,14 +97,6 @@ public class ProxyServiceController {
   private HelloReply call(final String name) {
     HelloRequest request = new HelloRequest();
     request.setName(name);
-    com.quancheng.examples.model.hello.Project project =
-        new com.quancheng.examples.model.hello.Project();
-    project.setId("123");
-    Map<String, com.quancheng.examples.model.hello.Project> projects =
-        new HashMap<String, com.quancheng.examples.model.hello.Project>();
-    projects.put("test", project);
-    request.setProjects(projects);
-    RpcContext.getContext().set("123", "helloworld");
     HelloReply reply = helloService.sayHello(request);
     return reply;
   }
