@@ -32,7 +32,7 @@ public interface GrpcRequest {
 
   public Channel getChannel();
 
-  public void returnChannel(Channel channel);
+  public void returnChannel();
 
   public String getServiceName();
 
@@ -57,6 +57,8 @@ public interface GrpcRequest {
 
     private final GrpcURL refUrl;
 
+    private final Channel channel;
+
     private final GrpcProtocolClient.ChannelCall chanelPool;
 
     private final String methodName;
@@ -72,7 +74,8 @@ public interface GrpcRequest {
     public Default(GrpcURL refUrl, GrpcProtocolClient.ChannelCall chanelPool, String methodName,
         Object[] args, int callType, int callTimeout) {
       super();
-      this.refUrl = refUrl.addParameter(Constants.METHOD_KEY, methodName);;
+      this.refUrl = refUrl.addParameter(Constants.METHOD_KEY, methodName);
+      this.channel = chanelPool.borrowChannel(refUrl);
       this.chanelPool = chanelPool;
       this.methodName = methodName;
       if (args.length > 2) {
@@ -110,11 +113,11 @@ public interface GrpcRequest {
 
     @Override
     public Channel getChannel() {
-      return chanelPool.borrowChannel(refUrl);
+      return channel;
     }
 
     @Override
-    public void returnChannel(Channel channel) {
+    public void returnChannel() {
       chanelPool.returnChannel(refUrl, channel);
     }
 
