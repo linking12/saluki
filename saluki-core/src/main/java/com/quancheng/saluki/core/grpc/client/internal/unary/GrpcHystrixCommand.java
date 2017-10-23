@@ -50,7 +50,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 30;
+  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 100;
 
   private static final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
@@ -77,8 +77,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
                 .withExecutionTimeoutEnabled(false)// 禁用这里的超时
                 .withFallbackEnabled(isEnabledFallBack))//
         .andThreadPoolPropertiesDefaults(
-            HystrixThreadPoolProperties.Setter().withCoreSize(DEFAULT_THREADPOOL_CORE_SIZE))// 线程池为5
-    );
+            HystrixThreadPoolProperties.Setter().withCoreSize(DEFAULT_THREADPOOL_CORE_SIZE)));
     this.serviceName = serviceName;
     this.methodName = methodName;
     this.start = System.currentTimeMillis();

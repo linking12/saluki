@@ -42,7 +42,6 @@ public class GrpcRoutePicker extends SubchannelPicker {
   private final Attributes nameResovleCache;
   private final List<Subchannel> list;
   private final int size;
-  private final Object LOCK = new Object();
   private int index = 0;
 
   GrpcRoutePicker(List<Subchannel> list, Status status, Attributes nameResovleCache) {
@@ -91,27 +90,25 @@ public class GrpcRoutePicker extends SubchannelPicker {
   private boolean discard(GrpcURL refUrl, Subchannel subchannel) {
     boolean discard = false;
     if (refUrl != null) {
-      synchronized (LOCK) {
-        GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().getGrpcRouter(refUrl.getGroup());
-        if (grpcRouter != null) {
-          grpcRouter.setRefUrl(refUrl);
-          EquivalentAddressGroup addressGroup = subchannel.getAddresses();
-          List<SocketAddress> currentAddress = addressGroup.getAddresses();
-          List<SocketAddress> deletAddress = Lists.newArrayList();
-          for (SocketAddress server : currentAddress) {
-            List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
-            if (!grpcRouter.match(providerUrls)) {
-              deletAddress.add(server);
-            }
+      GrpcRouter grpcRouter = GrpcRouterFactory.getInstance().getGrpcRouter(refUrl.getGroup());
+      if (grpcRouter != null) {
+        grpcRouter.setRefUrl(refUrl);
+        EquivalentAddressGroup addressGroup = subchannel.getAddresses();
+        List<SocketAddress> currentAddress = addressGroup.getAddresses();
+        List<SocketAddress> deletAddress = Lists.newArrayList();
+        for (SocketAddress server : currentAddress) {
+          List<GrpcURL> providerUrls = findGrpcURLByAddress(server);
+          if (!grpcRouter.match(providerUrls)) {
+            deletAddress.add(server);
           }
-          if (!deletAddress.isEmpty()) {
-            discard = true;
-          }
+        }
+        if (!deletAddress.isEmpty()) {
+          discard = true;
         }
       }
     }
-
     return discard;
+
   }
 
   private List<GrpcURL> findGrpcURLByAddress(SocketAddress address) {
