@@ -53,7 +53,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 100;
+  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 10;
 
   private static final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
@@ -69,8 +69,9 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private ClientServerMonitor clientServerMonitor;
 
-  private static final ExecutorService collectLogExecutor = Executors.newFixedThreadPool(
-      DEFAULT_THREADPOOL_CORE_SIZE / 10, new NamedThreadFactory("salukiCollectTask", true));
+  private static final ExecutorService collectLogExecutor =
+      Executors.newSingleThreadExecutor(new NamedThreadFactory("salukiCollectTask", true));
+
 
   public GrpcHystrixCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
     super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))//
