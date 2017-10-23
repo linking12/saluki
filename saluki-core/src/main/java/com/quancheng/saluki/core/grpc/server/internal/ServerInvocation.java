@@ -8,6 +8,8 @@ package com.quancheng.saluki.core.grpc.server.internal;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
+import com.quancheng.saluki.core.common.NamedThreadFactory;
 import com.quancheng.saluki.core.common.RpcContext;
 import com.quancheng.saluki.core.grpc.annotation.GrpcMethodType;
 import com.quancheng.saluki.core.grpc.service.MonitorService;
@@ -52,6 +55,9 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
   private final GrpcMethodType grpcMethodType;
 
   private final ConcurrentMap<String, AtomicInteger> concurrents;
+
+  private final ExecutorService collectLogExecutor =
+      Executors.newSingleThreadExecutor(new NamedThreadFactory("salukiCollectTask", true));
 
   public ServerInvocation(Object serviceToInvoke, Method method, GrpcMethodType grpcMethodType,
       GrpcURL providerUrl, ConcurrentMap<String, AtomicInteger> concurrents,
@@ -125,23 +131,38 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
 
 
   private void unaryCall(Message request, StreamObserver<Message> responseObserver) {
-    Message reqProtoBufer = request;
+    final Message reqProtoBufer = request;
     Message respProtoBufer = null;
     long start = System.currentTimeMillis();
     try {
       getConcurrent().getAndIncrement();
       Class<?> requestType = grpcMethodType.requestType();
-      Object reqPojo = SerializerUtil.protobuf2Pojo(reqProtoBufer, requestType);
-      Object[] requestParams = new Object[] {reqPojo};
-      Object respPojo = method.invoke(serviceToInvoke, requestParams);
+      final Object reqPojo = SerializerUtil.protobuf2Pojo(reqProtoBufer, requestType);
+      final Object respPojo = method.invoke(serviceToInvoke, new Object[] {reqPojo});
       respProtoBufer = SerializerUtil.pojo2Protobuf(respPojo);
-      collect(reqProtoBufer, respProtoBufer, start, false);
+      final Message collectMessage = respProtoBufer;
+      collectLogExecutor.execute(new Runnable() {
+
+
+        @Override
+        public void run() {
+          collect(reqProtoBufer, collectMessage, start, false);
+        }
+      });
       responseObserver.onNext(respProtoBufer);
       responseObserver.onCompleted();
     } catch (Throwable e) {
       String stackTrace = ThrowableUtil.stackTraceToString(e);
       log.error(e.getMessage(), e);
-      collect(reqProtoBufer, respProtoBufer, start, true);
+      final Message collectMessage = respProtoBufer;
+      collectLogExecutor.execute(new Runnable() {
+
+
+        @Override
+        public void run() {
+          collect(reqProtoBufer, collectMessage, start, true);
+        }
+      });
       StatusRuntimeException statusException =
           Status.UNAVAILABLE.withDescription(stackTrace).asRuntimeException();
       responseObserver.onError(statusException);
