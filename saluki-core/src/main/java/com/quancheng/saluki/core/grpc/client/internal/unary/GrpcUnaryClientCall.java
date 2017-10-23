@@ -6,8 +6,12 @@
  */
 package com.quancheng.saluki.core.grpc.client.internal.unary;
 
+
+
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -31,16 +35,27 @@ public interface GrpcUnaryClientCall {
 
   public static GrpcUnaryClientCall create(final Channel channel, final Integer retryOptions,
       final GrpcURL refUrl) {
-    CallOptions callOptions = GrpcCallOptions.createCallOptions(refUrl);
+    final CallOptions callOptions = GrpcCallOptions.createCallOptions(refUrl);
     return new GrpcUnaryClientCall() {
+
+      private FailOverUnaryFuture<Message, Message> newFailOverUnaryFuture(
+          final MethodDescriptor<Message, Message> method) {
+        if (cacheFuture.containsKey(method)) {
+          return cacheFuture.get(method);
+        } else {
+          return new FailOverUnaryFuture<Message, Message>(method);
+        }
+      }
+
 
       @Override
       public ListenableFuture<Message> unaryFuture(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverUnaryStreamToFuture<Message, Message> retryCallListener =
-            new FailOverUnaryStreamToFuture<Message, Message>(retryOptions, channel, method,
-                callOptions);
+        FailOverUnaryFuture<Message, Message> retryCallListener = newFailOverUnaryFuture(method);
         retryCallListener.setRequest(request);
+        retryCallListener.setMaxRetries(retryOptions);
+        retryCallListener.setChannel(channel);
+        retryCallListener.setCallOptions(callOptions);
         retryCallListener.run();
         return retryCallListener.getFuture();
       }
@@ -48,10 +63,11 @@ public interface GrpcUnaryClientCall {
       @Override
       public Message blockingUnaryResult(Message request,
           MethodDescriptor<Message, Message> method) {
-        FailOverUnaryStreamToFuture<Message, Message> retryCallListener =
-            new FailOverUnaryStreamToFuture<Message, Message>(retryOptions, channel, method,
-                callOptions);
+        FailOverUnaryFuture<Message, Message> retryCallListener = newFailOverUnaryFuture(method);
         retryCallListener.setRequest(request);
+        retryCallListener.setMaxRetries(retryOptions);
+        retryCallListener.setChannel(channel);
+        retryCallListener.setCallOptions(callOptions);
         try {
           retryCallListener.run();
           return retryCallListener.getFuture().get();
@@ -65,5 +81,8 @@ public interface GrpcUnaryClientCall {
       }
     };
   }
+
+  static Map<MethodDescriptor<Message, Message>, FailOverUnaryFuture<Message, Message>> cacheFuture =
+      Maps.newConcurrentMap();
 
 }

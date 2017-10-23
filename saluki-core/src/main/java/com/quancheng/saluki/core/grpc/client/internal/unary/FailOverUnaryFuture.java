@@ -30,39 +30,42 @@ import io.grpc.internal.GrpcUtil;
  * @author liushiming 2017年5月2日 下午5:42:42
  * @version FailOverListener.java, v 0.0.1 2017年5月2日 下午5:42:42 liushiming
  */
-public class FailOverUnaryStreamToFuture<Request, Response> extends ClientCall.Listener<Response>
+public class FailOverUnaryFuture<Request, Response> extends ClientCall.Listener<Response>
     implements Runnable {
 
-  private final static Logger logger = LoggerFactory.getLogger(FailOverUnaryStreamToFuture.class);
+  private final static Logger logger = LoggerFactory.getLogger(FailOverUnaryFuture.class);
 
   private final ScheduledExecutorService scheduleRetryService = GrpcUtil.TIMER_SERVICE.create();
 
   private final AtomicInteger currentRetries = new AtomicInteger(0);
 
-  private final Integer maxRetries;
-
-  private final Channel channel;
-
   private final MethodDescriptor<Request, Response> method;
-
-  private final CallOptions callOptions;
-
-  private final boolean enabledRetry;
 
   private CompletionFuture<Response> completionFuture;
 
   private ClientCall<Request, Response> clientCall;
 
   private Request request;
-
   private Response response;
+  private Integer maxRetries;
+  private boolean enabledRetry;
+  private CallOptions callOptions;
+  private Channel channel;
 
-  public FailOverUnaryStreamToFuture(final Integer retriesOptions, final Channel channel,
-      final MethodDescriptor<Request, Response> method, final CallOptions callOptions) {
-    this.maxRetries = retriesOptions;
-    this.channel = channel;
+  public FailOverUnaryFuture(final MethodDescriptor<Request, Response> method) {
     this.method = method;
+  }
+
+  public void setCallOptions(CallOptions callOptions) {
     this.callOptions = callOptions;
+  }
+
+  public void setChannel(Channel channel) {
+    this.channel = channel;
+  }
+
+  public void setMaxRetries(Integer maxRetries) {
+    this.maxRetries = maxRetries;
     this.enabledRetry = maxRetries > 0 ? true : false;
   }
 
