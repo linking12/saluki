@@ -132,7 +132,13 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
     Class<?> responseType = this.request.getResponseType();
     Message response = GrpcUtil.createDefaultInstance(responseType);
     Object obj = this.transformMessage(response);
-    collect(serviceName, methodName, getRequestMessage(), response, true);
+    collectLogExecutor.execute(new Runnable() {
+
+      @Override
+      public void run() {
+        collect(serviceName, methodName, getRequestMessage(), response, true);
+      }
+    });
     return obj;
   }
 
