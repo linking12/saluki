@@ -89,7 +89,6 @@ public abstract class AbstractClientInvocation implements InvocationHandler {
             .get(GrpcCallOptions.GRPC_CURRENT_ADDR_KEY);
         log.debug(String.format("Service: %s  Method: %s  RemoteAddress: %s",
             request.getServiceName(), request.getMethodName(), String.valueOf(remote)));
-        request.returnChannel();
       }
     }
   }

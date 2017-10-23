@@ -57,16 +57,12 @@ public class GrpcStubClient<AbstractStub> implements GrpcProtocolClient<Abstract
             method = clzz.getMethod("newFutureStub", io.grpc.Channel.class);
             break;
         }
-        channel = channelPool.borrowChannel(refUrl);
+        channel = channelPool.getChannel(refUrl);
         AbstractStub stubInstance = (AbstractStub) method.invoke(null, channel);
         return stubInstance;
       } catch (Exception e) {
         throw new IllegalArgumentException(
             "stub definition not correct，do not edit proto generat file", e);
-      } finally {
-        if (channel != null) {
-          channelPool.returnChannel(refUrl, channel);
-        }
       }
     } else {
       throw new IllegalArgumentException(

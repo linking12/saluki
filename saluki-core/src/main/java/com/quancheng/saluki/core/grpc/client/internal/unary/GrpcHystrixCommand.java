@@ -53,8 +53,6 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private static final Logger logger = LoggerFactory.getLogger(GrpcHystrixCommand.class);
 
-  private static final int DEFAULT_THREADPOOL_CORE_SIZE = 10;
-
   private static final ConcurrentMap<String, AtomicInteger> concurrents = Maps.newConcurrentMap();
 
   private final String serviceName;
@@ -82,8 +80,8 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
                 .withCircuitBreakerErrorThresholdPercentage(50)// 错误率达到50开启熔断保护
                 .withExecutionTimeoutEnabled(false)// 禁用这里的超时
                 .withFallbackEnabled(isEnabledFallBack))//
-        .andThreadPoolPropertiesDefaults(
-            HystrixThreadPoolProperties.Setter().withCoreSize(DEFAULT_THREADPOOL_CORE_SIZE)));
+        .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(100)
+            .withAllowMaximumSizeToDivergeFromCoreSize(true).withMaximumSize(Integer.MAX_VALUE)));
     this.serviceName = serviceName;
     this.methodName = methodName;
     this.start = System.currentTimeMillis();

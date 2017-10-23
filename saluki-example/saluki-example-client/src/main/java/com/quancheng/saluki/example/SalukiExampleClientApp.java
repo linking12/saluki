@@ -14,7 +14,7 @@ public class SalukiExampleClientApp implements CommandLineRunner {
   @SalukiReference
   private HelloService helloService;
 
-  private int threads = 20;
+  private int threads = 50;
   private int rounds = 10000;
 
   public static void main(String[] args) {

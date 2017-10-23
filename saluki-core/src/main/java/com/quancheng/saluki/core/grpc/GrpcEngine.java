@@ -17,11 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
-import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +37,6 @@ import com.quancheng.saluki.core.registry.RegistryProvider;
 
 import io.grpc.Attributes;
 import io.grpc.Channel;
-import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
 import io.grpc.Internal;
 import io.grpc.LoadBalancer;
@@ -74,51 +68,32 @@ public final class GrpcEngine {
 
   private final Map<String, Set<GrpcURL>> subscribeGroupCache = Maps.newConcurrentMap();
 
-  private GenericKeyedObjectPool<String, Channel> channelPool;
+  private final Map<String, Channel> channelPool = Maps.newConcurrentMap();
 
   public GrpcEngine(GrpcURL registryUrl) {
     this.registryUrl = registryUrl;
     this.registry = RegistryProvider.asFactory().newRegistry(registryUrl);
   }
 
-  private void initChannelPool() {
-    GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
-    config.setMaxTotal(Integer.MAX_VALUE);
-    config.setMaxTotalPerKey(3);
-    config.setBlockWhenExhausted(true);
-    config.setMinIdlePerKey(1);
-    config.setMaxIdlePerKey(10);
-    config.setMaxWaitMillis(1000L);
-    config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
-    config.setTestOnBorrow(false);
-    config.setTestOnReturn(false);
-    config.setTestWhileIdle(false);
-    config.setTimeBetweenEvictionRunsMillis(60000L);
-    config.setMinEvictableIdleTimeMillis(30000);
-    config.setTestWhileIdle(false);
-    this.channelPool =
-        new GenericKeyedObjectPool<String, Channel>(new GrpcChannelFactory(), config);
-
-  }
 
   public Object getClient(GrpcURL refUrl) throws Exception {
-    if (channelPool == null) {
-      initChannelPool();
-    }
     GrpcProtocolClient.ChannelCall channelCall = new GrpcProtocolClient.ChannelCall() {
 
       @Override
-      public Channel borrowChannel(final GrpcURL realRefUrl) {
+      public Channel getChannel(final GrpcURL realRefUrl) {
         GrpcURL subscribeUrl = realRefUrl;
         if (subscribeUrl == null) {
           subscribeUrl = refUrl;
         }
         String group = cacheSubscribeUrl(subscribeUrl);
-        try {
-          return channelPool.borrowObject(group);
-        } catch (Exception e) {
-          throw new java.lang.IllegalArgumentException("Grpc borrow Channel failed", e);
+        if (channelPool.containsKey(group)) {
+          return channelPool.get(group);
+        } else {
+          Channel channel = create(group);
+          channelPool.put(group, channel);
+          return channel;
         }
+
       }
 
       private String cacheSubscribeUrl(GrpcURL subscribeUrl) {
@@ -136,20 +111,28 @@ public final class GrpcEngine {
         return group;
       }
 
-      @Override
-      public void returnChannel(final GrpcURL realRefUrl, final Channel channel) {
-        GrpcURL realRefUrltemp = realRefUrl;
-        if (realRefUrltemp == null) {
-          realRefUrltemp = refUrl;
-        }
-        String group = realRefUrltemp.getGroup();
-        channelPool.returnObject(group, channel);
+      private Channel create(String group) {
+        Set<GrpcURL> subscribeUrls = subscribeGroupCache.get(group);
+        Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
+            .nameResolverFactory(new GrpcNameResolverProvider(subscribeUrls))//
+            .loadBalancerFactory(buildLoadBalanceFactory())//
+            .sslContext(buildClientSslContext())//
+            .usePlaintext(false)//
+            .negotiationType(NegotiationType.TLS)//
+            .eventLoopGroup(createWorkEventLoopGroup())//
+            .keepAliveTime(1, TimeUnit.DAYS)//
+            .directExecutor()//
+            .build();//
+        return ClientInterceptors.intercept(channel,
+            Arrays.asList(HeaderClientInterceptor.instance()));
       }
 
     };
     GrpcClientStrategy strategy = new GrpcClientStrategy(refUrl, channelCall);
     return strategy.getGrpcClient();
   }
+
+
 
   public io.grpc.Server getServer(Map<GrpcURL, Object> providerUrls, int rpcPort) throws Exception {
 
@@ -229,31 +212,4 @@ public final class GrpcEngine {
     return new NioEventLoopGroup(0, Executors.newCachedThreadPool(threadFactory));
   }
 
-  private class GrpcChannelFactory extends BaseKeyedPooledObjectFactory<String, Channel> {
-
-    private final List<ClientInterceptor> interceptors =
-        Arrays.asList(HeaderClientInterceptor.instance());
-
-    @Override
-    public Channel create(String group) throws Exception {
-      Set<GrpcURL> subscribeUrls = subscribeGroupCache.get(group);
-      Channel channel = NettyChannelBuilder.forTarget(registryUrl.toJavaURI().toString())//
-          .nameResolverFactory(new GrpcNameResolverProvider(subscribeUrls))//
-          .loadBalancerFactory(buildLoadBalanceFactory())//
-          .sslContext(buildClientSslContext())//
-          .usePlaintext(false)//
-          .negotiationType(NegotiationType.TLS)//
-          .eventLoopGroup(createWorkEventLoopGroup())//
-          .keepAliveTime(1, TimeUnit.DAYS)//
-          .directExecutor()//
-          .build();//
-      return ClientInterceptors.intercept(channel, interceptors);
-    }
-
-    @Override
-    public PooledObject<Channel> wrap(Channel value) {
-      return new DefaultPooledObject<Channel>(value);
-    }
-
-  }
 }

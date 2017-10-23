@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the
- * confidential and proprietary information of Quancheng-ec.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Quancheng-ec.com.
+ * Copyright (c) 2016, Quancheng-ec.com All right reserved. This software is the confidential and
+ * proprietary information of Quancheng-ec.com ("Confidential Information"). You shall not disclose
+ * such Confidential Information and shall use it only in accordance with the terms of the license
+ * agreement you entered into with Quancheng-ec.com.
  */
 package com.quancheng.saluki.core.grpc.client;
 
@@ -17,13 +16,12 @@ import io.grpc.Channel;
  */
 public interface GrpcProtocolClient<T> {
 
-    public T getGrpcClient(ChannelCall channelCall, int callType, int callTimeout);
+  public T getGrpcClient(ChannelCall channelCall, int callType, int callTimeout);
 
-    public interface ChannelCall {
+  public interface ChannelCall {
 
-        public Channel borrowChannel(final GrpcURL refUrl);
+    public Channel getChannel(final GrpcURL refUrl);
 
-        public void returnChannel(final GrpcURL refUrl, final Channel channel);
-    }
+  }
 
 }
