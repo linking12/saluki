@@ -56,7 +56,7 @@ public class ServerInvocation implements io.grpc.stub.ServerCalls.UnaryMethod<Me
 
   private final ConcurrentMap<String, AtomicInteger> concurrents;
 
-  private final ExecutorService collectLogExecutor =
+  private static final ExecutorService collectLogExecutor =
       Executors.newSingleThreadExecutor(new NamedThreadFactory("salukiCollectTask", true));
 
   public ServerInvocation(Object serviceToInvoke, Method method, GrpcMethodType grpcMethodType,

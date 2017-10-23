@@ -9,7 +9,6 @@ package com.quancheng.saluki.core.grpc.client;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.google.gson.Gson;
 import com.google.protobuf.Message;
 import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
@@ -126,8 +125,7 @@ public interface GrpcRequest {
 
     @Override
     public GrpcURL getRefUrl() {
-      return this.refUrl.addParameter(Constants.METHOD_KEY, methodName)//
-          .addParameterAndEncoded(Constants.ARG_KEY, new Gson().toJson(getRequestParam()));
+      return this.refUrl.addParameter(Constants.METHOD_KEY, methodName);
     }
 
 

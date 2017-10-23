@@ -25,7 +25,6 @@ public class Constants {
   public static final String RETRY_METHODS_KEY = "retrymethods";
   public static final String FALLBACK_METHODS_KEY = "fallbackmethods";
   public static final String METHOD_KEY = "method";
-  public static final String ARG_KEY = "arg";
   public static final String METHOD_RETRY_KEY = "retries";
   public static final String ANYHOST_VALUE = "0.0.0.0";
 

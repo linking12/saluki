@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-import com.quancheng.saluki.core.common.Constants;
 import com.quancheng.saluki.core.common.GrpcURL;
 import com.quancheng.saluki.core.grpc.router.GrpcRouter;
 import com.quancheng.saluki.core.utils.GrpcURLUtils;
@@ -65,8 +64,6 @@ public class ConditionRouter extends GrpcRouter {
   @Override
   public boolean match(List<GrpcURL> providerUrls) {
     GrpcURL refUrl = super.getRefUrl();
-    // 对于条件路由，把arg参数去除掉，太过于复杂，arg只使用与脚本路由
-    refUrl = refUrl.removeParameter(Constants.ARG_KEY);
     if (matchWhen(refUrl)) {
       boolean allMatchThen = false;
       for (GrpcURL providerUrl : providerUrls) {
