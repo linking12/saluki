@@ -69,7 +69,7 @@ public abstract class GrpcHystrixCommand extends HystrixCommand<Object> {
 
   private ClientServerMonitor clientServerMonitor;
 
-  private ExecutorService collectLogExecutor =
+  private final ExecutorService collectLogExecutor =
       Executors.newSingleThreadExecutor(new NamedThreadFactory("salukiCollectTask", true));
 
   public GrpcHystrixCommand(String serviceName, String methodName, Boolean isEnabledFallBack) {
