@@ -88,7 +88,7 @@ public final class GrpcEngine {
     config.setBlockWhenExhausted(true);
     config.setMinIdlePerKey(3);
     config.setMaxIdlePerKey(10);
-    config.setMaxWaitMillis(3000L);
+    config.setMaxWaitMillis(1000L);
     config.setNumTestsPerEvictionRun(Integer.MAX_VALUE);
     config.setTestOnBorrow(false);
     config.setTestOnReturn(false);
@@ -123,12 +123,15 @@ public final class GrpcEngine {
 
       private String cacheSubscribeUrl(GrpcURL subscribeUrl) {
         String group = subscribeUrl.getGroup();
-        if (subscribeGroupCache.get(group) == null) {
-          Set<GrpcURL> refUrls = Sets.newConcurrentHashSet();
+        Set<GrpcURL> refUrls = subscribeGroupCache.get(group);
+        if (refUrls == null) {
+          refUrls = Sets.newLinkedHashSet();
           refUrls.add(subscribeUrl);
           subscribeGroupCache.put(group, refUrls);
         } else {
-          subscribeGroupCache.get(group).add(subscribeUrl);
+          if (!refUrls.contains(subscribeUrl)) {
+            refUrls.add(subscribeUrl);
+          }
         }
         return group;
       }
