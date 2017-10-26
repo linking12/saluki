@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: example-client
-server:
-  port: 8081
-saluki:
-  grpc:
-    registryAddress: localhost:8500
-    referenceDefinition: META-INF/reference.json
